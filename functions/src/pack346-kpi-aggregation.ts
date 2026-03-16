@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 346 — KPI Aggregation Engine
  * Aggregates daily KPIs from transaction data
@@ -175,7 +177,7 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
         break;
       case "chat":
         kpi.revenue.chatRevenueUSD += amountUSD;
-        kpi.platformEarnings.chat35 += amountUSD * MONETIZATION_SPLITS.CHAT.avalo;
+        kpi.platformEarnings.chat35 += amountUSD * MONETIZATION_SPLITS.CHAT.platform;
         break;
       case "voice_call":
         kpi.revenue.voiceRevenueUSD += amountUSD;
@@ -185,11 +187,11 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
         break;
       case "calendar_booking":
         kpi.revenue.calendarRevenueUSD += amountUSD;
-        kpi.platformEarnings.calendar20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+        kpi.platformEarnings.calendar20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.platform;
         break;
       case "event_ticket":
         kpi.revenue.eventsRevenueUSD += amountUSD;
-        kpi.platformEarnings.events20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+        kpi.platformEarnings.events20 += amountUSD * MONETIZATION_SPLITS.EVENT_TICKET.platform;
         break;
       case "tip":
         kpi.revenue.tipsRevenueUSD += amountUSD;
@@ -232,7 +234,7 @@ async function calculateDailyKPIs(dateStr: string): Promise<DailyKPI> {
       case "calendar_user_cancel":
         kpi.refunds.calendarUserCancelRefunds++;
         break;
-      case "calendar_creator_cancel":
+      case "calendar_earner_cancel":
         kpi.refunds.calendarCreatorCancelRefunds++;
         break;
       case "selfie_mismatch":
@@ -497,6 +499,22 @@ export const triggerKPIAggregation = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

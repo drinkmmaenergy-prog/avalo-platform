@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 328A: Identity Verification Engine
  * Triggers, enforcement, and wallet locking logic
@@ -530,12 +532,12 @@ export class VerificationFraudIntegration {
 
       await db.collection('fraudSignals').add(signal);
 
-      // Update creator trust score if applicable
+      // Update earner trust score if applicable
       const userDoc = await db.collection('users').doc(userId).get();
       const userData = userDoc.data();
       
       if (userData?.isCreator) {
-        const trustScoreRef = db.collection('creatorTrustScores').doc(userId);
+        const trustScoreRef = db.collection('earnerTrustScores').doc(userId);
         const trustScoreDoc = await trustScoreRef.get();
         
         if (trustScoreDoc.exists) {
@@ -560,6 +562,20 @@ export class VerificationFraudIntegration {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

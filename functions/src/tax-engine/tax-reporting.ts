@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 149: Global Tax Engine & Compliance Hub
  * Tax Report Generation and Export Functions
@@ -485,11 +487,11 @@ function isEUCountry(country: string): boolean {
 
 function getVATRateForCountry(country: string): number {
   const rates: Record<string, number> = {
-    'DE': 0.19, 'FR': MONETIZATION_SPLITS.EVENT_TICKET.avalo, 'ES': 0.21, 'IT': 0.22, 'NL': 0.21,
-    'BE': 0.21, 'AT': MONETIZATION_SPLITS.EVENT_TICKET.avalo, 'PL': 0.23, 'SE': 0.25, 'DK': 0.25,
+    'DE': 0.19, 'FR': MONETIZATION_SPLITS.EVENT_TICKET.platform, 'ES': 0.21, 'IT': 0.22, 'NL': 0.21,
+    'BE': 0.21, 'AT': MONETIZATION_SPLITS.EVENT_TICKET.platform, 'PL': 0.23, 'SE': 0.25, 'DK': 0.25,
     'FI': 0.24, 'PT': 0.23, 'GR': 0.24, 'CZ': 0.21, 'IE': 0.23
   };
-  return rates[country] || MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+  return rates[country] || MONETIZATION_SPLITS.EVENT_TICKET.platform;
 }
 
 async function logAuditTrail(data: {
@@ -539,6 +541,23 @@ export async function getTaxReportsForUser(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

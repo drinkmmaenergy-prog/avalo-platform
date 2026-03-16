@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 // Reputation types - all properties optional for flexibility
 export interface ReputationScore {
   userId?: string;
@@ -356,7 +358,7 @@ export interface UpdateDisplaySettingsResponse {
 // Badge definitions constant
 export const BADGE_DEFINITIONS: Record<string, ReputationBadge> = {
   VERIFIED: { id: 'VERIFIED', name: 'Verified', description: 'Identity verified' },
-  TOP_CREATOR: { id: 'TOP_CREATOR', name: 'Top Creator', description: 'Top performing creator' },
+  TOP_CREATOR: { id: 'TOP_CREATOR', name: 'Top Creator', description: 'Top performing earner' },
   SAFETY_CHAMPION: { id: 'SAFETY_CHAMPION', name: 'Safety Champion', description: 'Excellent safety record' },
   COMMUNITY_LEADER: { id: 'COMMUNITY_LEADER', name: 'Community Leader', description: 'Active community contributor' },
 };
@@ -561,6 +563,22 @@ export function calculateReviewImpact(rating: number, weight: number = 1): numbe
   const normalized = (rating - 3) * 5; // -10 to +10
   return normalized * weight;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

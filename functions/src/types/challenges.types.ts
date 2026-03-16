@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 137: Avalo Global Community Challenges
  * Type definitions for skill-based, fitness, lifestyle, and entertainment challenges
@@ -133,9 +135,9 @@ export interface Challenge {
   challengeId: string;
   
   // Creator info
-  creatorId: string;
-  creatorName: string;
-  creatorAvatar?: string;
+  earnerId: string;
+  earnerName: string;
+  earnerAvatar?: string;
   
   // Challenge details
   title: string; // 5-100 chars
@@ -183,7 +185,7 @@ export interface Challenge {
   // Revenue tracking (paid challenges only)
   totalRevenue: number; // Total tokens collected
   platformFee: number; // 35%
-  creatorEarnings: number; // 65%
+  earnerEarnings: number; // 65%
   
   // Timestamps
   createdAt: Timestamp;
@@ -207,12 +209,12 @@ export interface ChallengeParticipant {
   userAvatar?: string;
   
   // Creator info
-  creatorId: string;
+  earnerId: string;
   
   // Payment (for paid challenges)
   paidTokens: number;
   platformFee: number; // 35%
-  creatorEarnings: number; // 65%
+  earnerEarnings: number; // 65%
   transactionId?: string;
   
   // Progress tracking
@@ -568,6 +570,22 @@ export interface ChallengeResponse<T = any> {
   error?: string;
   message?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

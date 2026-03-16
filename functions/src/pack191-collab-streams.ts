@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 191 — Collab Streams & Group Features
  * 
- * Allows up to 4 creators to stream together
+ * Allows up to 4 earners to stream together
  * Supports: fitness workout squad, DJ battle, group language challenge, business mastermind, gaming tournament
  * 
  * Forbidden: couple streams, kissing/erotic streams, speed-dating, couples roleplay
@@ -66,7 +68,7 @@ const MAX_COLLAB_PARTICIPANTS = 4;
 // ============================================================================
 
 /**
- * Invite another creator to join stream
+ * Invite another earner to join stream
  */
 export const inviteToCollabStream = onCall(
   { region: 'europe-west1' },
@@ -433,6 +435,20 @@ export async function validateCollabStream(
 
   return { isValid: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

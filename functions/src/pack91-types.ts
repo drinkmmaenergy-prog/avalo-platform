@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 91 — Regional Policy Engine & Content Classification
  * Types and Interfaces
@@ -8,7 +10,7 @@
  * NON-NEGOTIABLE RULES:
  * - No free tokens, no discounts, no promo codes, no cashback, no bonuses
  * - Token price per unit remains unchanged
- * - Revenue split stays 65% creator / 35% Avalo (for applicable content)
+ * - Revenue split stays 65% earner / 35% Avalo (for applicable content)
  * - No new earning types - only controls WHERE and TO WHOM content is accessible
  */
 
@@ -317,6 +319,21 @@ export const CONTENT_RATING_DESCRIPTIONS: Record<ContentRating, string> = {
   NSFW_SOFT: 'Partial nudity, adult themes. Not suitable for all regions.',
   NSFW_STRONG: 'Full nudity, explicit sexual content. Highly restricted.',
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

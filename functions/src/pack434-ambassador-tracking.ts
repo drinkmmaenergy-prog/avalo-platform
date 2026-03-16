@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Referral & Tracking System (Offline Safe Version)
@@ -111,7 +113,7 @@ export interface QRCodeScan {
   
   // Scan details
   scannedAt: firestore.Timestamp;
-  action: 'register' | 'download' | 'join_event' | 'creator_onboard' | 'partner';
+  action: 'register' | 'download' | 'join_event' | 'earner_onboard' | 'partner';
   
   // Location
   location?: {
@@ -708,7 +710,7 @@ export class AmbassadorTrackingService {
    * Extract ambassador ID from QR code
    */
   private extractAmbassadorIdFromQR(qrCode: string): string {
-    // Extract from URL format: https://avalo.app/r/{REFERRAL_CODE}
+    // Extract from URL format: https://platform.app/r/{REFERRAL_CODE}
     // Then lookup ambassador by referral code
     // This is a placeholder - implement actual extraction logic
     return qrCode.split('/').pop() || '';
@@ -737,6 +739,20 @@ export function createAmbassadorTrackingService(
 ): AmbassadorTrackingService {
   return new AmbassadorTrackingService(db);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

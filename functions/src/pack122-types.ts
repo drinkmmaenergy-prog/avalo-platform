@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 122 — Cross-Country Expansion & Localization Infrastructure
  * Type definitions for regional policies, localization, and cultural safety
@@ -31,7 +33,7 @@ export interface RegionPolicyProfile {
   guardrails: {
     NSFW_ALLOWED: boolean;               // Can users view NSFW content?
     NSFW_EXPLICIT_ALLOWED: boolean;      // Can users view explicit NSFW?
-    NSFW_MONETIZATION_ALLOWED: boolean;  // Can creators monetize NSFW?
+    NSFW_MONETIZATION_ALLOWED: boolean;  // Can earners monetize NSFW?
     POLITICAL_CONTENT_RESTRICTED: boolean; // Political content blocked?
   };
   
@@ -47,7 +49,7 @@ export interface RegionPolicyProfile {
   adsRestrictions: string[];             // Banned ad categories for region
   
   // Payout Availability (PACK 84/105 integration)
-  payoutAvailability: boolean;           // Can creators cash out earnings?
+  payoutAvailability: boolean;           // Can earners cash out earnings?
   payoutPSPs: Array<'STRIPE' | 'WISE' | 'PAYPAL'>;
   payoutMinimum?: number;                // Minimum payout threshold (tokens)
   
@@ -133,7 +135,7 @@ export type LocalizationNamespace =
   | 'safety'
   | 'legal'
   | 'onboarding'
-  | 'creator'
+  | 'earner'
   | 'moderation';
 
 // ============================================================================
@@ -507,6 +509,20 @@ export const CRISIS_RESOURCES_BY_COUNTRY: Record<string, SafetyResource[]> = {
     enabled: true,
   }],
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

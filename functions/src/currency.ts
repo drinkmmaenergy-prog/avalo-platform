@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 export enum Currency {
   USD = "USD",
 }
@@ -27,6 +29,20 @@ export function getCurrencyByCountryCode(_countryCode: string): Currency {
 export function isValidCurrency(code: string): code is Currency {
   return code === "USD";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { logger } from 'firebase-functions';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
@@ -627,6 +629,20 @@ function calculateIntensityTrend(states: EmotionalState[]): number {
 
   return recentAvg - olderAvg;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

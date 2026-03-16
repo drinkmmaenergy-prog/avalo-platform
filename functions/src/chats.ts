@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
  *
@@ -204,7 +206,7 @@ export const startChatCallable = onCall(
             amountTokens: platformFee,
             split: {
               platformTokens: platformFee,
-              creatorTokens: 0,
+              earnerTokens: 0,
             },
             status: "completed",
             metadata: { chatId },
@@ -594,6 +596,20 @@ export const refundByEarnerCallable = onCall(
       }
     }
   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

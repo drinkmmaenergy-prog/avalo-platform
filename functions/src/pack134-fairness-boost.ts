@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 134 — Fairness Boosting Module
  * 
- * Ensures new creators get equal discovery chances
+ * Ensures new earners get equal discovery chances
  * NO advantage for attractive faces, paid accounts, or popularity
  * 
- * New creators must appear even if top creators are active
+ * New earners must appear even if top earners are active
  * Mandated fairness logic prevents rich-get-richer dynamics
  */
 
@@ -22,41 +24,41 @@ import { admin, functions } from './runtime';
 // ============================================================================
 
 /**
- * Calculate boost multiplier for new creator
+ * Calculate boost multiplier for new earner
  * Based on account age and engagement quality, NOT appearance or income
  * 
- * @param creatorId - Creator ID
+ * @param earnerId - Creator ID
  * @returns Boost profile with multiplier
  */
 export async function calculateNewCreatorBoost(
-  creatorId: string
+  earnerId: string
 ): Promise<NewCreatorBoostProfile> {
   const config = DEFAULT_RECOMMENDATION_CONFIG;
   
-  // Get creator profile
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const creatorData = creatorDoc.data();
+  // Get earner profile
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const earnerData = earnerDoc.data();
   
-  if (!creatorData) {
-    throw new Error(`Creator ${creatorId} not found`);
+  if (!earnerData) {
+    throw new Error(`Creator ${earnerId} not found`);
   }
   
   // Calculate account age in days
-  const accountAgeMs = Date.now() - creatorData.createdAt.toMillis();
+  const accountAgeMs = Date.now() - earnerData.createdAt.toMillis();
   const accountAgeDays = accountAgeMs / (1000 * 60 * 60 * 24);
   
   // Get follower count
   const followersSnapshot = await db.collection('user_follows')
-    .where('followingId', '==', creatorId)
+    .where('followingId', '==', earnerId)
     .count()
     .get();
   const followerCount = followersSnapshot.data().count;
   
   // Calculate engagement rate
-  const engagementRate = await calculateCreatorEngagementRate(creatorId);
+  const engagementRate = await calculateCreatorEngagementRate(earnerId);
   
   // Calculate positive interaction ratio
-  const positiveRatio = await calculatePositiveRatio(creatorId);
+  const positiveRatio = await calculatePositiveRatio(earnerId);
   
   // Determine eligibility for boost
   const eligibleForBoost = 
@@ -68,7 +70,7 @@ export async function calculateNewCreatorBoost(
   let boostMultiplier = 1.0;
   
   if (eligibleForBoost) {
-    // Base boost for new creators
+    // Base boost for new earners
     boostMultiplier = 1.5;
     
     // Additional boost for high-quality content
@@ -76,7 +78,7 @@ export async function calculateNewCreatorBoost(
       boostMultiplier += 0.5; // Very engaging content
     }
     
-    // Additional boost for very new creators
+    // Additional boost for very new earners
     if (accountAgeDays < 30) {
       boostMultiplier += 0.5; // First month boost
     }
@@ -91,12 +93,12 @@ export async function calculateNewCreatorBoost(
     Date.now() + (daysRemaining * 24 * 60 * 60 * 1000)
   );
   
-  // Get creator categories
-  const categoryDoc = await db.collection('content_category_profiles').doc(creatorId).get();
+  // Get earner categories
+  const categoryDoc = await db.collection('content_category_profiles').doc(earnerId).get();
   const categoryData = categoryDoc.data();
   
   const profile: NewCreatorBoostProfile = {
-    creatorId,
+    earnerId,
     accountAge: Math.floor(accountAgeDays),
     followerCount,
     engagementRate,
@@ -109,8 +111,8 @@ export async function calculateNewCreatorBoost(
       [],
   };
   
-  logger.info('[Pack134] Calculated new creator boost', {
-    creatorId,
+  logger.info('[Pack134] Calculated new earner boost', {
+    earnerId,
     accountAge: profile.accountAge,
     followerCount,
     eligibleForBoost,
@@ -125,15 +127,15 @@ export async function calculateNewCreatorBoost(
 // ============================================================================
 
 /**
- * Calculate creator's engagement rate
+ * Calculate earner's engagement rate
  * Based on content performance, NOT monetization
  */
-async function calculateCreatorEngagementRate(creatorId: string): Promise<number> {
+async function calculateCreatorEngagementRate(earnerId: string): Promise<number> {
   // Get recent posts (last 30 days)
   const thirtyDaysAgo = Timestamp.fromMillis(Date.now() - (30 * 24 * 60 * 60 * 1000));
   
   const postsSnapshot = await db.collection('feed_posts')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .where('createdAt', '>=', thirtyDaysAgo)
     .limit(20)
     .get();
@@ -167,10 +169,10 @@ async function calculateCreatorEngagementRate(creatorId: string): Promise<number
  * Calculate positive interaction ratio
  * Measures quality of interactions (likes/positive vs reports/negative)
  */
-async function calculatePositiveRatio(creatorId: string): Promise<number> {
+async function calculatePositiveRatio(earnerId: string): Promise<number> {
   // Get positive interactions
   const likesSnapshot = await db.collection('feed_posts')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .select('likesCount')
     .limit(50)
     .get();
@@ -182,7 +184,7 @@ async function calculatePositiveRatio(creatorId: string): Promise<number> {
   
   // Get negative interactions (reports)
   const reportsSnapshot = await db.collection('user_reports')
-    .where('reportedUserId', '==', creatorId)
+    .where('reportedUserId', '==', earnerId)
     .count()
     .get();
   const totalReports = reportsSnapshot.data().count;
@@ -202,15 +204,15 @@ async function calculatePositiveRatio(creatorId: string): Promise<number> {
 // ============================================================================
 
 /**
- * Inject new creators into feed to ensure minimum representation
- * Ensures new creators appear even when top creators are active
+ * Inject new earners into feed to ensure minimum representation
+ * Ensures new earners appear even when top earners are active
  * 
  * @param feedItems - Current feed items
  * @param userId - User receiving feed
- * @param targetRatio - Target % of new creators (default 15%)
- * @returns Feed with new creators injected
+ * @param targetRatio - Target % of new earners (default 15%)
+ * @returns Feed with new earners injected
  */
-export async function injectNewCreators<T extends { creatorId: string; relevanceScore: number }>(
+export async function injectNewCreators<T extends { earnerId: string; relevanceScore: number }>(
   feedItems: T[],
   userId: string,
   targetRatio: number = 0.15
@@ -221,10 +223,10 @@ export async function injectNewCreators<T extends { creatorId: string; relevance
     return feedItems;
   }
   
-  // Count current new creators in feed
+  // Count current new earners in feed
   let currentNewCreators = 0;
   for (const item of feedItems) {
-    const boost = await calculateNewCreatorBoost(item.creatorId);
+    const boost = await calculateNewCreatorBoost(item.earnerId);
     if (boost.eligibleForBoost) {
       currentNewCreators++;
     }
@@ -234,14 +236,14 @@ export async function injectNewCreators<T extends { creatorId: string; relevance
   
   // If we already meet the target, no injection needed
   if (currentRatio >= targetRatio) {
-    logger.info('[Pack134] New creator ratio already met', {
+    logger.info('[Pack134] New earner ratio already met', {
       currentRatio,
       targetRatio,
     });
     return feedItems;
   }
   
-  // Calculate how many new creators we need to inject
+  // Calculate how many new earners we need to inject
   const targetCount = Math.ceil(feedItems.length * targetRatio);
   const needToInject = targetCount - currentNewCreators;
   
@@ -249,16 +251,16 @@ export async function injectNewCreators<T extends { creatorId: string; relevance
     return feedItems;
   }
   
-  // Find eligible new creators not in current feed
-  const currentCreatorIds = new Set(feedItems.map(item => item.creatorId));
+  // Find eligible new earners not in current feed
+  const currentCreatorIds = new Set(feedItems.map(item => item.earnerId));
   const newCreators = await findEligibleNewCreators(userId, currentCreatorIds, needToInject);
   
   if (newCreators.length === 0) {
-    logger.info('[Pack134] No eligible new creators found');
+    logger.info('[Pack134] No eligible new earners found');
     return feedItems;
   }
   
-  // Inject new creators at strategic positions (not just at end)
+  // Inject new earners at strategic positions (not just at end)
   const result = [...feedItems];
   const injectionInterval = Math.floor(result.length / newCreators.length);
   
@@ -271,7 +273,7 @@ export async function injectNewCreators<T extends { creatorId: string; relevance
     }
   }
   
-  logger.info('[Pack134] Injected new creators', {
+  logger.info('[Pack134] Injected new earners', {
     injected: newCreators.length,
     newRatio: (currentNewCreators + newCreators.length) / result.length,
   });
@@ -280,20 +282,20 @@ export async function injectNewCreators<T extends { creatorId: string; relevance
 }
 
 /**
- * Find eligible new creators to inject into feed
+ * Find eligible new earners to inject into feed
  */
 async function findEligibleNewCreators(
   userId: string,
   excludeCreatorIds: Set<string>,
   limit: number
-): Promise<Array<{ creatorId: string; relevanceScore: number }>> {
+): Promise<Array<{ earnerId: string; relevanceScore: number }>> {
   const config = DEFAULT_RECOMMENDATION_CONFIG;
   
   // Get user interests for matching
   const interestsDoc = await db.collection('user_interest_vectors').doc(userId).get();
   const interests = interestsDoc.data();
   
-  // Query for new creators
+  // Query for new earners
   const eligibilityDate = Timestamp.fromMillis(
     Date.now() - (config.newCreatorDefinitionDays * 24 * 60 * 60 * 1000)
   );
@@ -304,23 +306,23 @@ async function findEligibleNewCreators(
     .limit(50)
     .get();
   
-  const eligibleCreators: Array<{ creatorId: string; relevanceScore: number }> = [];
+  const eligibleCreators: Array<{ earnerId: string; relevanceScore: number }> = [];
   
   for (const doc of newCreatorsSnapshot.docs) {
-    const creatorId = doc.id;
+    const earnerId = doc.id;
     
     // Skip if already in feed
-    if (excludeCreatorIds.has(creatorId)) {
+    if (excludeCreatorIds.has(earnerId)) {
       continue;
     }
     
     // Skip self
-    if (creatorId === userId) {
+    if (earnerId === userId) {
       continue;
     }
     
     // Calculate boost
-    const boost = await calculateNewCreatorBoost(creatorId);
+    const boost = await calculateNewCreatorBoost(earnerId);
     
     if (!boost.eligibleForBoost) {
       continue;
@@ -340,7 +342,7 @@ async function findEligibleNewCreators(
     relevanceScore *= boost.boostMultiplier;
     
     eligibleCreators.push({
-      creatorId,
+      earnerId,
       relevanceScore,
     });
   }
@@ -356,15 +358,15 @@ async function findEligibleNewCreators(
 // ============================================================================
 
 /**
- * Get new creator statistics for monitoring
+ * Get new earner statistics for monitoring
  * 
- * @returns Stats about new creator boost system
+ * @returns Stats about new earner boost system
  */
 export async function getNewCreatorStats(): Promise<{
   totalNewCreators: number;
   eligibleForBoost: number;
   averageBoostMultiplier: number;
-  topBoostedCreators: Array<{ creatorId: string; boost: number }>;
+  topBoostedCreators: Array<{ earnerId: string; boost: number }>;
 }> {
   const config = DEFAULT_RECOMMENDATION_CONFIG;
   
@@ -380,7 +382,7 @@ export async function getNewCreatorStats(): Promise<{
   const totalNewCreators = newCreatorsSnapshot.size;
   let eligibleForBoost = 0;
   let totalBoost = 0;
-  const boostedCreators: Array<{ creatorId: string; boost: number }> = [];
+  const boostedCreators: Array<{ earnerId: string; boost: number }> = [];
   
   for (const doc of newCreatorsSnapshot.docs) {
     const boost = await calculateNewCreatorBoost(doc.id);
@@ -389,7 +391,7 @@ export async function getNewCreatorStats(): Promise<{
       eligibleForBoost++;
       totalBoost += boost.boostMultiplier;
       boostedCreators.push({
-        creatorId: doc.id,
+        earnerId: doc.id,
         boost: boost.boostMultiplier,
       });
     }
@@ -401,7 +403,7 @@ export async function getNewCreatorStats(): Promise<{
   
   const averageBoostMultiplier = eligibleForBoost > 0 ? totalBoost / eligibleForBoost : 0;
   
-  logger.info('[Pack134] New creator stats', {
+  logger.info('[Pack134] New earner stats', {
     totalNewCreators,
     eligibleForBoost,
     averageBoostMultiplier,
@@ -420,52 +422,66 @@ export async function getNewCreatorStats(): Promise<{
 // ============================================================================
 
 /**
- * Detect and prevent new creator boost abuse
+ * Detect and prevent new earner boost abuse
  * Prevents gaming the system through fake accounts or manipulation
  * 
- * @param creatorId - Creator to check
- * @returns Whether creator boost is valid
+ * @param earnerId - Creator to check
+ * @returns Whether earner boost is valid
  */
-export async function validateNewCreatorBoost(creatorId: string): Promise<boolean> {
+export async function validateNewCreatorBoost(earnerId: string): Promise<boolean> {
   // Check for suspicious patterns
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const creatorData = creatorDoc.data();
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const earnerData = earnerDoc.data();
   
-  if (!creatorData) {
+  if (!earnerData) {
     return false;
   }
   
   // Check 1: Account must have real activity
   const postsSnapshot = await db.collection('feed_posts')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .limit(1)
     .get();
   
   if (postsSnapshot.empty) {
-    logger.warn('[Pack134] New creator boost denied: No posts', { creatorId });
+    logger.warn('[Pack134] New earner boost denied: No posts', { earnerId });
     return false; // Must have at least 1 post
   }
   
   // Check 2: Not flagged for fraud
-  const trustDoc = await db.collection('user_trust_profile').doc(creatorId).get();
+  const trustDoc = await db.collection('user_trust_profile').doc(earnerId).get();
   const trustData = trustDoc.data();
   
   if (trustData?.riskScore && trustData.riskScore > 50) {
-    logger.warn('[Pack134] New creator boost denied: High risk score', { creatorId });
-    return false; // High risk creators don't get boost
+    logger.warn('[Pack134] New earner boost denied: High risk score', { earnerId });
+    return false; // High risk earners don't get boost
   }
   
   // Check 3: Not suspended
-  const enforcementDoc = await db.collection('user_enforcement_state').doc(creatorId).get();
+  const enforcementDoc = await db.collection('user_enforcement_state').doc(earnerId).get();
   const enforcementData = enforcementDoc.data();
   
   if (enforcementData?.level === 'SUSPENDED') {
-    logger.warn('[Pack134] New creator boost denied: Suspended', { creatorId });
+    logger.warn('[Pack134] New earner boost denied: Suspended', { earnerId });
     return false;
   }
   
   return true; // All checks passed
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

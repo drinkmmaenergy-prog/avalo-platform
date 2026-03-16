@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 436 — Review Boost Engine
  * 
@@ -26,7 +28,7 @@ interface ReviewNudgeTrigger {
 }
 
 interface CreatorIncentive {
-  creatorId: string;
+  earnerId: string;
   performanceScore: number;
   visibilityBoost: boolean;
   revenueSplitBoost: number; // 0-3% additional
@@ -234,27 +236,27 @@ function getReviewNudgeMessage(trigger: ReviewNudgeTrigger['trigger']): string {
 // ============================================================================
 
 /**
- * Reward high-performing creators (NOT for reviews - for performance metrics)
+ * Reward high-performing earners (NOT for reviews - for performance metrics)
  * Fully Apple/Google compliant
  */
 export const evaluateCreatorIncentives = onSchedule("every 6 hours", async (event) => {
     const db = admin.firestore();
     
-    // Fetch creators
-    const creators = await db.collection('users')
+    // Fetch earners
+    const earners = await db.collection('users')
       .where('isCreator', '==', true)
       .get();
     
     const incentives: CreatorIncentive[] = [];
     
-    for (const creatorDoc of creators.docs) {
-      const creatorId = creatorDoc.id;
-      const performanceScore = await calculateCreatorPerformanceScore(creatorId);
+    for (const earnerDoc of earners.docs) {
+      const earnerId = earnerDoc.id;
+      const performanceScore = await calculateCreatorPerformanceScore(earnerId);
       
-      // High-performing creators get incentives
+      // High-performing earners get incentives
       if (performanceScore >= 80) {
         const incentive: CreatorIncentive = {
-          creatorId,
+          earnerId,
           performanceScore,
           visibilityBoost: true,
           revenueSplitBoost: Math.min(3, Math.floor((performanceScore - 80) / 5)), // 0-3%
@@ -273,7 +275,7 @@ export const evaluateCreatorIncentives = onSchedule("every 6 hours", async (even
     return;
   });
 
-async function calculateCreatorPerformanceScore(creatorId: string): Promise<number> {
+async function calculateCreatorPerformanceScore(earnerId: string): Promise<number> {
   const db = admin.firestore();
   
   // Fetch performance metrics
@@ -282,24 +284,24 @@ async function calculateCreatorPerformanceScore(creatorId: string): Promise<numb
   const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
   
   // Revenue metrics (30 points)
-  const revenueDoc = await db.collection('creatorRevenue').doc(creatorId).get();
+  const revenueDoc = await db.collection('earnerRevenue').doc(earnerId).get();
   const revenue = revenueDoc.data();
   const revenueScore = revenue ? Math.min(30, (revenue.last7Days / 1000) * 30) : 0;
   
   // Engagement metrics (30 points)
-  const engagementDoc = await db.collection('creatorEngagement').doc(creatorId).get();
+  const engagementDoc = await db.collection('earnerEngagement').doc(earnerId).get();
   const engagement = engagementDoc.data();
   const engagementScore = engagement ? Math.min(30, (engagement.averageRating / 5) * 30) : 0;
   
   // Event metrics (20 points)
   const events = await db.collection('events')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('startTime', '>', oneWeekAgo)
     .get();
   const eventScore = Math.min(20, events.size * 5);
   
   // Retention metrics (20 points)
-  const retentionDoc = await db.collection('creatorRetention').doc(creatorId).get();
+  const retentionDoc = await db.collection('earnerRetention').doc(earnerId).get();
   const retention = retentionDoc.data();
   const retentionScore = retention ? Math.min(20, (retention.rate / 100) * 20) : 0;
   
@@ -310,11 +312,11 @@ async function applyCreatorIncentive(incentive: CreatorIncentive) {
   const db = admin.firestore();
   
   // Store incentive
-  await db.collection('creatorIncentives').add(incentive);
+  await db.collection('earnerIncentives').add(incentive);
   
   // Apply visibility boost
   if (incentive.visibilityBoost) {
-    await db.collection('users').doc(incentive.creatorId).update({
+    await db.collection('users').doc(incentive.earnerId).update({
       visibilityBoost: true,
       visibilityBoostExpires: Date.now() + (24 * 60 * 60 * 1000),
     });
@@ -322,7 +324,7 @@ async function applyCreatorIncentive(incentive: CreatorIncentive) {
   
   // Apply revenue split boost
   if (incentive.revenueSplitBoost > 0) {
-    await db.collection('users').doc(incentive.creatorId).update({
+    await db.collection('users').doc(incentive.earnerId).update({
       revenueSplitBonus: incentive.revenueSplitBoost,
       revenueSplitBonusExpires: Date.now() + (24 * 60 * 60 * 1000),
     });
@@ -330,25 +332,25 @@ async function applyCreatorIncentive(incentive: CreatorIncentive) {
   
   // Apply priority support flag
   if (incentive.prioritySupport) {
-    await db.collection('users').doc(incentive.creatorId).update({
+    await db.collection('users').doc(incentive.earnerId).update({
       prioritySupport: true,
       prioritySupportExpires: Date.now() + (24 * 60 * 60 * 1000),
     });
   }
   
-  // Notify creator
-  const creatorDoc = await db.collection('users').doc(incentive.creatorId).get();
-  const creator = creatorDoc.data();
+  // Notify earner
+  const earnerDoc = await db.collection('users').doc(incentive.earnerId).get();
+  const earner = earnerDoc.data();
   
-  if (creator?.pushToken) {
+  if (earner?.pushToken) {
     await admin.messaging().send({
-      token: creator.pushToken,
+      token: earner.pushToken,
       notification: {
         title: '🌟 Performance Bonus!',
         body: `You're crushing it! +${incentive.revenueSplitBoost}% revenue boost for 24h`,
       },
       data: {
-        type: 'creator_incentive',
+        type: 'earner_incentive',
         boost: incentive.revenueSplitBoost.toString(),
       },
     });
@@ -468,6 +470,20 @@ export {
   CreatorIncentive,
   UserNudgeHistory,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

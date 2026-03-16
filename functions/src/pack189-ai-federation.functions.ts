@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
@@ -109,7 +111,7 @@ export const generateAiSeed = onCall<SeedGenerationRequest>(async (request) => {
       totalInteractions: 0,
       totalExports: 0,
       totalImports: 0,
-      platformsUsed: ['avalo_mobile'],
+      platformsUsed: ['platform_mobile'],
       lastActiveAt: new Date(),
       tags: [],
       category: 'general',
@@ -278,7 +280,7 @@ export const importAiSeed = onCall<SeedImportRequest>(async (request) => {
       totalInteractions: 0,
       totalExports: 0,
       totalImports: 1,
-      platformsUsed: ['avalo_mobile'],
+      platformsUsed: ['platform_mobile'],
       lastActiveAt: new Date(),
       tags: [],
       category: 'imported',
@@ -345,7 +347,7 @@ export const publishToMarketplace = onCall<{ seedId: string; listingData: Partia
 
   const listing: Omit<AiSeedMarketplaceListing, 'id'> = {
     seedId,
-    creatorId: authContext.uid,
+    earnerId: authContext.uid,
     title: listingData.title || seed.name,
     description: listingData.description || seed.description,
     category: listingData.category || 'general',
@@ -413,16 +415,16 @@ export const licenseAiSeed = onCall<SeedLicenseRequest>(async (request) => {
   }
 
   const platformFee = listing.price * PLATFORM_REVENUE_SHARE;
-  const creatorRevenue = listing.price * CREATOR_REVENUE_SHARE;
+  const earnerRevenue = listing.price * CREATOR_REVENUE_SHARE;
 
   const transaction: Omit<AiSeedTransaction, 'id'> = {
     seedId,
     listingId,
     buyerId,
-    sellerId: listing.creatorId,
+    sellerId: listing.earnerId,
     amount: listing.price,
     platformFee,
-    creatorRevenue,
+    earnerRevenue,
     type: listing.type,
     status: 'completed',
     createdAt: new Date(),
@@ -493,7 +495,7 @@ export const onAiSeedCreated = onDocumentCreated('ai_seeds/{seedId}', async (eve
     createdAt: new Date(),
     signature: seed.signature,
     ipTimestamp: seed.ipTimestamp,
-    platform: 'avalo_mobile',
+    platform: 'platform_mobile',
   });
 });
 
@@ -525,6 +527,20 @@ export const onMarketplaceListingUpdated = onDocumentUpdated('ai_seed_marketplac
     }
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

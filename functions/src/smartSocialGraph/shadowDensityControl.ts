@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Shadow Density Prevention
- * Prevents mega-creators from dominating discovery
+ * Prevents mega-earners from dominating discovery
  * 
  * Equal opportunity, NOT equal results
  */
@@ -29,16 +31,16 @@ const logger = {
 // ============================================================================
 
 /**
- * Record impression for a creator
+ * Record impression for a earner
  */
 export async function recordCreatorImpression(
-  creatorId: string,
+  earnerId: string,
   viewerId: string,
   context: 'FEED' | 'SEARCH' | 'EVENT' | 'PRODUCT'
 ): Promise<void> {
   try {
     const weekStart = getWeekStartDate();
-    const counterId = creatorId;
+    const counterId = earnerId;
     
     // Get or create counter
     const counterRef = db.collection('shadow_density_counters').doc(counterId);
@@ -47,7 +49,7 @@ export async function recordCreatorImpression(
     if (!counterDoc.exists) {
       // Create new counter
       const newCounter: ShadowDensityCounter = {
-        creatorId,
+        earnerId,
         weeklyImpressions: 1,
         weekStartDate: weekStart,
         isInRotationLimit: false,
@@ -65,7 +67,7 @@ export async function recordCreatorImpression(
     if (counter.weekStartDate !== weekStart) {
       // New week - reset counter
       const resetCounter: ShadowDensityCounter = {
-        creatorId,
+        earnerId,
         weeklyImpressions: 1,
         weekStartDate: weekStart,
         isInRotationLimit: false,
@@ -89,20 +91,20 @@ export async function recordCreatorImpression(
     
     // Log if entering rotation limit
     if (!counter.isInRotationLimit && isInRotationLimit) {
-      logger.warn(`Creator ${creatorId} has exceeded rotation limit (${newImpressions} impressions)`);
+      logger.warn(`Creator ${earnerId} has exceeded rotation limit (${newImpressions} impressions)`);
     }
   } catch (error) {
-    logger.error('Error recording creator impression:', error);
+    logger.error('Error recording earner impression:', error);
     // Non-blocking - don't fail the request
   }
 }
 
 /**
- * Check if creator is in rotation limit
+ * Check if earner is in rotation limit
  */
-export async function isCreatorInRotationLimit(creatorId: string): Promise<boolean> {
+export async function isCreatorInRotationLimit(earnerId: string): Promise<boolean> {
   try {
-    const counterDoc = await db.collection('shadow_density_counters').doc(creatorId).get();
+    const counterDoc = await db.collection('shadow_density_counters').doc(earnerId).get();
     if (!counterDoc.exists) {
       return false;
     }
@@ -143,13 +145,13 @@ function getWeekStartDate(): string {
 // ============================================================================
 
 /**
- * Identify new and mid-size creators who deserve guaranteed slots
+ * Identify new and mid-size earners who deserve guaranteed slots
  */
 export async function identifyGuaranteedSlotCreators(limit: number = 100): Promise<string[]> {
   try {
     const weekStart = getWeekStartDate();
     
-    // Get creators with low impression counts (new or mid-size)
+    // Get earners with low impression counts (new or mid-size)
     const snapshot = await db
       .collection('shadow_density_counters')
       .where('weekStartDate', '==', weekStart)
@@ -158,30 +160,30 @@ export async function identifyGuaranteedSlotCreators(limit: number = 100): Promi
       .limit(limit)
       .get();
     
-    const creatorIds = snapshot.docs.map(doc => doc.data().creatorId);
+    const earnerIds = snapshot.docs.map(doc => doc.data().earnerId);
     
-    logger.info(`Identified ${creatorIds.length} creators for guaranteed slots`);
+    logger.info(`Identified ${earnerIds.length} earners for guaranteed slots`);
     
-    return creatorIds;
+    return earnerIds;
   } catch (error) {
-    logger.error('Error identifying guaranteed slot creators:', error);
+    logger.error('Error identifying guaranteed slot earners:', error);
     return [];
   }
 }
 
 /**
- * Mark creator as eligible for guaranteed discovery slots
+ * Mark earner as eligible for guaranteed discovery slots
  */
-export async function grantGuaranteedSlots(creatorId: string, slotCount: number = 3): Promise<void> {
+export async function grantGuaranteedSlots(earnerId: string, slotCount: number = 3): Promise<void> {
   try {
-    const counterRef = db.collection('shadow_density_counters').doc(creatorId);
+    const counterRef = db.collection('shadow_density_counters').doc(earnerId);
     
     await counterRef.update({
       guaranteedDiscoverySlots: slotCount,
       lastUpdated: serverTimestamp(),
     });
     
-    logger.info(`Granted ${slotCount} guaranteed slots to creator ${creatorId}`);
+    logger.info(`Granted ${slotCount} guaranteed slots to earner ${earnerId}`);
   } catch (error) {
     logger.error('Error granting guaranteed slots:', error);
   }
@@ -193,20 +195,20 @@ export async function grantGuaranteedSlots(creatorId: string, slotCount: number 
 
 /**
  * Apply diversity rules to discovery feed candidates
- * Ensures new/mid creators get fair visibility
+ * Ensures new/mid earners get fair visibility
  */
 export async function applyDiversityRules(
-  candidates: Array<{ creatorId: string; score: number }>
-): Promise<Array<{ creatorId: string; score: number; boosted?: boolean }>> {
+  candidates: Array<{ earnerId: string; score: number }>
+): Promise<Array<{ earnerId: string; score: number; boosted?: boolean }>> {
   try {
-    // Separate into mega-creators and regular creators
+    // Separate into mega-earners and regular earners
     const megaCreators: typeof candidates = [];
     const regularCreators: typeof candidates = [];
     const guaranteedSlotCreators: typeof candidates = [];
     
     for (const candidate of candidates) {
-      const isInLimit = await isCreatorInRotationLimit(candidate.creatorId);
-      const hasGuaranteedSlots = await checkGuaranteedSlots(candidate.creatorId);
+      const isInLimit = await isCreatorInRotationLimit(candidate.earnerId);
+      const hasGuaranteedSlots = await checkGuaranteedSlots(candidate.earnerId);
       
       if (hasGuaranteedSlots) {
         guaranteedSlotCreators.push(candidate);
@@ -223,9 +225,9 @@ export async function applyDiversityRules(
     );
     
     // Build balanced feed
-    const balancedFeed: Array<{ creatorId: string; score: number; boosted?: boolean }> = [];
+    const balancedFeed: Array<{ earnerId: string; score: number; boosted?: boolean }> = [];
     
-    // First, add guaranteed slot creators (up to 3)
+    // First, add guaranteed slot earners (up to 3)
     for (let i = 0; i < Math.min(GUARANTEED_NEW_CREATOR_SLOTS, guaranteedSlotCreators.length); i++) {
       balancedFeed.push({
         ...guaranteedSlotCreators[i],
@@ -233,7 +235,7 @@ export async function applyDiversityRules(
       });
     }
     
-    // Then add regular creators (70% of remaining slots)
+    // Then add regular earners (70% of remaining slots)
     const remainingSlots = candidates.length - balancedFeed.length;
     const regularSlots = Math.floor(remainingSlots * 0.7);
     
@@ -241,7 +243,7 @@ export async function applyDiversityRules(
       balancedFeed.push(regularCreators[i]);
     }
     
-    // Finally add mega creators (30% of remaining slots)
+    // Finally add mega earners (30% of remaining slots)
     const megaSlots = remainingSlots - (balancedFeed.length - GUARANTEED_NEW_CREATOR_SLOTS);
     
     for (let i = 0; i < Math.min(megaSlots, megaCreators.length); i++) {
@@ -256,11 +258,11 @@ export async function applyDiversityRules(
 }
 
 /**
- * Check if creator has guaranteed slots available
+ * Check if earner has guaranteed slots available
  */
-async function checkGuaranteedSlots(creatorId: string): Promise<boolean> {
+async function checkGuaranteedSlots(earnerId: string): Promise<boolean> {
   try {
-    const counterDoc = await db.collection('shadow_density_counters').doc(creatorId).get();
+    const counterDoc = await db.collection('shadow_density_counters').doc(earnerId).get();
     if (!counterDoc.exists) {
       return false;
     }
@@ -275,9 +277,9 @@ async function checkGuaranteedSlots(creatorId: string): Promise<boolean> {
 /**
  * Consume a guaranteed slot (decrement counter)
  */
-export async function consumeGuaranteedSlot(creatorId: string): Promise<void> {
+export async function consumeGuaranteedSlot(earnerId: string): Promise<void> {
   try {
-    const counterRef = db.collection('shadow_density_counters').doc(creatorId);
+    const counterRef = db.collection('shadow_density_counters').doc(earnerId);
     const counterDoc = await counterRef.get();
     
     if (!counterDoc.exists) {
@@ -303,17 +305,17 @@ export async function consumeGuaranteedSlot(creatorId: string): Promise<void> {
 // ============================================================================
 
 /**
- * Prioritize local creators for regional feeds
+ * Prioritize local earners for regional feeds
  */
 export function prioritizeRegionalCreators(
-  candidates: Array<{ creatorId: string; score: number; region?: string }>,
+  candidates: Array<{ earnerId: string; score: number; region?: string }>,
   viewerRegion: string
-): Array<{ creatorId: string; score: number }> {
-  // Sort with local creators first
+): Array<{ earnerId: string; score: number }> {
+  // Sort with local earners first
   const localCreators = candidates.filter(c => c.region === viewerRegion);
   const otherCreators = candidates.filter(c => c.region !== viewerRegion);
   
-  // Boost local creators by 20%
+  // Boost local earners by 20%
   const boostedLocal = localCreators.map(c => ({
     ...c,
     score: c.score * 1.2,
@@ -337,9 +339,9 @@ export function prioritizeRegionalCreators(
  */
 export async function getShadowDensityStats(): Promise<{
   totalCreators: number;
-  creatorsInRotationLimit: number;
+  earnersInRotationLimit: number;
   avgWeeklyImpressions: number;
-  top10Creators: Array<{ creatorId: string; impressions: number }>;
+  top10Creators: Array<{ earnerId: string; impressions: number }>;
 }> {
   try {
     const weekStart = getWeekStartDate();
@@ -350,19 +352,19 @@ export async function getShadowDensityStats(): Promise<{
       .get();
     
     let totalImpressions = 0;
-    let creatorsInLimit = 0;
-    const impressionList: Array<{ creatorId: string; impressions: number }> = [];
+    let earnersInLimit = 0;
+    const impressionList: Array<{ earnerId: string; impressions: number }> = [];
     
     snapshot.docs.forEach(doc => {
       const counter = doc.data() as ShadowDensityCounter;
       totalImpressions += counter.weeklyImpressions;
       
       if (counter.isInRotationLimit) {
-        creatorsInLimit++;
+        earnersInLimit++;
       }
       
       impressionList.push({
-        creatorId: counter.creatorId,
+        earnerId: counter.earnerId,
         impressions: counter.weeklyImpressions,
       });
     });
@@ -372,7 +374,7 @@ export async function getShadowDensityStats(): Promise<{
     
     return {
       totalCreators: snapshot.size,
-      creatorsInRotationLimit: creatorsInLimit,
+      earnersInRotationLimit: earnersInLimit,
       avgWeeklyImpressions: snapshot.size > 0 ? Math.round(totalImpressions / snapshot.size) : 0,
       top10Creators: impressionList.slice(0, 10),
     };
@@ -380,7 +382,7 @@ export async function getShadowDensityStats(): Promise<{
     logger.error('Error getting shadow density stats:', error);
     return {
       totalCreators: 0,
-      creatorsInRotationLimit: 0,
+      earnersInRotationLimit: 0,
       avgWeeklyImpressions: 0,
       top10Creators: [],
     };
@@ -388,6 +390,22 @@ export async function getShadowDensityStats(): Promise<{
 }
 
 logger.info('✅ Shadow Density Control initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

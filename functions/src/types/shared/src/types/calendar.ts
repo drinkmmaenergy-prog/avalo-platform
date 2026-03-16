@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../../config/monetizationSplits";
+
 // Types for calendar
 export interface CalendarEvent {
   id: string;
@@ -49,9 +51,9 @@ export interface PaymentInfo {
   status?: 'pending' | 'completed' | 'refunded' | 'partial_refund';
   refundAmount?: number;
   totalTokensPaid?: number;
-  avaloShareTokens?: number;
+  platformTokens?: number;
   userShareTokens?: number;
-  creatorShareTokens?: number;
+  earnerTokens?: number;
   refundedUserTokens?: number;
   refundedCreatorTokens?: number;
   refundedAvaloTokens?: number;
@@ -211,6 +213,24 @@ export interface RefundPolicy {
   description?: string;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

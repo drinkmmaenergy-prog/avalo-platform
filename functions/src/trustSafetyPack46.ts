@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 46 — Trust Engine & Blocklist Safety Mesh
  * 
@@ -390,6 +392,20 @@ export function getTrustScoreLevel(score: number): 'high' | 'medium' | 'low' {
   if (score >= 40) return 'medium';
   return 'low';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

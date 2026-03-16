@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 63 — AML & Risk Monitoring Hub
  * Monitoring APIs, Event Logging, and Aggregation Jobs
@@ -237,7 +239,7 @@ export async function aggregateAmlProfileForUser(userId: string): Promise<void> 
     // FETCH TOKEN EARNINGS
     // ============================================================================
     
-    const earningsDoc = await db.collection('creator_earnings').doc(userId).get();
+    const earningsDoc = await db.collection('earner_earnings').doc(userId).get();
     const earningsData = earningsDoc.data();
     
     const tokensEarnedAllTime = earningsData?.totalTokensEarned || 0;
@@ -313,7 +315,7 @@ export async function aggregateAmlProfileForUser(userId: string): Promise<void> 
     // ============================================================================
     
     const reservationsSnapshot = await db.collection('reservations')
-      .where('creatorUserId', '==', userId)
+      .where('earnerUserId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(date30dAgo))
       .get();
     
@@ -501,7 +503,7 @@ export const aggregateAmlProfiles = onSchedule({ schedule: "0 2 * * *", timeZone
       const date90dAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
       
       // Get users with recent earnings
-      const earningsSnapshot = await db.collection('creator_earnings')
+      const earningsSnapshot = await db.collection('earner_earnings')
         .where('updatedAt', '>=', Timestamp.fromDate(date90dAgo))
         .limit(1000)
         .get();
@@ -892,6 +894,20 @@ export async function logTokenPurchase(params: {
     // Non-blocking
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

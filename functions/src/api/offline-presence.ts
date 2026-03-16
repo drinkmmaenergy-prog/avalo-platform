@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 135: Offline Presence API Endpoints
  * Cloud Functions for QR codes, posters, and scan tracking
@@ -133,9 +135,9 @@ export const createEventPosterBundle = functions.https.onCall(async (request) =>
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const { eventId, eventName, organizer, creators } = data;
+  const { eventId, eventName, organizer, earners } = data;
 
-  if (!eventId || !eventName || !organizer || !Array.isArray(creators)) {
+  if (!eventId || !eventName || !organizer || !Array.isArray(earners)) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
@@ -143,7 +145,7 @@ export const createEventPosterBundle = functions.https.onCall(async (request) =>
     const posterIds = await generateEventBundle(eventId, {
       name: eventName,
       organizer,
-      creators,
+      earners,
     });
 
     console.log('Scheduled job result:', { success: true, posterIds });
@@ -338,6 +340,22 @@ export const cleanupOldScanLogs = onSchedule("every 24 hours", async (event) => 
     await ScanTracker.cleanupOldScans();
     console.log('Old scan logs cleanup completed');
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

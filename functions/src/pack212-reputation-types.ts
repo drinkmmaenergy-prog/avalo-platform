@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 212: Soft Reputation Engine
  * Type definitions for internal reputation scoring and behavioral rewards
@@ -577,6 +579,20 @@ export const FEEDBACK_ELIGIBILITY = {
   MEETING_MUST_BE_COMPLETED: true,
   EVENT_ORGANIZER_ONLY: true,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

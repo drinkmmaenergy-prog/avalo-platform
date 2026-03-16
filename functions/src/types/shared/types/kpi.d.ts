@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface KPIMetric  {
     name: string;
     value: number;
@@ -20,6 +22,23 @@ export interface KPIEvent  {
   [key: string]: any;
 }
 export type KPIPeriod = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 110 — Voice of User & Continuous Feedback Engine
  * 
@@ -270,7 +272,7 @@ export const FEATURE_KEYS = {
   CALL_MONETIZATION: 'call_monetization',
   LIVE_STREAMING: 'live_streaming',
   DISCOVERY_FEED: 'discovery_feed',
-  CREATOR_TOOLS: 'creator_tools',
+  CREATOR_TOOLS: 'earner_tools',
   SAFETY_FEATURES: 'safety_features',
   SUCCESS_TOOLKIT: 'success_toolkit',
   HELP_CENTER: 'help_center',
@@ -314,6 +316,20 @@ export class FeedbackError extends Error {
     this.name = 'FeedbackError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

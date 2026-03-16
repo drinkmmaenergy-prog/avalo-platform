@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Phase 16C: Questions Module - Type Definitions
  * ADDITIVE ONLY - does not modify existing types or logic
@@ -13,7 +15,7 @@
 export interface Question {
   id: string;
   authorId: string;
-  targetUserId?: string | null; // Optional: specific user/creator target
+  targetUserId?: string | null; // Optional: specific user/earner target
   text: string;
   isAnonymous: boolean;
   isNSFW: boolean;
@@ -193,6 +195,22 @@ export interface BoostQuestionResponse {
   newBoostScore: number;
   tokensCharged: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

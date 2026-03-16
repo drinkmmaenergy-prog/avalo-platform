@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 142 — Identity Fraud Social Graph Detection Engine
  * 
@@ -107,7 +109,7 @@ async function detectDeviceReuse(
     return null;
   }
   
-  const riskScore = Math.min(1.0, relatedUserIds.length * MONETIZATION_SPLITS.CHAT.avalo);
+  const riskScore = Math.min(1.0, relatedUserIds.length * MONETIZATION_SPLITS.CHAT.platform);
   const fraudDetected = relatedUserIds.length >= 2;
   
   const signal: IdentityFraudSignal = {
@@ -591,6 +593,22 @@ async function integratewithPack130BanEvasion(
 export default {
   analyzeSocialGraphFraud,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 16C: Questions Module - Business Logic Engine
  * 
@@ -244,12 +246,12 @@ export async function createQuestion(
     updatedAt: serverTimestamp(),
   });
   
-  // Record ranking action for target creator (if applicable)
+  // Record ranking action for target earner (if applicable)
   if (data.isAnonymous && data.targetUserId && targetUserCanEarn) {
     const earnedTokens = Math.floor(tokensCharged * (QUESTIONS_CONFIG.TARGETED_ANONYMOUS_SPLIT.EARNER_PERCENTAGE / 100));
     recordRankingAction({
       type: 'content_purchase',
-      creatorId: data.targetUserId,
+      earnerId: data.targetUserId,
       payerId: userId,
       tokensAmount: earnedTokens,
       points: earnedTokens * QUESTIONS_CONFIG.RANKING_POINTS_PER_TOKEN,
@@ -299,11 +301,11 @@ async function processAnonymousQuestionPayment(
   
   // Calculate split
   let earnerTokens = 0;
-  let avaloTokens = tokensCharged;
+  let platformTokens = tokensCharged;
   
   if (targetUserId && targetCanEarn) {
     earnerTokens = Math.floor(tokensCharged * (QUESTIONS_CONFIG.TARGETED_ANONYMOUS_SPLIT.EARNER_PERCENTAGE / 100));
-    avaloTokens = tokensCharged - earnerTokens;
+    platformTokens = tokensCharged - earnerTokens;
   }
   
   // Execute transaction
@@ -331,7 +333,7 @@ async function processAnonymousQuestionPayment(
     earnerId: targetUserId || null,
     tokensAmount: tokensCharged,
     earnerAmount: earnerTokens,
-    avaloAmount: avaloTokens,
+    platformAmount: platformTokens,
     createdAt: serverTimestamp(),
   });
 }
@@ -563,7 +565,7 @@ export async function unlockAnswer(
   
   // Calculate split
   const earnerTokens = Math.floor(tokensCharged * (QUESTIONS_CONFIG.ANSWER_UNLOCK_SPLIT.EARNER_PERCENTAGE / 100));
-  const avaloTokens = tokensCharged - earnerTokens;
+  const platformTokens = tokensCharged - earnerTokens;
   
   // Execute transaction
   const unlockId = generateId();
@@ -615,7 +617,7 @@ export async function unlockAnswer(
     earnerId: answer.authorId,
     tokensAmount: tokensCharged,
     earnerAmount: earnerTokens,
-    avaloAmount: avaloTokens,
+    platformAmount: platformTokens,
     answerId: answer.id,
     questionId: answer.questionId,
     createdAt: serverTimestamp(),
@@ -624,7 +626,7 @@ export async function unlockAnswer(
   // Record ranking action for answer author (async, non-blocking)
   recordRankingAction({
     type: 'content_purchase',
-    creatorId: answer.authorId,
+    earnerId: answer.authorId,
     payerId: viewerId,
     tokensAmount: earnerTokens,
     points: earnerTokens * QUESTIONS_CONFIG.RANKING_POINTS_PER_TOKEN,
@@ -740,7 +742,7 @@ export async function boostQuestion(
     type: 'question_boost',
     payerId: userId,
     tokensAmount: tokensCharged,
-    avaloAmount: tokensCharged,
+    platformAmount: tokensCharged,
     questionId: data.questionId,
     createdAt: serverTimestamp(),
   });
@@ -982,6 +984,21 @@ async function getAnswerPublicInfo(
     snippet,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

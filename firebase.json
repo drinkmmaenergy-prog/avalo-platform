@@ -89,5 +89,35 @@
       "enabled": true,
       "port": 4000
     }
-  }
+  },
+  "apphosting": [
+    {
+      "backendId": "avalo-web-staging",
+      "rootDir": "app-web",
+      "ignore": [
+        "node_modules",
+        ".git",
+        ".next",
+        ".apphosting",
+        "out",
+        "coverage",
+        "playwright-report",
+        "test-results",
+        ".turbo",
+        ".cache",
+        "docs",
+        "tests",
+        "*.md",
+        "*.bak",
+        "*.tmp",
+        ".env.local",
+        ".env.*.local",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "functions",
+        "*.tsbuildinfo"
+      ],
+      "alwaysDeployFromSource": true
+    }
+  ]
 }

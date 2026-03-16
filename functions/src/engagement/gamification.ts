@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export interface Mission{
  id:string
  type:string
@@ -10,3 +12,19 @@ export interface UserGamification{
  missions:Mission[]
  xp:number
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

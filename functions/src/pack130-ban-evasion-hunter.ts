@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 130 — Ban-Evasion Hunter Module
  * 
@@ -399,7 +401,7 @@ function calculateEvasionConfidence(matches: {
   content: boolean;
 }): number {
   const weights = {
-    device: MONETIZATION_SPLITS.CHAT.avalo,
+    device: MONETIZATION_SPLITS.CHAT.platform,
     location: 0.15,
     payment: 0.25,
     typing: 0.15,
@@ -578,6 +580,22 @@ export async function resolveBanEvasionCase(
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 193 — Avalo Club Intelligence Architecture
  * Type definitions for smart community ranking system
@@ -435,6 +437,22 @@ export function isForbiddenRoleType(role: string): boolean {
     role.toLowerCase().includes(forbidden.toLowerCase())
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

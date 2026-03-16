@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * System Configuration Constants
  * Based on AVALO_CORE_FULL_SPEC.md
@@ -27,7 +29,7 @@ export const CALL_BILLING_INTERVAL_SEC = 10; // Bill every 10 seconds
 // Calendar Configuration
 export const CALENDAR_MIN_BOOKING_TOKENS = 100;
 export const CALENDAR_PLATFORM_FEE_PCT = 20; // 20% to Avalo, non-refundable
-export const CALENDAR_ESCROW_PCT = 80; // 80% to creator
+export const CALENDAR_ESCROW_PCT = 80; // 80% to earner
 
 // Tips and Subscriptions
 export const TIP_PLATFORM_FEE_PCT = 20;
@@ -56,7 +58,7 @@ export const RATE_LIMIT_SWIPES_PER_HOUR = 100;
 // Calendar Cancellation Refund Rules
 export const CALENDAR_CANCEL_EARLY_HOURS = 24;
 export const CALENDAR_CANCEL_EARLY_REFUND_PCT = 50; // 50% to booker
-export const CALENDAR_CANCEL_EARLY_CREATOR_PCT = 30; // 30% to creator
+export const CALENDAR_CANCEL_EARLY_CREATOR_PCT = 30; // 30% to earner
 // Platform always keeps 20% (non-refundable)
 
 // Voice Message Pricing
@@ -195,6 +197,20 @@ export const containsBannedTerms = (text: string): boolean => {
   const lowerText = text.toLowerCase();
   return BANNED_TERMS.some((term) => lowerText.includes(term.toLowerCase()));
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

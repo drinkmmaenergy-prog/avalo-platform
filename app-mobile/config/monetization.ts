@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Monetization Configuration
  * Single source of truth for all monetization-related values in the Avalo app.
@@ -864,3 +865,4 @@ export default {
   calculateInitialEscrowDeposit,
   splitEscrowTokens,
 };
+

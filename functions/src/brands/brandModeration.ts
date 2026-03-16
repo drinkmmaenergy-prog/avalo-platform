@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { admin, db } from '../init';
 import * as functions from 'firebase-functions';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -569,6 +571,22 @@ export const listPendingReports = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

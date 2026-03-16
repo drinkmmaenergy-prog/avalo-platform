@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 246 - Integration Helpers
  * Easy-to-use validation functions for existing monetization modules
@@ -32,8 +34,8 @@ export async function validateChatDeposit(
     metadata: {
       isRoyalMember,
       proposedSplit: {
-        avalo: 35,
-        creator: 65,
+        platform: 35,
+        earner: 65,
       },
     },
   };
@@ -100,8 +102,8 @@ export async function validateVoiceCall(
       tokensPerMinute,
       isRoyalMember,
       proposedSplit: {
-        avalo: 20,
-        creator: 80,
+        platform: 20,
+        earner: 80,
       },
     },
   };
@@ -131,8 +133,8 @@ export async function validateVideoCall(
       tokensPerMinute,
       isRoyalMember,
       proposedSplit: {
-        avalo: 20,
-        creator: 80,
+        platform: 20,
+        earner: 80,
       },
     },
   };
@@ -168,8 +170,8 @@ export async function validateCalendarBooking(
       qrVerified,
       panicButtonEnabled: true,
       proposedSplit: {
-        avalo: 35,
-        creator: 65,
+        platform: 35,
+        earner: 65,
       },
     },
   };
@@ -203,8 +205,8 @@ export async function validateEventBooking(
       qrVerified,
       panicButtonEnabled: true,
       proposedSplit: {
-        avalo: 35,
-        creator: 65,
+        platform: 35,
+        earner: 65,
       },
     },
   };
@@ -239,7 +241,7 @@ export async function validateRefundRequest(
 
 /**
  * Validate voluntary refund
- * Use when creator voluntarily refunds a user
+ * Use when earner voluntarily refunds a user
  */
 export async function validateVoluntaryRefund(
   userId: string,
@@ -289,17 +291,17 @@ export async function validateTokenPurchase(
 export async function validateProductPurchase(
   userId: string,
   productPrice: number,
-  creatorId: string
+  earnerId: string
 ): Promise<ValidationResult> {
   const request: ValidationRequest = {
     transactionType: TransactionType.PRODUCT_PURCHASE,
     userId,
-    targetUserId: creatorId,
+    targetUserId: earnerId,
     amount: productPrice,
     metadata: {
       proposedSplit: {
-        avalo: 35,
-        creator: 65,
+        platform: 35,
+        earner: 65,
       },
     },
   };
@@ -309,7 +311,7 @@ export async function validateProductPurchase(
 
 /**
  * Validate revenue withdrawal
- * Use before processing creator withdrawals
+ * Use before processing earner withdrawals
  */
 export async function validateRevenueWithdrawal(
   userId: string,
@@ -449,6 +451,20 @@ export async function validateBatch(
  *   await createBooking(userId, slotId, amount);
  * }
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

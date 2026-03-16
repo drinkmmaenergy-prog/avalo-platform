@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 390 - AML/KYC COMPLIANCE PIPELINE
  * Automated anti-money laundering and know-your-customer verification
@@ -523,6 +525,20 @@ async function notifyComplianceTeam(alert: any) {
     timestamp: admin.firestore.FieldValue.serverTimestamp()
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

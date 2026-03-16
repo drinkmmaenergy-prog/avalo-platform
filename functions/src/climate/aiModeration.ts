@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { ConflictType, ContentCategory, SeverityLevel, ClimateScore, ConflictDetectionResult } from './types';
 
 interface ContentAnalysis {
@@ -310,6 +312,22 @@ export class AIContentModerator {
 }
 
 export const aiModerator = new AIContentModerator();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

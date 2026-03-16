@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 349 - Cloud Functions Endpoints
  * HTTP endpoints for ad system
@@ -8,7 +10,7 @@ import { AdEngine } from './pack349-ad-engine';
 import { BrandCampaignEngine } from './pack349-campaign-engine';
 import { AdPlacementEngine } from './pack349-placement-engine';
 import { AdBillingEngine } from './pack349-billing';
-import { SponsoredCreatorEngine } from './pack349-sponsored-creators';
+import { SponsoredCreatorEngine } from './pack349-sponsored-earners';
 import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 
 /**
@@ -528,6 +530,20 @@ export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", time
     await SponsoredCreatorEngine.processMinimumGuarantees();
     return null;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

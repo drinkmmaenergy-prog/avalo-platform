@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 289 — Payouts & Withdrawals Backend Functions
  * 
@@ -9,7 +11,7 @@
  * - Monthly limit tracking
  * - Integration with payout providers
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -557,6 +559,20 @@ return {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

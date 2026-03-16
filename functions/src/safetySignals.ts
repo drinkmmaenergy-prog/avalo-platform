@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 73 — Safety Signals Aggregation
  * Read-only façade over Trust/AML/Fraud/Moderation engines
@@ -138,6 +140,20 @@ export async function shouldShowSafetyWarning(
   const hint = await getSafetyHintForPair(viewerUserId, counterpartUserId);
   return hint.level !== "NONE";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

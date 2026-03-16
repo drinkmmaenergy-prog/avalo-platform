@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO 3.0 — PHASE 47: DYNAMIC PRICING ENGINE
@@ -26,7 +28,7 @@
  * - Cost-plus pricing (base model)
  * - Value-based pricing (premium users)
  * - Competitive pricing (market-aware)
- * - Penetration pricing (new creators)
+ * - Penetration pricing (new earners)
  * - Premium pricing (top performers)
  *
  * Performance:
@@ -112,7 +114,7 @@ interface MarketConditions {
   avgPriceTokens: number;
   activeUsers: number;
   activeCreators: number;
-  supplyDemandRatio: number;     // creators / users
+  supplyDemandRatio: number;     // earners / users
   avgSessionDuration: number;
   transactionVolume: number;
   peakHourActive: boolean;
@@ -122,7 +124,7 @@ interface MarketConditions {
  * Creator pricing profile
  */
 interface CreatorPricingProfile {
-  creatorId: string;
+  earnerId: string;
   tier: PricingTier;
   baseRateTokens: number;
   minimumRateTokens: number;
@@ -189,7 +191,7 @@ const PPP_ADJUSTMENTS: Record<string, number> = {
   PL: 0.6,   // Lower purchasing power
   BR: 0.5,
   IN: 0.4,
-  NG: MONETIZATION_SPLITS.CHAT.avalo,
+  NG: MONETIZATION_SPLITS.CHAT.platform,
   // Add more countries as needed
 };
 
@@ -296,8 +298,8 @@ async function calculateLoyaltyDiscount(userId: string): Promise<number> {
     bronze: 0.05,
     silver: 0.10,
     gold: 0.15,
-    platinum: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-    diamond: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    platinum: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+    diamond: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
   };
 
   return discounts[tier] || 0;
@@ -317,21 +319,21 @@ async function isFirstTimeBuyer(userId: string): Promise<boolean> {
 }
 
 /**
- * Get creator pricing profile
+ * Get earner pricing profile
  */
-async function getCreatorPricingProfile(creatorId: string): Promise<CreatorPricingProfile> {
-  const profileDoc = await db.collection("creatorPricing").doc(creatorId).get();
+async function getCreatorPricingProfile(earnerId: string): Promise<CreatorPricingProfile> {
+  const profileDoc = await db.collection("earnerPricing").doc(earnerId).get();
 
   if (profileDoc.exists) {
     return profileDoc.data() as CreatorPricingProfile;
   }
 
   // Initialize default profile
-  const userDoc = await db.collection("users").doc(creatorId).get();
+  const userDoc = await db.collection("users").doc(earnerId).get();
   const userData = userDoc.data();
 
   const defaultProfile: CreatorPricingProfile = {
-    creatorId,
+    earnerId,
     tier: PricingTier.STANDARD,
     baseRateTokens: 100,
     minimumRateTokens: 50,
@@ -347,7 +349,7 @@ async function getCreatorPricingProfile(creatorId: string): Promise<CreatorPrici
     lastUpdated: Timestamp.now(),
   };
 
-  await db.collection("creatorPricing").doc(creatorId).set(defaultProfile);
+  await db.collection("earnerPricing").doc(earnerId).set(defaultProfile);
 
   return defaultProfile;
 }
@@ -428,7 +430,7 @@ async function calculateDynamicPrice(
     basePriceTokens: basePrice,
     demandMultiplier,
     timeOfDayMultiplier,
-    popularityMultiplier: 1.0, // Would calculate from creator data
+    popularityMultiplier: 1.0, // Would calculate from earner data
     loyaltyDiscount,
     firstTimeBuyerDiscount,
     geoAdjustment,
@@ -466,7 +468,7 @@ async function calculateDynamicPrice(
     adjustmentFactors: factors,
     currency: "USD", // Default
     fxRate: 1.0,
-    localPrice: finalPrice * MONETIZATION_SPLITS.EVENT_TICKET.avalo, // Token to USD conversion
+    localPrice: finalPrice * MONETIZATION_SPLITS.EVENT_TICKET.platform, // Token to USD conversion
     validUntil: Timestamp.fromMillis(Date.now() + PRICE_CACHE_TTL_SECONDS * 1000),
     tier: PricingTier.DYNAMIC,
     breakdown: {
@@ -518,7 +520,7 @@ export const calculateDynamicPriceV1 = onCall(
 );
 
 /**
- * Get creator's pricing profile
+ * Get earner's pricing profile
  */
 export const getCreatorPricingProfileV1 = onCall(
   { region: "europe-west1", cors: true },
@@ -529,7 +531,7 @@ export const getCreatorPricingProfileV1 = onCall(
     }
 
     const schema = z.object({
-      creatorId: z.string(),
+      earnerId: z.string(),
     });
 
     const validationResult = schema.safeParse(request.data);
@@ -537,16 +539,16 @@ export const getCreatorPricingProfileV1 = onCall(
       throw new HttpsError("invalid-argument", getZodErrorMessage(validationResult)!);
     }
 
-    const { creatorId } = validationResult.data;
+    const { earnerId } = validationResult.data;
 
-    const profile = await getCreatorPricingProfile(creatorId);
+    const profile = await getCreatorPricingProfile(earnerId);
 
     return { profile };
   }
 );
 
 /**
- * Update creator pricing settings
+ * Update earner pricing settings
  */
 export const updateCreatorPricingV1 = onCall(
   { region: "europe-west1", cors: true },
@@ -570,7 +572,7 @@ export const updateCreatorPricingV1 = onCall(
 
     const updates = validationResult.data;
 
-    await db.collection("creatorPricing").doc(userId).update({
+    await db.collection("earnerPricing").doc(userId).update({
       ...updates,
       lastUpdated: FieldValue.serverTimestamp(),
     });
@@ -699,7 +701,7 @@ export const updateMarketConditionsScheduler = onSchedule(
 );
 
 /**
- * Scheduled: Recalculate creator pricing profiles
+ * Scheduled: Recalculate earner pricing profiles
  */
 export const recalculateCreatorPricingDaily = onSchedule(
   {
@@ -709,27 +711,27 @@ export const recalculateCreatorPricingDaily = onSchedule(
     memory: "2GiB",
   },
   async () => {
-    logger.info("Recalculating creator pricing profiles");
+    logger.info("Recalculating earner pricing profiles");
 
     try {
-      const creators = await db.collection("users")
+      const earners = await db.collection("users")
         .where("modes.earnFromChat", "==", true)
         .get();
 
       let processed = 0;
 
-      for (const doc of creators.docs) {
+      for (const doc of earners.docs) {
         try {
-          const creatorId = doc.id;
+          const earnerId = doc.id;
 
           // Get metrics
           const [bookings, reviews] = await Promise.all([
             db.collection("calendar_bookings")
-              .where("creatorId", "==", creatorId)
+              .where("earnerId", "==", earnerId)
               .where("status", "==", "completed")
               .get(),
             db.collection("reviews")
-              .where("reviewedUserId", "==", creatorId)
+              .where("reviewedUserId", "==", earnerId)
               .where("moderationStatus", "==", "approved")
               .get(),
           ]);
@@ -740,7 +742,7 @@ export const recalculateCreatorPricingDaily = onSchedule(
 
           const popularityScore = Math.min(100, bookings.size * 2 + avgRating * 10);
 
-          await db.collection("creatorPricing").doc(creatorId).set({
+          await db.collection("earnerPricing").doc(earnerId).set({
             popularityScore,
             reviewScore: avgRating,
             avgBookingRate: bookings.size,
@@ -749,13 +751,13 @@ export const recalculateCreatorPricingDaily = onSchedule(
 
           processed++;
         } catch (error) {
-          logger.error(`Failed to update pricing for creator ${doc.id}`, { error });
+          logger.error(`Failed to update pricing for earner ${doc.id}`, { error });
         }
       }
 
-      logger.info(`Creator pricing recalculation complete: ${processed} creators`);
+      logger.info(`Creator pricing recalculation complete: ${processed} earners`);
     } catch (error) {
-      logger.error("Error in creator pricing recalculation", { error });
+      logger.error("Error in earner pricing recalculation", { error });
       throw error;
     }
   }
@@ -771,6 +773,22 @@ export type {
   MarketConditions,
   PriceAdjustmentFactors,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

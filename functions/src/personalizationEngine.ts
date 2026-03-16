@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 49 — Personalization Engine
  * Pure logic for computing user taste profiles from aggregated signals
@@ -233,6 +235,20 @@ export default {
   computeTasteProfile,
   aggregateEventCounters,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

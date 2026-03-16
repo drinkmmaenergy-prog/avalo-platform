@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 117: Events, Meetups & Real-World Experiences
  * Type definitions for safe in-person events system
  * 
  * CRITICAL RULES:
  * - SAFE events only (no NSFW, no dating/escort services)
- * - Token-only payments (65% creator / 35% Avalo)
+ * - Token-only payments (65% earner / 35% Avalo)
  * - Background risk screening before enrollment
  * - Location privacy until confirmed
  * - No discovery/ranking boosts from events
@@ -122,7 +124,7 @@ export interface EventAttendee {
   // Payment
   tokensAmount: number;           // 0 for free events
   platformFee: number;            // 35% of tokens
-  creatorEarnings: number;        // 65% of tokens
+  earnerEarnings: number;        // 65% of tokens
   
   // Status
   status: AttendeeStatus;
@@ -227,8 +229,8 @@ export const EVENT_CONFIG = {
   maxPrice: 5000,
   
   // Revenue split (NON-NEGOTIABLE)
-  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo,    // 35%
-  creatorEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65%
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.platform,    // 35%
+  earnerEarningsPercentage: MONETIZATION_SPLITS.CHAT.earner, // 65%
   
   // Capacity limits
   minCapacity: 1,
@@ -384,6 +386,23 @@ export function validateEventData(data: Partial<Event>): {
     errors,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

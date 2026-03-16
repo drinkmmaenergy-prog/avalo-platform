@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — Affiliate Layer for Professional Studio Creators & Agencies
  * Type Definitions
@@ -6,8 +8,8 @@
  * - Token price per unit remains constant
  * - Avalo always receives 35% commission from paid interactions
  * - Creators never lose more than their own 65% share
- * - Affiliates/Studios receive a sub-split inside the creator's 65%
- * - No visibility boosts, no "featured creators", no algorithmic bias
+ * - Affiliates/Studios receive a sub-split inside the earner's 65%
+ * - No visibility boosts, no "featured earners", no algorithmic bias
  * - No free tokens, discounts, bonuses, cashback, promo-codes
  */
 
@@ -57,7 +59,7 @@ export interface CreatorAgencyAccount {
 // ============================================================================
 
 export type LinkStatus = 
-  | 'PENDING'          // Request sent, awaiting creator acceptance
+  | 'PENDING'          // Request sent, awaiting earner acceptance
   | 'ACTIVE'           // Link active and operational
   | 'REMOVED_BY_CREATOR'   // Creator removed the link
   | 'REMOVED_BY_AGENCY'    // Agency removed the link
@@ -65,11 +67,11 @@ export type LinkStatus =
 
 export interface CreatorAgencyLink {
   linkId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   agencyId: string;
   
-  // Revenue split (from creator's 65%)
-  percentageForAgency: number;     // e.g., 20 = 20% of creator's 65%
+  // Revenue split (from earner's 65%)
+  percentageForAgency: number;     // e.g., 20 = 20% of earner's 65%
   
   // Status
   status: LinkStatus;
@@ -83,9 +85,9 @@ export interface CreatorAgencyLink {
   removedReason?: string;
   
   // Revenue tracking
-  totalEarningsGenerated: number;  // Total creator earnings while linked
+  totalEarningsGenerated: number;  // Total earner earnings while linked
   agencyEarningsTotal: number;     // Total agency share
-  creatorEarningsTotal: number;    // Total creator share after split
+  earnerEarningsTotal: number;    // Total earner share after split
   
   // Lifecycle
   createdAt: Timestamp;
@@ -99,7 +101,7 @@ export interface CreatorAgencyLink {
 export interface AgencyLinkRequest {
   requestId: string;
   agencyId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   proposedPercentage: number;
   message?: string;
   
@@ -116,19 +118,19 @@ export interface AgencyLinkRequest {
 
 export interface AgencyEarningsSplit {
   earningId: string;              // Reference to earnings_ledger entry
-  creatorUserId: string;
+  earnerUserId: string;
   agencyId: string;
   linkId: string;
   
   // Original transaction
   grossTokens: number;            // 100%
   platformAmount: number;         // 35%
-  creatorShareBefore: number;     // 65%
+  earnerBefore: number;     // 65%
   
   // After agency split
   agencyPercentage: number;       // e.g., 20%
   agencyAmount: number;           // e.g., 13 tokens (20% of 65)
-  creatorAmount: number;          // e.g., 52 tokens (80% of 65)
+  earnerAmount: number;          // e.g., 52 tokens (80% of 65)
   
   // Metadata
   sourceType: 'GIFT' | 'PREMIUM_STORY' | 'PAID_MEDIA' | 'PAID_CALL' | 'AI_COMPANION' | 'OTHER';
@@ -143,7 +145,7 @@ export interface AgencyEarningsSplit {
 
 export interface AgencyAnalytics {
   agencyId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'ALL_TIME';
   periodStart: string;             // YYYY-MM-DD
   periodEnd: string;               // YYYY-MM-DD
@@ -151,7 +153,7 @@ export interface AgencyAnalytics {
   // Revenue metrics
   totalEarningsGenerated: number;  // Creator's gross before split
   agencyEarnings: number;          // Agency's share
-  creatorEarnings: number;         // Creator's share after split
+  earnerEarnings: number;         // Creator's share after split
   
   // Engagement metrics (counts only, no identity)
   followersCount: number;
@@ -210,7 +212,7 @@ export interface AgencyPayout {
 // ============================================================================
 
 export type AgencyViolationType =
-  | 'FORCED_LINKAGE'               // Forcing creator to link
+  | 'FORCED_LINKAGE'               // Forcing earner to link
   | 'UNSOLICITED_REQUESTS'         // Mass spam requests
   | 'SUSPICIOUS_PAYOUT'            // Suspicious payout patterns
   | 'MINOR_EXPLOITATION'           // Minors detected
@@ -234,7 +236,7 @@ export interface AgencyViolation {
   
   // Actions taken
   agencySuspended: boolean;
-  creatorProtectionApplied: boolean;
+  earnerProtectionApplied: boolean;
   criminalReferral: boolean;
   
   // Metadata
@@ -266,7 +268,7 @@ export interface AgencyAuditLog {
   logId: string;
   eventType: AgencyAuditEventType;
   agencyId: string;
-  creatorUserId?: string;
+  earnerUserId?: string;
   
   // Context
   previousValue?: any;
@@ -287,7 +289,7 @@ export interface AgencyAuditLog {
 
 export type AgencyAPIScope =
   | 'AGENCY_ANALYTICS_READ'        // Read aggregated analytics
-  | 'CREATOR_LIST_READ'            // Read list of linked creators
+  | 'CREATOR_LIST_READ'            // Read list of linked earners
   | 'EARNINGS_READ_AGGREGATED';    // Read aggregated earnings
 
 // Forbidden scopes (explicitly listed for security)
@@ -310,7 +312,7 @@ export type ForbiddenAgencyScope =
 export interface AgencyValidationRules {
   minPercentage: number;           // Minimum agency percentage (e.g., 5%)
   maxPercentage: number;           // Maximum agency percentage (e.g., 40%)
-  maxLinkedCreators: number;       // Max creators per agency
+  maxLinkedCreators: number;       // Max earners per agency
   minLinkDuration: number;         // Minimum duration before removal (hours)
   maxRequestsPerDay: number;       // Max link requests per day
 }
@@ -352,6 +354,20 @@ export class AgencyError extends Error {
     this.name = 'AgencyError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

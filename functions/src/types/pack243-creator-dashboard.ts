@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 243: Creator Ego Metrics Dashboard
- * TypeScript type definitions for creator analytics
+ * TypeScript type definitions for earner analytics
  */
 
 import { Timestamp, timestamp } from '../runtime';
@@ -272,6 +274,22 @@ export const SUGGESTION_TEMPLATES = {
     expectedImpact: 'Monetize local popularity with events',
   }),
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

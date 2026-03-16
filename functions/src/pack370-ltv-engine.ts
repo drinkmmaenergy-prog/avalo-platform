@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 370: PREDICTIVE LTV ENGINE + ROAS OPTIMIZATION LAYER
  * 
@@ -31,7 +33,7 @@ interface LTVForecast {
 
 interface UserMetrics {
   tokenSpendVelocity: number;
-  creatorEarningsInteraction: number;
+  earnerEarningsInteraction: number;
   chatConversionRate: number;
   calendarBookings: number;
   retentionSegment: string;
@@ -125,7 +127,7 @@ export const pack370_calculateLTVForecast = onCall(
         }
       });
       
-      // Update creator LTV profiles if user has interacted with creators
+      // Update earner LTV profiles if user has interacted with earners
       await updateCreatorLTVProfiles(userId, tier);
       
       // Trigger ROAS signal update
@@ -159,7 +161,7 @@ async function gatherUserMetrics(userId: string): Promise<UserMetrics> {
       .get(),
     
     // Creator earnings interaction
-    db.collection('creatorEarnings')
+    db.collection('earnerEarnings')
       .where('fromUserId', '==', userId)
       .get(),
     
@@ -200,7 +202,7 @@ async function gatherUserMetrics(userId: string): Promise<UserMetrics> {
   }
   
   // Creator earnings interaction
-  const creatorEarningsInteraction = earnings.size;
+  const earnerEarningsInteraction = earnings.size;
   
   // Chat conversion rate (paid chats / total chats)
   const paidChats = chats.docs.filter(doc => doc.data().isPaid).length;
@@ -225,7 +227,7 @@ async function gatherUserMetrics(userId: string): Promise<UserMetrics> {
   
   console.log('Scheduled job result:', {
     tokenSpendVelocity,
-    creatorEarningsInteraction,
+    earnerEarningsInteraction,
     chatConversionRate,
     calendarBookings,
     retentionSegment,
@@ -247,7 +249,7 @@ async function calculateLTVPredictions(userId: string, metrics: UserMetrics) {
   const config = await db.collection('ltvConfig').doc('multipliers').get();
   const multipliers = config.exists ? config.data() : {
     dating: 1.2,
-    creators: 1.5,
+    earners: 1.5,
     ai: 1.3,
     calendar: 1.4
   };
@@ -269,7 +271,7 @@ async function calculateLTVPredictions(userId: string, metrics: UserMetrics) {
   const engagementScore = (
     metrics.chatConversionRate * 2 +
     Math.min(metrics.calendarBookings / 10, 1) * 1.5 +
-    Math.min(metrics.creatorEarningsInteraction / 20, 1) * 2
+    Math.min(metrics.earnerEarningsInteraction / 20, 1) * 2
   ) / 3;
   
   const engagementMult = 1 + engagementScore;
@@ -286,7 +288,7 @@ async function calculateLTVPredictions(userId: string, metrics: UserMetrics) {
   // Confidence score (based on data quality)
   const dataPoints = [
     metrics.tokenSpendVelocity > 0 ? 1 : 0,
-    metrics.creatorEarningsInteraction > 0 ? 1 : 0,
+    metrics.earnerEarningsInteraction > 0 ? 1 : 0,
     metrics.chatConversionRate > 0 ? 1 : 0,
     metrics.calendarBookings > 0 ? 1 : 0,
     metrics.retentionSegment !== 'unknown' ? 1 : 0,
@@ -471,22 +473,22 @@ async function updateAdCampaignSettings(
 // ============================================================================
 
 async function updateCreatorLTVProfiles(userId: string, tier: UserTier) {
-  // Find all creators this user has interacted with
-  const interactions = await db.collection('creatorEarnings')
+  // Find all earners this user has interacted with
+  const interactions = await db.collection('earnerEarnings')
     .where('fromUserId', '==', userId)
     .get();
   
   for (const interaction of interactions.docs) {
-    const creatorId = interaction.data().creatorId;
+    const earnerId = interaction.data().earnerId;
     
-    // Update creator profile
-    const profileRef = db.collection('creatorLTVProfiles').doc(creatorId);
+    // Update earner profile
+    const profileRef = db.collection('earnerLTVProfiles').doc(earnerId);
     const profile = await profileRef.get();
     
     if (!profile.exists) {
       // Create new profile
       await profileRef.set({
-        creatorId,
+        earnerId,
         totalRevenue: 0,
         userTierCounts: { LOW: 0, MID: 0, HIGH: 0, WHALE: 0 },
         avgUserTier: 'LOW',
@@ -643,12 +645,12 @@ export const pack370_updateGeoLTVProfiles = onSchedule("every 24 hours", async (
       const avgCPI = data.cpi.reduce((sum, val) => sum + val, 0) / data.cpi.length;
       const whaleRatio = data.whales / data.ltv.length;
       
-      // Get creator activity for this country
-      const creators = await db.collection('users')
+      // Get earner activity for this country
+      const earners = await db.collection('users')
         .where('country', '==', country)
         .where('isCreator', '==', true)
         .get();
-      const creatorActivityIndex = creators.size / Math.max(1, data.ltv.length);
+      const earnerActivityIndex = earners.size / Math.max(1, data.ltv.length);
       
       // Calculate risk index (higher = riskier)
       const riskIndex = avgCPI > avgLTV * 0.4 ? 0.8 : 0.2;
@@ -658,7 +660,7 @@ export const pack370_updateGeoLTVProfiles = onSchedule("every 24 hours", async (
         avgLTV,
         avgCPI,
         whaleRatio,
-        creatorActivityIndex,
+        earnerActivityIndex,
         riskIndex,
         updatedAt: admin.firestore.Timestamp.now()
       });
@@ -736,6 +738,20 @@ async function logAuditEvent(event: {
     timestamp: admin.firestore.Timestamp.now()
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

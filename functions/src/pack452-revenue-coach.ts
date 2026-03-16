@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 452 — Revenue Coach v1 (Rule-Based)
  *
@@ -135,7 +137,7 @@ export async function collectRevenueCoachMetrics(
 
   // Get refund stats
   const refundsSnap = await db.collection('walletTransactions')
-    .where('metadata.creatorId', '==', userId)
+    .where('metadata.earnerId', '==', userId)
     .where('type', '==', 'REFUND')
     .where('timestamp', '>=', thirtyDaysAgo)
     .get();
@@ -437,6 +439,20 @@ export async function runRevenueCoachBatch(): Promise<{
 
   return { usersProcessed, suggestionsCreated, errors };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

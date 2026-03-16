@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from '../runtime';
 
@@ -23,9 +25,9 @@ export type QASessionStatus = 'pending' | 'scheduled' | 'in_progress' | 'complet
 
 export interface Course {
   id: string;
-  creatorId: string;
-  creatorName: string;
-  creatorAvatar?: string;
+  earnerId: string;
+  earnerName: string;
+  earnerAvatar?: string;
   title: string;
   description: string;
   shortDescription: string;
@@ -113,7 +115,7 @@ export interface CoursePurchase {
   userId: string;
   courseId: string;
   courseName: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
   currency: string;
   status: PurchaseStatus;
@@ -169,8 +171,8 @@ export interface CourseCertificate {
   userName: string;
   courseId: string;
   courseName: string;
-  creatorId: string;
-  creatorName: string;
+  earnerId: string;
+  earnerName: string;
   completionDate: Timestamp;
   issuedAt: Timestamp;
   certificateNumber: string;
@@ -269,7 +271,7 @@ export interface CourseComplianceReport {
   id: string;
   courseId: string;
   courseName: string;
-  creatorId: string;
+  earnerId: string;
   reporterId: string;
   reporterName: string;
   violationType: 'scam_claims' | 'blocked_category' | 'erotic_content' | 'misleading' | 'other';
@@ -293,7 +295,7 @@ export interface ScamDetectionResult {
 }
 
 export interface CourseUploadRequest {
-  creatorId: string;
+  earnerId: string;
   title: string;
   description: string;
   shortDescription: string;
@@ -356,7 +358,7 @@ export interface EducationStats {
 }
 
 export interface CreatorEarnings {
-  creatorId: string;
+  earnerId: string;
   totalEarnings: number;
   pendingEarnings: number;
   paidOut: number;
@@ -368,6 +370,22 @@ export interface CreatorEarnings {
     end: Timestamp;
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

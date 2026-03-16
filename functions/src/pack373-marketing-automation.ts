@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 373 — PUBLIC LAUNCH MARKETING AUTOMATION
  * ASO, Influencers, Paid Traffic, ROI Control
@@ -891,6 +893,20 @@ async function sendMarketingAlert(alert: any): Promise<void> {
     console.error('Failed to send marketing alert:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

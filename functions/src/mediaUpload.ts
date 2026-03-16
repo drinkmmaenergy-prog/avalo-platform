@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Media Upload Handler with CSAM Shield Integration
  * Phase 22: Placeholder for CSAM image detection
@@ -108,6 +110,20 @@ export default {
   validateMediaUpload,
   canUploadMedia,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

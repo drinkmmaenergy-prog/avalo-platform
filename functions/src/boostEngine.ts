@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * BOOST ENGINE – Phase: Pay-Per-Boost & Chat Retargeting
  * 
  * This module implements promotional boosts for the Avalo platform.
- * All boost payments are 100% Avalo revenue (no creator share).
+ * All boost payments are 100% Avalo revenue (no earner share).
  * Boosts are non-refundable.
  * 
  * DO NOT modify existing monetization logic in other modules.
@@ -108,9 +110,9 @@ async function chargeUserTokens(
     const txRef = db.collection('transactions').doc(generateId());
     transaction.set(txRef, {
       senderUid: userId,
-      receiverUid: 'avalo_boost_revenue',
+      receiverUid: 'platform_boost_revenue',
       tokensAmount: amount,
-      avaloFee: amount, // 100% to Avalo
+      platformFee: amount, // 100% to Avalo
       transactionType: reason,
       metadata,
       createdAt: serverTimestamp(),
@@ -191,7 +193,7 @@ async function recordBoostPurchaseEvent(
     const { recordRankingAction } = await import('./rankingEngine');
     await recordRankingAction({
       type: 'boost',
-      creatorId: userId,
+      earnerId: userId,
       payerId: userId,
       points: 200, // Fixed boost bonus from scoring table
       timestamp: new Date(),
@@ -505,6 +507,20 @@ export async function getUserBoosts(userId: string, limit: number = 20): Promise
  * - No changes to existing chat/call monetization.
  * - All boosts are non-refundable.
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

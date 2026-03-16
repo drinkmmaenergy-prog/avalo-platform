@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Ambassador Types & Structure
@@ -16,7 +18,7 @@ export enum AmbassadorRole {
   CITY_AMBASSADOR = 'city_ambassador',
   CAMPUS_AMBASSADOR = 'campus_ambassador',
   NIGHTLIFE_AMBASSADOR = 'nightlife_ambassador',
-  CREATOR_RECRUITER = 'creator_recruiter',
+  CREATOR_RECRUITER = 'earner_recruiter',
   COMMUNITY_AMBASSADOR = 'community_ambassador',
 }
 
@@ -80,7 +82,7 @@ export interface AmbassadorProfile {
   performance: {
     totalReferrals: number;
     verifiedReferrals: number;
-    creatorsRecruited: number;
+    earnersRecruited: number;
     eventsHosted: number;
     revenue: number;
     rating: number;
@@ -226,7 +228,7 @@ export const ROLE_DEFINITIONS: Record<AmbassadorRole, RoleDefinition> = {
   },
   [AmbassadorRole.CREATOR_RECRUITER]: {
     name: 'Creator Recruiter',
-    description: 'Signs new paid creators, linked with PACK 433',
+    description: 'Signs new paid earners, linked with PACK 433',
     defaultKPIs: {
       minMonthlyReferrals: 30,
       minCreatorsPerMonth: 15,
@@ -243,7 +245,7 @@ export const ROLE_DEFINITIONS: Record<AmbassadorRole, RoleDefinition> = {
       minMonthlyReferrals: 60,
       minCreatorsPerMonth: 6,
       minEventsPerQuarter: 3,
-      minConversionRate: MONETIZATION_SPLITS.CHAT.avalo,
+      minConversionRate: MONETIZATION_SPLITS.CHAT.platform,
       minRetentionRate: 0.55,
     },
     maxRadius: 40,
@@ -376,7 +378,7 @@ export class AmbassadorTypeService {
       const req = TIER_REQUIREMENTS[tier];
       if (
         performance.verifiedReferrals >= req.minReferrals &&
-        performance.creatorsRecruited >= req.minCreators &&
+        performance.earnersRecruited >= req.minCreators &&
         performance.eventsHosted >= req.minEvents &&
         performance.revenue >= req.minRevenue
       ) {
@@ -397,7 +399,7 @@ export class AmbassadorTypeService {
     const req = TIER_REQUIREMENTS[targetTier];
     return (
       performance.verifiedReferrals >= req.minReferrals &&
-      performance.creatorsRecruited >= req.minCreators &&
+      performance.earnersRecruited >= req.minCreators &&
       performance.eventsHosted >= req.minEvents &&
       performance.revenue >= req.minRevenue
     );
@@ -447,7 +449,7 @@ export class AmbassadorTypeService {
 
     return {
       minReferrals: Math.max(0, nextReq.minReferrals - currentPerformance.verifiedReferrals),
-      minCreators: Math.max(0, nextReq.minCreators - currentPerformance.creatorsRecruited),
+      minCreators: Math.max(0, nextReq.minCreators - currentPerformance.earnersRecruited),
       minEvents: Math.max(0, nextReq.minEvents - currentPerformance.eventsHosted),
       minRevenue: Math.max(0, nextReq.minRevenue - currentPerformance.revenue),
     };
@@ -475,6 +477,22 @@ export class AmbassadorTypeService {
 // ============================================================================
 
 export const ambassadorTypeService = new AmbassadorTypeService();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

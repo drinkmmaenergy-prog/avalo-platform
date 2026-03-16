@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * CHAT BILLING PIPELINE — Invariant Tests
  *
  * Tests the canonical chat billing pipeline against economy SOT invariants:
  *
- * T1: "user paid 100, creator used 30, refund 35, platform fee not refunded"
+ * T1: "user paid 100, earner used 30, refund 35, platform fee not refunded"
  * T2: "expiry closes chat, refund unused"
  * T3: "idempotency: applying same event twice does not double-charge"
  * T4: "chargedTokens = max(minCharge, computedCost)"
@@ -73,13 +75,13 @@ function makeConfig(overrides: Partial<CanonicalSessionConfig> = {}): CanonicalS
 }
 
 // ============================================================================
-// TEST SUITE: T1 — "user paid 100, creator used 30, refund 35, platform fee not refunded"
+// TEST SUITE: T1 — "user paid 100, earner used 30, refund 35, platform fee not refunded"
 // ============================================================================
 
-describe('T1: User paid 100, creator used 30 tokens, refund 35 tokens of escrow', () => {
+describe('T1: User paid 100, earner used 30 tokens, refund 35 tokens of escrow', () => {
   it('should correctly split a 100-token deposit', () => {
     const deposit = 100;
-    const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // floor(100 * MONETIZATION_SPLITS.CHAT.avalo) = 35
+    const platformFee = Math.floor(deposit * (PLATFORM_FEE_PCT / 100)); // floor(100 * MONETIZATION_SPLITS.CHAT.platform) = 35
     const escrow = deposit - platformFee; // 100 - 35 = 65
 
     expect(PLATFORM_FEE_PCT).toBe(35);
@@ -94,12 +96,12 @@ describe('T1: User paid 100, creator used 30 tokens, refund 35 tokens of escrow'
     const tokensConsumed = 30;
 
     // Simulate consuming 30 tokens from escrow
-    const earnerCredit = Math.floor(tokensConsumed * EARNER_REVENUE_SPLIT); // floor(30 * MONETIZATION_SPLITS.CHAT.creator) = 19
-    const avaloCredit = tokensConsumed - earnerCredit; // 30 - 19 = 11
+    const earnerCredit = Math.floor(tokensConsumed * EARNER_REVENUE_SPLIT); // floor(30 * MONETIZATION_SPLITS.CHAT.earner) = 19
+    const platformCredit = tokensConsumed - earnerCredit; // 30 - 19 = 11
 
     expect(earnerCredit).toBe(19);
-    expect(avaloCredit).toBe(11);
-    expect(earnerCredit + avaloCredit).toBe(tokensConsumed);
+    expect(platformCredit).toBe(11);
+    expect(earnerCredit + platformCredit).toBe(tokensConsumed);
   });
 
   it('should have 35 tokens remaining in escrow for refund', () => {
@@ -188,7 +190,7 @@ describe('T3: Idempotency — same billing event applied twice', () => {
 
     expect(result1.tokensConsumed).toBe(result2.tokensConsumed);
     expect(result1.earnerCredit).toBe(result2.earnerCredit);
-    expect(result1.avaloCredit).toBe(result2.avaloCredit);
+    expect(result1.platformCredit).toBe(result2.platformCredit);
     expect(result1.newBuckets).toBe(result2.newBuckets);
   });
 
@@ -222,7 +224,7 @@ describe('T3: Idempotency — same billing event applied twice', () => {
 // ============================================================================
 
 describe('T4: Minimum deposit enforcement', () => {
-  it('MIN_DEPOSIT = Math.max(customDeposit,100)
+  it('MIN_DEPOSIT = Math.max(customDeposit,100)', () => {
     expect(MIN_DEPOSIT_TOKENS).toBe(100);
   });
 
@@ -259,7 +261,7 @@ describe('T5: Platform fee non-refundable', () => {
     const deposit = 500;
     const state = makeBillingState(deposit);
 
-    expect(state.platformFeeChargedTokens).toBe(Math.floor(500 * MONETIZATION_SPLITS.CHAT.avalo)); // 175
+    expect(state.platformFeeChargedTokens).toBe(Math.floor(500 * MONETIZATION_SPLITS.CHAT.platform)); // 175
     expect(state.escrowRemainingTokens).toBe(500 - 175); // 325
   });
 
@@ -331,13 +333,13 @@ describe('T6: Refund = unused escrow only', () => {
 // ============================================================================
 
 describe('T7: Double-entry ledger invariants', () => {
-  it('earnerCredit + avaloCredit = tokensConsumed (for every billing event)', () => {
+  it('earnerCredit + platformCredit = tokensConsumed (for every billing event)', () => {
     const state = makeBillingState(100);
     const config = makeConfig();
 
     const result = calculateBilling(state, config, 44, 'earner');
     if (result.billed) {
-      expect(result.earnerCredit + result.avaloCredit).toBe(result.tokensConsumed);
+      expect(result.earnerCredit + result.platformCredit).toBe(result.tokensConsumed);
     }
   });
 
@@ -387,7 +389,7 @@ describe('T7: Double-entry ledger invariants', () => {
 
     if (result.billed) {
       expect(result.earnerCredit).toBe(0);
-      expect(result.avaloCredit).toBe(result.tokensConsumed);
+      expect(result.platformCredit).toBe(result.tokensConsumed);
     }
   });
 });
@@ -411,13 +413,13 @@ describe('Economy Config Invariants', () => {
 
   it('all SPLITS_BY_SURFACE should sum to 1.0', () => {
     for (const [key, split] of Object.entries(SPLITS_BY_SURFACE)) {
-      expect(split.creator + split.avalo).toBeCloseTo(1.0, 10);
+      expect(split.earner + split.platform).toBeCloseTo(1.0, 10);
     }
   });
 
   it('CHAT split should be 65/35', () => {
-    expect(SPLITS_BY_SURFACE.CHAT.creator).toBe(MONETIZATION_SPLITS.CHAT.creator);
-    expect(SPLITS_BY_SURFACE.CHAT.avalo).toBe(MONETIZATION_SPLITS.CHAT.avalo);
+    expect(SPLITS_BY_SURFACE.CHAT.earner).toBe(MONETIZATION_SPLITS.CHAT.earner);
+    expect(SPLITS_BY_SURFACE.CHAT.platform).toBe(MONETIZATION_SPLITS.CHAT.platform);
   });
 
   it('CHAT_PRICING.STANDARD.wordsPerToken should be 11', () => {
@@ -430,10 +432,10 @@ describe('Economy Config Invariants', () => {
 });
 
 // ============================================================================
-// TEST SUITE: Word counting (creator-only)
+// TEST SUITE: Word counting (earner-only)
 // ============================================================================
 
-describe('Word counting — creator-only billing', () => {
+describe('Word counting — earner-only billing', () => {
   it('11 standard words = 1 bucket = 1 token', () => {
     const words = 11;
     const buckets = Math.floor(words / WORDS_PER_TOKEN_STANDARD);
@@ -459,16 +461,33 @@ describe('Word counting — creator-only billing', () => {
     expect(cost).toBe(3);
   });
 
-  it('floor is used, never round: floor(10 * MONETIZATION_SPLITS.CHAT.creator) = 6', () => {
+  it('floor is used, never round: floor(10 * MONETIZATION_SPLITS.CHAT.earner) = 6', () => {
     expect(Math.floor(10 * EARNER_REVENUE_SPLIT)).toBe(6);
   });
 
-  it('remainder to Avalo: 10 - floor(10*MONETIZATION_SPLITS.CHAT.creator) = 4', () => {
+  it('remainder to Avalo: 10 - floor(10*MONETIZATION_SPLITS.CHAT.earner) = 4', () => {
     const earner = Math.floor(10 * EARNER_REVENUE_SPLIT);
-    const avalo = 10 - earner;
-    expect(avalo).toBe(4);
+    const platform = 10 - earner;
+    expect(platform).toBe(4);
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

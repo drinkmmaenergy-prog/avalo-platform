@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 56 — Payout Background Processor
  * 
@@ -174,10 +176,10 @@ async function executeStripeTransfer(payout: PayoutRequest) {
     accountId: stripeAccountId,
     amountCents,
     currency: payout.currency,
-    description: `Avalo creator payout - ${payout.requestId}`,
+    description: `Avalo earner payout - ${payout.requestId}`,
     metadata: {
-      avaloRequestId: payout.requestId,
-      avaloUserId: payout.userId,
+      platformRequestId: payout.requestId,
+      platformUserId: payout.userId,
       tokensRequested: payout.tokensRequested.toString(),
     },
   });
@@ -223,8 +225,8 @@ async function executeWiseTransfer(payout: PayoutRequest) {
     currency: payout.currency,
     reference: `Avalo payout ${payout.requestId}`,
     metadata: {
-      avaloRequestId: payout.requestId,
-      avaloUserId: payout.userId,
+      platformRequestId: payout.requestId,
+      platformUserId: payout.userId,
       tokensRequested: payout.tokensRequested.toString(),
     },
   });
@@ -284,7 +286,7 @@ async function markPayoutForReview(
  */
 async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
   try {
-    await db.collection("creator_earnings").doc(payout.userId).update({
+    await db.collection("earner_earnings").doc(payout.userId).update({
       tokensPaidOut: admin.firestore.FieldValue.increment(-payout.tokensRequested),
       updatedAt: serverTimestamp(),
     });
@@ -421,6 +423,22 @@ async function checkPayoutTransferStatus(payout: PayoutRequest): Promise<void> {
     console.error(`Error checking payout status for ${payout.requestId}:`, error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

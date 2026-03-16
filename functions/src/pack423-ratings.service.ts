@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 423 — In-App Ratings, Sentiment & NPS Engine
  * Ratings Service
@@ -360,6 +362,20 @@ export async function getMyInteractionRatings(
 
   return ratingsSnap.docs.map(doc => doc.data() as UserInteractionRating);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

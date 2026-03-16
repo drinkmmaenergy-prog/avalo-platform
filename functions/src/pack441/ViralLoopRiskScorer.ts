@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 441 — Growth Safety Net & Viral Abuse Control
  * Viral Loop Risk Scorer Module
@@ -103,6 +105,22 @@ export class ViralLoopRiskScorer {
     return 'LOW';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 360 - Regional UX & Behavior Rules
  * Country-specific UX behavior, limits, and visibility rules
@@ -716,6 +718,20 @@ export const onUserCountryChangeUX = onDocumentUpdated('users/{userId}', async (
     
     console.log(`Updated UX config for user ${userId} to country ${newCountry}`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

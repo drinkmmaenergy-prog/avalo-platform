@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 296 — Integration Examples
  * 
@@ -182,7 +184,7 @@ export async function exampleCallStarted(
 export async function exampleBookingCreated(
   userId: string,
   bookingId: string,
-  creatorId: string,
+  earnerId: string,
   meetingTime: string,
   amountTokens: number
 ) {
@@ -191,7 +193,7 @@ export async function exampleBookingCreated(
   // Add audit logging
   await logBookingEvent(userId, 'CALENDAR_BOOKING_CREATED', {
     bookingId,
-    creatorId,
+    earnerId,
     meetingTime,
     amountTokens,
   });
@@ -397,6 +399,20 @@ export async function exampleLegalDocUpdate(
  * - [ ] Policy acceptances (logPolicyAcceptance)
  * - [ ] Legal doc updates (logLegalDocUpdate)
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

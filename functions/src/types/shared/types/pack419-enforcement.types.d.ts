@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface EnforcementAction  {
     id: string;
     type: 'WARNING' | 'SUSPENSION' | 'BAN' | 'RESTRICTION';
@@ -15,6 +17,23 @@ export interface EnforcementPolicy  {
   [key: string]: any;
 }
 export type EnforcementSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

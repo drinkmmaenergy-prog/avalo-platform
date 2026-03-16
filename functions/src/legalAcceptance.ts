@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Legal Acceptance System
  * PHASE 30B-3
@@ -66,6 +68,20 @@ export const acceptLegalDocuments = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

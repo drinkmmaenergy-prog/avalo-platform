@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 260: Live Broadcasts Types
  * TypeScript definitions for Fan-Only + Pay-Per-View + Gifting
@@ -673,3 +674,4 @@ export function getWarningColor(warningCount: number): string {
   };
   return colors[severity];
 }
+

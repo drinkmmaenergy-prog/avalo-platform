@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 148 - System Integrations
  * Integrations with existing Avalo payment systems
@@ -64,7 +66,7 @@ export async function recordCallPaymentToLedger(
 export async function recordProductPurchaseToLedger(
   purchaseId: string,
   buyerId: string,
-  creatorId: string,
+  earnerId: string,
   tokenAmount: number,
   conversionRate: number,
   escrowId?: string,
@@ -73,7 +75,7 @@ export async function recordProductPurchaseToLedger(
   return await recordLedgerTransaction({
     transactionId: purchaseId,
     senderId: buyerId,
-    receiverId: creatorId,
+    receiverId: earnerId,
     productType: 'product',
     tokenAmount,
     conversionRate,
@@ -136,7 +138,7 @@ export async function recordClubMembershipToLedger(
 export async function recordChallengeParticipationToLedger(
   participationId: string,
   participantId: string,
-  creatorId: string,
+  earnerId: string,
   tokenAmount: number,
   conversionRate: number,
   escrowId?: string,
@@ -145,7 +147,7 @@ export async function recordChallengeParticipationToLedger(
   return await recordLedgerTransaction({
     transactionId: participationId,
     senderId: participantId,
-    receiverId: creatorId,
+    receiverId: earnerId,
     productType: 'challenge',
     tokenAmount,
     conversionRate,
@@ -184,7 +186,7 @@ export async function recordMentorshipSessionToLedger(
 export async function recordSubscriptionToLedger(
   subscriptionId: string,
   subscriberId: string,
-  creatorId: string,
+  earnerId: string,
   tokenAmount: number,
   conversionRate: number,
   regionTag: string = 'US'
@@ -192,7 +194,7 @@ export async function recordSubscriptionToLedger(
   return await recordLedgerTransaction({
     transactionId: subscriptionId,
     senderId: subscriberId,
-    receiverId: creatorId,
+    receiverId: earnerId,
     productType: 'subscription',
     tokenAmount,
     conversionRate,
@@ -230,7 +232,7 @@ export async function recordPaidGiftToLedger(
 export async function recordPaidPostToLedger(
   postId: string,
   viewerId: string,
-  creatorId: string,
+  earnerId: string,
   tokenAmount: number,
   conversionRate: number,
   escrowId?: string,
@@ -239,7 +241,7 @@ export async function recordPaidPostToLedger(
   return await recordLedgerTransaction({
     transactionId: postId,
     senderId: viewerId,
-    receiverId: creatorId,
+    receiverId: earnerId,
     productType: 'post',
     tokenAmount,
     conversionRate,
@@ -254,7 +256,7 @@ export async function recordPaidPostToLedger(
 export async function recordMediaUnlockToLedger(
   unlockId: string,
   viewerId: string,
-  creatorId: string,
+  earnerId: string,
   tokenAmount: number,
   conversionRate: number,
   escrowId?: string,
@@ -263,7 +265,7 @@ export async function recordMediaUnlockToLedger(
   return await recordLedgerTransaction({
     transactionId: unlockId,
     senderId: viewerId,
-    receiverId: creatorId,
+    receiverId: earnerId,
     productType: 'media_unlock',
     tokenAmount,
     conversionRate,
@@ -428,6 +430,20 @@ export function getTokenConversionRate(): number {
   // This should be fetched from your token pricing configuration
   return 0.01;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

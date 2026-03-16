@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Crypto Scam Detection
  * Detect and block cryptocurrency investment scams and traps
@@ -28,7 +30,7 @@ const CRYPTO_SCAM_PATTERNS = [
 ];
 
 const BANNED_CRYPTO_KEYWORDS = [
-  'send crypto outside avalo',
+  'send crypto outside platform',
   'transfer to my wallet',
   'invest in my coin',
   'buy my token',
@@ -388,6 +390,22 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists && userDoc.data()?.role === 'admin';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

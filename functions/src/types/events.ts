@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 275 - Events Engine
  * TypeScript types for Events, Tickets, QR Codes, and Safety
@@ -56,7 +58,7 @@ export interface Event {
 export interface TicketPayment {
   totalTokensPaid: number;
   organizerShareTokens: number;  // 80%
-  avaloShareTokens: number;       // 20%
+  platformTokens: number;       // 20%
   refundedUserTokens: number;
   refundedAvaloTokens: number;
 }
@@ -143,6 +145,22 @@ export interface SafetyEventHook {
   additionalData: Record<string, any>;
   timestamp: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

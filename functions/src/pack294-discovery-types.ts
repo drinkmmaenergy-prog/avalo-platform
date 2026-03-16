@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 294 - Search & Discovery Filters
  * Type Definitions for Discovery Search System
@@ -176,12 +178,28 @@ export const DISCOVERY_CONSTANTS = {
 // Ranking weight configuration
 export const DEFAULT_RANKING_WEIGHTS: RankingWeights = {
   distance: 0.25,
-  activity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
-  popularity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  activity: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
+  popularity: MONETIZATION_SPLITS.EVENT_TICKET.platform,
   matchIntent: 0.15,
   tierBoost: 0.05,
   risk: 0.05,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

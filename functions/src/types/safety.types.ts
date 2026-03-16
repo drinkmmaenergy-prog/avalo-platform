@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 153 — Avalo Anti-Harassment & Hate-Speech NUSDal Filter 2.0
  * 
@@ -474,7 +476,7 @@ export interface VoiceAnalysisSession {
 export interface LivestreamModerationSession {
   sessionId: string;
   streamId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Monitoring config
   active: boolean;
@@ -688,6 +690,22 @@ export function isProtectedContent(
   
   return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

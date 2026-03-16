@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO 3.1 — PHASE 55: EXTENDED GLOBAL i18n SYSTEM
@@ -937,6 +939,17 @@ export type {
   TranslationResponse,
   LanguageConfig,
 };
+
+
+
+
+
+
+
+
+
+
+
 
 
 

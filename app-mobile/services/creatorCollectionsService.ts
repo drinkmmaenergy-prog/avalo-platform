@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Creator Collections Service
  * Phase 33-10: UI-only Creator Collections (PPV + Subscription Hybrid Bundles)
@@ -608,3 +609,4 @@ export default {
   VIP_DISCOUNT,
   MAX_COLLECTIONS_PER_CREATOR,
 };
+

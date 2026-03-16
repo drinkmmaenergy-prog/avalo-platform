@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 199: Avalo Global Expansion Protocol
  * Types and Interfaces for Regional Compliance
@@ -12,7 +14,7 @@ export interface ImmutableCoreRules {
   nsfwMonetizationAllowed: false;
   payForRomanceAllowed: false;
   escortServicesAllowed: false;
-  revenueSplit: { creator: 65; platform: 35 };
+  revenueSplit: { earner: 65; platform: 35 };
   tokenDiscountsAllowed: false;
   gamblingAllowed: false;
   beautyRankingAllowed: false;
@@ -25,7 +27,7 @@ export const IMMUTABLE_CORE: ImmutableCoreRules = {
   nsfwMonetizationAllowed: false,
   payForRomanceAllowed: false,
   escortServicesAllowed: false,
-  revenueSplit: { creator: 65, platform: 35 },
+  revenueSplit: { earner: 65, platform: 35 },
   tokenDiscountsAllowed: false,
   gamblingAllowed: false,
   beautyRankingAllowed: false,
@@ -154,7 +156,7 @@ export interface RegionalSafetyFlag {
 
 export interface RegionalMarketplaceItem {
   itemId: string;
-  creatorId: string;
+  earnerId: string;
   category: string;
   subcategory: string;
   allowedRegions: RegionCode[];
@@ -167,7 +169,7 @@ export interface RegionalLegalPacket {
   id: string;
   regionCode: RegionCode;
   countryCode: string;
-  type: 'terms' | 'privacy' | 'cookies' | 'creator-agreement' | 'marketplace-rules';
+  type: 'terms' | 'privacy' | 'cookies' | 'earner-agreement' | 'marketplace-rules';
   version: string;
   content: string;
   effectiveDate: Timestamp;
@@ -243,6 +245,22 @@ export interface LawUpdateScanResult {
   errors: string[];
   nextScanAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 350 - Call Pricing with Subscription Discounts
  * 
@@ -57,20 +59,35 @@ export async function getPack350CallMinuteCost(params: {
 
 /**
  * Calculate earnings split for calls (80/20)
- * IMPORTANT: No changes to revenue splits, only pricing discounts
  */
 export function calculateCallEarningsSplit(totalTokens: number): {
   earnerReceives: number;
-  avaloReceives: number;
+  platformReceives: number;
 } {
-  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.EVENT_TICKET.creator);  // 80% to earner
-  const avaloReceives = totalTokens - earnerReceives;     // 20% to Avalo
+  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.EVENT_TICKET.earner);  // 80% to earner
+  const platformReceives = totalTokens - earnerReceives;     // 20% to Avalo
   
   return {
     earnerReceives,
-    avaloReceives,
+    platformReceives,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

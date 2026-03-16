@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 13 - Affiliate Engine
  * Lightweight affiliate/influencer tracking extension of referral system
@@ -256,6 +258,20 @@ export default {
   onReferredUserSignup,
   onReferredUserPayment,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 /**
  * PACK 123 - Secure Token Generation
  * 
@@ -28,6 +30,23 @@ export function generateDeviceFingerprint(
     .update(data)
     .digest('hex');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

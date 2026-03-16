@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 134 — Interest Graph Updater
  * 
@@ -243,7 +245,7 @@ export async function getTopUserInterests(
  * Uses tags, description, and existing category assignments
  * NO appearance or user demographics used
  * 
- * @param targetId - Content or creator ID
+ * @param targetId - Content or earner ID
  * @param targetType - Type of target
  * @param analysisData - Content analysis data (tags, description, etc.)
  * @returns Category profile
@@ -495,7 +497,7 @@ function calculateCategoryConfidence(analysisData: {
 /**
  * Get content categories for a target
  * 
- * @param targetId - Content or creator ID
+ * @param targetId - Content or earner ID
  * @returns Category profile or null
  */
 export async function getContentCategories(
@@ -645,6 +647,20 @@ export async function recalculateAllInterestVectors(batchSize: number = 100): Pr
     totalProcessed: processed,
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

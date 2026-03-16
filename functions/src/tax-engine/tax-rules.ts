@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 149: Global Tax Engine & Compliance Hub
  * Region-Aware Tax Rules Configuration
@@ -133,12 +135,12 @@ export const TAX_COMPLIANCE_REQUIREMENTS: Record<string, TaxComplianceRequiremen
 
 export const VAT_RATES: Record<string, number> = {
   'DE': 0.19,
-  'FR': MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  'FR': MONETIZATION_SPLITS.EVENT_TICKET.platform,
   'ES': 0.21,
   'IT': 0.22,
   'NL': 0.21,
   'BE': 0.21,
-  'AT': MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  'AT': MONETIZATION_SPLITS.EVENT_TICKET.platform,
   'PL': 0.23,
   'SE': 0.25,
   'DK': 0.25,
@@ -149,7 +151,7 @@ export const VAT_RATES: Record<string, number> = {
   'PT': 0.23,
   'GR': 0.24,
   'CZ': 0.21,
-  'GB': MONETIZATION_SPLITS.EVENT_TICKET.avalo
+  'GB': MONETIZATION_SPLITS.EVENT_TICKET.platform
 };
 
 export const GST_RATES: Record<string, number> = {
@@ -224,24 +226,24 @@ export function getReportType(country: TaxResidencyCountry): TaxDocumentType {
 }
 
 export function hasDoubleTaxTreaty(
-  creatorCountry: TaxResidencyCountry,
+  earnerCountry: TaxResidencyCountry,
   sourceCountry: string
 ): boolean {
-  const requirements = getComplianceRequirements(creatorCountry, 'individual');
+  const requirements = getComplianceRequirements(earnerCountry, 'individual');
   return requirements.doubleTaxTreatyAvailable.includes(sourceCountry);
 }
 
 export function calculateVATLiability(
   grossRevenue: number,
-  creatorCountry: TaxResidencyCountry
+  earnerCountry: TaxResidencyCountry
 ): number {
-  const vatRate = getVATRate(creatorCountry);
+  const vatRate = getVATRate(earnerCountry);
   
   if (vatRate === 0) {
     return 0;
   }
   
-  const threshold = getDigitalServicesTaxThreshold(creatorCountry);
+  const threshold = getDigitalServicesTaxThreshold(earnerCountry);
   if (grossRevenue < threshold) {
     return 0;
   }
@@ -251,15 +253,15 @@ export function calculateVATLiability(
 
 export function calculateGSTLiability(
   grossRevenue: number,
-  creatorCountry: TaxResidencyCountry
+  earnerCountry: TaxResidencyCountry
 ): number {
-  const gstRate = getGSTRate(creatorCountry);
+  const gstRate = getGSTRate(earnerCountry);
   
   if (gstRate === 0) {
     return 0;
   }
   
-  const threshold = getDigitalServicesTaxThreshold(creatorCountry);
+  const threshold = getDigitalServicesTaxThreshold(earnerCountry);
   if (grossRevenue < threshold) {
     return 0;
   }
@@ -286,6 +288,23 @@ export function validateTaxProfile(
     missingFields
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 359 — Legal Compliance: GDPR & Data Retention
  * 
@@ -409,7 +411,7 @@ async function processDataExport(
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     });
     
-    const downloadUrl = `https://avalo.app/api/data-export/${exportDoc.id}`;
+    const downloadUrl = `https://platform.app/api/data-export/${exportDoc.id}`;
     
     // Update request with results
     await requestRef.update({
@@ -631,6 +633,20 @@ export const checkDataRequestStatus = functions.https.onCall(async (request) => 
   
   return requests.docs[0].data();
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

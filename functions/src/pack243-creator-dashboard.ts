@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 243: Creator Ego Metrics Dashboard
- * Cloud Functions for calculating and updating creator analytics
+ * Cloud Functions for calculating and updating earner analytics
  * Runs every 24 hours to update dashboard metrics
  */
 
@@ -21,34 +23,34 @@ import {
   SuggestionContext,
   NUDGE_TEMPLATES,
   SUGGESTION_TEMPLATES,
-} from './types/pack243-creator-dashboard';
+} from './types/pack243-earner-dashboard';
 import { HttpsError, Timestamp, auth, onCall, timestamp, logger, onSchedule } from './runtime';
 
 /**
- * Scheduled function: Calculate dashboard analytics for all creators
+ * Scheduled function: Calculate dashboard analytics for all earners
  * Runs daily at 2 AM UTC
  */
 export const calculateCreatorDashboards = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
-    console.log('Starting daily creator dashboard calculation...');
+    console.log('Starting daily earner dashboard calculation...');
 
     try {
-      // Get all creators
-      const creatorsSnapshot = await db
+      // Get all earners
+      const earnersSnapshot = await db
         .collection('users')
-        .where('role', '==', 'creator')
+        .where('role', '==', 'earner')
         .get();
 
       const batch = db.batch();
       let processedCount = 0;
       let failedCount = 0;
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
+      for (const earnerDoc of earnersSnapshot.docs) {
         try {
-          const userId = creatorDoc.id;
+          const userId = earnerDoc.id;
           await calculateCreatorAnalytics(userId);
           processedCount++;
         } catch (error) {
-          console.error(`Failed to calculate analytics for creator ${creatorDoc.id}:`, error);
+          console.error(`Failed to calculate analytics for earner ${earnerDoc.id}:`, error);
           failedCount++;
         }
       }
@@ -64,7 +66,7 @@ export const calculateCreatorDashboards = onSchedule({ schedule: "0 2 * * *", ti
   });
 
 /**
- * Calculate analytics for a single creator
+ * Calculate analytics for a single earner
  */
 async function calculateCreatorAnalytics(userId: string): Promise<void> {
   const now = new Date();
@@ -127,7 +129,7 @@ async function calculateCreatorAnalytics(userId: string): Promise<void> {
   };
 
   // Save dashboard
-  await db.collection('creatorDashboard').doc(userId).set(dashboard);
+  await db.collection('earnerDashboard').doc(userId).set(dashboard);
 
   // Generate daily stats
   const dailyStats: DailyStats = {
@@ -144,7 +146,7 @@ async function calculateCreatorAnalytics(userId: string): Promise<void> {
   };
 
   await db
-    .collection('creatorDashboard')
+    .collection('earnerDashboard')
     .doc(userId)
     .collection('dailyStats')
     .doc(formatDate(yesterday))
@@ -202,7 +204,7 @@ async function getProfileViews(
 ): Promise<{ current: number; previous: number }> {
   const currentSnapshot = await db
     .collection('profileViews')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(startDate))
     .where('timestamp', '<=', admin.firestore.Timestamp.fromDate(endDate))
     .get();
@@ -212,7 +214,7 @@ async function getProfileViews(
 
   const previousSnapshot = await db
     .collection('profileViews')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(previousStart))
     .where('timestamp', '<=', admin.firestore.Timestamp.fromDate(previousEnd))
     .get();
@@ -257,7 +259,7 @@ async function getSwipeInterest(
 }
 
 /**
- * Get chat requests sent to creator
+ * Get chat requests sent to earner
  */
 async function getChatRequests(
   userId: string,
@@ -297,7 +299,7 @@ async function getMissedEarnings(
 ): Promise<{ count: number; estimatedRevenue: number; reason: 'unavailable' | 'slow_response' | 'price_too_high' }> {
   const failedPaymentsSnapshot = await db
     .collection('failedPayments')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('reason', '==', 'insufficient_balance')
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(startDate))
     .where('timestamp', '<=', admin.firestore.Timestamp.fromDate(endDate))
@@ -326,7 +328,7 @@ async function getAgeRangeMetrics(
 ): Promise<AgeRangeMetrics[]> {
   const interactionsSnapshot = await db
     .collection('interactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(startDate))
     .where('timestamp', '<=', admin.firestore.Timestamp.fromDate(endDate))
     .get();
@@ -361,7 +363,7 @@ async function getCountryMetrics(
 ): Promise<CountryMetrics[]> {
   const interactionsSnapshot = await db
     .collection('interactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(startDate))
     .where('timestamp', '<=', admin.firestore.Timestamp.fromDate(endDate))
     .get();
@@ -426,8 +428,8 @@ async function getTokenEarnings(
     let total = 0;
     snapshot.forEach((doc) => {
       const data = doc.data();
-      // 65% revenue split for creator
-      total += (data.amount || 0) * MONETIZATION_SPLITS.CHAT.creator;
+      // 65% revenue split for earner
+      total += (data.amount || 0) * MONETIZATION_SPLITS.CHAT.earner;
     });
     return total;
   };
@@ -450,13 +452,13 @@ async function getMeetingConversionStats(
   const [chatsSnapshot, meetingsSnapshot] = await Promise.all([
     db
       .collection('chats')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(startDate))
       .where('createdAt', '<=', admin.firestore.Timestamp.fromDate(endDate))
       .get(),
     db
       .collection('meetings')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('status', '==', 'booked')
       .where('bookedAt', '>=', admin.firestore.Timestamp.fromDate(startDate))
       .where('bookedAt', '<=', admin.firestore.Timestamp.fromDate(endDate))
@@ -476,7 +478,7 @@ async function getMeetingConversionStats(
 async function getEventPopularityStats(userId: string): Promise<{ expectedAttendance: number }> {
   const upcomingEventsSnapshot = await db
     .collection('events')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', '==', 'upcoming')
     .orderBy('startTime', 'asc')
     .limit(5)
@@ -502,9 +504,9 @@ async function calculateRetentionPercentile(userId: string, monthlyEarnings: num
   const userData = userDoc.data();
   const country = userData?.country || 'Unknown';
 
-  // Get all creators in the same country
+  // Get all earners in the same country
   const regionalCreatorsSnapshot = await db
-    .collection('creatorDashboard')
+    .collection('earnerDashboard')
     .where('country', '==', country)
     .get();
 
@@ -666,7 +668,7 @@ async function saveNudges(userId: string, nudges: MotivationalNudge[]): Promise<
   
   for (const nudge of nudges) {
     const nudgeRef = db
-      .collection('creatorDashboard')
+      .collection('earnerDashboard')
       .doc(userId)
       .collection('motivationalNudges')
       .doc(nudge.id);
@@ -684,7 +686,7 @@ async function saveSuggestions(userId: string, suggestions: ActionSuggestion[]):
   
   for (const suggestion of suggestions) {
     const suggestionRef = db
-      .collection('creatorDashboard')
+      .collection('earnerDashboard')
       .doc(userId)
       .collection('actionSuggestions')
       .doc(suggestion.id);
@@ -766,7 +768,7 @@ async function getUserCountry(userId: string): Promise<string> {
 }
 
 async function getPreviousDashboard(userId: string): Promise<CreatorDashboard | null> {
-  const doc = await db.collection('creatorDashboard').doc(userId).get();
+  const doc = await db.collection('earnerDashboard').doc(userId).get();
   return doc.exists ? (doc.data() as CreatorDashboard) : null;
 }
 
@@ -840,13 +842,13 @@ async function getRecentUploadContext(userId: string): Promise<{ timestamp: Fire
   // Check view increase after upload
   const viewsAfter = await db
     .collection('profileViews')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '>', uploadTime)
     .get();
 
   const viewsBefore = await db
     .collection('profileViews')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('timestamp', '<', uploadTime)
     .where('timestamp', '>', admin.firestore.Timestamp.fromMillis(uploadTime.toMillis() - 24 * 60 * 60 * 1000))
     .get();
@@ -883,7 +885,7 @@ async function getResponseSpeedContext(userId: string): Promise<{ previousAverag
 }
 
 /**
- * HTTP callable function to manually trigger dashboard calculation for a specific creator
+ * HTTP callable function to manually trigger dashboard calculation for a specific earner
  */
 export const triggerDashboardCalculation = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -894,10 +896,10 @@ export const triggerDashboardCalculation = functions.https.onCall(async (request
 
   const userId = data.userId || request.auth.uid;
 
-  // Verify the user is a creator
+  // Verify the user is a earner
   const userDoc = await db.collection('users').doc(userId).get();
-  if (!userDoc.exists || userDoc.data()?.role !== 'creator') {
-    throw new functions.https.HttpsError('permission-denied', 'Must be a creator');
+  if (!userDoc.exists || userDoc.data()?.role !== 'earner') {
+    throw new functions.https.HttpsError('permission-denied', 'Must be a earner');
   }
 
   try {
@@ -924,7 +926,7 @@ export const dismissNudge = functions.https.onCall(async (request) => {
   const userId = request.auth.uid;
 
   await db
-    .collection('creatorDashboard')
+    .collection('earnerDashboard')
     .doc(userId)
     .collection('motivationalNudges')
     .doc(nudgeId)
@@ -952,7 +954,7 @@ export const completeActionSuggestion = functions.https.onCall(async (request) =
   const userId = request.auth.uid;
 
   await db
-    .collection('creatorDashboard')
+    .collection('earnerDashboard')
     .doc(userId)
     .collection('actionSuggestions')
     .doc(suggestionId)
@@ -979,6 +981,22 @@ export const completeActionSuggestion = functions.https.onCall(async (request) =
 
   return;
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

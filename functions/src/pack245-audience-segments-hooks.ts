@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 245: Audience Classification & VIP Segmenting
  * Integration hooks to trigger segment updates from other systems
@@ -26,7 +28,7 @@ async function queueSegmentUpdate(trigger: SegmentUpdateTrigger): Promise<void> 
   await queueRef.set({
     id: queueRef.id,
     viewerId: trigger.userId,
-    creatorId: trigger.creatorId,
+    earnerId: trigger.earnerId,
     computationType: 'incremental',
     status: 'pending',
     priority: trigger.priority,
@@ -46,9 +48,9 @@ async function queueSegmentUpdate(trigger: SegmentUpdateTrigger): Promise<void> 
  */
 async function processSegmentUpdateImmediate(trigger: SegmentUpdateTrigger): Promise<void> {
   try {
-    if (trigger.creatorId) {
+    if (trigger.earnerId) {
       // Update specific relationship
-      await computeAudienceSegment(trigger.userId, trigger.creatorId);
+      await computeAudienceSegment(trigger.userId, trigger.earnerId);
     } else {
       // Update all relationships for user (budget/intent only)
       if (trigger.source === 'purchase') {
@@ -87,7 +89,7 @@ export async function onTransactionCompleted(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId,
-    creatorId: targetUserId || null,
+    earnerId: targetUserId || null,
     source: 'purchase',
     priority: 7, // High priority for budget updates
     context: {
@@ -124,7 +126,7 @@ export async function onChatCompleted(params: {
   if (earnerId) {
     const trigger: SegmentUpdateTrigger = {
       userId: payerId,
-      creatorId: earnerId,
+      earnerId: earnerId,
       source: 'chat',
       priority: 6,
       context: {
@@ -151,7 +153,7 @@ export async function onChatMessageSent(params: {
   // Low priority - batch these updates
   const trigger: SegmentUpdateTrigger = {
     userId: senderId,
-    creatorId: receiverId,
+    earnerId: receiverId,
     source: 'chat',
     priority: 3,
     context: {
@@ -183,7 +185,7 @@ export async function onCallCompleted(params: {
   if (earnerId) {
     const trigger: SegmentUpdateTrigger = {
       userId: payerId,
-      creatorId: earnerId,
+      earnerId: earnerId,
       source: 'call',
       priority: 7, // High priority - calls are expensive
       context: {
@@ -212,15 +214,15 @@ export async function onCallCompleted(params: {
 export async function onMeetingBooked(params: {
   bookingId: string;
   attendeeId: string;
-  creatorId: string;
+  earnerId: string;
   cost: number;
   meetingDate: Date;
 }): Promise<void> {
-  const { attendeeId, creatorId, cost } = params;
+  const { attendeeId, earnerId, cost } = params;
   
   const trigger: SegmentUpdateTrigger = {
     userId: attendeeId,
-    creatorId,
+    earnerId,
     source: 'meeting',
     priority: 8, // Very high priority - meetings indicate strong intent
     context: {
@@ -239,14 +241,14 @@ export async function onMeetingBooked(params: {
 export async function onMeetingCompleted(params: {
   bookingId: string;
   attendeeId: string;
-  creatorId: string;
+  earnerId: string;
   rating?: number;
 }): Promise<void> {
-  const { attendeeId, creatorId, rating } = params;
+  const { attendeeId, earnerId, rating } = params;
   
   const trigger: SegmentUpdateTrigger = {
     userId: attendeeId,
-    creatorId,
+    earnerId,
     source: 'meeting',
     priority: 7,
     context: {
@@ -275,7 +277,7 @@ export async function onEventRegistered(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId,
-    creatorId: organizerId,
+    earnerId: organizerId,
     source: 'event',
     priority: 7,
     context: {
@@ -300,7 +302,7 @@ export async function onEventAttended(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId,
-    creatorId: organizerId,
+    earnerId: organizerId,
     source: 'event',
     priority: 6,
     context: {
@@ -340,7 +342,7 @@ export async function onLocationUpdated(params: {
     const segment = doc.data();
     const trigger: SegmentUpdateTrigger = {
       userId,
-      creatorId: segment.creatorId,
+      earnerId: segment.earnerId,
       source: 'location',
       priority: 4,
       context: {
@@ -381,7 +383,7 @@ export async function onProfileInterestsUpdated(params: {
     const segment = doc.data();
     const trigger: SegmentUpdateTrigger = {
       userId,
-      creatorId: segment.creatorId,
+      earnerId: segment.earnerId,
       source: 'profile',
       priority: 5,
       context: {
@@ -412,7 +414,7 @@ export async function onProfileViewed(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId: viewerId,
-    creatorId: viewedUserId,
+    earnerId: viewedUserId,
     source: 'profile',
     priority: 2, // Low priority
     context: {
@@ -436,7 +438,7 @@ export async function onMediaLiked(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId,
-    creatorId: mediaOwnerId,
+    earnerId: mediaOwnerId,
     source: 'profile',
     priority: 2,
     context: {
@@ -463,7 +465,7 @@ export async function onFirstInteraction(params: {
   
   const trigger: SegmentUpdateTrigger = {
     userId,
-    creatorId: targetUserId,
+    earnerId: targetUserId,
     source: 'profile',
     priority: 9, // Very high priority - new relationship
     context: {
@@ -512,7 +514,7 @@ export async function processQueuedSegmentUpdates(batchSize: number = 50): Promi
       
       // Compute segment
       if (queueItem.computationType === 'full') {
-        await computeAudienceSegment(queueItem.viewerId, queueItem.creatorId);
+        await computeAudienceSegment(queueItem.viewerId, queueItem.earnerId);
       } else {
         // Incremental update based on trigger
         const trigger = queueItem.trigger as string;
@@ -522,10 +524,10 @@ export async function processQueuedSegmentUpdates(batchSize: number = 50): Promi
           await computeIntentClassification(queueItem.viewerId);
         }
         
-        if (queueItem.creatorId) {
+        if (queueItem.earnerId) {
           // Update specific relationship segments
-          await computeProximity(queueItem.viewerId, queueItem.creatorId);
-          await computePassionSignals(queueItem.viewerId, queueItem.creatorId);
+          await computeProximity(queueItem.viewerId, queueItem.earnerId);
+          await computePassionSignals(queueItem.viewerId, queueItem.earnerId);
         }
       }
       
@@ -592,6 +594,20 @@ export const SegmentHooks = {
   onFirstInteraction,
   processQueuedSegmentUpdates
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

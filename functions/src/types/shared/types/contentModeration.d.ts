@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface ModerationLabels  {
     adult?: boolean;
     violence?: boolean;
@@ -35,6 +37,23 @@ export interface ContentModerationRecord  {
   [key: string]: any;
 }
 export type ModerationAction = 'ALLOW' | 'FLAG' | 'BLOCK' | 'REVIEW';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

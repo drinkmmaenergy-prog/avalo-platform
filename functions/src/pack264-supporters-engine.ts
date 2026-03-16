@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 264: TOP SUPPORTERS & VIP RANKINGS
  * Spender Retention Engine - Core Logic
@@ -25,12 +27,12 @@ import { admin, functions, onSchedule } from './runtime';
  * Process token spending event and update supporter rankings
  */
 export const processTokenSpending = async (event: TokenSpendingEvent): Promise<void> => {
-  const { supporterId, creatorId, amount, type, transactionId } = event;
+  const { supporterId, earnerId, amount, type, transactionId } = event;
 
   // Get or create supporter ranking
   const supporterRef = db
-    .collection('creatorSupporters')
-    .doc(creatorId)
+    .collection('earnerSupporters')
+    .doc(earnerId)
     .collection('supporters')
     .doc(supporterId);
 
@@ -42,7 +44,7 @@ export const processTokenSpending = async (event: TokenSpendingEvent): Promise<v
     // Create new supporter ranking
     ranking = {
       supporterId,
-      creatorId,
+      earnerId,
       lifetimeTokensSpent: amount,
       monthlyTokensSpent: amount,
       currentRank: SupporterRank.SUPPORTER,
@@ -97,8 +99,8 @@ export const processTokenSpending = async (event: TokenSpendingEvent): Promise<v
     await updateLifetimeArchiveBadge(supporterId, ranking.lifetimeBadge, ranking.lifetimeTokensSpent);
   }
 
-  // Recalculate rankings for this creator
-  await recalculateRankings(creatorId);
+  // Recalculate rankings for this earner
+  await recalculateRankings(earnerId);
 };
 
 /**
@@ -156,13 +158,13 @@ async function updateLifetimeArchiveBadge(
 }
 
 /**
- * Recalculate rankings for a creator
+ * Recalculate rankings for a earner
  */
-export const recalculateRankings = async (creatorId: string): Promise<void> => {
+export const recalculateRankings = async (earnerId: string): Promise<void> => {
   // Get all supporters sorted by lifetime tokens spent
   const supportersSnapshot = await db
-    .collection('creatorSupporters')
-    .doc(creatorId)
+    .collection('earnerSupporters')
+    .doc(earnerId)
     .collection('supporters')
     .orderBy('lifetimeTokensSpent', 'desc')
     .get();
@@ -207,7 +209,7 @@ export const recalculateRankings = async (creatorId: string): Promise<void> => {
       }
 
       // Update active perks
-      await updateSupporterPerks(creatorId, ranking.supporterId, ranking.perks);
+      await updateSupporterPerks(earnerId, ranking.supporterId, ranking.perks);
     }
 
     position++;
@@ -215,8 +217,8 @@ export const recalculateRankings = async (creatorId: string): Promise<void> => {
 
   await batch.commit();
   
-  // Update creator analytics
-  await updateCreatorAnalytics(creatorId, supportersSnapshot.docs.length);
+  // Update earner analytics
+  await updateCreatorAnalytics(earnerId, supportersSnapshot.docs.length);
 };
 
 /**
@@ -227,9 +229,9 @@ async function sendRankChangeNotification(
   oldRank: SupporterRank,
   newRank: SupporterRank
 ): Promise<void> {
-  // Get creator name
-  const creatorDoc = await db.collection('users').doc(ranking.creatorId).get();
-  const creatorName = creatorDoc.exists ? creatorDoc.data()?.displayName || 'Creator' : 'Creator';
+  // Get earner name
+  const earnerDoc = await db.collection('users').doc(ranking.earnerId).get();
+  const earnerName = earnerDoc.exists ? earnerDoc.data()?.displayName || 'Creator' : 'Creator';
 
   let message: string;
   let type: 'rank_up' | 'rank_down';
@@ -237,24 +239,24 @@ async function sendRankChangeNotification(
   if (getRankValue(newRank) > getRankValue(oldRank)) {
     type = 'rank_up';
     if (newRank === SupporterRank.TOP_1) {
-      message = `You're now the TOP 1 supporter for ${creatorName} — impressive! 🔥`;
+      message = `You're now the TOP 1 supporter for ${earnerName} — impressive! 🔥`;
     } else if (newRank === SupporterRank.TOP_3) {
-      message = `You're now in the TOP 3 supporters for ${creatorName} — impressive! 💎`;
+      message = `You're now in the TOP 3 supporters for ${earnerName} — impressive! 💎`;
     } else if (newRank === SupporterRank.TOP_10) {
-      message = `You're now in the TOP 10 supporters for ${creatorName} — impressive! ⭐`;
+      message = `You're now in the TOP 10 supporters for ${earnerName} — impressive! ⭐`;
     } else {
-      message = `You're now a supporter for ${creatorName}!`;
+      message = `You're now a supporter for ${earnerName}!`;
     }
   } else {
     type = 'rank_down';
-    message = `Your supporter rank for ${creatorName} has changed. Keep supporting to maintain your position!`;
+    message = `Your supporter rank for ${earnerName} has changed. Keep supporting to maintain your position!`;
   }
 
   const notification: RankChangeNotification = {
-    id: `${ranking.supporterId}_${ranking.creatorId}_${Date.now()}`,
+    id: `${ranking.supporterId}_${ranking.earnerId}_${Date.now()}`,
     userId: ranking.supporterId,
-    creatorId: ranking.creatorId,
-    creatorName,
+    earnerId: ranking.earnerId,
+    earnerName,
     type,
     oldRank,
     newRank,
@@ -292,13 +294,13 @@ function getRankValue(rank: SupporterRank): number {
  * Update supporter perks
  */
 async function updateSupporterPerks(
-  creatorId: string,
+  earnerId: string,
   supporterId: string,
   perks: SupporterPerks
 ): Promise<void> {
   await db
     .collection('supporterPerks')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('active')
     .doc(supporterId)
     .set({
@@ -308,17 +310,17 @@ async function updateSupporterPerks(
 }
 
 /**
- * Update creator analytics
+ * Update earner analytics
  */
 async function updateCreatorAnalytics(
-  creatorId: string,
+  earnerId: string,
   totalSupporters: number
 ): Promise<void> {
   const period = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
   
   await db
-    .collection('creatorAnalytics')
-    .doc(creatorId)
+    .collection('earnerAnalytics')
+    .doc(earnerId)
     .collection('supporters')
     .doc('stats')
     .set({
@@ -355,17 +357,17 @@ export const monthlyRankingReset = onSchedule(
   async () => {
     logger.info('Starting monthly supporter ranking reset...');
 
-    // Get all creators
-    const creatorsSnapshot = await db.collection('creatorSupporters').get();
+    // Get all earners
+    const earnersSnapshot = await db.collection('earnerSupporters').get();
 
-    for (const creatorDoc of creatorsSnapshot.docs) {
-      const creatorId = creatorDoc.id;
+    for (const earnerDoc of earnersSnapshot.docs) {
+      const earnerId = earnerDoc.id;
 
       // Archive current month's rankings
       const currentPeriod = new Date().toISOString().slice(0, 7);
       const supportersSnapshot = await db
-        .collection('creatorSupporters')
-        .doc(creatorId)
+        .collection('earnerSupporters')
+        .doc(earnerId)
         .collection('supporters')
         .get();
 
@@ -377,8 +379,8 @@ export const monthlyRankingReset = onSchedule(
         
         // Save to monthly archive
         const archiveRef = db
-          .collection('creatorSupporters')
-          .doc(creatorId)
+          .collection('earnerSupporters')
+          .doc(earnerId)
           .collection('monthlyRankings')
           .doc(currentPeriod)
           .collection('supporters')
@@ -397,7 +399,7 @@ export const monthlyRankingReset = onSchedule(
 
       // Send reset warning notifications (48 hours before)
       // This should be run 2 days before the actual reset
-      await sendResetWarningNotifications(creatorId);
+      await sendResetWarningNotifications(earnerId);
     }
 
     logger.info('Monthly supporter ranking reset complete');
@@ -407,16 +409,16 @@ export const monthlyRankingReset = onSchedule(
 /**
  * Send reset warning notifications
  */
-async function sendResetWarningNotifications(creatorId: string): Promise<void> {
+async function sendResetWarningNotifications(earnerId: string): Promise<void> {
   const supportersSnapshot = await db
-    .collection('creatorSupporters')
-    .doc(creatorId)
+    .collection('earnerSupporters')
+    .doc(earnerId)
     .collection('supporters')
     .where('currentRank', 'in', [SupporterRank.TOP_1, SupporterRank.TOP_3, SupporterRank.TOP_10])
     .get();
 
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const creatorName = creatorDoc.exists ? creatorDoc.data()?.displayName || 'Creator' : 'Creator';
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const earnerName = earnerDoc.exists ? earnerDoc.data()?.displayName || 'Creator' : 'Creator';
 
   for (const doc of supportersSnapshot.docs) {
     const ranking = doc.data() as SupporterRanking;
@@ -424,12 +426,12 @@ async function sendResetWarningNotifications(creatorId: string): Promise<void> {
     const notification: RankChangeNotification = {
       id: `${ranking.supporterId}_reset_${Date.now()}`,
       userId: ranking.supporterId,
-      creatorId,
-      creatorName,
+      earnerId,
+      earnerName,
       type: 'reset_warning',
       oldRank: ranking.currentRank,
       newRank: ranking.currentRank,
-      message: `Leaderboard resets in 48 hours — maintain your ${ranking.currentRank} rank for ${creatorName}!`,
+      message: `Leaderboard resets in 48 hours — maintain your ${ranking.currentRank} rank for ${earnerName}!`,
       read: false,
       createdAt: new Date(),
     };
@@ -450,11 +452,11 @@ async function sendResetWarningNotifications(creatorId: string): Promise<void> {
  */
 export const checkNearRankup = async (
   supporterId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<void> => {
   const supporterDoc = await db
-    .collection('creatorSupporters')
-    .doc(creatorId)
+    .collection('earnerSupporters')
+    .doc(earnerId)
     .collection('supporters')
     .doc(supporterId)
     .get();
@@ -482,8 +484,8 @@ export const checkNearRankup = async (
   if (targetPosition && targetRank) {
     // Get the supporter at target position
     const targetSnapshot = await db
-      .collection('creatorSupporters')
-      .doc(creatorId)
+      .collection('earnerSupporters')
+      .doc(earnerId)
       .collection('supporters')
       .orderBy('lifetimeTokensSpent', 'desc')
       .limit(targetPosition)
@@ -496,19 +498,19 @@ export const checkNearRankup = async (
 
       // If within 1000 tokens, send notification
       if (tokensNeeded > 0 && tokensNeeded <= 1000) {
-        const creatorDoc = await db.collection('users').doc(creatorId).get();
-        const creatorName = creatorDoc.exists ? creatorDoc.data()?.displayName || 'Creator' : 'Creator';
+        const earnerDoc = await db.collection('users').doc(earnerId).get();
+        const earnerName = earnerDoc.exists ? earnerDoc.data()?.displayName || 'Creator' : 'Creator';
 
         const notification: RankChangeNotification = {
           id: `${supporterId}_near_${Date.now()}`,
           userId: supporterId,
-          creatorId,
-          creatorName,
+          earnerId,
+          earnerName,
           type: 'near_rankup',
           oldRank: ranking.currentRank,
           newRank: targetRank,
           tokensNeeded,
-          message: `Only ${tokensNeeded} tokens left to reach ${targetRank} for ${creatorName}!`,
+          message: `Only ${tokensNeeded} tokens left to reach ${targetRank} for ${earnerName}!`,
           read: false,
           createdAt: new Date(),
         };
@@ -525,6 +527,20 @@ export const checkNearRankup = async (
     }
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

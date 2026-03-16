@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — NSFW Discovery & Feed Containment
  * Containment = visibility reduction + user control, not promotion
@@ -331,13 +333,13 @@ export function shouldPropagateEngagement(
 // ============================================================================
 
 /**
- * Get or create creator content profile
+ * Get or create earner content profile
  */
 export async function getCreatorContentProfile(
   userId: string
 ): Promise<CreatorContentProfile> {
   try {
-    const doc = await db.collection('creator_content_profiles').doc(userId).get();
+    const doc = await db.collection('earner_content_profiles').doc(userId).get();
 
     if (doc.exists) {
       return doc.data() as CreatorContentProfile;
@@ -346,13 +348,13 @@ export async function getCreatorContentProfile(
     // Create new profile
     return await createCreatorContentProfile(userId);
   } catch (error) {
-    console.error(`[PACK108] Error getting creator content profile:`, error);
+    console.error(`[PACK108] Error getting earner content profile:`, error);
     throw error;
   }
 }
 
 /**
- * Create creator content profile
+ * Create earner content profile
  */
 async function createCreatorContentProfile(userId: string): Promise<CreatorContentProfile> {
   try {
@@ -369,17 +371,17 @@ async function createCreatorContentProfile(userId: string): Promise<CreatorConte
       updatedAt: serverTimestamp() as Timestamp,
     };
 
-    await db.collection('creator_content_profiles').doc(userId).set(profile);
+    await db.collection('earner_content_profiles').doc(userId).set(profile);
     
     return profile;
   } catch (error) {
-    console.error(`[PACK108] Error creating creator content profile:`, error);
+    console.error(`[PACK108] Error creating earner content profile:`, error);
     throw error;
   }
 }
 
 /**
- * Update creator content profile after content creation
+ * Update earner content profile after content creation
  */
 export async function updateCreatorContentProfile(
   userId: string,
@@ -421,16 +423,16 @@ export async function updateCreatorContentProfile(
     updates.eligibleForSafeFeed = updates.safeContentRatio >= 0.8; // 80% safe content
     updates.requiresSeparation = updates.nsfwContentRatio > 0 && updates.safeContentRatio > 0;
 
-    await db.collection('creator_content_profiles').doc(userId).update(updates);
+    await db.collection('earner_content_profiles').doc(userId).update(updates);
 
-    console.log(`[PACK108] Updated creator profile for ${userId}`);
+    console.log(`[PACK108] Updated earner profile for ${userId}`);
   } catch (error) {
-    console.error(`[PACK108] Error updating creator content profile:`, error);
+    console.error(`[PACK108] Error updating earner content profile:`, error);
   }
 }
 
 /**
- * Check if creator's content should be shown in safe feed
+ * Check if earner's content should be shown in safe feed
  */
 export async function canShowCreatorInSafeFeed(userId: string): Promise<boolean> {
   try {
@@ -451,10 +453,10 @@ export async function canShowCreatorInSafeFeed(userId: string): Promise<boolean>
  */
 export async function filterContentForFeed(
   userId: string,
-  contentList: Array<{ id: string; nsfwLevel: NSFWLevel; creatorId: string }>
-): Promise<Array<{ id: string; nsfwLevel: NSFWLevel; creatorId: string }>> {
+  contentList: Array<{ id: string; nsfwLevel: NSFWLevel; earnerId: string }>
+): Promise<Array<{ id: string; nsfwLevel: NSFWLevel; earnerId: string }>> {
   try {
-    const filtered: Array<{ id: string; nsfwLevel: NSFWLevel; creatorId: string }> = [];
+    const filtered: Array<{ id: string; nsfwLevel: NSFWLevel; earnerId: string }> = [];
 
     for (const content of contentList) {
       const canShow = await canShowInDiscoveryFeed(userId, content.id, content.nsfwLevel);
@@ -496,6 +498,20 @@ export function segregateFeed(
 
   return { safeFeed, nsfwFeed };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

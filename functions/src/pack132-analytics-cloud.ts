@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 132 — Avalo Global Analytics Cloud
  * Core Analytics Engine
@@ -178,10 +180,10 @@ export function validatePrivacy(data: any): PrivacyValidationResult {
 // ============================================================================
 
 /**
- * Compute creator metrics for a specific period
+ * Compute earner metrics for a specific period
  */
 export async function computeCreatorMetrics(
-  creatorId: string,
+  earnerId: string,
   period: AnalyticsPeriod
 ): Promise<CreatorMetrics> {
   const { start, end } = getPeriodDateRange(period);
@@ -190,7 +192,7 @@ export async function computeCreatorMetrics(
   
   // Initialize metrics
   const metrics: CreatorMetrics = {
-    creatorId,
+    earnerId,
     period,
     totalFollowers: 0,
     followerGrowth: 0,
@@ -235,7 +237,7 @@ export async function computeCreatorMetrics(
   
   try {
     // Get user profile data
-    const userDoc = await db.collection('users').doc(creatorId).get();
+    const userDoc = await db.collection('users').doc(earnerId).get();
     if (userDoc.exists) {
       const userData = userDoc.data();
       metrics.totalFollowers = userData?.followerCount || 0;
@@ -245,7 +247,7 @@ export async function computeCreatorMetrics(
     // Get posts and engagement
     const postsQuery = await db
       .collection('feed_posts')
-      .where('userId', '==', creatorId)
+      .where('userId', '==', earnerId)
       .where('createdAt', '>=', startTimestamp)
       .where('createdAt', '<=', endTimestamp)
       .get();
@@ -273,7 +275,7 @@ export async function computeCreatorMetrics(
     // Get earnings from ledger (AGGREGATED ONLY)
     const earningsQuery = await db
       .collection('earnings_ledger')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('createdAt', '>=', startTimestamp)
       .where('createdAt', '<=', endTimestamp)
       .get();
@@ -305,8 +307,8 @@ export async function computeCreatorMetrics(
     
     // Get subscription data
     const subsQuery = await db
-      .collection('creator_subscriptions')
-      .where('creatorId', '==', creatorId)
+      .collection('earner_subscriptions')
+      .where('earnerId', '==', earnerId)
       .where('status', '==', 'ACTIVE')
       .get();
     
@@ -315,7 +317,7 @@ export async function computeCreatorMetrics(
     // Get digital product sales
     const productsQuery = await db
       .collection('digital_product_purchases')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('purchasedAt', '>=', startTimestamp)
       .where('purchasedAt', '<=', endTimestamp)
       .get();
@@ -329,7 +331,7 @@ export async function computeCreatorMetrics(
     // Get call statistics
     const callsQuery = await db
       .collection('call_sessions')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('startedAt', '>=', startTimestamp)
       .where('startedAt', '<=', endTimestamp)
       .get();
@@ -342,7 +344,7 @@ export async function computeCreatorMetrics(
     
     // Calculate growth if not lifetime
     if (period !== 'LIFETIME') {
-      const previousPeriod = await getPreviousPeriodMetrics(creatorId, period);
+      const previousPeriod = await getPreviousPeriodMetrics(earnerId, period);
       if (previousPeriod) {
         metrics.followerGrowth = calculateGrowth(metrics.totalFollowers, previousPeriod.totalFollowers);
         metrics.revenueGrowth = calculateGrowth(metrics.totalRevenue, previousPeriod.totalRevenue);
@@ -351,13 +353,13 @@ export async function computeCreatorMetrics(
     }
     
     // Calculate retention (if we have cohort data)
-    const retentionData = await calculateRetentionCohorts(creatorId, start, end);
+    const retentionData = await calculateRetentionCohorts(earnerId, start, end);
     metrics.retentionDay1 = retentionData.day1;
     metrics.retentionDay7 = retentionData.day7;
     metrics.retentionDay30 = retentionData.day30;
     
   } catch (error) {
-    logger.error('Error computing creator metrics', { creatorId, period, error });
+    logger.error('Error computing earner metrics', { earnerId, period, error });
     throw error;
   }
   
@@ -368,7 +370,7 @@ export async function computeCreatorMetrics(
  * Get previous period metrics for growth calculation
  */
 async function getPreviousPeriodMetrics(
-  creatorId: string,
+  earnerId: string,
   currentPeriod: AnalyticsPeriod
 ): Promise<CreatorMetrics | null> {
   try {
@@ -386,8 +388,8 @@ async function getPreviousPeriodMetrics(
     
     // Get cached metrics from previous computation
     const doc = await db
-      .collection('analytics_creators')
-      .doc(creatorId)
+      .collection('analytics_earners')
+      .doc(earnerId)
       .get();
     
     if (doc.exists) {
@@ -405,7 +407,7 @@ async function getPreviousPeriodMetrics(
  * Calculate retention cohorts (aggregated)
  */
 async function calculateRetentionCohorts(
-  creatorId: string,
+  earnerId: string,
   start: Date,
   end: Date
 ): Promise<{ day1: number; day7: number; day30: number }> {
@@ -415,7 +417,7 @@ async function calculateRetentionCohorts(
     // Get new followers in period
     const followersQuery = await db
       .collection('user_follows')
-      .where('followingId', '==', creatorId)
+      .where('followingId', '==', earnerId)
       .where('createdAt', '>=', startTimestamp)
       .get();
     
@@ -496,10 +498,10 @@ async function calculateRetentionCohorts(
 // ============================================================================
 
 /**
- * Generate content performance heatmap for creator
+ * Generate content performance heatmap for earner
  */
 export async function generateContentHeatmap(
-  creatorId: string,
+  earnerId: string,
   period: AnalyticsPeriod
 ): Promise<ContentHeatmap> {
   const { start, end } = getPeriodDateRange(period);
@@ -507,7 +509,7 @@ export async function generateContentHeatmap(
   const endTimestamp = Timestamp.fromDate(end);
   
   const heatmap: ContentHeatmap = {
-    creatorId,
+    earnerId,
     period,
     bestHours: [],
     bestDays: [],
@@ -530,7 +532,7 @@ export async function generateContentHeatmap(
     // Get all posts in period with their performance
     const postsQuery = await db
       .collection('feed_posts')
-      .where('userId', '==', creatorId)
+      .where('userId', '==', earnerId)
       .where('createdAt', '>=', startTimestamp)
       .where('createdAt', '<=', endTimestamp)
       .get();
@@ -610,7 +612,7 @@ export async function generateContentHeatmap(
     }
     
   } catch (error) {
-    logger.error('Error generating content heatmap', { creatorId, period, error });
+    logger.error('Error generating content heatmap', { earnerId, period, error });
   }
   
   return heatmap;
@@ -621,16 +623,16 @@ export async function generateContentHeatmap(
 // ============================================================================
 
 /**
- * Generate predictive insights for creator
+ * Generate predictive insights for earner
  */
 export async function generatePredictiveInsights(
-  creatorId: string
+  earnerId: string
 ): Promise<PredictiveInsight[]> {
   const insights: PredictiveInsight[] = [];
   
   try {
     // Get heatmap for last 30 days
-    const heatmap = await generateContentHeatmap(creatorId, 'DAY_30');
+    const heatmap = await generateContentHeatmap(earnerId, 'DAY_30');
     
     // Insight 1: Best posting times
     if (heatmap.bestHours.length >= 3) {
@@ -641,8 +643,8 @@ export async function generatePredictiveInsights(
         const hoursStr = topHours.map(h => `${h.hour}:00`).join(', ');
         
         insights.push({
-          id: `${creatorId}_best_hours_${Date.now()}`,
-          targetId: creatorId,
+          id: `${earnerId}_best_hours_${Date.now()}`,
+          targetId: earnerId,
           targetType: 'CREATOR',
           insightType: 'BEST_TIME',
           title: 'Optimal Posting Hours',
@@ -670,8 +672,8 @@ export async function generatePredictiveInsights(
       
       if (avgConfidence >= ANALYTICS_CONFIG.CONFIDENCE_THRESHOLD) {
         insights.push({
-          id: `${creatorId}_best_days_${Date.now()}`,
-          targetId: creatorId,
+          id: `${earnerId}_best_days_${Date.now()}`,
+          targetId: earnerId,
           targetType: 'CREATOR',
           insightType: 'BEST_TIME',
           title: 'Peak Performance Days',
@@ -701,8 +703,8 @@ export async function generatePredictiveInsights(
       const [topType, topData] = typeEntries[0];
       
       insights.push({
-        id: `${creatorId}_content_type_${Date.now()}`,
-        targetId: creatorId,
+        id: `${earnerId}_content_type_${Date.now()}`,
+        targetId: earnerId,
         targetType: 'CREATOR',
         insightType: 'CONTENT_TYPE',
         title: `${topType} Content Performs Best`,
@@ -722,14 +724,14 @@ export async function generatePredictiveInsights(
       });
     }
     
-    // Get creator metrics for revenue insights
-    const metrics = await computeCreatorMetrics(creatorId, 'DAY_30');
+    // Get earner metrics for revenue insights
+    const metrics = await computeCreatorMetrics(earnerId, 'DAY_30');
     
     // Insight 4: Monetization opportunity
     if (metrics.totalFollowers >= 1000 && metrics.totalRevenue === 0) {
       insights.push({
-        id: `${creatorId}_monetization_${Date.now()}`,
-        targetId: creatorId,
+        id: `${earnerId}_monetization_${Date.now()}`,
+        targetId: earnerId,
         targetType: 'CREATOR',
         insightType: 'GROWTH_OPPORTUNITY',
         title: 'Monetization Ready',
@@ -757,8 +759,8 @@ export async function generatePredictiveInsights(
     // Insight 5: Revenue trend
     if (metrics.revenueGrowth > 20) {
       insights.push({
-        id: `${creatorId}_revenue_trend_${Date.now()}`,
-        targetId: creatorId,
+        id: `${earnerId}_revenue_trend_${Date.now()}`,
+        targetId: earnerId,
         targetType: 'CREATOR',
         insightType: 'GROWTH_OPPORTUNITY',
         title: 'Strong Revenue Growth',
@@ -779,7 +781,7 @@ export async function generatePredictiveInsights(
     }
     
   } catch (error) {
-    logger.error('Error generating predictive insights', { creatorId, error });
+    logger.error('Error generating predictive insights', { earnerId, error });
   }
   
   // Limit to max insights
@@ -791,7 +793,7 @@ export async function generatePredictiveInsights(
 // ============================================================================
 
 /**
- * Compute daily metrics for all active creators
+ * Compute daily metrics for all active earners
  * Runs at 3 AM UTC daily
  */
 export const computeDailyMetrics = onSchedule(
@@ -806,46 +808,46 @@ export const computeDailyMetrics = onSchedule(
     logger.info('Starting daily metrics computation');
     
     try {
-      // Get all creators with recent activity (last 90 days)
+      // Get all earners with recent activity (last 90 days)
       const ninetydaysAgo = Timestamp.fromMillis(Date.now() - 90 * 24 * 60 * 60 * 1000);
       
       const activeCreatorsQuery = await db
         .collection('earnings_ledger')
         .where('createdAt', '>=', ninetydaysAgo)
-        .select('creatorId')
+        .select('earnerId')
         .get();
       
-      const creatorIds = new Set<string>();
+      const earnerIds = new Set<string>();
       activeCreatorsQuery.forEach(doc => {
-        const creatorId = doc.data().creatorId;
-        if (creatorId) creatorIds.add(creatorId);
+        const earnerId = doc.data().earnerId;
+        if (earnerId) earnerIds.add(earnerId);
       });
       
-      logger.info(`Computing daily metrics for ${creatorIds.size} creators`);
+      logger.info(`Computing daily metrics for ${earnerIds.size} earners`);
       
       let processedCount = 0;
       let errorCount = 0;
       
       // Process in batches
       const batchSize = 10;
-      const creators = Array.from(creatorIds);
+      const earners = Array.from(earnerIds);
       
-      for (let i = 0; i < creators.length; i += batchSize) {
-        const batch = creators.slice(i, i + batchSize);
+      for (let i = 0; i < earners.length; i += batchSize) {
+        const batch = earners.slice(i, i + batchSize);
         
         await Promise.all(
-          batch.map(async (creatorId) => {
+          batch.map(async (earnerId) => {
             try {
               // Compute metrics for DAY_1 and DAY_7
-              const metricsDay1 = await computeCreatorMetrics(creatorId, 'DAY_1');
-              const metricsDay7 = await computeCreatorMetrics(creatorId, 'DAY_7');
+              const metricsDay1 = await computeCreatorMetrics(earnerId, 'DAY_1');
+              const metricsDay7 = await computeCreatorMetrics(earnerId, 'DAY_7');
               
               // Update materialized view
               await db
-                .collection('analytics_creators')
-                .doc(creatorId)
+                .collection('analytics_earners')
+                .doc(earnerId)
                 .set({
-                  creatorId,
+                  earnerId,
                   metrics: {
                     DAY_1: metricsDay1,
                     DAY_7: metricsDay7,
@@ -856,7 +858,7 @@ export const computeDailyMetrics = onSchedule(
               
               processedCount++;
             } catch (error) {
-              logger.error('Error computing metrics for creator', { creatorId, error });
+              logger.error('Error computing metrics for earner', { earnerId, error });
               errorCount++;
             }
           })
@@ -864,7 +866,7 @@ export const computeDailyMetrics = onSchedule(
       }
       
       logger.info('Daily metrics computation completed', {
-        totalCreators: creators.length,
+        totalCreators: earners.length,
         processedCount,
         errorCount,
       });
@@ -892,38 +894,38 @@ export const computeWeeklyMetrics = onSchedule(
     logger.info('Starting weekly metrics computation');
     
     try {
-      // Get all active creators
+      // Get all active earners
       const activeCreatorsQuery = await db
-        .collection('analytics_creators')
+        .collection('analytics_earners')
         .get();
       
       let processedCount = 0;
       let errorCount = 0;
       
       const batchSize = 10;
-      const creators = activeCreatorsQuery.docs;
+      const earners = activeCreatorsQuery.docs;
       
-      for (let i = 0; i < creators.length; i += batchSize) {
-        const batch = creators.slice(i, i + batchSize);
+      for (let i = 0; i < earners.length; i += batchSize) {
+        const batch = earners.slice(i, i + batchSize);
         
         await Promise.all(
           batch.map(async (doc) => {
-            const creatorId = doc.id;
+            const earnerId = doc.id;
             
             try {
               // Compute 30-day metrics
-              const metricsDay30 = await computeCreatorMetrics(creatorId, 'DAY_30');
+              const metricsDay30 = await computeCreatorMetrics(earnerId, 'DAY_30');
               
               // Generate heatmap
-              const heatmap = await generateContentHeatmap(creatorId, 'DAY_30');
+              const heatmap = await generateContentHeatmap(earnerId, 'DAY_30');
               
               // Generate insights
-              const insights = await generatePredictiveInsights(creatorId);
+              const insights = await generatePredictiveInsights(earnerId);
               
               // Update materialized view
               await db
-                .collection('analytics_creators')
-                .doc(creatorId)
+                .collection('analytics_earners')
+                .doc(earnerId)
                 .set({
                   metrics: {
                     DAY_30: metricsDay30,
@@ -937,7 +939,7 @@ export const computeWeeklyMetrics = onSchedule(
               
               processedCount++;
             } catch (error) {
-              logger.error('Error computing weekly metrics for creator', { creatorId, error });
+              logger.error('Error computing weekly metrics for earner', { earnerId, error });
               errorCount++;
             }
           })
@@ -945,7 +947,7 @@ export const computeWeeklyMetrics = onSchedule(
       }
       
       logger.info('Weekly metrics computation completed', {
-        totalCreators: creators.length,
+        totalCreators: earners.length,
         processedCount,
         errorCount,
       });
@@ -974,34 +976,34 @@ export const computeMonthlyMetrics = onSchedule(
     
     try {
       const activeCreatorsQuery = await db
-        .collection('analytics_creators')
+        .collection('analytics_earners')
         .get();
       
       let processedCount = 0;
       let errorCount = 0;
       
       const batchSize = 5; // Smaller batch for intensive computation
-      const creators = activeCreatorsQuery.docs;
+      const earners = activeCreatorsQuery.docs;
       
-      for (let i = 0; i < creators.length; i += batchSize) {
-        const batch = creators.slice(i, i + batchSize);
+      for (let i = 0; i < earners.length; i += batchSize) {
+        const batch = earners.slice(i, i + batchSize);
         
         await Promise.all(
           batch.map(async (doc) => {
-            const creatorId = doc.id;
+            const earnerId = doc.id;
             
             try {
               // Compute 90-day and lifetime metrics
-              const metricsDay90 = await computeCreatorMetrics(creatorId, 'DAY_90');
-              const metricsLifetime = await computeCreatorMetrics(creatorId, 'LIFETIME');
+              const metricsDay90 = await computeCreatorMetrics(earnerId, 'DAY_90');
+              const metricsLifetime = await computeCreatorMetrics(earnerId, 'LIFETIME');
               
               // Generate heatmaps
-              const heatmapDay90 = await generateContentHeatmap(creatorId, 'DAY_90');
+              const heatmapDay90 = await generateContentHeatmap(earnerId, 'DAY_90');
               
               // Update materialized view
               await db
-                .collection('analytics_creators')
-                .doc(creatorId)
+                .collection('analytics_earners')
+                .doc(earnerId)
                 .set({
                   metrics: {
                     DAY_90: metricsDay90,
@@ -1015,7 +1017,7 @@ export const computeMonthlyMetrics = onSchedule(
               
               processedCount++;
             } catch (error) {
-              logger.error('Error computing monthly metrics for creator', { creatorId, error });
+              logger.error('Error computing monthly metrics for earner', { earnerId, error });
               errorCount++;
             }
           })
@@ -1023,7 +1025,7 @@ export const computeMonthlyMetrics = onSchedule(
       }
       
       logger.info('Monthly metrics computation completed', {
-        totalCreators: creators.length,
+        totalCreators: earners.length,
         processedCount,
         errorCount,
       });
@@ -1034,6 +1036,20 @@ export const computeMonthlyMetrics = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

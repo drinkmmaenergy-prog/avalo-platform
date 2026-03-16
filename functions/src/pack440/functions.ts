@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 440:Creator Revenue Integrity & Payout Freezing Framework
  * Cloud Functions - Automated triggers and scheduled jobs
@@ -34,7 +36,7 @@ export const onPayoutCreated = onDocumentCreated('payout_requests/{payoutId}', a
     try {
       // Create escrow
       const escrow = await escrowService.createPayoutEscrow({
-        creatorId: data.creatorId,
+        earnerId: data.earnerId,
         amount: data.amount,
         currency: data.currency,
         revenueBreakdown: data.revenueBreakdown
@@ -42,17 +44,17 @@ export const onPayoutCreated = onDocumentCreated('payout_requests/{payoutId}', a
       
       // Evaluate freeze conditions
       const freezeEval = await freezeController.evaluateFreeze(
-        data.creatorId,
+        data.earnerId,
         escrow.payoutId,
         data.amount
       );
       
       if (freezeEval && freezeEval.shouldFreeze) {
-        await freezeController.createFreeze(data.creatorId, freezeEval, escrow.payoutId);
+        await freezeController.createFreeze(data.earnerId, freezeEval, escrow.payoutId);
       }
       
-      // Update creator status
-      await statusAPI.updateStatus(data.creatorId);
+      // Update earner status
+      await statusAPI.updateStatus(data.earnerId);
       
       console.log(`Payout ${escrow.payoutId} created with ${escrow.escrowPeriod.cooldownHours}h escrow`);
     } catch (error) {
@@ -66,7 +68,7 @@ export const onPayoutCreated = onDocumentCreated('payout_requests/{payoutId}', a
  */
 export const updateIntegrityScores = onSchedule("every 1 hours", async (event) => {
     try {
-      // Get all active creators (with recent activity)
+      // Get all active earners (with recent activity)
       const recentPayouts = await db
         .collection('payout_escrow')
         .where('metadata.createdAt', '>=', admin.firestore.Timestamp.fromMillis(
@@ -74,22 +76,22 @@ export const updateIntegrityScores = onSchedule("every 1 hours", async (event) =
         ))
         .get();
       
-      const creatorIds = new Set(recentPayouts.docs.map(doc => doc.data().creatorId));
+      const earnerIds = new Set(recentPayouts.docs.map(doc => doc.data().earnerId));
       
       // Update scores in batches
       const batchSize = 10;
-      const creatorArray = Array.from(creatorIds);
+      const earnerArray = Array.from(earnerIds);
       
-      for (let i = 0; i < creatorArray.length; i += batchSize) {
-        const batch = creatorArray.slice(i, i + batchSize);
-        await Promise.all(batch.map(creatorId => 
-          integrityService.calculateScore(creatorId).catch(err => {
-            console.error(`Error updating score for ${creatorId}:`, err);
+      for (let i = 0; i < earnerArray.length; i += batchSize) {
+        const batch = earnerArray.slice(i, i + batchSize);
+        await Promise.all(batch.map(earnerId => 
+          integrityService.calculateScore(earnerId).catch(err => {
+            console.error(`Error updating score for ${earnerId}:`, err);
           })
         ));
       }
       
-      console.log(`Updated integrity scores for ${creatorIds.size} creators`);
+      console.log(`Updated integrity scores for ${earnerIds.size} earners`);
     } catch (error) {
       console.error('Error in updateIntegrityScores:', error);
     }
@@ -105,7 +107,7 @@ export const processEscrowReleases = onSchedule("every 15 minutes", async (event
       for (const payout of readyPayouts) {
         try {
           await escrowService.releasePayout(payout.payoutId);
-          await statusAPI.updateStatus(payout.creatorId);
+          await statusAPI.updateStatus(payout.earnerId);
           console.log(`Released payout ${payout.payoutId}`);
         } catch (error) {
           console.error(`Error releasing payout ${payout.payoutId}:`, error);
@@ -128,7 +130,7 @@ export const processFreezeReleases = onSchedule("every 30 minutes", async (event
       for (const freeze of readyFreezes) {
         try {
           await freezeController.releaseFreeze(freeze.freezeId, 'AUTO', 'Time-based release');
-          await statusAPI.updateStatus(freeze.creatorId);
+          await statusAPI.updateStatus(freeze.earnerId);
           console.log(`Released freeze ${freeze.freezeId}`);
         } catch (error) {
           console.error(`Error releasing freeze ${freeze.freezeId}:`, error);
@@ -176,17 +178,17 @@ export const checkSLABreaches = onSchedule("every 1 hours", async (event) => {
   });
 
 /**
- * HTTPS Callable: Get creator payout status
+ * HTTPS Callable: Get earner payout status
  */
 export const getCreatorPayoutStatus = functions.https.onCall(async (request) => {
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   try {
-    const status = await statusAPI.getStatus(creatorId);
+    const status = await statusAPI.getStatus(earnerId);
     return status;
   } catch (error) {
     console.error('Error in getCreatorPayoutStatus:', error);
@@ -204,14 +206,14 @@ export const markPayoutMessageRead = functions.https.onCall(async (request) => {
   }
   
   const { messageId } = data;
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   if (!messageId) {
     throw new functions.https.HttpsError('invalid-argument', 'messageId is required');
   }
   
   try {
-    await statusAPI.markMessageRead(creatorId, messageId);
+    await statusAPI.markMessageRead(earnerId, messageId);
     console.log('Scheduled job result:', { success: true });
 
     return;
@@ -247,10 +249,10 @@ export const adminReleaseFreeze = functions.https.onCall(async (request) => {
   try {
     await freezeController.releaseFreeze(freezeId, request.auth.uid, notes || '');
     
-    // Update creator status
+    // Update earner status
     const freeze = await freezeController.getFreeze(freezeId);
     if (freeze) {
-      await statusAPI.updateStatus(freeze.creatorId);
+      await statusAPI.updateStatus(freeze.earnerId);
     }
     
     console.log('Scheduled job result:', { success: true });
@@ -311,6 +313,22 @@ export const getAdminDashboardStats = functions.https.onCall(async (request) => 
     throw new functions.https.HttpsError('internal', 'Failed to get dashboard stats');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

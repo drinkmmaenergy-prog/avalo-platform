@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 55 — Media Compliance Integration
  * Integration hooks for PACK 47 Media Cloud Delivery
@@ -44,10 +46,24 @@ export function generateMediaId(source: MediaSource, identifier: string): string
  * const mediaId = generateMediaId('PROFILE_MEDIA', photoId);
  * await onMediaUploaded(mediaId, userId, 'PROFILE_MEDIA', storagePath);
  * 
- * // When marketplace/creator content is uploaded:
+ * // When marketplace/earner content is uploaded:
  * const mediaId = generateMediaId('MARKETPLACE', contentId);
  * await onMediaUploaded(mediaId, userId, 'MARKETPLACE', storagePath);
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

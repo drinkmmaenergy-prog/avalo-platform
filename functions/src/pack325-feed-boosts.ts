@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 325 - FEED MONETIZATION: BOOSTS & PROMOTED POSTS
  * ========================================================================
  * Mobile + Web · Uses existing Wallet (PACK 277/321) · No tokenomics drift
  * 
- * Enable creators to pay in tokens to:
+ * Enable earners to pay in tokens to:
  * - Boost their posts/reels (higher visibility for limited time)
  * - Promote content to broader audiences
  * 
@@ -552,6 +554,21 @@ function calculateAge(dateOfBirth: any): number {
 }
 
 logger.info('✅ PACK 325 - Feed Monetization: Boosts & Promoted Posts loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

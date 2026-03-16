@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 105 — Payout Reconciliation Engine
  * 
  * Scheduled job to reconcile internal payouts with external PSP records
  * 
  * Business Rules:
- * - NO automatic reversals of creator earnings
+ * - NO automatic reversals of earner earnings
  * - NO automatic payout cancellations
  * - Creates finance cases for human investigation
  * - Requires legal order for fraud-backed cancellations
@@ -426,6 +428,20 @@ export async function reconcilePayoutManual(payoutId: string): Promise<PayoutRec
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

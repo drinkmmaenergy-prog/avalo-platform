@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 57 — Dispute & Evidence Center API
  * Backend endpoints for dispute management
@@ -620,17 +622,17 @@ export async function resolveDispute(
     }
 
     if (actions.tokensToRevokeFromCreator && actions.tokensToRevokeFromCreator > 0 && dispute.targetUserId) {
-      // Revoke tokens from creator
-      const creatorRef = db.collection("users").doc(dispute.targetUserId);
-      transaction.update(creatorRef, {
-        creatorEarnings: FieldValue.increment(-actions.tokensToRevokeFromCreator)
+      // Revoke tokens from earner
+      const earnerRef = db.collection("users").doc(dispute.targetUserId);
+      transaction.update(earnerRef, {
+        earnerEarnings: FieldValue.increment(-actions.tokensToRevokeFromCreator)
       });
 
       // Log revocation
       const revocationRef = db.collection("token_revocations").doc();
       transaction.set(revocationRef, {
         revocationId: revocationRef.id,
-        creatorUserId: dispute.targetUserId,
+        earnerUserId: dispute.targetUserId,
         tokens: actions.tokensToRevokeFromCreator,
         reason: "DISPUTE_RESOLUTION",
         disputeId,
@@ -726,6 +728,20 @@ export async function updateDisputeStatus(
     updatedAt: admin.firestore.Timestamp.now()
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

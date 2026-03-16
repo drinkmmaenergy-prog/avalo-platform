@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Economy Engine - Phase 14
  *
@@ -139,27 +141,27 @@ function calculatePlatformFee(txData: any): number {
 
   // Chat: 35% platform fee
   if (type?.includes("chat")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.CHAT.avalo);
+    return Math.floor(amount * MONETIZATION_SPLITS.CHAT.platform);
   }
 
   // Tips: 20% platform fee
   if (type?.includes("tip")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
   }
 
   // Calendar: 20% platform fee
   if (type?.includes("calendar") || type?.includes("booking")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
   }
 
   // Live 1:1: 30% platform fee
   if (type?.includes("live_1on1")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
+    return Math.floor(amount * MONETIZATION_SPLITS.SUBSCRIPTION.platform);
   }
 
   // Live tip: 20% platform fee
   if (type?.includes("live_tip")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
   }
 
   return 0;
@@ -455,6 +457,23 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

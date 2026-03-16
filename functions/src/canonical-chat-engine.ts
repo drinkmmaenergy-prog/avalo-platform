@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * CANONICAL CHAT ENGINE — v2_canonical
  *
@@ -8,7 +10,7 @@
  *
  * REPLACES:
  * - chats.ts billing (payer-sender billing)
- * - chatMonetization.ts processMessageBilling
+ * - chatMonetization.ts shimProcessMessageBilling
  * - pack273ChatEngine (pack273_chats path)
  * - pack328b timeout divergence (48h/72h → canonical 48h)
  * - pack242 deposit modifiers (REMOVED — use earner config)
@@ -447,8 +449,8 @@ export async function processDeposit(
     });
 
     // Credit platform fee to Avalo
-    const avaloWalletRef = db.collection('system_wallets').doc('avalo_platform');
-    transaction.set(avaloWalletRef, {
+    const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
+    transaction.set(platformWalletRef, {
       balance: increment(platformFee),
       updatedAt: serverTimestamp(),
     }, { merge: true });
@@ -584,7 +586,7 @@ export function calculateBilling(
       newBuckets: 0,
       tokensConsumed: 0,
       earnerCredit: 0,
-      avaloCredit: 0,
+      platformCredit: 0,
       escrowExhausted: false,
       updatedBillingState: {
         ...currentState,
@@ -604,16 +606,16 @@ export function calculateBilling(
 
   // Credit split
   let earnerCredit: number;
-  let avaloCredit: number;
+  let platformCredit: number;
 
   if (earnerId !== null) {
     // 65% to earner, 35% to Avalo (from consumed escrow)
     earnerCredit = Math.floor(tokensToConsume * EARNER_REVENUE_SPLIT);
-    avaloCredit = tokensToConsume - earnerCredit; // Remainder to Avalo
+    platformCredit = tokensToConsume - earnerCredit; // Remainder to Avalo
   } else {
     // No earner — 100% to Avalo
     earnerCredit = 0;
-    avaloCredit = tokensToConsume;
+    platformCredit = tokensToConsume;
   }
 
   const escrowExhausted = (currentState.escrowRemainingTokens - tokensToConsume) <= 0;
@@ -625,7 +627,7 @@ export function calculateBilling(
     totalBucketsConsumed: totalBuckets,
     totalTokensConsumed: currentState.totalTokensConsumed + tokensToConsume,
     totalEarnerCredited: currentState.totalEarnerCredited + earnerCredit,
-    totalAvaloCredited: currentState.totalAvaloCredited + avaloCredit,
+    totalAvaloCredited: currentState.totalAvaloCredited + platformCredit,
   };
 
   return {
@@ -633,7 +635,7 @@ export function calculateBilling(
     newBuckets,
     tokensConsumed: tokensToConsume,
     earnerCredit,
-    avaloCredit,
+    platformCredit,
     escrowExhausted,
     updatedBillingState,
   };
@@ -686,7 +688,7 @@ export async function processMessage(
         newBuckets: 0,
         tokensConsumed: 0,
         earnerCredit: 0,
-        avaloCredit: 0,
+        platformCredit: 0,
         escrowExhausted: false,
         updatedBillingState: chat.paidSession.billingState,
       };
@@ -700,7 +702,7 @@ export async function processMessage(
         newBuckets: 0,
         tokensConsumed: 0,
         earnerCredit: 0,
-        avaloCredit: 0,
+        platformCredit: 0,
         escrowExhausted: false,
         updatedBillingState: chat.paidSession.billingState,
       };
@@ -731,10 +733,10 @@ export async function processMessage(
       }
 
       // Credit Avalo from escrow consumption
-      if (result.avaloCredit > 0) {
-        const avaloWalletRef = db.collection('system_wallets').doc('avalo_platform');
-        transaction.set(avaloWalletRef, {
-          balance: increment(result.avaloCredit),
+      if (result.platformCredit > 0) {
+        const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
+        transaction.set(platformWalletRef, {
+          balance: increment(result.platformCredit),
           updatedAt: serverTimestamp(),
         }, { merge: true });
       }
@@ -744,12 +746,12 @@ export async function processMessage(
       const txRef = db.collection('transactions').doc(txId);
       transaction.set(txRef, {
         txId,
-        uid: chat.roles.earnerId || 'avalo_platform',
+        uid: chat.roles.earnerId || 'platform_platform',
         type: 'CHAT_BILLING',
         amountTokens: result.tokensConsumed,
         split: {
           earnerTokens: result.earnerCredit,
-          avaloTokens: result.avaloCredit,
+          platformTokens: result.platformCredit,
         },
         status: 'completed',
         metadata: {
@@ -1079,6 +1081,21 @@ export async function getEarnerConfig(userId: string): Promise<EarnerChatConfig>
     burnMultiplierForNextSession: userData?.chatEarnerConfig?.burnMultiplierForNextSession ?? 1,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

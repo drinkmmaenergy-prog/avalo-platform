@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 245: Audience Classification & VIP Segmenting
  * Creator Dashboard Analytics Integration
  * 
- * Provides creators with aggregated audience insights WITHOUT individual labels
+ * Provides earners with aggregated audience insights WITHOUT individual labels
  */
 
 import { db } from './init';
@@ -20,17 +22,17 @@ import type {
 // ========================================================================
 
 /**
- * Get creator audience analytics with caching
+ * Get earner audience analytics with caching
  */
 export async function getCreatorAudienceInsights(
-  creatorId: string,
+  earnerId: string,
   forceRefresh: boolean = false
 ): Promise<CreatorAudienceAnalytics> {
   // Check cache first
   if (!forceRefresh) {
     const analyticsDoc = await db
-      .collection('creator_audience_analytics')
-      .doc(creatorId)
+      .collection('earner_audience_analytics')
+      .doc(earnerId)
       .get();
     
     if (analyticsDoc.exists) {
@@ -49,19 +51,19 @@ export async function getCreatorAudienceInsights(
   }
   
   // Recompute analytics
-  return await computeCreatorAudienceAnalytics(creatorId);
+  return await computeCreatorAudienceAnalytics(earnerId);
 }
 
 /**
  * Get audience breakdown by category
  */
-export async function getAudienceBreakdown(creatorId: string): Promise<{
+export async function getAudienceBreakdown(earnerId: string): Promise<{
   budget: { label: string; count: number; percentage: number }[];
   intent: { label: string; count: number; percentage: number }[];
   proximity: { label: string; count: number; percentage: number }[];
   passion: { label: string; count: number; percentage: number }[];
 }> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   const totalSize = analytics.totalAudienceSize;
   
@@ -145,7 +147,7 @@ export async function getAudienceBreakdown(creatorId: string): Promise<{
 /**
  * Get top audience segments (readable descriptions)
  */
-export async function getTopAudienceSegments(creatorId: string, limit: number = 5): Promise<{
+export async function getTopAudienceSegments(earnerId: string, limit: number = 5): Promise<{
   rank: number;
   description: string;
   count: number;
@@ -153,7 +155,7 @@ export async function getTopAudienceSegments(creatorId: string, limit: number = 
   avgRevenue: number;
   characteristics: string[];
 }[]> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   return analytics.topSegments.slice(0, limit).map((segment, index) => {
     const characteristics = [];
@@ -217,13 +219,13 @@ export async function getTopAudienceSegments(creatorId: string, limit: number = 
 /**
  * Get monetization strategy recommendations based on audience
  */
-export async function getMonetizationRecommendations(creatorId: string): Promise<{
+export async function getMonetizationRecommendations(earnerId: string): Promise<{
   primaryStrategy: string;
   reasoning: string;
   tips: string[];
   opportunities: string[];
 }> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   let primaryStrategy = '';
   let reasoning = '';
@@ -292,7 +294,7 @@ export async function getMonetizationRecommendations(creatorId: string): Promise
 /**
  * Get audience growth insights
  */
-export async function getAudienceGrowthInsights(creatorId: string): Promise<{
+export async function getAudienceGrowthInsights(earnerId: string): Promise<{
   totalAudience: number;
   payingAudience: number;
   mostValuableSegment: {
@@ -301,7 +303,7 @@ export async function getAudienceGrowthInsights(creatorId: string): Promise<{
   };
   growthOpportunities: string[];
 }> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   const mostValuable = analytics.mostValuableSegment;
   let mvDescription = 'High-value audience';
@@ -343,12 +345,12 @@ export async function getAudienceGrowthInsights(creatorId: string): Promise<{
 /**
  * Get personalized audience message suggestions
  */
-export async function getAudienceMessagingSuggestions(creatorId: string): Promise<{
+export async function getAudienceMessagingSuggestions(earnerId: string): Promise<{
   welcomeMessage: string;
   engagementTips: string[];
   contentIdeas: string[];
 }> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   let welcomeMessage = 'Welcome! ';
   const engagementTips: string[] = [];
@@ -397,7 +399,7 @@ export async function getAudienceMessagingSuggestions(creatorId: string): Promis
 /**
  * Get all dashboard data in one call (for efficiency)
  */
-export async function getCreatorDashboardData(creatorId: string): Promise<{
+export async function getCreatorDashboardData(earnerId: string): Promise<{
   overview: {
     totalAudience: number;
     payingAudience: number;
@@ -408,13 +410,13 @@ export async function getCreatorDashboardData(creatorId: string): Promise<{
   recommendations: Awaited<ReturnType<typeof getMonetizationRecommendations>>;
   growth: Awaited<ReturnType<typeof getAudienceGrowthInsights>>;
 }> {
-  const analytics = await getCreatorAudienceInsights(creatorId);
+  const analytics = await getCreatorAudienceInsights(earnerId);
   
   const [breakdown, topSegments, recommendations, growth] = await Promise.all([
-    getAudienceBreakdown(creatorId),
-    getTopAudienceSegments(creatorId),
-    getMonetizationRecommendations(creatorId),
-    getAudienceGrowthInsights(creatorId)
+    getAudienceBreakdown(earnerId),
+    getTopAudienceSegments(earnerId),
+    getMonetizationRecommendations(earnerId),
+    getAudienceGrowthInsights(earnerId)
   ]);
   
   return {
@@ -443,6 +445,20 @@ export const CreatorDashboard = {
   getAudienceMessagingSuggestions,
   getCreatorDashboardData
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

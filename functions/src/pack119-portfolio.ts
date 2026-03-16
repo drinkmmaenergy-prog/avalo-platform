@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 119 — Creator Agencies SaaS Panel
  * Portfolio Builder Engine
@@ -20,7 +22,7 @@ import { admin, auth, functions } from './runtime';
 // ============================================================================
 
 /**
- * Create or update creator portfolio
+ * Create or update earner portfolio
  */
 export const createOrUpdatePortfolio = onCall(
   { region: 'europe-west1' },
@@ -30,7 +32,7 @@ export const createOrUpdatePortfolio = onCall(
     }
 
     const {
-      creatorUserId,
+      earnerUserId,
       handle,
       displayName,
       bio,
@@ -44,17 +46,17 @@ export const createOrUpdatePortfolio = onCall(
       themeColor,
     } = request.data;
 
-    if (!creatorUserId || !handle || !displayName) {
+    if (!earnerUserId || !handle || !displayName) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
     try {
-      // Only creator or linked agency can create/update portfolio
-      if (request.auth.uid !== creatorUserId) {
+      // Only earner or linked agency can create/update portfolio
+      if (request.auth.uid !== earnerUserId) {
         // Check if caller is from linked agency
         const linkQuery = await db
-          .collection('creator_agency_links')
-          .where('creatorUserId', '==', creatorUserId)
+          .collection('earner_agency_links')
+          .where('earnerUserId', '==', earnerUserId)
           .where('status', '==', 'ACTIVE')
           .limit(1)
           .get();
@@ -85,11 +87,11 @@ export const createOrUpdatePortfolio = onCall(
         );
       }
 
-      // Check if handle is already taken (by another creator)
+      // Check if handle is already taken (by another earner)
       const existingPortfolioQuery = await db
-        .collection('creator_portfolios')
+        .collection('earner_portfolios')
         .where('handle', '==', handle)
-        .where('creatorUserId', '!=', creatorUserId)
+        .where('earnerUserId', '!=', earnerUserId)
         .limit(1)
         .get();
 
@@ -102,8 +104,8 @@ export const createOrUpdatePortfolio = onCall(
 
       // Get or create portfolio
       const portfolioQuery = await db
-        .collection('creator_portfolios')
-        .where('creatorUserId', '==', creatorUserId)
+        .collection('earner_portfolios')
+        .where('earnerUserId', '==', earnerUserId)
         .limit(1)
         .get();
 
@@ -113,11 +115,11 @@ export const createOrUpdatePortfolio = onCall(
       if (portfolioQuery.empty) {
         // Create new portfolio
         portfolioId = generateId();
-        portfolioRef = db.collection('creator_portfolios').doc(portfolioId);
+        portfolioRef = db.collection('earner_portfolios').doc(portfolioId);
 
         const portfolio: CreatorPortfolio = {
           portfolioId,
-          creatorUserId,
+          earnerUserId,
           handle,
           displayName,
           bio,
@@ -157,7 +159,7 @@ export const createOrUpdatePortfolio = onCall(
         });
       }
 
-      logger.info('Portfolio created/updated', { portfolioId, creatorUserId, handle });
+      logger.info('Portfolio created/updated', { portfolioId, earnerUserId, handle });
 
       return { portfolioId, handle };
     } catch (error: any) {
@@ -186,7 +188,7 @@ export const getPortfolioByHandle = onCall(
 
     try {
       const portfolioQuery = await db
-        .collection('creator_portfolios')
+        .collection('earner_portfolios')
         .where('handle', '==', handle)
         .limit(1)
         .get();
@@ -198,14 +200,14 @@ export const getPortfolioByHandle = onCall(
       const portfolioDoc = portfolioQuery.docs[0];
       const portfolio = portfolioDoc.data() as CreatorPortfolio;
 
-      // Only return if public OR if viewer is the creator/agency
+      // Only return if public OR if viewer is the earner/agency
       if (!portfolio.isPublic) {
-        if (!request.auth || request.auth.uid !== portfolio.creatorUserId) {
+        if (!request.auth || request.auth.uid !== portfolio.earnerUserId) {
           // Check if viewer is from linked agency
           if (request.auth) {
             const linkQuery = await db
-              .collection('creator_agency_links')
-              .where('creatorUserId', '==', portfolio.creatorUserId)
+              .collection('earner_agency_links')
+              .where('earnerUserId', '==', portfolio.earnerUserId)
               .where('status', '==', 'ACTIVE')
               .limit(1)
               .get();
@@ -229,8 +231,8 @@ export const getPortfolioByHandle = onCall(
         }
       }
 
-      // Increment view count (only for external viewers, not creator/agency)
-      if (!request.auth || request.auth.uid !== portfolio.creatorUserId) {
+      // Increment view count (only for external viewers, not earner/agency)
+      if (!request.auth || request.auth.uid !== portfolio.earnerUserId) {
         await portfolioDoc.ref.update({
           views: increment(1),
           lastViewedAt: serverTimestamp(),
@@ -262,7 +264,7 @@ export const deletePortfolio = onCall(
     }
 
     try {
-      const portfolioRef = db.collection('creator_portfolios').doc(portfolioId);
+      const portfolioRef = db.collection('earner_portfolios').doc(portfolioId);
       const portfolioDoc = await portfolioRef.get();
 
       if (!portfolioDoc.exists) {
@@ -271,14 +273,14 @@ export const deletePortfolio = onCall(
 
       const portfolio = portfolioDoc.data() as CreatorPortfolio;
 
-      // Only creator can delete portfolio
-      if (request.auth.uid !== portfolio.creatorUserId) {
-        throw new HttpsError('permission-denied', 'Only creator can delete portfolio');
+      // Only earner can delete portfolio
+      if (request.auth.uid !== portfolio.earnerUserId) {
+        throw new HttpsError('permission-denied', 'Only earner can delete portfolio');
       }
 
       await portfolioRef.delete();
 
-      logger.info('Portfolio deleted', { portfolioId, creatorUserId: portfolio.creatorUserId });
+      logger.info('Portfolio deleted', { portfolioId, earnerUserId: portfolio.earnerUserId });
 
       return { success: true };
     } catch (error: any) {
@@ -309,7 +311,7 @@ export const getPortfolioAnalytics = onCall(
     }
 
     try {
-      const portfolioDoc = await db.collection('creator_portfolios').doc(portfolioId).get();
+      const portfolioDoc = await db.collection('earner_portfolios').doc(portfolioId).get();
 
       if (!portfolioDoc.exists) {
         throw new HttpsError('not-found', 'Portfolio not found');
@@ -317,8 +319,8 @@ export const getPortfolioAnalytics = onCall(
 
       const portfolio = portfolioDoc.data() as CreatorPortfolio;
 
-      // Only creator or linked agency can view analytics
-      if (request.auth.uid !== portfolio.creatorUserId) {
+      // Only earner or linked agency can view analytics
+      if (request.auth.uid !== portfolio.earnerUserId) {
         if (portfolio.agencyId) {
           const memberDoc = await db
             .collection('agency_team_members')
@@ -351,6 +353,20 @@ export const getPortfolioAnalytics = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

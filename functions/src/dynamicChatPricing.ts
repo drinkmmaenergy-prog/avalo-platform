@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 219 - Royal Dynamic Chat Pricing Evolution
  * 
@@ -85,14 +87,14 @@ const PRICE_TIERS: Record<PriceTier, PriceTierConfig> = {
     tier: 'GLOW',
     name: 'Glow',
     tokenCost: 120,
-    description: 'Subtle boost for rising creators',
+    description: 'Subtle boost for rising earners',
     minReputation: 50
   },
   DESIRE: {
     tier: 'DESIRE',
     name: 'Desire',
     tokenCost: 175,
-    description: 'Medium boost for established creators',
+    description: 'Medium boost for established earners',
     minReputation: 75
   },
   STAR: {
@@ -127,13 +129,13 @@ const ELIGIBILITY_REQUIREMENTS = {
   RECENT_ACTIVITY_DAYS: 14,
   MIN_VERIFIED_SELFIES: 2,
   PRICE_CHANGE_COOLDOWN_DAYS: 7,
-  DEMAND_DROP_THRESHOLD: MONETIZATION_SPLITS.CHAT.creator, // 65% drop triggers fallback
+  DEMAND_DROP_THRESHOLD: MONETIZATION_SPLITS.CHAT.earner, // 65% drop triggers fallback
   DEMAND_ANALYSIS_DAYS: 14
 };
 
 // Revenue split (same as base system)
-const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65%
-const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
+const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.earner; // 65%
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.platform; // 35%
 
 // ============================================================================
 // ELIGIBILITY EVALUATION
@@ -662,6 +664,22 @@ export {
   PRICE_TIERS,
   ELIGIBILITY_REQUIREMENTS
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

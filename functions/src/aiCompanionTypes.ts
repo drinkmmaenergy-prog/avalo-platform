@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 310 — AI Companions & Avatar Builder
  * Type definitions for AI avatar system
@@ -42,7 +44,7 @@ export interface AvatarSafety {
 
 export interface AIAvatar {
   avatarId: string;
-  ownerId: string; // creator user id
+  ownerId: string; // earner user id
   createdAt: string; // ISO_DATETIME
   updatedAt: string; // ISO_DATETIME
   
@@ -166,6 +168,20 @@ export interface AIAvatarEvent {
   metadata?: Record<string, any>;
   timestamp: string; // ISO_DATETIME
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

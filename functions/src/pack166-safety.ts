@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 166: DIGITAL PRODUCT SCALABILITY - SAFETY MIDDLEWARE
@@ -39,7 +41,7 @@ const ROMANTIC_KEYWORDS = [
 ];
 
 const ATTENTION_KEYWORDS = [
-  'get noticed', 'creator attention', 'personal attention', 'special treatment',
+  'get noticed', 'earner attention', 'personal attention', 'special treatment',
   'priority access', 'exclusive attention', 'noticed by', 'stand out to',
   'get closer to', 'personal connection', 'direct access', 'one-on-one',
 ];
@@ -359,7 +361,7 @@ export function validateUpsellRule(rule: Partial<UpsellRule>): SafetyValidationR
   }
   
   // Check for parasocial patterns in rule name
-  const parasocialKeywords = ['get attention', 'creator likes you', 'special treatment', 'closer to creator'];
+  const parasocialKeywords = ['get attention', 'earner likes you', 'special treatment', 'closer to earner'];
   const found = containsForbiddenKeywords(textToCheck, parasocialKeywords);
   if (found.length > 0) {
     violations.push({
@@ -541,6 +543,20 @@ export const pack166Safety = {
 };
 
 logger.info('✅ PACK 166 Safety Middleware loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

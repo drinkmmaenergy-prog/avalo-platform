@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 3.4 + 4.1 — Production Environment Guards
  * Store compliance: Production safety checks
@@ -85,7 +87,7 @@ export function adminReadOnly<T extends (...args: any[]) => any>(
  */
 export function isProduction(): boolean {
   return process.env.NODE_ENV === 'production' ||
-         process.env.GCLOUD_PROJECT?.includes('avalostaging') ||
+         process.env.GCLOUD_PROJECT?.includes('platformstaging') ||
          process.env.FIREBASE_CONFIG?.includes('production');
 }
 
@@ -396,6 +398,22 @@ export default {
   checkAppCheckCompatibility,
   getStripeProductionSafety,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

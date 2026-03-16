@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 145 - Avalo Advertising Network 1.0
  * Social Ads · Ethical Targeting · Zero Romance/NSFW · Zero Visibility Advantage
@@ -325,6 +327,20 @@ export interface ContentValidationResult {
   forbiddenPatterns: string[];
   forbiddenCTAs: string[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 50 — Royal Club HTTP Endpoints
  * Callable functions for mobile app to query Royal state
@@ -175,6 +177,20 @@ export const royal_recordSpend = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ Royal Club Endpoints initialized - PACK 50');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

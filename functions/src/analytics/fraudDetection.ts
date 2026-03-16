@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { arrayUnion, logger, onSchedule, onDocumentCreated } from '../runtime';
@@ -548,6 +550,22 @@ function calculateDistance(
 function toRad(degrees: number): number {
   return degrees * (Math.PI / 180);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 130 — Risk Profile Evaluation System
  * 
@@ -537,6 +539,20 @@ async function lockHighRiskAccount(userId: string): Promise<void> {
   
   console.log(`[Risk Profile] Locked account for high-risk user ${userId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

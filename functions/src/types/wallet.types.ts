@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Wallet Bridge Type Definitions
  * Enhanced security types for cryptographic operations
@@ -78,6 +80,22 @@ export enum WalletSecurityErrorCode {
   EXPIRED_DEPOSIT = "EXPIRED_DEPOSIT",
   INSUFFICIENT_CONFIRMATIONS = "INSUFFICIENT_CONFIRMATIONS",
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

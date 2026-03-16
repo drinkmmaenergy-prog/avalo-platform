@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 224: Dynamic Romantic Momentum Engine - Integration Hooks
  * 
@@ -377,6 +379,20 @@ export async function getMomentumStats(userId: string): Promise<{
     visualIndicator: visual?.indicatorLevel || 'none'
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

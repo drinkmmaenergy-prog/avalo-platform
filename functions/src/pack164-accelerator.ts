@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, generateId } from './init';
 import { z } from 'zod';
@@ -854,6 +856,20 @@ export const calculateAcceleratorAnalytics = onSchedule("every 1 hours", async (
     
     console.log('Calculated accelerator analytics');
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

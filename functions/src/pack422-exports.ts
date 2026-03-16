@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 422 — Global Trust, Reputation & Moderation Intelligence (Tier-2)
  * 
@@ -44,6 +46,20 @@ export {
   checkUserPolicy,
   POLICY_CONFIGS,
 } from './pack422-reputation.policy';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

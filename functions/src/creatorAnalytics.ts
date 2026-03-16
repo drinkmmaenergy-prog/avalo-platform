@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 82 — Creator Performance Analytics & Insights Dashboard
  * Firebase Functions for analytics aggregation and retrieval
@@ -11,7 +13,7 @@ import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { db, serverTimestamp } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { EarningSourceType } from './creatorEarnings';
+import { EarningSourceType } from './earnerEarnings';
 import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 // ============================================================================
@@ -20,7 +22,7 @@ import { admin, auth, functions, increment, onSchedule } from './runtime';
 
 interface CreatorAnalyticsDaily {
   id: string;
-  creatorId: string;
+  earnerId: string;
   date: string;
   totalNetTokens: number;
   giftNetTokens: number;
@@ -43,7 +45,7 @@ interface TopSupporter {
 
 interface TopContentItem {
   id: string;
-  type: EarningSourceType;
+  type: string;
   title?: string;
   thumbnailUrl?: string;
   totalEarnings: number;
@@ -51,7 +53,7 @@ interface TopContentItem {
 }
 
 interface CreatorAnalyticsSnapshot {
-  creatorId: string;
+  earnerId: string;
   last30_totalNet: number;
   last30_totalPayers: number;
   last30_totalEvents: number;
@@ -87,11 +89,11 @@ const ANALYTICS_CONFIG = {
 /**
  * Format date for daily analytics ID
  */
-function formatDailyAnalyticsId(creatorId: string, date: Date): string {
+function formatDailyAnalyticsId(earnerId: string, date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  return `${creatorId}_${year}${month}${day}`;
+  return `${earnerId}_${year}${month}${day}`;
 }
 
 /**
@@ -126,7 +128,7 @@ function maskUsername(username: string): string {
  * Get source-specific field name
  */
 function getSourceFieldName(sourceType: EarningSourceType): string {
-  const fieldMap: Record<EarningSourceType, string> = {
+  const fieldMap: Record<string, string> = {
     GIFT: 'giftNetTokens',
     PREMIUM_STORY: 'storyNetTokens',
     PAID_MEDIA: 'paidMediaNetTokens',
@@ -159,7 +161,7 @@ export const onLedgerEntryWrite = onDocumentWritten(
       return;
     }
 
-    const creatorId = data.creatorId;
+    const earnerId = data.earnerId;
     const sourceType = data.sourceType as EarningSourceType;
     const fromUserId = data.fromUserId;
     const netTokensCreator = data.netTokensCreator;
@@ -170,8 +172,8 @@ export const onLedgerEntryWrite = onDocumentWritten(
       const date = createdAt.toDate();
       date.setHours(0, 0, 0, 0);
       
-      const dailyId = formatDailyAnalyticsId(creatorId, date);
-      const dailyRef = db.collection('creator_analytics_daily').doc(dailyId);
+      const dailyId = formatDailyAnalyticsId(earnerId, date);
+      const dailyRef = db.collection('earner_analytics_daily').doc(dailyId);
 
       // Get source-specific field name
       const sourceField = getSourceFieldName(sourceType);
@@ -183,7 +185,7 @@ export const onLedgerEntryWrite = onDocumentWritten(
         if (!dailyDoc.exists) {
           // Create new daily record
           const newDaily: Omit<CreatorAnalyticsDaily, 'id'> = {
-            creatorId,
+            earnerId,
             date: formatDateYMD(date),
             totalNetTokens: netTokensCreator,
             giftNetTokens: sourceType === 'GIFT' ? netTokensCreator : 0,
@@ -211,9 +213,9 @@ export const onLedgerEntryWrite = onDocumentWritten(
       });
 
       // Update unique payers count (separate operation to avoid conflicts)
-      await updateUniquePayers(creatorId, date, fromUserId);
+      await updateUniquePayers(earnerId, date, fromUserId);
 
-      logger.info(`Updated daily analytics for creator ${creatorId}`, {
+      logger.info(`Updated daily analytics for earner ${earnerId}`, {
         date: formatDateYMD(date),
         sourceType,
         netTokens: netTokensCreator,
@@ -233,18 +235,18 @@ export const onLedgerEntryWrite = onDocumentWritten(
  * We track payers in a separate subcollection to maintain uniqueness
  */
 async function updateUniquePayers(
-  creatorId: string,
+  earnerId: string,
   date: Date,
   payerId: string
 ): Promise<void> {
-  const dailyId = formatDailyAnalyticsId(creatorId, date);
+  const dailyId = formatDailyAnalyticsId(earnerId, date);
   const payerRef = db
-    .collection('creator_analytics_daily')
+    .collection('earner_analytics_daily')
     .doc(dailyId)
     .collection('payers')
     .doc(payerId);
 
-  const dailyRef = db.collection('creator_analytics_daily').doc(dailyId);
+  const dailyRef = db.collection('earner_analytics_daily').doc(dailyId);
 
   await db.runTransaction(async (transaction) => {
     const payerDoc = await transaction.get(payerRef);
@@ -265,7 +267,7 @@ async function updateUniquePayers(
 // ============================================================================
 
 /**
- * Rebuild analytics snapshots for all creators
+ * Rebuild analytics snapshots for all earners
  * Runs daily at 03:00 UTC
  */
 export const rebuildCreatorAnalyticsSnapshots = onSchedule(
@@ -277,26 +279,26 @@ export const rebuildCreatorAnalyticsSnapshots = onSchedule(
   },
   async (event) => {
     try {
-      logger.info('Starting creator analytics snapshot rebuild');
+      logger.info('Starting earner analytics snapshot rebuild');
 
-      // Get all creators with balances (indicates they have earnings)
-      const creatorsSnapshot = await db.collection('creator_balances').get();
+      // Get all earners with balances (indicates they have earnings)
+      const earnersSnapshot = await db.collection('earner_balances').get();
 
       let processedCount = 0;
       const batch = db.batch();
       let batchCount = 0;
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const creatorId = creatorDoc.id;
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const earnerId = earnerDoc.id;
 
         try {
-          // Build snapshot for this creator
-          const snapshot = await buildCreatorSnapshot(creatorId);
+          // Build snapshot for this earner
+          const snapshot = await buildCreatorSnapshot(earnerId);
 
           // Store snapshot
           const snapshotRef = db
-            .collection('creator_analytics_snapshot')
-            .doc(creatorId);
+            .collection('earner_analytics_snapshot')
+            .doc(earnerId);
 
           batch.set(snapshotRef, snapshot);
           batchCount++;
@@ -309,8 +311,8 @@ export const rebuildCreatorAnalyticsSnapshots = onSchedule(
 
           processedCount++;
         } catch (error: any) {
-          logger.error(`Error building snapshot for creator ${creatorId}`, error);
-          // Continue with other creators
+          logger.error(`Error building snapshot for earner ${earnerId}`, error);
+          // Continue with other earners
         }
       }
 
@@ -319,7 +321,7 @@ export const rebuildCreatorAnalyticsSnapshots = onSchedule(
         await batch.commit();
       }
 
-      logger.info(`Completed snapshot rebuild for ${processedCount} creators`);
+      logger.info(`Completed snapshot rebuild for ${processedCount} earners`);
 
       return;
     } catch (error: any) {
@@ -330,11 +332,11 @@ export const rebuildCreatorAnalyticsSnapshots = onSchedule(
 );
 
 /**
- * Build complete analytics snapshot for a creator
+ * Build complete analytics snapshot for a earner
  */
 async function buildCreatorSnapshot(
-  creatorId: string
-): Promise<Omit<CreatorAnalyticsSnapshot, 'creatorId'>> {
+  earnerId: string
+): Promise<Omit<CreatorAnalyticsSnapshot, 'earnerId'>> {
   // Calculate date range (last 30 days)
   const endDate = new Date();
   const startDate = new Date(endDate);
@@ -342,8 +344,8 @@ async function buildCreatorSnapshot(
 
   // Aggregate from daily records
   const dailyQuery = await db
-    .collection('creator_analytics_daily')
-    .where('creatorId', '==', creatorId)
+    .collection('earner_analytics_daily')
+    .where('earnerId', '==', earnerId)
     .where('date', '>=', formatDateYMD(startDate))
     .where('date', '<=', formatDateYMD(endDate))
     .get();
@@ -377,7 +379,7 @@ async function buildCreatorSnapshot(
   // Get unique payers from ledger (more accurate)
   const ledgerQuery = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', Timestamp.fromDate(startDate))
     .where('createdAt', '<=', Timestamp.fromDate(endDate))
     .get();
@@ -388,12 +390,12 @@ async function buildCreatorSnapshot(
   });
 
   // Get top supporters
-  const topSupporters = await getTopSupporters(creatorId, startDate, endDate);
+  const topSupporters = await getTopSupporters(earnerId, startDate, endDate);
 
   // Get top content
-  const topStories = await getTopStories(creatorId, startDate, endDate);
-  const topPaidMedia = await getTopPaidMedia(creatorId, startDate, endDate);
-  const topGifts = await getTopGifts(creatorId, startDate, endDate);
+  const topStories = await getTopStories(earnerId, startDate, endDate);
+  const topPaidMedia = await getTopPaidMedia(earnerId, startDate, endDate);
+  const topGifts = await getTopGifts(earnerId, startDate, endDate);
 
   console.log('Scheduled job result:', {
     last30_totalNet: totalNet,
@@ -412,16 +414,16 @@ async function buildCreatorSnapshot(
 }
 
 /**
- * Get top supporters for a creator
+ * Get top supporters for a earner
  */
 async function getTopSupporters(
-  creatorId: string,
+  earnerId: string,
   startDate: Date,
   endDate: Date
 ): Promise<TopSupporter[]> {
   const ledgerQuery = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', Timestamp.fromDate(startDate))
     .where('createdAt', '<=', Timestamp.fromDate(endDate))
     .get();
@@ -467,13 +469,13 @@ async function getTopSupporters(
  * Get top earning premium stories
  */
 async function getTopStories(
-  creatorId: string,
+  earnerId: string,
   startDate: Date,
   endDate: Date
 ): Promise<TopContentItem[]> {
   const unlocksQuery = await db
     .collection('premium_story_unlocks')
-    .where('creatorEarnings', '>', 0)
+    .where('earnerEarnings', '>', 0)
     .where('unlockedAt', '>=', Timestamp.fromDate(startDate))
     .where('unlockedAt', '<=', Timestamp.fromDate(endDate))
     .get();
@@ -485,14 +487,14 @@ async function getTopStories(
     const unlock = doc.data();
     const storyId = unlock.storyId;
     
-    // Verify story belongs to this creator
+    // Verify story belongs to this earner
     const storyDoc = await db.collection('premium_stories').doc(storyId).get();
-    if (!storyDoc.exists || storyDoc.data()?.authorId !== creatorId) {
+    if (!storyDoc.exists || storyDoc.data()?.authorId !== earnerId) {
       continue;
     }
 
     const current = storyMap.get(storyId) || { earnings: 0, unlocks: 0 };
-    current.earnings += unlock.creatorEarnings || 0;
+    current.earnings += unlock.earnerEarnings || 0;
     current.unlocks += 1;
     storyMap.set(storyId, current);
   }
@@ -522,13 +524,13 @@ async function getTopStories(
  * Get top earning paid media
  */
 async function getTopPaidMedia(
-  creatorId: string,
+  earnerId: string,
   startDate: Date,
   endDate: Date
 ): Promise<TopContentItem[]> {
   const ledgerQuery = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('sourceType', '==', 'PAID_MEDIA')
     .where('createdAt', '>=', Timestamp.fromDate(startDate))
     .where('createdAt', '<=', Timestamp.fromDate(endDate))
@@ -568,13 +570,13 @@ async function getTopPaidMedia(
  * Get top gifts by quantity sent
  */
 async function getTopGifts(
-  creatorId: string,
+  earnerId: string,
   startDate: Date,
   endDate: Date
 ): Promise<TopContentItem[]> {
   const ledgerQuery = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('sourceType', '==', 'GIFT')
     .where('createdAt', '>=', Timestamp.fromDate(startDate))
     .where('createdAt', '<=', Timestamp.fromDate(endDate))
@@ -618,7 +620,7 @@ async function getTopGifts(
 // ============================================================================
 
 /**
- * Get creator analytics overview
+ * Get earner analytics overview
  * Returns pre-computed snapshot with all KPIs and breakdowns
  */
 export const getCreatorAnalyticsOverview = onCall(
@@ -637,7 +639,7 @@ export const getCreatorAnalyticsOverview = onCall(
 
     try {
       const snapshotDoc = await db
-        .collection('creator_analytics_snapshot')
+        .collection('earner_analytics_snapshot')
         .doc(userId)
         .get();
 
@@ -705,7 +707,7 @@ export const getCreatorAnalyticsOverview = onCall(
 );
 
 /**
- * Get creator analytics timeseries
+ * Get earner analytics timeseries
  * Returns daily data points for charts
  */
 export const getCreatorAnalyticsTimeseries = onCall(
@@ -730,8 +732,8 @@ export const getCreatorAnalyticsTimeseries = onCall(
 
       // Fetch daily records
       const dailyQuery = await db
-        .collection('creator_analytics_daily')
-        .where('creatorId', '==', userId)
+        .collection('earner_analytics_daily')
+        .where('earnerId', '==', userId)
         .where('date', '>=', formatDateYMD(startDate))
         .where('date', '<=', formatDateYMD(endDate))
         .orderBy('date', 'asc')
@@ -783,6 +785,23 @@ export const getCreatorAnalyticsTimeseries = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

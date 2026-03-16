@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 100 — Disaster Recovery & Backup Utilities
  * 
@@ -52,7 +54,7 @@ export interface RestoreMetadata {
  */
 export const CRITICAL_COLLECTIONS = [
   'earnings_ledger',           // All earning events
-  'creator_balances',          // Current balance states
+  'earner_balances',          // Current balance states
   'payout_requests',           // Payout requests and statuses
   'user_profiles',             // User account data
   'user_trust_profile',        // Trust & risk scores
@@ -138,9 +140,9 @@ export async function validateBackupIntegrity(
       }
     }
     
-    if (collectionName === 'creator_balances') {
+    if (collectionName === 'earner_balances') {
       // Check for corrupted balance records
-      const snapshot = await db.collection('creator_balances')
+      const snapshot = await db.collection('earner_balances')
         .limit(100)
         .get();
       
@@ -382,8 +384,8 @@ export const admin_validateBackupIntegrity = functions.https.onCall(async (reque
  * This is documentation for ops teams on how to perform recovery
  * 
  * CRITICAL DATA BACKUP LOCATIONS:
- * - Firestore exports: gs://avalo-backups/firestore/
- * - Storage media backups: gs://avalo-backups/storage/
+ * - Firestore exports: gs://platform-backups/firestore/
+ * - Storage media backups: gs://platform-backups/storage/
  * 
  * RECOVERY PROCEDURES:
  * 
@@ -395,7 +397,7 @@ export const admin_validateBackupIntegrity = functions.https.onCall(async (reque
  * 2. FINANCIAL DATA PRIORITY
  *    Collections to restore FIRST:
  *    - earnings_ledger (all earnings events)
- *    - creator_balances (current balance states)
+ *    - earner_balances (current balance states)
  *    - payout_requests (payout history)
  *    - business_audit_log (audit trail)
  * 
@@ -419,25 +421,25 @@ export const admin_validateBackupIntegrity = functions.https.onCall(async (reque
  * 
  * FIRESTORE EXPORT COMMAND (Manual):
  * ```
- * gcloud firestore export gs://avalo-backups/firestore/$(date +%Y%m%d_%H%M%S) \
- *   --collection-ids=earnings_ledger,creator_balances,payout_requests
+ * gcloud firestore export gs://platform-backups/firestore/$(date +%Y%m%d_%H%M%S) \
+ *   --collection-ids=earnings_ledger,earner_balances,payout_requests
  * ```
  * 
  * FIRESTORE IMPORT COMMAND (Manual):
  * ```
- * gcloud firestore import gs://avalo-backups/firestore/BACKUP_TIMESTAMP
+ * gcloud firestore import gs://platform-backups/firestore/BACKUP_TIMESTAMP
  * ```
  */
 
 export const DISASTER_RECOVERY_RUNBOOK = {
   criticalCollections: CRITICAL_COLLECTIONS,
   backupLocations: {
-    firestore: 'gs://avalo-backups/firestore/',
-    storage: 'gs://avalo-backups/storage/',
+    firestore: 'gs://platform-backups/firestore/',
+    storage: 'gs://platform-backups/storage/',
   },
   recoveryPriority: [
     'earnings_ledger',
-    'creator_balances',
+    'earner_balances',
     'payout_requests',
     'business_audit_log',
     'user_profiles',
@@ -445,10 +447,24 @@ export const DISASTER_RECOVERY_RUNBOOK = {
     'enforcement_state',
   ],
   contactsAndEscalation: {
-    primary: 'ops-team@avalo.app',
-    escalation: 'tech-lead@avalo.app',
+    primary: 'ops-team@platform.app',
+    escalation: 'tech-lead@platform.app',
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

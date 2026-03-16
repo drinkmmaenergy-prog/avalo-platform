@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 93 — GDPR Data Rights & Account Lifecycle
  * 
@@ -13,7 +15,7 @@
  * COMPLIANCE RULES:
  * - No free tokens, no discounts, no cashback, no bonuses
  * - Do not change token price per unit
- * - Do not change revenue split (65% creator / 35% Avalo)
+ * - Do not change revenue split (65% earner / 35% Avalo)
  * - Data export never includes secrets (password hashes, raw KYC docs, internal risk flags)
  * - Deletion must not corrupt financial ledgers (ledgers stay but pseudonymized)
  */
@@ -365,7 +367,7 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
     // Premium Stories (created by user)
     const storiesSnapshot = await db
       .collection('premium_stories')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .limit(1000)
       .get();
     data.content.stories = storiesSnapshot.docs.map(doc => {
@@ -419,10 +421,10 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
       ...giftsReceivedSnapshot.docs.map(doc => ({ ...doc.data(), direction: 'received' })),
     ];
 
-    // Earnings Ledger (for creators)
+    // Earnings Ledger (for earners)
     const earningsSnapshot = await db
       .collection('earnings_ledger')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .orderBy('createdAt', 'desc')
       .limit(1000)
       .get();
@@ -451,7 +453,7 @@ async function aggregateUserData(userId: string): Promise<ExportedUserData> {
     });
 
     // Creator Balances
-    const balanceDoc = await db.collection('creator_balances').doc(userId).get();
+    const balanceDoc = await db.collection('earner_balances').doc(userId).get();
     if (balanceDoc.exists) {
       const balance = balanceDoc.data();
       data.monetization.balances = {
@@ -861,7 +863,7 @@ async function deleteAndPseudonymizeUserData(userId: string): Promise<void> {
   // Delete premium stories content
   const storiesSnapshot = await db
     .collection('premium_stories')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .limit(500)
     .get();
   
@@ -899,14 +901,14 @@ async function deleteAndPseudonymizeUserData(userId: string): Promise<void> {
   // Pseudonymize earnings ledger
   const earningsSnapshot = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .limit(1000)
     .get();
   
   const batch4 = db.batch();
   earningsSnapshot.docs.forEach(doc => {
     batch4.update(doc.ref, {
-      creatorId: DELETED_USER_ID,
+      earnerId: DELETED_USER_ID,
       pseudonymized: true,
       pseudonymizedAt: serverTimestamp(),
     });
@@ -955,10 +957,10 @@ async function deleteAndPseudonymizeUserData(userId: string): Promise<void> {
   await batch6.commit();
   console.log(`[DataRights] Pseudonymized ${payoutSnapshot.size} payout requests`);
 
-  // Delete/pseudonymize creator balance
-  const balanceDoc = db.collection('creator_balances').doc(userId);
+  // Delete/pseudonymize earner balance
+  const balanceDoc = db.collection('earner_balances').doc(userId);
   await balanceDoc.delete();
-  console.log(`[DataRights] Deleted creator balance`);
+  console.log(`[DataRights] Deleted earner balance`);
 
   // ========== PSEUDONYMIZE: KYC & Trust Data ==========
   
@@ -1089,6 +1091,20 @@ export const getMyDeletionStatus = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 433 — Influencer Marketplace & Creator Deal Automation Engine
  * Part 4: Payout Engine for Creators
@@ -44,7 +46,7 @@ export type PayoutMethod = 'STRIPE' | 'WISE' | 'CRYPTO' | 'BANK_TRANSFER';
 
 export interface CreatorPayoutAccount {
   id: string;
-  creatorId: string;
+  earnerId: string;
   method: PayoutMethod;
   
   // Stripe
@@ -79,7 +81,7 @@ export interface CreatorPayoutAccount {
 
 export interface CreatorPayout {
   id: string;
-  creatorId: string;
+  earnerId: string;
   dealId?: string; // Optional: can be aggregate of multiple deals
   payoutAccountId: string;
   
@@ -139,7 +141,7 @@ export interface PayoutCalculation {
 // ============================================================================
 
 /**
- * Add payout account for creator
+ * Add payout account for earner
  */
 export const addPayoutAccount = onCall(
   { region: 'europe-west1' },
@@ -148,12 +150,12 @@ export const addPayoutAccount = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, method, accountDetails } = request.data;
+    const { earnerId, method, accountDetails } = request.data;
 
-    if (!creatorId || !method || !accountDetails) {
+    if (!earnerId || !method || !accountDetails) {
       throw new HttpsError(
         'invalid-argument',
-        'Missing required fields: creatorId, method, accountDetails'
+        'Missing required fields: earnerId, method, accountDetails'
       );
     }
 
@@ -162,22 +164,22 @@ export const addPayoutAccount = onCall(
     }
 
     try {
-      // Verify creator ownership
-      const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+      // Verify earner ownership
+      const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
       
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      const creator = creatorDoc.data();
+      const earner = earnerDoc.data();
 
-      if (creator?.userId !== request.auth.uid) {
-        throw new HttpsError('permission-denied', 'Cannot add account for another creator');
+      if (earner?.userId !== request.auth.uid) {
+        throw new HttpsError('permission-denied', 'Cannot add account for another earner');
       }
 
       // Create payout account
       const account: Omit<CreatorPayoutAccount, 'id'> = {
-        creatorId,
+        earnerId,
         method,
         verified: false,
         active: true,
@@ -186,10 +188,10 @@ export const addPayoutAccount = onCall(
         ...accountDetails,
       };
 
-      const accountRef = await db.collection('creator_payout_accounts').add(account);
+      const accountRef = await db.collection('earner_payout_accounts').add(account);
 
       logger.info(`Payout account added: ${accountRef.id}`, {
-        creatorId,
+        earnerId,
         method,
       });
 
@@ -206,7 +208,7 @@ export const addPayoutAccount = onCall(
 );
 
 /**
- * Get creator's payout accounts
+ * Get earner's payout accounts
  */
 export const getPayoutAccounts = onCall(
   { region: 'europe-west1' },
@@ -215,12 +217,12 @@ export const getPayoutAccounts = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
     try {
       const accountsSnapshot = await db
-        .collection('creator_payout_accounts')
-        .where('creatorId', '==', creatorId)
+        .collection('earner_payout_accounts')
+        .where('earnerId', '==', earnerId)
         .where('active', '==', true)
         .get();
 
@@ -244,18 +246,18 @@ export const getPayoutAccounts = onCall(
 /**
  * Internal calculation function (used by both API and internal  code)
  */
-async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalculation> {
-  // Verify creator exists
-  const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+async function calculatePayoutInternal(earnerId: string): Promise<PayoutCalculation> {
+  // Verify earner exists
+  const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
   
-  if (!creatorDoc.exists) {
+  if (!earnerDoc.exists) {
     throw new HttpsError('not-found', 'Creator not found');
   }
 
-  const creator = creatorDoc.data();
+  const earner = earnerDoc.data();
 
   // Check fraud status
-  if (creator?.status === 'BANNED' || creator?.status === 'SUSPENDED') {
+  if (earner?.status === 'BANNED' || earner?.status === 'SUSPENDED') {
     console.log('Scheduled job result:', {
       totalTokens: 0,
       cpiEarnings: 0,
@@ -273,8 +275,8 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
 
   // Calculate earnings from all attributions
   const attributions = await db
-    .collection('creator_attributions')
-    .where('creatorId', '==', creatorId)
+    .collection('earner_attributions')
+    .where('earnerId', '==', earnerId)
     .where('verified', '==', true) // Only verified attributions
     .get();
 
@@ -284,7 +286,7 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
 
   for (const attrDoc of attributions.docs) {
     const attr = attrDoc.data();
-    const dealDoc = await db.collection('creator_deals').doc(attr.dealId).get();
+    const dealDoc = await db.collection('earner_deals').doc(attr.dealId).get();
     
     if (!dealDoc.exists) continue;
     
@@ -361,7 +363,7 @@ async function calculatePayoutInternal(creatorId: string): Promise<PayoutCalcula
 }
 
 /**
- * Calculate creator's earnings and payout eligibility
+ * Calculate earner's earnings and payout eligibility
  */
 export const calculatePayoutAmount = onCall(
   { region: 'europe-west1' },
@@ -370,27 +372,27 @@ export const calculatePayoutAmount = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
-    if (!creatorId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId');
+    if (!earnerId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId');
     }
 
     try {
-      // Verify creator ownership
-      const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+      // Verify earner ownership
+      const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
       
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      const creator = creatorDoc.data();
+      const earner = earnerDoc.data();
 
-      if (creator?.userId !== request.auth.uid) {
-        throw new HttpsError('permission-denied', 'Cannot view another creator\'s earnings');
+      if (earner?.userId !== request.auth.uid) {
+        throw new HttpsError('permission-denied', 'Cannot view another earner\'s earnings');
       }
 
-      return await calculatePayoutInternal(creatorId);
+      return await calculatePayoutInternal(earnerId);
     } catch (error: any) {
       logger.error('Error calculating payout', error);
       if (error instanceof HttpsError) throw error;
@@ -413,30 +415,30 @@ export const requestPayout = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, payoutAccountId } = request.data;
+    const { earnerId, payoutAccountId } = request.data;
 
-    if (!creatorId || !payoutAccountId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId or payoutAccountId');
+    if (!earnerId || !payoutAccountId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId or payoutAccountId');
     }
 
     try {
-      // Verify creator ownership
-      const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+      // Verify earner ownership
+      const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
       
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      const creator = creatorDoc.data();
+      const earner = earnerDoc.data();
 
-      if (creator?.userId !== request.auth.uid) {
-        throw new HttpsError('permission-denied', 'Cannot request payout for another creator');
+      if (earner?.userId !== request.auth.uid) {
+        throw new HttpsError('permission-denied', 'Cannot request payout for another earner');
       }
 
       // Check for pending payouts
       const pendingPayouts = await db
-        .collection('creator_payouts')
-        .where('creatorId', '==', creatorId)
+        .collection('earner_payouts')
+        .where('earnerId', '==', earnerId)
         .where('status', 'in', ['PENDING', 'PROCESSING'])
         .limit(1)
         .get();
@@ -449,7 +451,7 @@ export const requestPayout = onCall(
       }
 
       // Calculate payout amount
-      const calculation = await calculatePayoutInternal(creatorId);
+      const calculation = await calculatePayoutInternal(earnerId);
 
       if (!calculation.eligible) {
         throw new HttpsError('failed-precondition', calculation.reason || 'Not eligible for payout');
@@ -457,7 +459,7 @@ export const requestPayout = onCall(
 
       // Get payout account
       const accountDoc = await db
-        .collection('creator_payout_accounts')
+        .collection('earner_payout_accounts')
         .doc(payoutAccountId)
         .get();
 
@@ -473,7 +475,7 @@ export const requestPayout = onCall(
 
       // Create payout request
       const payout: Omit<CreatorPayout, 'id'> = {
-        creatorId,
+        earnerId,
         payoutAccountId,
         tokensAmount: calculation.totalTokens,
         fiatAmount: calculation.fiatAmount,
@@ -493,10 +495,10 @@ export const requestPayout = onCall(
         taxReportGenerated: false,
       };
 
-      const payoutRef = await db.collection('creator_payouts').add(payout);
+      const payoutRef = await db.collection('earner_payouts').add(payout);
 
       logger.info(`Payout requested: ${payoutRef.id}`, {
-        creatorId,
+        earnerId,
         amount: calculation.netAmount,
       });
 
@@ -513,7 +515,7 @@ export const requestPayout = onCall(
 );
 
 /**
- * Get creator's payout history
+ * Get earner's payout history
  */
 export const getPayoutHistory = onCall(
   { region: 'europe-west1' },
@@ -522,12 +524,12 @@ export const getPayoutHistory = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, limit } = request.data;
+    const { earnerId, limit } = request.data;
 
     try {
       let query: FirebaseFirestore.Query = db
-        .collection('creator_payouts')
-        .where('creatorId', '==', creatorId)
+        .collection('earner_payouts')
+        .where('earnerId', '==', earnerId)
         .orderBy('requestedAt', 'desc');
 
       if (limit) {
@@ -574,7 +576,7 @@ export const processPayout = onCall(
     }
 
     try {
-      const payoutRef = db.collection('creator_payouts').doc(payoutId);
+      const payoutRef = db.collection('earner_payouts').doc(payoutId);
       const payoutDoc = await payoutRef.get();
 
       if (!payoutDoc.exists) {
@@ -608,7 +610,7 @@ export const processPayout = onCall(
       });
 
       logger.info(`Payout processed: ${payoutId}`, {
-        creatorId: payout.creatorId,
+        earnerId: payout.earnerId,
         amount: payout.netAmount,
       });
 
@@ -643,7 +645,7 @@ export const holdPayoutForFraud = onCall(
     }
 
     try {
-      const payoutRef = db.collection('creator_payouts').doc(payoutId);
+      const payoutRef = db.collection('earner_payouts').doc(payoutId);
       const payoutDoc = await payoutRef.get();
 
       if (!payoutDoc.exists) {
@@ -690,7 +692,7 @@ export const processWeeklyPayouts = onSchedule(
 
       // Get all pending payouts
       const pendingPayouts = await db
-        .collection('creator_payouts')
+        .collection('earner_payouts')
         .where('status', '==', 'PENDING')
         .where('fraudChecked', '==', true)
         .where('fraudCheckResult', '==', 'PASS')
@@ -742,6 +744,20 @@ export const processWeeklyPayouts = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 103 — Community Governance, Moderation Expansion & Federated Automated Enforcement
  * Notification Integration for Enforcement Messages
@@ -8,7 +10,7 @@
  * - Enforcement cannot be influenced by payments or user popularity
  * - Moderation actions must be legally, ethically, and procedurally defensible
  * - No moderator identity revealed
- * - No creator vs. consumer favoritism
+ * - No earner vs. consumer favoritism
  * - No negotiation or bargaining context
  * - Neutral, legally compliant explanations only
  */
@@ -44,24 +46,24 @@ export async function sendEnforcementNotification(params: {
         title = 'Account Notice';
         body = "Your account's visibility has been temporarily reduced due to policy violations. You can continue using Avalo while our team reviews the case.";
         deepLink = params.caseId 
-          ? `avalo://enforcement/info?caseId=${params.caseId}` 
-          : 'avalo://enforcement/info';
+          ? `platform://enforcement/info?caseId=${params.caseId}` 
+          : 'platform://enforcement/info';
         break;
 
       case 'HARD':
         title = 'Account Restrictions';
         body = 'Your posting privileges are temporarily suspended due to recent safety concerns. You can still view content and message existing conversations.';
         deepLink = params.caseId 
-          ? `avalo://enforcement/info?caseId=${params.caseId}` 
-          : 'avalo://enforcement/info';
+          ? `platform://enforcement/info?caseId=${params.caseId}` 
+          : 'platform://enforcement/info';
         break;
 
       case 'SUSPENDED':
         title = 'Account Suspended';
         body = 'Your account has been suspended due to policy violations. You may appeal this decision.';
         deepLink = params.caseId 
-          ? `avalo://enforcement/appeal?caseId=${params.caseId}` 
-          : 'avalo://enforcement/info';
+          ? `platform://enforcement/appeal?caseId=${params.caseId}` 
+          : 'platform://enforcement/info';
         break;
     }
 
@@ -110,8 +112,8 @@ export async function sendVisibilityDowngradeNotification(params: {
       title,
       body,
       deepLink: params.caseId 
-        ? `avalo://enforcement/info?caseId=${params.caseId}` 
-        : 'avalo://enforcement/info',
+        ? `platform://enforcement/info?caseId=${params.caseId}` 
+        : 'platform://enforcement/info',
       payload: {
         action: 'VISIBILITY_DOWNGRADE',
         tier: params.tier,
@@ -149,8 +151,8 @@ export async function sendPostingFreezeNotification(params: {
       title,
       body,
       deepLink: params.caseId 
-        ? `avalo://enforcement/info?caseId=${params.caseId}` 
-        : 'avalo://enforcement/info',
+        ? `platform://enforcement/info?caseId=${params.caseId}` 
+        : 'platform://enforcement/info',
       payload: {
         action: params.frozen ? 'POSTING_FREEZE' : 'POSTING_UNFREEZE',
         durationHours: params.durationHours,
@@ -183,7 +185,7 @@ export async function sendCaseCreatedNotification(params: {
       category: 'ACCOUNT',
       title,
       body,
-      deepLink: `avalo://enforcement/info?caseId=${params.caseId}`,
+      deepLink: `platform://enforcement/info?caseId=${params.caseId}`,
       payload: {
         action: 'CASE_CREATED',
         caseId: params.caseId,
@@ -241,8 +243,8 @@ export async function sendCaseResolvedNotification(params: {
       title,
       body,
       deepLink: params.outcome === 'NO_ACTION'
-        ? 'avalo://home'
-        : `avalo://enforcement/info?caseId=${params.caseId}`,
+        ? 'platform://home'
+        : `platform://enforcement/info?caseId=${params.caseId}`,
       payload: {
         action: 'CASE_RESOLVED',
         caseId: params.caseId,
@@ -294,7 +296,7 @@ export async function sendAppealStatusNotification(params: {
       category: 'ACCOUNT',
       title,
       body,
-      deepLink: `avalo://enforcement/appeal?appealId=${params.appealId}&caseId=${params.caseId}`,
+      deepLink: `platform://enforcement/appeal?appealId=${params.appealId}&caseId=${params.caseId}`,
       payload: {
         action: 'APPEAL_DECISION',
         appealId: params.appealId,
@@ -329,7 +331,7 @@ export async function sendKYCPriorityReviewNotification(params: {
       category: 'ACCOUNT',
       title,
       body,
-      deepLink: 'avalo://kyc',
+      deepLink: 'platform://kyc',
       payload: {
         action: 'KYC_PRIORITY_REVIEW',
         reason: params.reason,
@@ -362,7 +364,7 @@ export async function sendModeratorSuspendedNotification(params: {
       category: 'ACCOUNT',
       title,
       body,
-      deepLink: `avalo://enforcement/info?caseId=${params.caseId}`,
+      deepLink: `platform://enforcement/info?caseId=${params.caseId}`,
       payload: {
         action: 'MODERATOR_SUSPENDED',
         reason: params.reason,
@@ -406,6 +408,20 @@ export async function sendBatchEnforcementNotifications(
     logger.error('Error sending batch enforcement notifications', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { timestamp } from '../runtime';
 
 export interface AIStrategyProfile {
   id: string;
-  creatorId: string;
+  earnerId: string;
   createdAt: Date;
   updatedAt: Date;
   
@@ -23,7 +25,7 @@ export interface AIStrategyProfile {
   
   professionalGoals: {
     timeline: 'short_term' | 'medium_term' | 'long_term';
-    targetRole: 'full_time_creator' | 'hybrid_creator' | 'educator' | 'entertainer' | 'coach_trainer';
+    targetRole: 'full_time_earner' | 'hybrid_earner' | 'educator' | 'entertainer' | 'coach_trainer';
     milestones: string[];
   };
   
@@ -45,7 +47,7 @@ export interface AIStrategyProfile {
 export interface ContentStrategyPlan {
   id: string;
   profileId: string;
-  creatorId: string;
+  earnerId: string;
   createdAt: Date;
   updatedAt: Date;
   
@@ -120,11 +122,11 @@ export interface Campaign {
 export interface BrandRoadmap {
   id: string;
   profileId: string;
-  creatorId: string;
+  earnerId: string;
   createdAt: Date;
   updatedAt: Date;
   
-  careerPath: 'full_time_creator' | 'hybrid_creator' | 'educator' | 'entertainer' | 'coach_trainer';
+  careerPath: 'full_time_earner' | 'hybrid_earner' | 'educator' | 'entertainer' | 'coach_trainer';
   
   phases: RoadmapPhase[];
   
@@ -177,7 +179,7 @@ export interface Milestone {
 export interface StrategyInsight {
   id: string;
   profileId: string;
-  creatorId: string;
+  earnerId: string;
   createdAt: Date;
   
   type: 'retention' | 'engagement' | 'posting_time' | 'topic_performance' | 
@@ -207,7 +209,7 @@ export interface StrategyInsight {
 export interface StrategyInteraction {
   id: string;
   profileId: string;
-  creatorId: string;
+  earnerId: string;
   timestamp: Date;
   
   interactionType: 'viewed_insight' | 'applied_recommendation' | 'updated_calendar' |
@@ -227,7 +229,7 @@ export interface StrategyInteraction {
 
 export interface BrandIdentityQuestionnaire {
   id: string;
-  creatorId: string;
+  earnerId: string;
   createdAt: Date;
   completedAt?: Date;
   
@@ -265,7 +267,7 @@ export interface SafetyCheckResult {
 
 // Request/Response types
 export interface GenerateStrategyProfileRequest {
-  creatorId: string;
+  earnerId: string;
   questionnaireId?: string;
   personalBrand?: Partial<AIStrategyProfile['personalBrand']>;
   professionalGoals?: Partial<AIStrategyProfile['professionalGoals']>;
@@ -286,7 +288,7 @@ export interface GenerateContentCalendarRequest {
 
 export interface GenerateRoadmapRequest {
   profileId: string;
-  careerPath: 'full_time_creator' | 'hybrid_creator' | 'educator' | 'entertainer' | 'coach_trainer';
+  careerPath: 'full_time_earner' | 'hybrid_earner' | 'educator' | 'entertainer' | 'coach_trainer';
   timeline: '6_months' | '1_year' | '2_years' | '5_years';
   currentStatus?: string;
 }
@@ -301,6 +303,22 @@ export interface UpdateStrategyWithAnalyticsRequest {
     eventParticipation?: { eventId: string; eventName: string; attendees: number; engagement: number; }[];
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

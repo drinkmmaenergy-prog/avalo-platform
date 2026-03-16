@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 395 - Automatic Invoicing System
- * Generates invoices for purchases and payout statements for creators
+ * Generates invoices for purchases and payout statements for earners
  */
 
 import * as functions from 'firebase-functions';
@@ -41,7 +43,7 @@ interface InvoiceData {
   issuedAt: Date;
   dueAt?: Date;
   paidAt: Date;
-  avaloEntity: {
+  platformEntity: {
     name: string;
     address: string;
     taxId: string;
@@ -52,13 +54,13 @@ interface InvoiceData {
 
 interface PayoutStatementData {
   statementId: string;
-  creatorId: string;
-  creatorEmail: string;
-  creatorName: string;
+  earnerId: string;
+  earnerEmail: string;
+  earnerName: string;
   month: string;
   year: number;
   totalEarnings: number;
-  avaloCommission: number;
+  platformCommission: number;
   commissionRate: number;
   netTaxableIncome: number;
   payoutsIssued: number;
@@ -82,13 +84,13 @@ const AVALO_ENTITY = {
   taxId: 'NIP: 1234567890',
   vatNumber: 'PL1234567890',
   registrationNumber: 'KRS: 0000000000',
-  email: 'billing@avalo.app',
-  website: 'https://avalo.app'
+  email: 'billing@platform.app',
+  website: 'https://platform.app'
 };
 
 const LEGAL_DISCLAIMER = `
 This invoice is for digital goods and services provided by Avalo.
-All sales are final. For support, contact support@avalo.app.
+All sales are final. For support, contact support@platform.app.
 Avalo operates in compliance with EU Digital Services Act and applicable regulations.
 `;
 
@@ -107,8 +109,8 @@ function generateInvoiceNumber(): string {
 /**
  * Generate statement ID
  */
-function generateStatementId(creatorId: string, year: number, month: number): string {
-  return `STMT-${year}-${String(month).padStart(2, '0')}-${creatorId.substring(0, 8)}`;
+function generateStatementId(earnerId: string, year: number, month: number): string {
+  return `STMT-${year}-${String(month).padStart(2, '0')}-${earnerId.substring(0, 8)}`;
 }
 
 /**
@@ -178,7 +180,7 @@ export const generatePurchaseInvoice = functions.https.onCall(async (request) =>
     paymentMethod: purchase.paymentMethod || 'Card',
     issuedAt: new Date(),
     paidAt: purchase.completedAt?.toDate() || new Date(),
-    avaloEntity: AVALO_ENTITY,
+    platformEntity: AVALO_ENTITY,
     legalDisclaimer: LEGAL_DISCLAIMER
   };
   
@@ -208,7 +210,7 @@ export const generatePurchaseInvoice = functions.https.onCall(async (request) =>
 });
 
 /**
- * Generate creator payout statement
+ * Generate earner payout statement
  */
 export const generateCreatorPayoutStatement = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -216,7 +218,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   let { month, year } = data;
   
   // Default to previous month if not specified
@@ -232,26 +234,26 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
     }
   }
   
-  // Check if creator is verified
-  const verificationDoc = await db.collection('creatorVerification').doc(creatorId).get();
+  // Check if earner is verified
+  const verificationDoc = await db.collection('earnerVerification').doc(earnerId).get();
   if (!verificationDoc.exists || verificationDoc.data()?.status !== 'approved') {
     throw new functions.https.HttpsError('permission-denied', 'Creator not verified');
   }
   
-  // Get creator details
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const creator = creatorDoc.data()!;
+  // Get earner details
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const earner = earnerDoc.data()!;
   
   // Get tax status
-  const taxStatusDoc = await db.collection('creatorTaxStatus').doc(creatorId).get();
+  const taxStatusDoc = await db.collection('earnerTaxStatus').doc(earnerId).get();
   const taxStatus = taxStatusDoc.data();
   
   // Calculate earnings for the month
   const startDate = new Date(year, month, 1);
   const endDate = new Date(year, month + 1, 0, 23, 59, 59);
   
-  const earningsQuery = await db.collection('creatorEarnings')
-    .where('creatorId', '==', creatorId)
+  const earningsQuery = await db.collection('earnerEarnings')
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', startDate)
     .where('createdAt', '<=', endDate)
     .get();
@@ -289,9 +291,9 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   });
   
   // Calculate commission (20% for Avalo)
-  const commissionRate = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
-  const avaloCommission = totalEarnings * commissionRate;
-  const netTaxableIncome = totalEarnings - avaloCommission;
+  const commissionRate = MONETIZATION_SPLITS.EVENT_TICKET.platform;
+  const platformCommission = totalEarnings * commissionRate;
+  const netTaxableIncome = totalEarnings - platformCommission;
   
   // Calculate withholding tax if applicable
   let withholdingTaxRate = 0;
@@ -304,7 +306,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   
   // Get payouts issued
   const payoutsQuery = await db.collection('payoutRequests')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'completed')
     .where('completedAt', '>=', startDate)
     .where('completedAt', '<=', endDate)
@@ -316,18 +318,18 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   });
   
   // Build statement data
-  const statementId = generateStatementId(creatorId, year, month + 1);
+  const statementId = generateStatementId(earnerId, year, month + 1);
   const monthName = new Date(year, month).toLocaleString('en-US', { month: 'long' });
   
   const statementData: PayoutStatementData = {
     statementId,
-    creatorId,
-    creatorEmail: creator.email,
-    creatorName: creator.displayName || creator.username,
+    earnerId,
+    earnerEmail: earner.email,
+    earnerName: earner.displayName || earner.username,
     month: monthName,
     year,
     totalEarnings,
-    avaloCommission,
+    platformCommission,
     commissionRate,
     netTaxableIncome,
     payoutsIssued,
@@ -339,7 +341,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   };
   
   // Save statement
-  const statementRef = await db.collection('creatorPayoutStatements').add({
+  const statementRef = await db.collection('earnerPayoutStatements').add({
     ...statementData,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -347,7 +349,7 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   
   // Also save to tax logs
   await db.collection('payoutTaxLogs').add({
-    creatorId,
+    earnerId,
     statementId,
     year,
     month: month + 1,
@@ -359,8 +361,8 @@ export const generateCreatorPayoutStatement = functions.https.onCall(async (requ
   });
   
   // Save to tax statements collection
-  await db.collection('creatorTaxStatements').add({
-    creatorId,
+  await db.collection('earnerTaxStatements').add({
+    earnerId,
     statementId,
     year,
     month: month + 1,
@@ -446,7 +448,7 @@ export const getUserInvoices = functions.https.onCall(async (request) => {
 });
 
 /**
- * Get creator's payout statements
+ * Get earner's payout statements
  */
 export const getCreatorPayoutStatements = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -454,11 +456,11 @@ export const getCreatorPayoutStatements = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   const { limit = 12 } = data;
   
-  const statementsQuery = await db.collection('creatorPayoutStatements')
-    .where('creatorId', '==', creatorId)
+  const statementsQuery = await db.collection('earnerPayoutStatements')
+    .where('earnerId', '==', earnerId)
     .orderBy('createdAt', 'desc')
     .limit(limit)
     .get();
@@ -475,21 +477,21 @@ export const getCreatorPayoutStatements = functions.https.onCall(async (request)
 });
 
 /**
- * Generate monthly statements for all creators (scheduled)
+ * Generate monthly statements for all earners (scheduled)
  */
 export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0 0 1 * *", timeZone: "USDope/Warsaw" }, async (event) => {
     console.log('Starting monthly statement generation...');
     
-    // Get all verified creators
-    const creatorsQuery = await db.collection('creatorVerification')
+    // Get all verified earners
+    const earnersQuery = await db.collection('earnerVerification')
       .where('status', '==', 'approved')
       .get();
     
     const batch = db.batch();
     let count = 0;
     
-    for (const doc of creatorsQuery.docs) {
-      const creatorId = doc.id;
+    for (const doc of earnersQuery.docs) {
+      const earnerId = doc.id;
       
       try {
         // This would normally call generateCreatorPayoutStatement
@@ -498,7 +500,7 @@ export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0
         // For now, we'll add a task to a queue
         const taskRef = db.collection('statementGenerationTasks').doc();
         batch.set(taskRef, {
-          creatorId,
+          earnerId,
           status: 'pending',
           createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
@@ -510,7 +512,7 @@ export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0
           await batch.commit();
         }
       } catch (error) {
-        console.error(`Error creating task for creator ${creatorId}:`, error);
+        console.error(`Error creating task for earner ${earnerId}:`, error);
       }
     }
     
@@ -520,6 +522,22 @@ export const generateMonthlyStatementsForAllCreators = onSchedule({ schedule: "0
     
     console.log(`Generated ${count} statement tasks`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 66 — Web Landing + Referral & Influencer Tracking (Acquisition, No Free Tokens)
  * 
@@ -695,6 +697,20 @@ export const admin_getReferralProfile = functions.https.onCall(async (request) =
 });
 
 console.log('✅ PACK 66 — Referrals module loaded (tracking only, no rewards)');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

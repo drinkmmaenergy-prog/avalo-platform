@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Retention Nudges Engine
  * Contextual nudges triggered by user inactivity patterns
@@ -339,6 +341,20 @@ export const optInToNudges = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ PACK 301B - Retention Nudges Engine initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

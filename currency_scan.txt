@@ -2476,7 +2476,7 @@ functions\src\pack196-marketplace.ts:330:    // Calculate revenue split (65% cre
 functions\src\pack196-marketplace.ts:331:    const avaloFee = Math.floor(product.priceTokens * 0.35);
 functions\src\pack196-marketplace.ts:666:        const sellerDeduction = Math.min(refundAmount * 0.65, order.creatorEarnings);
 functions\src\pack200-auto-heal-runtime.ts:71:  maxDelayMs: 30000,
-functions\src\pack200-auto-scale-traffic.ts:73:const REGIONS = ['us-central1', 'europe-west1', 'asia-east1'];
+functions\src\pack200-auto-scale-traffic.ts:73:const REGIONS = ['europe-west1', 'europe-west1', 'asia-east1'];
 functions\src\pack200-auto-scale-traffic.ts:322:      trafficPercent: Math.max(10, region.trafficPercent - 30),
 functions\src\pack200-auto-scale-traffic.ts:327:      trafficPercent: targetRegion.trafficPercent + 30,
 functions\src\pack200-stress-test-suite.ts:10: * - 300k video uploads/day
@@ -2899,8 +2899,8 @@ functions\src\pack277-token-packs.ts:82:    priceEUR: 504.00,
 functions\src\pack277-token-packs.ts:88:import { TOKEN_PAYOUT_USD, TOKEN_PAYOUT_PLN } from './config/economyConfig';
 functions\src\pack277-token-packs.ts:92: * Derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
 functions\src\pack277-token-packs.ts:95:export const TOKEN_PAYOUT_RATE_PLN = TOKEN_PAYOUT_PLN;
-functions\src\pack277-wallet-endpoints.ts:278:  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 30 },
-functions\src\pack277-wallet-endpoints.ts:318:  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 30 },
+functions\src\pack277-wallet-endpoints.ts:278:  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
+functions\src\pack277-wallet-endpoints.ts:318:  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
 functions\src\pack277-wallet-endpoints.ts:374:    const { amountTokens, payoutMethod, payoutDetails, currency = 'PLN' } = request.data as PayoutRequest;
 functions\src\pack277-wallet-endpoints.ts:385:          `Minimum payout is ${MIN_PAYOUT_TOKENS} tokens (${MIN_PAYOUT_TOKENS * PAYOUT_RATE} PLN)`
 functions\src\pack277-wallet-endpoints.ts:411:      // PACK 330 & PACK 328A: Check compliance requirements
@@ -5903,9 +5903,9 @@ functions\src\pack451-creator-agreement.ts:17: * - NO revenue split changes (65/
 functions\src\pack451-creator-agreement.ts:170:    region: 'europe-west1',
 functions\src\pack451-creator-agreement.ts:172:    timeoutSeconds: 30,
 functions\src\pack451-creator-agreement.ts:246:    region: 'europe-west1',
-functions\src\pack452-endpoints.ts:57:  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 30 },
-functions\src\pack452-endpoints.ts:93:  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 30 },
-functions\src\pack452-endpoints.ts:132:  { region: 'us-central1', memory: '256MiB', timeoutSeconds: 30 },
+functions\src\pack452-endpoints.ts:57:  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
+functions\src\pack452-endpoints.ts:93:  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
+functions\src\pack452-endpoints.ts:132:  { region: 'europe-west1', memory: '256MiB', timeoutSeconds: 30 },
 functions\src\pack452-entry-threshold.ts:18: * - 65/35 split unchanged
 functions\src\pack452-exclusive-mode.ts:10: * Exclusive duration: active until chat ends or 30 min inactivity.
 functions\src\pack452-exclusive-mode.ts:266: * Check and expire all exclusive locks that have been inactive for 30+ minutes.

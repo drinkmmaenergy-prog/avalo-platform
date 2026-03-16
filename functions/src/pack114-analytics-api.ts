@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — Agency Analytics API
  * Privacy-safe aggregated analytics for agencies
@@ -33,7 +35,7 @@ import { admin, auth, functions, onSchedule } from './runtime';
 
 /**
  * Get agency dashboard overview
- * Returns aggregated metrics across all linked creators
+ * Returns aggregated metrics across all linked earners
  */
 export const getAgencyDashboard = onCall(
   { region: 'europe-west1' },
@@ -42,7 +44,7 @@ export const getAgencyDashboard = onCall(
     totalEarnings: number;
     activeEarnings: number;
     last30DaysEarnings: number;
-    topPerformers: Array<{ creatorId: string; earnings: number; anonymized: string }>;
+    topPerformers: Array<{ earnerId: string; earnings: number; anonymized: string }>;
   }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required');
@@ -56,7 +58,7 @@ export const getAgencyDashboard = onCall(
 
     try {
       // Verify user owns this agency
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
       
       if (!agencyDoc.exists) {
         throw new HttpsError('not-found', 'Agency not found');
@@ -68,9 +70,9 @@ export const getAgencyDashboard = onCall(
         throw new HttpsError('permission-denied', 'Not authorized to view this agency');
       }
 
-      // Get linked creators count
+      // Get linked earners count
       const linksSnapshot = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('agencyId', '==', agencyId)
         .where('status', '==', 'ACTIVE')
         .get();
@@ -81,9 +83,9 @@ export const getAgencyDashboard = onCall(
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const earningsSummary = await getAgencyEarningsSummary(agencyId, thirtyDaysAgo);
 
-      // Anonymize top earners (don't expose creator IDs directly)
+      // Anonymize top earners (don't expose earner IDs directly)
       const topPerformers = earningsSummary.topEarners.slice(0, 5).map((earner, index) => ({
-        creatorId: earner.creatorId,
+        earnerId: earner.earnerId,
         earnings: earner.agencyEarnings,
         anonymized: `Creator ${String.fromCharCode(65 + index)}`, // A, B, C, etc.
       }));
@@ -106,19 +108,19 @@ export const getAgencyDashboard = onCall(
 );
 
 /**
- * Get analytics for specific creator (agency view)
+ * Get analytics for specific earner (agency view)
  * Returns ONLY aggregated metrics, no personal data
  */
 export const getCreatorAnalyticsForAgency = onCall(
   { region: 'europe-west1' },
   async (request): Promise<{
-    creatorId: string;
+    earnerId: string;
     linkStatus: string;
     agencyPercentage: number;
     metrics: {
       totalEarnings: number;
       agencyShare: number;
-      creatorShare: number;
+      earner: number;
       followersCount: number;
       likesCount: number;
       paidInteractionsCount: number;
@@ -137,15 +139,15 @@ export const getCreatorAnalyticsForAgency = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId } = request.data;
+    const { agencyId, earnerUserId } = request.data;
 
-    if (!agencyId || !creatorUserId) {
+    if (!agencyId || !earnerUserId) {
       throw new HttpsError('invalid-argument', 'Agency ID and Creator ID required');
     }
 
     try {
       // Verify agency ownership
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
       
       if (!agencyDoc.exists) {
         throw new HttpsError('not-found', 'Agency not found');
@@ -159,9 +161,9 @@ export const getCreatorAnalyticsForAgency = onCall(
 
       // Verify link exists
       const linkQuery = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('agencyId', '==', agencyId)
-        .where('creatorUserId', '==', creatorUserId)
+        .where('earnerUserId', '==', earnerUserId)
         .limit(1)
         .get();
 
@@ -172,37 +174,37 @@ export const getCreatorAnalyticsForAgency = onCall(
       const link = linkQuery.docs[0].data() as CreatorAgencyLink;
 
       // Get earnings breakdown
-      const earningsSummary = await getCreatorEarningsSummaryWithAgency(creatorUserId);
+      const earningsSummary = await getCreatorEarningsSummaryWithAgency(earnerUserId);
 
       // Get aggregated engagement metrics (counts only, no identities)
       const followersSnapshot = await db
         .collection('followers')
-        .where('followedUserId', '==', creatorUserId)
+        .where('followedUserId', '==', earnerUserId)
         .count()
         .get();
 
       const likesSnapshot = await db
         .collection('post_likes')
-        .where('creatorId', '==', creatorUserId)
+        .where('earnerId', '==', earnerUserId)
         .count()
         .get();
 
       const paidInteractionsSnapshot = await db
         .collection('earnings_ledger')
-        .where('creatorId', '==', creatorUserId)
+        .where('earnerId', '==', earnerUserId)
         .count()
         .get();
 
       const contentSnapshot = await db
         .collection('stories')
-        .where('userId', '==', creatorUserId)
+        .where('userId', '==', earnerUserId)
         .count()
         .get();
 
       // Get breakdown by source type
       const splitsSnapshot = await db
         .collection('agency_earnings_splits')
-        .where('creatorUserId', '==', creatorUserId)
+        .where('earnerUserId', '==', earnerUserId)
         .where('agencyId', '==', agencyId)
         .get();
 
@@ -241,13 +243,13 @@ export const getCreatorAnalyticsForAgency = onCall(
       });
 
       return {
-        creatorId: creatorUserId,
+        earnerId: earnerUserId,
         linkStatus: link.status,
         agencyPercentage: link.percentageForAgency,
         metrics: {
           totalEarnings: link.totalEarningsGenerated,
           agencyShare: link.agencyEarningsTotal,
-          creatorShare: link.creatorEarningsTotal,
+          earner: link.earnerEarningsTotal,
           followersCount: followersSnapshot.data().count,
           likesCount: likesSnapshot.data().count,
           paidInteractionsCount: paidInteractionsSnapshot.data().count,
@@ -256,20 +258,20 @@ export const getCreatorAnalyticsForAgency = onCall(
         breakdown,
       };
     } catch (error: any) {
-      logger.error('Error getting creator analytics for agency', error);
+      logger.error('Error getting earner analytics for agency', error);
       throw new HttpsError('internal', `Failed to get analytics: ${error.message}`);
     }
   }
 );
 
 /**
- * Get list of linked creators with basic info (no personal data)
+ * Get list of linked earners with basic info (no personal data)
  */
 export const getAgencyLinkedCreators = onCall(
   { region: 'europe-west1' },
   async (request): Promise<{
-    creators: Array<{
-      creatorId: string;
+    earners: Array<{
+      earnerId: string;
       username: string;
       avatarUrl?: string;
       linkStatus: string;
@@ -291,7 +293,7 @@ export const getAgencyLinkedCreators = onCall(
 
     try {
       // Verify agency ownership
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
       
       if (!agencyDoc.exists) {
         throw new HttpsError('not-found', 'Agency not found');
@@ -305,21 +307,21 @@ export const getAgencyLinkedCreators = onCall(
 
       // Get all links
       const linksSnapshot = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('agencyId', '==', agencyId)
         .where('status', 'in', ['ACTIVE', 'PENDING'])
         .get();
 
-      const creators = await Promise.all(
+      const earners = await Promise.all(
         linksSnapshot.docs.map(async (linkDoc) => {
           const link = linkDoc.data() as CreatorAgencyLink;
 
           // Get public profile info only
-          const userDoc = await db.collection('users').doc(link.creatorUserId).get();
+          const userDoc = await db.collection('users').doc(link.earnerUserId).get();
           const userData = userDoc.exists ? userDoc.data() : {};
 
           const result = {
-            creatorId: link.creatorUserId,
+            earnerId: link.earnerUserId,
             username: (userData as any).username || 'Unknown',
             avatarUrl: (userData as any).avatarUrl,
             linkStatus: link.status,
@@ -335,10 +337,10 @@ export const getAgencyLinkedCreators = onCall(
         })
       );
 
-      return { creators };
+      return { earners };
     } catch (error: any) {
-      logger.error('Error getting linked creators', error);
-      throw new HttpsError('internal', `Failed to get creators: ${error.message}`);
+      logger.error('Error getting linked earners', error);
+      throw new HttpsError('internal', `Failed to get earners: ${error.message}`);
     }
   }
 );
@@ -369,7 +371,7 @@ export const getAgencyEarningsTimeline = onCall(
 
     try {
       // Verify agency ownership
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
       
       if (!agencyDoc.exists) {
         throw new HttpsError('not-found', 'Agency not found');
@@ -427,7 +429,7 @@ export const getAgencyEarningsTimeline = onCall(
 // ============================================================================
 
 /**
- * Get creator's view of agency relationship
+ * Get earner's view of agency relationship
  */
 export const getCreatorAgencyView = onCall(
   { region: 'europe-west1' },
@@ -436,7 +438,7 @@ export const getCreatorAgencyView = onCall(
     agencyName?: string;
     agencyPercentage?: number;
     totalEarnings?: number;
-    creatorShare?: number;
+    earner?: number;
     agencyShare?: number;
     linkStatus?: string;
     linkedSince?: string;
@@ -450,8 +452,8 @@ export const getCreatorAgencyView = onCall(
     try {
       // Check for active agency link
       const linkQuery = await db
-        .collection('creator_agency_links')
-        .where('creatorUserId', '==', userId)
+        .collection('earner_agency_links')
+        .where('earnerUserId', '==', userId)
         .where('status', '==', 'ACTIVE')
         .limit(1)
         .get();
@@ -464,7 +466,7 @@ export const getCreatorAgencyView = onCall(
 
       // Get agency info
       const agencyDoc = await db
-        .collection('creator_agency_accounts')
+        .collection('earner_agency_accounts')
         .doc(link.agencyId)
         .get();
 
@@ -475,7 +477,7 @@ export const getCreatorAgencyView = onCall(
         agencyName: agency?.name,
         agencyPercentage: link.percentageForAgency,
         totalEarnings: link.totalEarningsGenerated,
-        creatorShare: link.creatorEarningsTotal,
+        earner: link.earnerEarningsTotal,
         agencyShare: link.agencyEarningsTotal,
         linkStatus: link.status,
         linkedSince: link.createdAt.toDate().toISOString(),
@@ -484,7 +486,7 @@ export const getCreatorAgencyView = onCall(
 
       return;
     } catch (error: any) {
-      logger.error('Error getting creator agency view', error);
+      logger.error('Error getting earner agency view', error);
       throw new HttpsError('internal', `Failed to get agency info: ${error.message}`);
     }
   }
@@ -513,7 +515,7 @@ export const aggregateAgencyAnalyticsDaily = onSchedule(
 
       // Get all active agencies
       const agenciesSnapshot = await db
-        .collection('creator_agency_accounts')
+        .collection('earner_agency_accounts')
         .where('status', '==', 'ACTIVE')
         .get();
 
@@ -523,9 +525,9 @@ export const aggregateAgencyAnalyticsDaily = onSchedule(
         const agencyId = agencyDoc.id;
 
         try {
-          // Get all linked creators
+          // Get all linked earners
           const linksSnapshot = await db
-            .collection('creator_agency_links')
+            .collection('earner_agency_links')
             .where('agencyId', '==', agencyId)
             .where('status', '==', 'ACTIVE')
             .get();
@@ -533,17 +535,17 @@ export const aggregateAgencyAnalyticsDaily = onSchedule(
           for (const linkDoc of linksSnapshot.docs) {
             const link = linkDoc.data() as CreatorAgencyLink;
 
-            // Compute analytics for this creator
+            // Compute analytics for this earner
             const analytics = await computeCreatorAnalytics(
               agencyId,
-              link.creatorUserId,
+              link.earnerUserId,
               yesterday
             );
 
             // Store pre-computed analytics
             await db
               .collection('agency_analytics_daily')
-              .doc(`${agencyId}_${link.creatorUserId}_${yesterday}`)
+              .doc(`${agencyId}_${link.earnerUserId}_${yesterday}`)
               .set(analytics);
           }
 
@@ -564,11 +566,11 @@ export const aggregateAgencyAnalyticsDaily = onSchedule(
 );
 
 /**
- * Compute analytics for a creator
+ * Compute analytics for a earner
  */
 async function computeCreatorAnalytics(
   agencyId: string,
-  creatorUserId: string,
+  earnerUserId: string,
   date: string
 ): Promise<AgencyAnalytics> {
   const startOfDay = new Date(date);
@@ -581,14 +583,14 @@ async function computeCreatorAnalytics(
   const splitsSnapshot = await db
     .collection('agency_earnings_splits')
     .where('agencyId', '==', agencyId)
-    .where('creatorUserId', '==', creatorUserId)
+    .where('earnerUserId', '==', earnerUserId)
     .where('createdAt', '>=', Timestamp.fromDate(startOfDay))
     .where('createdAt', '<=', Timestamp.fromDate(endOfDay))
     .get();
 
   let totalEarningsGenerated = 0;
   let agencyEarnings = 0;
-  let creatorEarnings = 0;
+  let earnerEarnings = 0;
   const breakdown = {
     gifts: 0,
     premiumStories: 0,
@@ -600,9 +602,9 @@ async function computeCreatorAnalytics(
 
   splitsSnapshot.forEach((doc) => {
     const split = doc.data();
-    totalEarningsGenerated += split.creatorShareBefore || 0;
+    totalEarningsGenerated += split.earnerBefore || 0;
     agencyEarnings += split.agencyAmount || 0;
-    creatorEarnings += split.creatorAmount || 0;
+    earnerEarnings += split.earnerAmount || 0;
 
     const amount = split.agencyAmount || 0;
     switch (split.sourceType) {
@@ -629,25 +631,25 @@ async function computeCreatorAnalytics(
   // Get engagement counts (aggregated only)
   const followersSnapshot = await db
     .collection('followers')
-    .where('followedUserId', '==', creatorUserId)
+    .where('followedUserId', '==', earnerUserId)
     .count()
     .get();
 
   const likesSnapshot = await db
     .collection('post_likes')
-    .where('creatorId', '==', creatorUserId)
+    .where('earnerId', '==', earnerUserId)
     .count()
     .get();
 
   console.log('Scheduled job result:', {
     agencyId,
-    creatorUserId,
+    earnerUserId,
     period: 'DAILY',
     periodStart: date,
     periodEnd: date,
     totalEarningsGenerated,
     agencyEarnings,
-    creatorEarnings,
+    earnerEarnings,
     followersCount: followersSnapshot.data().count,
     likesCount: likesSnapshot.data().count,
     paidInteractionsCount: splitsSnapshot.size,
@@ -659,6 +661,21 @@ async function computeCreatorAnalytics(
 
   return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

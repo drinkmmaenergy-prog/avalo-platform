@@ -1,14 +1,16 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Creator Viral Loops
  * 
- * Every creator profile generates trackable invite links for:
+ * Every earner profile generates trackable invite links for:
  * - Private chat
  * - Voice/video call
  * - Calendar booking
  * - Event invitation
  * - AI companion interaction
  * 
- * Format: avalo.app/invite/{creatorId}/{entryType}
+ * Format: platform.app/invite/{earnerId}/{entryType}
  * 
  * Tracks conversion analytics and CPA calculation.
  */
@@ -31,13 +33,13 @@ export type EntryType =
 
 export type ConversionStatus =
   | 'opened'           // Link opened
-  | 'viewed_profile'   // Viewed creator profile
+  | 'viewed_profile'   // Viewed earner profile
   | 'registered'       // User registered
   | 'converted';       // Completed paid action
 
 export interface ViralInvite {
   inviteId: string;
-  creatorId: string;
+  earnerId: string;
   entryType: EntryType;
   status: ConversionStatus;
   openedAt: FirebaseFirestore.Timestamp;
@@ -54,7 +56,7 @@ export interface ViralInvite {
 }
 
 export interface ViralStats {
-  creatorId: string;
+  earnerId: string;
   totalOpens: number;
   profileViews: number;
   registrations: number;
@@ -76,20 +78,20 @@ export interface ViralStats {
 // ============================================================================
 
 /**
- * Generate viral invite link for creator
- * Each creator can have multiple active invite links per entry type
+ * Generate viral invite link for earner
+ * Each earner can have multiple active invite links per entry type
  */
 export async function generateViralInviteLink(data: {
-  creatorId: string;
+  earnerId: string;
   entryType: EntryType;
   campaignName?: string;
   metadata?: any;
 }): Promise<{ success: boolean; inviteLink: string; inviteId: string }> {
-  const { creatorId, entryType, campaignName, metadata } = data;
+  const { earnerId, entryType, campaignName, metadata } = data;
   
-  // Validate creator exists
-  const creatorSnap = await db.collection('users').doc(creatorId).get();
-  if (!creatorSnap.exists) {
+  // Validate earner exists
+  const earnerSnap = await db.collection('users').doc(earnerId).get();
+  if (!earnerSnap.exists) {
     throw new functions.https.HttpsError('not-found', 'Creator not found');
   }
   
@@ -108,7 +110,7 @@ export async function generateViralInviteLink(data: {
   // Create invite document
   await db.collection('viral_invites').doc(inviteId).set({
     inviteId,
-    creatorId,
+    earnerId,
     entryType,
     status: 'opened' as ConversionStatus,
     openedAt: serverTimestamp(),
@@ -118,7 +120,7 @@ export async function generateViralInviteLink(data: {
     }
   } as ViralInvite);
   
-  const inviteLink = `avalo.app/invite/${creatorId}/${entryType}?ref=${inviteId}`;
+  const inviteLink = `platform.app/invite/${earnerId}/${entryType}?ref=${inviteId}`;
   
   return {
     success: true,
@@ -137,7 +139,7 @@ export async function generateViralInviteLink(data: {
  */
 export async function trackViralInviteOpen(data: {
   inviteId: string;
-  creatorId: string;
+  earnerId: string;
   entryType: EntryType;
   metadata?: {
     source?: string;
@@ -146,7 +148,7 @@ export async function trackViralInviteOpen(data: {
     geoLocation?: string;
   };
 }): Promise<{ success: boolean; inviteId: string }> {
-  const { inviteId, creatorId, entryType, metadata } = data;
+  const { inviteId, earnerId, entryType, metadata } = data;
   
   // Check if invite exists
   let inviteDoc = db.collection('viral_invites').doc(inviteId);
@@ -157,7 +159,7 @@ export async function trackViralInviteOpen(data: {
     // This handles cases where links are generated client-side
     await inviteDoc.set({
       inviteId,
-      creatorId,
+      earnerId,
       entryType,
       status: 'opened',
       openedAt: serverTimestamp(),
@@ -165,8 +167,8 @@ export async function trackViralInviteOpen(data: {
     } as ViralInvite);
   }
   
-  // Update creator viral stats (async, non-blocking)
-  updateCreatorViralStats(creatorId, entryType, 'opened').catch(err =>
+  // Update earner viral stats (async, non-blocking)
+  updateCreatorViralStats(earnerId, entryType, 'opened').catch(err =>
     console.error('[ViralLoop] Failed to update stats:', err)
   );
   
@@ -178,10 +180,10 @@ export async function trackViralInviteOpen(data: {
  */
 export async function trackViralProfileView(data: {
   inviteId: string;
-  creatorId: string;
+  earnerId: string;
   visitorUserId?: string;
 }): Promise<{ success: boolean }> {
-  const { inviteId, creatorId, visitorUserId } = data;
+  const { inviteId, earnerId, visitorUserId } = data;
   
   const inviteDoc = db.collection('viral_invites').doc(inviteId);
   const inviteSnap = await inviteDoc.get();
@@ -201,8 +203,8 @@ export async function trackViralProfileView(data: {
       visitorUserId: visitorUserId || null
     });
     
-    // Update creator viral stats (async, non-blocking)
-    updateCreatorViralStats(creatorId, invite.entryType, 'viewed_profile').catch(err =>
+    // Update earner viral stats (async, non-blocking)
+    updateCreatorViralStats(earnerId, invite.entryType, 'viewed_profile').catch(err =>
       console.error('[ViralLoop] Failed to update stats:', err)
     );
   }
@@ -237,8 +239,8 @@ export async function trackViralRegistration(data: {
       visitorUserId
     });
     
-    // Update creator viral stats (async, non-blocking)
-    updateCreatorViralStats(invite.creatorId, invite.entryType, 'registered').catch(err =>
+    // Update earner viral stats (async, non-blocking)
+    updateCreatorViralStats(invite.earnerId, invite.entryType, 'registered').catch(err =>
       console.error('[ViralLoop] Failed to update stats:', err)
     );
   }
@@ -275,13 +277,13 @@ export async function trackViralConversion(data: {
     'metadata.conversionValue': conversionValue
   });
   
-  // Update creator viral stats (async, non-blocking)
-  updateCreatorViralStats(invite.creatorId, invite.entryType, 'converted').catch(err =>
+  // Update earner viral stats (async, non-blocking)
+  updateCreatorViralStats(invite.earnerId, invite.entryType, 'converted').catch(err =>
     console.error('[ViralLoop] Failed to update stats:', err)
   );
   
-  // Update creator promotion score (non-blocking)
-  updateCreatorPromotionScore(invite.creatorId).catch(err =>
+  // Update earner promotion score (non-blocking)
+  updateCreatorPromotionScore(invite.earnerId).catch(err =>
     console.error('[ViralLoop] Failed to update promotion score:', err)
   );
   
@@ -293,14 +295,14 @@ export async function trackViralConversion(data: {
 // ============================================================================
 
 /**
- * Update creator viral statistics
+ * Update earner viral statistics
  */
 async function updateCreatorViralStats(
-  creatorId: string,
+  earnerId: string,
   entryType: EntryType,
   event: 'opened' | 'viewed_profile' | 'registered' | 'converted'
 ): Promise<void> {
-  const statsRef = db.collection('viral_stats').doc(creatorId);
+  const statsRef = db.collection('viral_stats').doc(earnerId);
   
   await db.runTransaction(async (transaction) => {
     const statsSnap = await transaction.get(statsRef);
@@ -308,7 +310,7 @@ async function updateCreatorViralStats(
     if (!statsSnap.exists) {
       // Create new stats document
       const initialStats: ViralStats = {
-        creatorId,
+        earnerId,
         totalOpens: event === 'opened' ? 1 : 0,
         profileViews: event === 'viewed_profile' ? 1 : 0,
         registrations: event === 'registered' ? 1 : 0,
@@ -349,14 +351,14 @@ async function updateCreatorViralStats(
   });
   
   // Recalculate conversion rate (async)
-  recalculateConversionRate(creatorId).catch(() => {});
+  recalculateConversionRate(earnerId).catch(() => {});
 }
 
 /**
- * Recalculate conversion rate for creator
+ * Recalculate conversion rate for earner
  */
-async function recalculateConversionRate(creatorId: string): Promise<void> {
-  const statsRef = db.collection('viral_stats').doc(creatorId);
+async function recalculateConversionRate(earnerId: string): Promise<void> {
+  const statsRef = db.collection('viral_stats').doc(earnerId);
   const statsSnap = await statsRef.get();
   
   if (!statsSnap.exists) return;
@@ -382,13 +384,13 @@ async function recalculateConversionRate(creatorId: string): Promise<void> {
 }
 
 /**
- * Update creator promotion score based on viral performance
+ * Update earner promotion score based on viral performance
  * (Used by pack347-promotion-algorithm.ts)
  */
-async function updateCreatorPromotionScore(creatorId: string): Promise<void> {
+async function updateCreatorPromotionScore(earnerId: string): Promise<void> {
   try {
     const { calculatePromotionScore } = await import('./pack347-promotion-algorithm');
-    await calculatePromotionScore({ creatorId });
+    await calculatePromotionScore({ earnerId });
   } catch (error) {
     console.warn('[ViralLoop] Failed to update promotion score:', error);
   }
@@ -399,14 +401,14 @@ async function updateCreatorPromotionScore(creatorId: string): Promise<void> {
 // ============================================================================
 
 /**
- * Get creator's viral statistics
+ * Get earner's viral statistics
  */
 export async function getCreatorViralStats(data: {
-  creatorId: string;
+  earnerId: string;
 }): Promise<ViralStats | null> {
-  const { creatorId } = data;
+  const { earnerId } = data;
   
-  const statsSnap = await db.collection('viral_stats').doc(creatorId).get();
+  const statsSnap = await db.collection('viral_stats').doc(earnerId).get();
   
   if (!statsSnap.exists) {
     return null;
@@ -416,17 +418,17 @@ export async function getCreatorViralStats(data: {
 }
 
 /**
- * Get creator's viral invite history
+ * Get earner's viral invite history
  */
 export async function getCreatorViralInvites(data: {
-  creatorId: string;
+  earnerId: string;
   limit?: number;
   status?: ConversionStatus;
 }): Promise<ViralInvite[]> {
-  const { creatorId, limit = 100, status } = data;
+  const { earnerId, limit = 100, status } = data;
   
   let query = db.collection('viral_invites')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('openedAt', 'desc')
     .limit(limit);
   
@@ -440,14 +442,14 @@ export async function getCreatorViralInvites(data: {
 }
 
 /**
- * Get top performing entry types for creator
+ * Get top performing entry types for earner
  */
 export async function getTopPerformingEntryTypes(data: {
-  creatorId: string;
+  earnerId: string;
 }): Promise<{ entryType: EntryType; conversionRate: number }[]> {
-  const { creatorId } = data;
+  const { earnerId } = data;
   
-  const stats = await getCreatorViralStats({ creatorId });
+  const stats = await getCreatorViralStats({ earnerId });
   
   if (!stats || !stats.byEntryType) {
     return [];
@@ -466,20 +468,20 @@ export async function getTopPerformingEntryTypes(data: {
 // ============================================================================
 
 /**
- * Calculate CPA (Cost Per Acquisition) for creator
+ * Calculate CPA (Cost Per Acquisition) for earner
  * Based on boost spending vs conversions
  */
 export async function calculateCreatorCPA(data: {
-  creatorId: string;
+  earnerId: string;
   timeRangeHours?: number;
 }): Promise<{ cpa: number; totalSpent: number; totalConversions: number }> {
-  const { creatorId, timeRangeHours = 720 } = data; // Default 30 days
+  const { earnerId, timeRangeHours = 720 } = data; // Default 30 days
   
   const cutoffTime = new Date(Date.now() - timeRangeHours * 60 * 60 * 1000);
   
   // Get total boost spending
   const boostQuery = await db.collection('boosts')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
@@ -489,7 +491,7 @@ export async function calculateCreatorCPA(data: {
   
   // Get total conversions
   const conversionQuery = await db.collection('viral_invites')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'converted')
     .where('convertedAt', '>=', cutoffTime)
     .get();
@@ -499,7 +501,7 @@ export async function calculateCreatorCPA(data: {
   const cpa = totalConversions > 0 ? totalSpent / totalConversions : 0;
   
   // Update stats document
-  await db.collection('viral_stats').doc(creatorId).set({
+  await db.collection('viral_stats').doc(earnerId).set({
     cpa,
     updatedAt: serverTimestamp()
   }, { merge: true });
@@ -517,7 +519,7 @@ export async function getPlatformViralMetrics(data: {
   totalOpens: number;
   totalConversions: number;
   avgConversionRate: number;
-  topCreators: Array<{ creatorId: string; conversions: number }>;
+  topCreators: Array<{ earnerId: string; conversions: number }>;
 }> {
   const { timeRangeHours = 168 } = data; // Default 7 days
   
@@ -538,15 +540,15 @@ export async function getPlatformViralMetrics(data: {
     ? (totalConversions / totalOpens) * 100 
     : 0;
   
-  // Calculate top creators
-  const creatorConversions = new Map<string, number>();
+  // Calculate top earners
+  const earnerConversions = new Map<string, number>();
   conversions.forEach(doc => {
-    const creatorId = doc.data().creatorId;
-    creatorConversions.set(creatorId, (creatorConversions.get(creatorId) || 0) + 1);
+    const earnerId = doc.data().earnerId;
+    earnerConversions.set(earnerId, (earnerConversions.get(earnerId) || 0) + 1);
   });
   
-  const topCreators = Array.from(creatorConversions.entries())
-    .map(([creatorId, conversions]) => ({ creatorId, conversions }))
+  const topCreators = Array.from(earnerConversions.entries())
+    .map(([earnerId, conversions]) => ({ earnerId, conversions }))
     .sort((a, b) => b.conversions - a.conversions)
     .slice(0, 10);
   
@@ -561,12 +563,26 @@ export async function getPlatformViralMetrics(data: {
 /**
  * PACK 347: Creator Viral Loops
  * 
- * - Trackable invite links per creator/entry type
+ * - Trackable invite links per earner/entry type
  * - Conversion funnel tracking (open → view → register → convert)
  * - CPA calculation for marketing analytics
  * - Entry type performance analysis
  * - Integration with promotion algorithm
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

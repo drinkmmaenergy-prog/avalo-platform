@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 289 — Withdrawal Admin Functions
  * 
@@ -7,7 +9,7 @@
  * - Token burning on approval
  * - Manual payout management
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -576,6 +578,20 @@ export const withdrawals_markAsPaid = functions.https.onCall(async (request) => 
 
 // Export for testing and use in other modules
 export { burnTokensForWithdrawal, updateMonthlyStats };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

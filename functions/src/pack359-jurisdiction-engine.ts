@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 359 — Legal Compliance: Jurisdiction Engine
  * 
@@ -86,7 +88,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
   },
   'FR': {
     countryCode: 'FR',
-    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     digitalServiceTaxRate: 0.03,
     payoutAllowed: true,
     kycRequired: true,
@@ -168,7 +170,7 @@ const JURISDICTION_PROFILES: Record<string, JurisdictionProfile> = {
   // United Kingdom
   'GB': {
     countryCode: 'GB',
-    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    vatRate: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     digitalServiceTaxRate: 0.02,
     payoutAllowed: true,
     kycRequired: true,
@@ -627,6 +629,22 @@ export const checkCompliance = functions.https.onCall(async (request) => {
     payoutReason: payoutEligibility.reason,
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

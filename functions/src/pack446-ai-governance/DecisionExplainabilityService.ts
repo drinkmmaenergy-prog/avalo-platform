@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 446: AI Governance, Explainability & Model Risk Control
  * Module: Decision Explainability Service
@@ -212,7 +214,7 @@ export class DecisionExplainabilityService {
       summary,
       details,
       contestable: this.isContestable(context.decisionType),
-      contestInstructions: 'Contact support@avalo.app to contest this decision',
+      contestInstructions: 'Contact support@platform.app to contest this decision',
       generatedAt: timestamp
     };
   }
@@ -537,6 +539,22 @@ export class DecisionExplainabilityService {
     return 'Other Factors';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

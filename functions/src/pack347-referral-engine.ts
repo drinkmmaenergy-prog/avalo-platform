@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Referral System
  * 
@@ -84,7 +86,7 @@ const REFERRAL_REWARDS = {
 };
 
 const MAX_INVITES_PER_DAY = 50;
-const REFERRAL_LINK_PREFIX = 'avalo.app/ref/';
+const REFERRAL_LINK_PREFIX = 'platform.app/ref/';
 
 // ============================================================================
 // HELPERS
@@ -551,6 +553,20 @@ export async function cleanupExpiredReferralRewards(
  * - AI anti-bot filtering via trust engine
  * - No free tokens or cashback
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

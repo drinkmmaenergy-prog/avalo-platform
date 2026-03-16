@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 448: Incident Response, Crisis Management & Regulatory Playbooks
  * Firebase Functions Implementation
@@ -751,6 +753,20 @@ export const calculateIncidentMetrics = onSchedule("every 1 hours", async (event
 
     await db.collection('incident_metrics').doc(period).set(metrics);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

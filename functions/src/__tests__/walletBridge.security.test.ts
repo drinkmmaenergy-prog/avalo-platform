@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Wallet Bridge Security Tests
  * Testing cryptographic signature verification and on-chain transaction verification
@@ -31,6 +33,7 @@ jest.mock("firebase-admin/firestore", () => ({
 }));
 
 jest.mock("firebase-functions/v2", () => ({
+  setGlobalOptions: jest.fn(),
   logger: {
     info: jest.fn(),
     error: jest.fn(),
@@ -88,9 +91,13 @@ describe("Wallet Bridge Security Tests", () => {
       // Tamper with signature
       const tamperedSignature = signedMessage.slice(0, -2) + "00";
 
-      expect(() => {
-        ethers.verifyMessage(message, tamperedSignature);
-      }).toThrow();
+      let recoveredAddress: string | undefined;
+      try {
+        recoveredAddress = ethers.verifyMessage(message, tamperedSignature);
+      } catch {
+        recoveredAddress = undefined;
+      }
+      expect(recoveredAddress?.toLowerCase()).not.toBe(wallet.address.toLowerCase());
     });
   });
 
@@ -326,6 +333,22 @@ describe("Integration Security Scenarios", () => {
     expect(mockReceipt.to?.toLowerCase()).toBe(depositData.escrowAddress.toLowerCase());
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

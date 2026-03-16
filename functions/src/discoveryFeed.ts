@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 51 — Dynamic Discovery Feed
  * Personalized, Royal-Aware, Token-Driven Contact Funnel
@@ -316,6 +318,20 @@ function calculatePersonalizationScore(
 }
 
 console.log('✅ Discovery Feed (PACK 51) initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

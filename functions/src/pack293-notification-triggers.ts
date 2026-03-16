@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 293 - Notifications & Activity Center
  * Trigger functions for creating notifications from other packs
@@ -352,7 +354,7 @@ export async function notifyEventCancelled(
 // ============================================================================
 
 /**
- * Send AI tip/suggestion to creator
+ * Send AI tip/suggestion to earner
  */
 export async function notifyAITip(
   userId: string,
@@ -369,7 +371,7 @@ export async function notifyAITip(
 }
 
 /**
- * Send creator earnings summary
+ * Send earner earnings summary
  */
 export async function notifyCreatorEarningsSummary(
   userId: string,
@@ -506,6 +508,20 @@ export async function notifyBatchSummary(
     batchKey: `daily_${type.toLowerCase()}_${userId}`,
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

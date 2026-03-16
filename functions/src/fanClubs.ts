@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 259: Fan Clubs / Support Circles
  * Turning Creators Into Micro-Communities
@@ -81,7 +83,7 @@ export const FAN_CLUB_TIERS = {
 } as const;
 
 export const AVALO_FAN_CLUB_FEE_PERCENT = 35; // 35% to Avalo
-export const CREATOR_FAN_CLUB_SHARE_PERCENT = 65; // 65% to creator
+export const CREATOR_FAN_CLUB_SHARE_PERCENT = 65; // 65% to earner
 
 type TierSlug = "silver" | "gold" | "diamond" | "royal_elite";
 
@@ -90,7 +92,7 @@ type TierSlug = "silver" | "gold" | "diamond" | "royal_elite";
 // ============================================================================
 
 interface FanClubSettings {
-  creatorId: string;
+  earnerId: string;
   enabled: boolean;
   availableTiers: TierSlug[];
   welcomeMessage?: string;
@@ -103,7 +105,7 @@ interface FanClubSettings {
 
 interface FanClubMembership {
   membershipId: string;
-  creatorId: string;
+  earnerId: string;
   memberId: string;
   tier: TierSlug;
   status: "pending_payment" | "active" | "cancelled" | "expired";
@@ -124,12 +126,12 @@ interface FanClubMembership {
 interface FanClubTransaction {
   transactionId: string;
   membershipId: string;
-  creatorId: string;
+  earnerId: string;
   memberId: string;
   type: "subscription" | "renewal" | "cancellation_refund";
   amount: number;
-  avaloFee: number;
-  creatorEarnings: number;
+  platformFee: number;
+  earnerEarnings: number;
   status: "pending" | "completed" | "failed" | "refunded";
   billingCycle?: string; // e.g., "2025-12"
   createdAt: Timestamp;
@@ -243,8 +245,8 @@ async function creditTokens(
 /**
  * Generate membership ID
  */
-function generateMembershipId(creatorId: string, memberId: string): string {
-  return `${creatorId}_${memberId}`;
+function generateMembershipId(earnerId: string, memberId: string): string {
+  return `${earnerId}_${memberId}`;
 }
 
 /**
@@ -307,7 +309,7 @@ export const enableFanClub = onCall<{
   const settingsDoc = await settingsRef.get();
 
   const settings: FanClubSettings = {
-    creatorId: userId,
+    earnerId: userId,
     enabled: true,
     availableTiers,
     welcomeMessage: welcomeMessage || "",
@@ -328,7 +330,7 @@ export const enableFanClub = onCall<{
     const groupChatDoc = await groupChatRef.get();
     if (!groupChatDoc.exists) {
       await groupChatRef.set({
-        creatorId: userId,
+        earnerId: userId,
         name: "Fan Club Group Chat",
         memberCount: 0,
         createdAt: FieldValue.serverTimestamp(),
@@ -337,7 +339,7 @@ export const enableFanClub = onCall<{
     }
   }
 
-  logger.info(`Fan Club enabled for creator ${userId}`);
+  logger.info(`Fan Club enabled for earner ${userId}`);
 
   console.log('Scheduled job result:', {
     success: true,
@@ -371,7 +373,7 @@ export const updateFanClubSettings = onCall<Partial<FanClubSettings>>(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    logger.info(`Fan Club settings updated for creator ${userId}`);
+    logger.info(`Fan Club settings updated for earner ${userId}`);
 
     console.log('Scheduled job result:', { success: true });
 
@@ -396,7 +398,7 @@ export const disableFanClub = onCall(async (request: CallableRequest) => {
   });
 
   // Note: Existing memberships remain active until expiration
-  logger.info(`Fan Club disabled for creator ${userId}`);
+  logger.info(`Fan Club disabled for earner ${userId}`);
 
   console.log('Scheduled job result:', { success: true });
 
@@ -412,7 +414,7 @@ export const disableFanClub = onCall(async (request: CallableRequest) => {
  * Join Fan Club (Subscribe)
  */
 export const joinFanClub = onCall<{
-  creatorId: string;
+  earnerId: string;
   tier: TierSlug;
   billingType?: "monthly" | "one_time";
 }>(async (request: CallableRequest) => {
@@ -421,12 +423,12 @@ export const joinFanClub = onCall<{
     throw new HttpsError("unauthenticated", "User must be authenticated");
   }
 
-  const { creatorId, tier, billingType = "monthly" } = request.data;
+  const { earnerId, tier, billingType = "monthly" } = request.data;
 
-  // Validate creator has Fan Club enabled
+  // Validate earner has Fan Club enabled
   const settingsDoc = await db
     .collection("fanClubSettings")
-    .doc(creatorId)
+    .doc(earnerId)
     .get();
   if (!settingsDoc.exists || !settingsDoc.data()?.enabled) {
     throw new HttpsError("not-found", "Creator has no active Fan Club");
@@ -438,7 +440,7 @@ export const joinFanClub = onCall<{
   }
 
   // Check if already a member
-  const membershipId = generateMembershipId(creatorId, memberId);
+  const membershipId = generateMembershipId(earnerId, memberId);
   const existingMembership = await db
     .collection("fanClubMemberships")
     .doc(membershipId)
@@ -475,8 +477,8 @@ export const joinFanClub = onCall<{
 
   // Process payment
   const transactionId = `fc_sub_${membershipId}_${Date.now()}`;
-  const avaloFee = Math.round(priceTokens * (AVALO_FAN_CLUB_FEE_PERCENT / 100));
-  const creatorEarnings = priceTokens - avaloFee;
+  const platformFee = Math.round(priceTokens * (AVALO_FAN_CLUB_FEE_PERCENT / 100));
+  const earnerEarnings = priceTokens - platformFee;
 
   await db.runTransaction(async (transaction) => {
     // Deduct from member
@@ -487,11 +489,11 @@ export const joinFanClub = onCall<{
       `Fan Club subscription - ${tierConfig.name}`
     );
 
-    // Credit to creator (65%)
+    // Credit to earner (65%)
     await creditTokens(
-      creatorId,
-      creatorEarnings,
-      `${transactionId}_creator`,
+      earnerId,
+      earnerEarnings,
+      `${transactionId}_earner`,
       `Fan Club earnings from ${memberId}`
     );
 
@@ -501,7 +503,7 @@ export const joinFanClub = onCall<{
       .doc(membershipId);
     const membership: FanClubMembership = {
       membershipId,
-      creatorId,
+      earnerId,
       memberId,
       tier,
       status: "active",
@@ -526,12 +528,12 @@ export const joinFanClub = onCall<{
     const fanClubTransaction: FanClubTransaction = {
       transactionId,
       membershipId,
-      creatorId,
+      earnerId,
       memberId,
       type: "subscription",
       amount: priceTokens,
-      avaloFee,
-      creatorEarnings,
+      platformFee,
+      earnerEarnings,
       status: "completed",
       billingCycle: new Date().toISOString().slice(0, 7), // YYYY-MM
       createdAt: Timestamp.now(),
@@ -544,7 +546,7 @@ export const joinFanClub = onCall<{
     transaction.set(
       badgeRef,
       {
-        [creatorId]: {
+        [earnerId]: {
           tier,
           joinedAt: Timestamp.now(),
         },
@@ -553,9 +555,9 @@ export const joinFanClub = onCall<{
     );
   });
 
-  // Send notification to creator
+  // Send notification to earner
   await db.collection("fanClubNotifications").add({
-    recipientId: creatorId,
+    recipientId: earnerId,
     type: "new_member",
     memberId,
     tier,
@@ -563,7 +565,7 @@ export const joinFanClub = onCall<{
     createdAt: FieldValue.serverTimestamp(),
   });
 
-  logger.info(`Member ${memberId} joined Fan Club of ${creatorId} at ${tier} tier`);
+  logger.info(`Member ${memberId} joined Fan Club of ${earnerId} at ${tier} tier`);
 
   console.log('Scheduled job result:', {
     success: true,
@@ -580,15 +582,15 @@ export const joinFanClub = onCall<{
 /**
  * Leave Fan Club (Cancel Subscription)
  */
-export const leaveFanClub = onCall<{ creatorId: string }>(
+export const leaveFanClub = onCall<{ earnerId: string }>(
   async (request: CallableRequest) => {
     const memberId = request.auth?.uid;
     if (!memberId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { creatorId } = request.data;
-    const membershipId = generateMembershipId(creatorId, memberId);
+    const { earnerId } = request.data;
+    const membershipId = generateMembershipId(earnerId, memberId);
 
     const membershipRef = db
       .collection("fanClubMemberships")
@@ -616,12 +618,12 @@ export const leaveFanClub = onCall<{ creatorId: string }>(
     // Remove badge
     const badgeRef = db.collection("fanClubMemberBadges").doc(memberId);
     await badgeRef.update({
-      [creatorId]: FieldValue.delete(),
+      [earnerId]: FieldValue.delete(),
     });
 
-    // Notify creator
+    // Notify earner
     await db.collection("fanClubNotifications").add({
-      recipientId: creatorId,
+      recipientId: earnerId,
       type: "member_left",
       memberId,
       tier: membership.tier,
@@ -629,7 +631,7 @@ export const leaveFanClub = onCall<{ creatorId: string }>(
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    logger.info(`Member ${memberId} left Fan Club of ${creatorId}`);
+    logger.info(`Member ${memberId} left Fan Club of ${earnerId}`);
 
     console.log('Scheduled job result:', {
       success: true,
@@ -648,7 +650,7 @@ export const leaveFanClub = onCall<{ creatorId: string }>(
  * Upgrade/Downgrade membership tier
  */
 export const changeFanClubTier = onCall<{
-  creatorId: string;
+  earnerId: string;
   newTier: TierSlug;
 }>(async (request: CallableRequest) => {
   const memberId = request.auth?.uid;
@@ -656,8 +658,8 @@ export const changeFanClubTier = onCall<{
     throw new HttpsError("unauthenticated", "User must be authenticated");
   }
 
-  const { creatorId, newTier } = request.data;
-  const membershipId = generateMembershipId(creatorId, memberId);
+  const { earnerId, newTier } = request.data;
+  const membershipId = generateMembershipId(earnerId, memberId);
 
   const membershipRef = db.collection("fanClubMemberships").doc(membershipId);
   const membershipDoc = await membershipRef.get();
@@ -693,13 +695,13 @@ export const changeFanClubTier = onCall<{
   // Update badge
   const badgeRef = db.collection("fanClubMemberBadges").doc(memberId);
   await badgeRef.update({
-    [creatorId]: {
+    [earnerId]: {
       tier: newTier,
       joinedAt: membership.joinedAt,
     },
   });
 
-  logger.info(`Member ${memberId} changed tier to ${newTier} in Fan Club of ${creatorId}`);
+  logger.info(`Member ${memberId} changed tier to ${newTier} in Fan Club of ${earnerId}`);
 
   console.log('Scheduled job result:', {
     success: true,
@@ -755,7 +757,7 @@ export const processFanClubBilling = onSchedule(
           await db.collection("fanClubNotifications").add({
             recipientId: membership.memberId,
             type: "renewal_failed",
-            creatorId: membership.creatorId,
+            earnerId: membership.earnerId,
             reason: "insufficient_balance",
             read: false,
             createdAt: FieldValue.serverTimestamp(),
@@ -767,10 +769,10 @@ export const processFanClubBilling = onSchedule(
 
         // Process renewal
         const transactionId = `fc_renew_${membership.membershipId}_${Date.now()}`;
-        const avaloFee = Math.round(
+        const platformFee = Math.round(
           membership.priceTokens * (AVALO_FAN_CLUB_FEE_PERCENT / 100)
         );
-        const creatorEarnings = membership.priceTokens - avaloFee;
+        const earnerEarnings = membership.priceTokens - platformFee;
 
         await deductTokens(
           membership.memberId,
@@ -780,9 +782,9 @@ export const processFanClubBilling = onSchedule(
         );
 
         await creditTokens(
-          membership.creatorId,
-          creatorEarnings,
-          `${transactionId}_creator`,
+          membership.earnerId,
+          earnerEarnings,
+          `${transactionId}_earner`,
           `Fan Club renewal earnings from ${membership.memberId}`
         );
 
@@ -802,12 +804,12 @@ export const processFanClubBilling = onSchedule(
           .set({
             transactionId,
             membershipId: membership.membershipId,
-            creatorId: membership.creatorId,
+            earnerId: membership.earnerId,
             memberId: membership.memberId,
             type: "renewal",
             amount: membership.priceTokens,
-            avaloFee,
-            creatorEarnings,
+            platformFee,
+            earnerEarnings,
             status: "completed",
             billingCycle: new Date().toISOString().slice(0, 7),
             createdAt: Timestamp.now(),
@@ -841,8 +843,8 @@ export const sendExclusiveDrop = onCall<{
   contentId: string;
   minimumTier: TierSlug;
 }>(async (request: CallableRequest) => {
-  const creatorId = request.auth?.uid;
-  if (!creatorId) {
+  const earnerId = request.auth?.uid;
+  if (!earnerId) {
     throw new HttpsError("unauthenticated", "User must be authenticated");
   }
 
@@ -854,7 +856,7 @@ export const sendExclusiveDrop = onCall<{
 
   const membershipsSnapshot = await db
     .collection("fanClubMemberships")
-    .where("creatorId", "==", creatorId)
+    .where("earnerId", "==", earnerId)
     .where("status", "==", "active")
     .get();
 
@@ -867,7 +869,7 @@ export const sendExclusiveDrop = onCall<{
         db.collection("fanClubNotifications").add({
           recipientId: membership.memberId,
           type: "exclusive_drop",
-          creatorId,
+          earnerId,
           contentId,
           tier: membership.tier,
           read: false,
@@ -895,8 +897,8 @@ export const sendExclusiveDrop = onCall<{
  */
 export const sendFanClubAnnouncement = onCall<{ message: string }>(
   async (request: CallableRequest) => {
-    const creatorId = request.auth?.uid;
-    if (!creatorId) {
+    const earnerId = request.auth?.uid;
+    if (!earnerId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
@@ -908,7 +910,7 @@ export const sendFanClubAnnouncement = onCall<{ message: string }>(
     // Get all active members
     const membershipsSnapshot = await db
       .collection("fanClubMemberships")
-      .where("creatorId", "==", creatorId)
+      .where("earnerId", "==", earnerId)
       .where("status", "==", "active")
       .get();
 
@@ -919,7 +921,7 @@ export const sendFanClubAnnouncement = onCall<{ message: string }>(
         db.collection("fanClubNotifications").add({
           recipientId: membership.memberId,
           type: "announcement",
-          creatorId,
+          earnerId,
           message,
           tier: membership.tier,
           read: false,
@@ -943,18 +945,18 @@ export const sendFanClubAnnouncement = onCall<{ message: string }>(
 );
 
 /**
- * Get Fan Club analytics for creator
+ * Get Fan Club analytics for earner
  */
 export const getFanClubAnalytics = onCall(async (request: CallableRequest) => {
-  const creatorId = request.auth?.uid;
-  if (!creatorId) {
+  const earnerId = request.auth?.uid;
+  if (!earnerId) {
     throw new HttpsError("unauthenticated", "User must be authenticated");
   }
 
   // Get all memberships
   const membershipsSnapshot = await db
     .collection("fanClubMemberships")
-    .where("creatorId", "==", creatorId)
+    .where("earnerId", "==", earnerId)
     .get();
 
   const analytics = {
@@ -995,7 +997,7 @@ export const getFanClubAnalytics = onCall(async (request: CallableRequest) => {
     }
   });
 
-  // Calculate creator's share (65%)
+  // Calculate earner's share (65%)
   analytics.lifetimeRevenue = Math.round(
     totalLifetimeValue * (CREATOR_FAN_CLUB_SHARE_PERCENT / 100)
   );
@@ -1015,12 +1017,12 @@ export const getFanClubAnalytics = onCall(async (request: CallableRequest) => {
 });
 
 /**
- * Get top supporters (private leaderboard for creator only)
+ * Get top supporters (private leaderboard for earner only)
  */
 export const getTopSupporters = onCall<{ limit?: number }>(
   async (request: CallableRequest) => {
-    const creatorId = request.auth?.uid;
-    if (!creatorId) {
+    const earnerId = request.auth?.uid;
+    if (!earnerId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
@@ -1028,7 +1030,7 @@ export const getTopSupporters = onCall<{ limit?: number }>(
 
     const membershipsSnapshot = await db
       .collection("fanClubMemberships")
-      .where("creatorId", "==", creatorId)
+      .where("earnerId", "==", earnerId)
       .where("status", "==", "active")
       .get();
 
@@ -1053,6 +1055,20 @@ export const getTopSupporters = onCall<{ limit?: number }>(
 );
 
 logger.info("Fan Club functions loaded");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

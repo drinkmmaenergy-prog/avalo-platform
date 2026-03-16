@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /* LEGACY BILLING ENGINE LOCKED */
 /*
 LEGACY BILLING ENGINE
@@ -77,7 +79,7 @@ export interface Pack273ChatRoles {
   mode: ChatMode;
   freeMessageLimit: number; // 10 for low-pop, 6 for Royal, 0 for paid
   price: number;            // Base price: 100-500 tokens
-  avaloSplit: number;       // 35% platform share
+  platformSplit: number;       // 35% platform share
   earnerSplit: number;      // 65% earner share
 }
 
@@ -192,7 +194,7 @@ export async function determinePack273ChatRoles(
         mode: 'PAID',
         freeMessageLimit: receiver.isRoyalMember ? FREE_MESSAGES_ROYAL : FREE_MESSAGES_LOW_POP,
         price: BASE_CHAT_PRICE,
-        avaloSplit: AVALO_REVENUE_PERCENT,
+        platformSplit: AVALO_REVENUE_PERCENT,
         earnerSplit: EARNER_REVENUE_PERCENT
       };
     }
@@ -227,7 +229,7 @@ export async function determinePack273ChatRoles(
         mode: 'PAID',
         freeMessageLimit,
         price,
-        avaloSplit: AVALO_REVENUE_PERCENT,
+        platformSplit: AVALO_REVENUE_PERCENT,
         earnerSplit: EARNER_REVENUE_PERCENT
       };
     }
@@ -240,7 +242,7 @@ export async function determinePack273ChatRoles(
       mode: 'PAID',
       freeMessageLimit,
       price,
-      avaloSplit: 100,  // Avalo gets 100% when female has Earn OFF
+      platformSplit: 100,  // Avalo gets 100% when female has Earn OFF
       earnerSplit: 0
     };
   }
@@ -258,7 +260,7 @@ export async function determinePack273ChatRoles(
       mode: 'FREE_LP',
       freeMessageLimit: Infinity,  // 100% free until popularity increases
       price: 0,
-      avaloSplit: 0,
+      platformSplit: 0,
       earnerSplit: 0
     };
   }
@@ -271,7 +273,7 @@ export async function determinePack273ChatRoles(
       mode: 'FREE_LP',
       freeMessageLimit: Infinity,  // 100% free until popularity increases
       price: 0,
-      avaloSplit: 0,
+      platformSplit: 0,
       earnerSplit: 0
     };
   }
@@ -285,7 +287,7 @@ export async function determinePack273ChatRoles(
       mode: 'PAID',
       freeMessageLimit: participantA.isRoyalMember ? FREE_MESSAGES_ROYAL : FREE_MESSAGES_LOW_POP,
       price: BASE_CHAT_PRICE,
-      avaloSplit: AVALO_REVENUE_PERCENT,
+      platformSplit: AVALO_REVENUE_PERCENT,
       earnerSplit: EARNER_REVENUE_PERCENT
     };
   }
@@ -298,7 +300,7 @@ export async function determinePack273ChatRoles(
       mode: 'PAID',
       freeMessageLimit: participantB.isRoyalMember ? FREE_MESSAGES_ROYAL : FREE_MESSAGES_LOW_POP,
       price: BASE_CHAT_PRICE,
-      avaloSplit: AVALO_REVENUE_PERCENT,
+      platformSplit: AVALO_REVENUE_PERCENT,
       earnerSplit: EARNER_REVENUE_PERCENT
     };
   }
@@ -312,7 +314,7 @@ export async function determinePack273ChatRoles(
       mode: 'PAID',
       freeMessageLimit: receiver.isRoyalMember ? FREE_MESSAGES_ROYAL : FREE_MESSAGES_LOW_POP,
       price: BASE_CHAT_PRICE,
-      avaloSplit: AVALO_REVENUE_PERCENT,
+      platformSplit: AVALO_REVENUE_PERCENT,
       earnerSplit: EARNER_REVENUE_PERCENT
     };
   }
@@ -328,7 +330,7 @@ export async function determinePack273ChatRoles(
     mode: 'PAID',
     freeMessageLimit,
     price: BASE_CHAT_PRICE,
-    avaloSplit: 100,
+    platformSplit: 100,
     earnerSplit: 0
   };
 }
@@ -356,7 +358,7 @@ export async function initializePack273Chat(
       earnerId: roles.earnerId,
       wordsPerToken: roles.wordsPerToken,
       price: roles.price,
-      avaloSplit: roles.avaloSplit,
+      platformSplit: roles.platformSplit,
       earnerSplit: roles.earnerSplit
     },
     mode: roles.mode,
@@ -580,7 +582,7 @@ export async function processPack273Deposit(
   }
   
   const depositAmount = chat.roles.price;
-  const platformFee = Math.floor(depositAmount * (chat.roles.avaloSplit / 100));
+  const platformFee = Math.floor(depositAmount * (chat.roles.platformSplit / 100));
   const escrowAmount = depositAmount - platformFee;
   
   // Check wallet balance
@@ -662,7 +664,7 @@ export async function closePack273Chat(
   
   // Calculate refund
   let refundAmount = 0;
-  let avaloForfeit = 0;
+  let platformForfeit = 0;
   
   if (chat.prepaidBucket) {
     refundAmount = chat.prepaidBucket.remainingTokens;
@@ -670,9 +672,9 @@ export async function closePack273Chat(
     // Special case: mismatch selfie - Avalo forfeits its 35% share
     if (reason === 'mismatch_selfie') {
       const usedTokens = chat.prepaidBucket.totalTokens - chat.prepaidBucket.remainingTokens;
-      const avaloShare = Math.floor(usedTokens * (AVALO_REVENUE_PERCENT / 100));
-      refundAmount += avaloShare;  // Return Avalo's share too
-      avaloForfeit = avaloShare;
+      const platform = Math.floor(usedTokens * (AVALO_REVENUE_PERCENT / 100));
+      refundAmount += platform;  // Return Avalo's share too
+      platformForfeit = platform;
     }
   }
   
@@ -695,7 +697,7 @@ export async function closePack273Chat(
         metadata: {
           chatId,
           reason,
-          avaloForfeit
+          platformForfeit
         },
         createdAt: serverTimestamp()
       });
@@ -956,6 +958,20 @@ export async function getPack273ParticipantContext(
     priceModeration: user.priceModeration || { enabled: false }
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

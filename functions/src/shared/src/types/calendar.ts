@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 /**
  * Calendar Types - Complete Module
  * Extended to support calendarEngine.ts requirements
@@ -5,7 +7,7 @@
 
 export interface Calendar {
   id: string;
-  creatorId: string;
+  earnerId: string;
   name: string;
   description?: string;
   timezone: string;
@@ -31,7 +33,7 @@ export interface CalendarEvent {
   description?: string;
   startTime: Date;
   endTime: Date;
-  creatorId: string;
+  earnerId: string;
   attendeeIds: string[];
   type: CalendarEventType;
   status: CalendarEventStatus;
@@ -63,7 +65,7 @@ export type CalendarEventStatus =
 
 export interface CalendarSlot {
   id: string;
-  creatorId: string;
+  earnerId: string;
   startTime: Date;
   endTime: Date;
   isAvailable: boolean;
@@ -93,7 +95,7 @@ export interface BookingPayment {
   currency: string;
   status: string;
   totalTokensPaid?: number;
-  avaloShareTokens?: number;
+  platformTokens?: number;
   userShareTokens?: number;
   refundedUserTokens?: number;
 }
@@ -130,7 +132,7 @@ export type BookingStatus =
   | 'MISMATCH_REFUND';
 
 export interface CalendarAvailability {
-  creatorId: string;
+  earnerId: string;
   dayOfWeek: number;
   startHour: number;
   startMinute: number;
@@ -204,6 +206,23 @@ export interface RefundPolicy {
   refundPercentage?: number;
   description?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

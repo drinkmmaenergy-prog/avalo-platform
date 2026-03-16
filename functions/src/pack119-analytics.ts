@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 119 — Creator Agencies SaaS Panel
  * Analytics Dashboard Engine (AGGREGATED DATA ONLY)
@@ -22,10 +24,10 @@ import { admin, auth, functions, onSchedule } from './runtime';
 // ============================================================================
 
 /**
- * Compute aggregated analytics for a creator
+ * Compute aggregated analytics for a earner
  */
 async function computeCreatorAnalytics(
-  creatorUserId: string,
+  earnerUserId: string,
   period: 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LIFETIME'
 ): Promise<Partial<AgencyDashboardAnalytics>> {
   const now = Date.now();
@@ -45,14 +47,14 @@ async function computeCreatorAnalytics(
 
   const startTimestamp = Timestamp.fromMillis(startTime);
 
-  // Get follower count (from user profile or creator stats)
-  const userDoc = await db.collection('users').doc(creatorUserId).get();
+  // Get follower count (from user profile or earner stats)
+  const userDoc = await db.collection('users').doc(earnerUserId).get();
   const followerCount = userDoc.data()?.followerCount || 0;
 
-  // Get earnings from Pack 81 (creator earnings ledger)
+  // Get earnings from Pack 81 (earner earnings ledger)
   const earningsQuery = await db
-    .collection('creator_earnings_ledger')
-    .where('creatorUserId', '==', creatorUserId)
+    .collection('earner_earnings_ledger')
+    .where('earnerUserId', '==', earnerUserId)
     .where('createdAt', '>=', startTimestamp)
     .get();
 
@@ -65,7 +67,7 @@ async function computeCreatorAnalytics(
   // Get posts count (from feed posts)
   const postsQuery = await db
     .collection('feed_posts')
-    .where('userId', '==', creatorUserId)
+    .where('userId', '==', earnerUserId)
     .where('createdAt', '>=', startTimestamp)
     .get();
 
@@ -95,8 +97,8 @@ async function computeCreatorAnalytics(
 
   // Get portfolio metrics
   const portfolioQuery = await db
-    .collection('creator_portfolios')
-    .where('creatorUserId', '==', creatorUserId)
+    .collection('earner_portfolios')
+    .where('earnerUserId', '==', earnerUserId)
     .limit(1)
     .get();
 
@@ -115,8 +117,8 @@ async function computeCreatorAnalytics(
 
     // Get previous period earnings
     const previousEarningsQuery = await db
-      .collection('creator_earnings_ledger')
-      .where('creatorUserId', '==', creatorUserId)
+      .collection('earner_earnings_ledger')
+      .where('earnerUserId', '==', earnerUserId)
       .where('createdAt', '>=', previousPeriodTimestamp)
       .where('createdAt', '<', startTimestamp)
       .get();
@@ -160,7 +162,7 @@ async function computeCreatorAnalytics(
 // ============================================================================
 
 /**
- * Get agency dashboard for a creator
+ * Get agency dashboard for a earner
  */
 export const getAgencyDashboard = onCall(
   { region: 'europe-west1' },
@@ -169,9 +171,9 @@ export const getAgencyDashboard = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId } = request.data;
+    const { agencyId, earnerUserId } = request.data;
 
-    if (!agencyId || !creatorUserId) {
+    if (!agencyId || !earnerUserId) {
       throw new HttpsError('invalid-argument', 'Agency ID and Creator ID required');
     }
 
@@ -194,11 +196,11 @@ export const getAgencyDashboard = onCall(
         throw new HttpsError('permission-denied', 'Insufficient permissions');
       }
 
-      // Verify creator is linked to agency
+      // Verify earner is linked to agency
       const linkQuery = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('agencyId', '==', agencyId)
-        .where('creatorUserId', '==', creatorUserId)
+        .where('earnerUserId', '==', earnerUserId)
         .where('status', '==', 'ACTIVE')
         .limit(1)
         .get();
@@ -217,18 +219,18 @@ export const getAgencyDashboard = onCall(
       const analytics: Record<string, AgencyDashboardAnalytics> = {};
 
       for (const period of periods) {
-        const data = await computeCreatorAnalytics(creatorUserId, period);
+        const data = await computeCreatorAnalytics(earnerUserId, period);
 
         analytics[period] = {
           agencyId,
-          creatorUserId,
+          earnerUserId,
           period,
           ...data,
           calculatedAt: Timestamp.now(),
         } as AgencyDashboardAnalytics;
       }
 
-      logger.info('Agency dashboard generated', { agencyId, creatorUserId });
+      logger.info('Agency dashboard generated', { agencyId, earnerUserId });
 
       return { analytics };
     } catch (error: any) {
@@ -239,7 +241,7 @@ export const getAgencyDashboard = onCall(
 );
 
 /**
- * Get aggregated analytics for all creators in agency
+ * Get aggregated analytics for all earners in agency
  */
 export const getAgencyOverview = onCall(
   { region: 'europe-west1' },
@@ -270,9 +272,9 @@ export const getAgencyOverview = onCall(
         throw new HttpsError('permission-denied', 'Not authorized for this agency');
       }
 
-      // Get all linked creators
+      // Get all linked earners
       const linksQuery = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('agencyId', '==', agencyId)
         .where('status', '==', 'ACTIVE')
         .get();
@@ -283,16 +285,16 @@ export const getAgencyOverview = onCall(
       let totalEngagement = 0;
       let engagementCount = 0;
 
-      // Aggregate metrics across all creators
+      // Aggregate metrics across all earners
       for (const linkDoc of linksQuery.docs) {
         const link = linkDoc.data();
-        const creatorUserId = link.creatorUserId;
+        const earnerUserId = link.earnerUserId;
 
         // Get recent analytics (last 30 days)
         const analyticsQuery = await db
           .collection('agency_dashboard_analytics')
           .where('agencyId', '==', agencyId)
-          .where('creatorUserId', '==', creatorUserId)
+          .where('earnerUserId', '==', earnerUserId)
           .where('period', '==', 'LAST_30_DAYS')
           .limit(1)
           .get();
@@ -329,7 +331,7 @@ export const getAgencyOverview = onCall(
 // ============================================================================
 
 /**
- * Daily analytics aggregation for all active agency-creator links
+ * Daily analytics aggregation for all active agency-earner links
  * Runs at 5 AM UTC daily
  */
 export const dailyAnalyticsAggregation = onSchedule(
@@ -342,9 +344,9 @@ export const dailyAnalyticsAggregation = onSchedule(
     logger.info('Starting daily analytics aggregation for agencies');
 
     try {
-      // Get all active creator-agency links
+      // Get all active earner-agency links
       const linksSnapshot = await db
-        .collection('creator_agency_links')
+        .collection('earner_agency_links')
         .where('status', '==', 'ACTIVE')
         .get();
 
@@ -362,7 +364,7 @@ export const dailyAnalyticsAggregation = onSchedule(
           batch.map(async (linkDoc) => {
             try {
               const link = linkDoc.data();
-              const { agencyId, creatorUserId } = link;
+              const { agencyId, earnerUserId } = link;
 
               // Compute analytics for all periods
               const periods: Array<'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LIFETIME'> = [
@@ -372,18 +374,18 @@ export const dailyAnalyticsAggregation = onSchedule(
               ];
 
               for (const period of periods) {
-                const data = await computeCreatorAnalytics(creatorUserId, period);
+                const data = await computeCreatorAnalytics(earnerUserId, period);
 
                 const analytics: AgencyDashboardAnalytics = {
                   agencyId,
-                  creatorUserId,
+                  earnerUserId,
                   period,
                   ...data,
                   calculatedAt: Timestamp.now(),
                 } as AgencyDashboardAnalytics;
 
                 // Store analytics
-                const analyticsId = `${agencyId}_${creatorUserId}_${period}`;
+                const analyticsId = `${agencyId}_${earnerUserId}_${period}`;
                 await db
                   .collection('agency_dashboard_analytics')
                   .doc(analyticsId)
@@ -412,6 +414,20 @@ export const dailyAnalyticsAggregation = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

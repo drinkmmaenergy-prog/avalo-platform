@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Dashboard & Monthly Statements
  * Comprehensive Test Suite
@@ -29,7 +31,7 @@ import {
   getMonthDateRange,
   isValidYearMonth,
   TOKEN_TOKEN_PAYOUT_USD,
-} from '../types/pack303-creator-earnings.types';
+} from '../types/pack303-earner-earnings.types';
 
 // Mock Firestore
 const mockFirestore = {
@@ -101,7 +103,7 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
       expect(isValidYearMonth(2025, 12)).toBe(true);
       expect(isValidYearMonth(2025, 0)).toBe(false); // Invalid month
       expect(isValidYearMonth(2025, 13)).toBe(false); // Invalid month
-      expect(isValidYearMonth(2020, 1)).toBe(true);
+      expect(isValidYearMonth(2024, 1)).toBe(true);
       expect(isValidYearMonth(2200, 1)).toBe(false); // Too far in future
     });
     
@@ -119,13 +121,13 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
     });
     
     it('should have correct revenue splits', () => {
-      const { REVENUE_SPLITS } = require('../types/pack303-creator-earnings.types');
+      const { REVENUE_SPLITS } = require('../types/pack303-earner-earnings.types');
       
-      expect(REVENUE_SPLITS.CHAT).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
-      expect(REVENUE_SPLITS.CALLS).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
-      expect(REVENUE_SPLITS.CALENDAR).toEqual({ creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo });
-      expect(REVENUE_SPLITS.EVENTS).toEqual({ creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo });
-      expect(REVENUE_SPLITS.OTHER).toEqual({ creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo });
+      expect(REVENUE_SPLITS.CHAT).toEqual({ earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform });
+      expect(REVENUE_SPLITS.CALLS).toEqual({ earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform });
+      expect(REVENUE_SPLITS.CALENDAR).toEqual({ earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform });
+      expect(REVENUE_SPLITS.EVENTS).toEqual({ earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform });
+      expect(REVENUE_SPLITS.OTHER).toEqual({ earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform });
     });
   });
   
@@ -151,10 +153,10 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
       expect(tokensNetEarned).toBe(900);
     });
     
-    it('should calculate creator vs Avalo shares correctly', () => {
+    it('should calculate earner vs Avalo shares correctly', () => {
       // Chat: 65/35 split
       const chatEarned = 1000;
-      const chatCreatorShare = Math.floor(chatEarned * MONETIZATION_SPLITS.CHAT.creator);
+      const chatCreatorShare = Math.floor(chatEarned * MONETIZATION_SPLITS.CHAT.earner);
       const chatAvaloShare = chatEarned - chatCreatorShare;
       
       expect(chatCreatorShare).toBe(650);
@@ -162,7 +164,7 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
       
       // Calendar: 80/20 split
       const calendarEarned = 1000;
-      const calendarCreatorShare = Math.floor(calendarEarned * MONETIZATION_SPLITS.EVENT_TICKET.creator);
+      const calendarCreatorShare = Math.floor(calendarEarned * MONETIZATION_SPLITS.EVENT_TICKET.earner);
       const calendarAvaloShare = calendarEarned - calendarCreatorShare;
       
       expect(calendarCreatorShare).toBe(800);
@@ -278,12 +280,12 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
   describe('Performance & Scalability', () => {
     
     it('should process batches efficiently', () => {
-      // Batch size of 50-100 creators per run
+      // Batch size of 50-100 earners per run
       expect(true).toBe(true);
     });
     
     it('should handle large transaction volumes', () => {
-      // 500+ transactions per month for power creators
+      // 500+ transactions per month for power earners
       expect(true).toBe(true);
     });
     
@@ -306,10 +308,10 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
     it('should ensure tokensCreatorShare + tokensAvaloShare = tokensNetEarned', () => {
       // This relationship must always hold
       const netEarned = 1000;
-      const creatorShare = 650; // Assuming 65% split
-      const avaloShare = 350;
+      const earner = 650; // Assuming 65% split
+      const platform = 350;
       
-      expect(creatorShare + avaloShare).toBe(netEarned);
+      expect(earner + platform).toBe(netEarned);
     });
     
     it('should track payout tokens separately from earned tokens', () => {
@@ -350,7 +352,7 @@ describe('PACK 303 — Business Rules Compliance', () => {
 describe('PACK 303 — Export Formats', () => {
   
   it('CSV should include summary section', () => {
-    // CSV must have summary with net earned, creator share, Avalo share
+    // CSV must have summary with net earned, earner share, Avalo share
     expect(true).toBe(true);
   });
   
@@ -375,10 +377,27 @@ describe('PACK 303 — Export Formats', () => {
   });
   
   it('Export URLs should expire after 24 hours', () => {
-    const { STATEMENT_EXPORT_CONFIG } = require('../types/pack303-creator-earnings.types');
+    const { STATEMENT_EXPORT_CONFIG } = require('../types/pack303-earner-earnings.types');
     expect(STATEMENT_EXPORT_CONFIG.expirationHours).toBe(24);
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

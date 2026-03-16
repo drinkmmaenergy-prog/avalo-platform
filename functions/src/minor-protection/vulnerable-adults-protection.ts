@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 178 - Vulnerable Adults Safety Support
  * Protects vulnerable adults from financial and emotional exploitation
@@ -534,6 +536,22 @@ export async function checkSpendingLimit(
     return { allowed: false, reason: 'Error checking spending limit' };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

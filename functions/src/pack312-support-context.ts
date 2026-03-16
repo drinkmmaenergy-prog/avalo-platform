@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 312 — Customer Support Console & Case Management
  * Context Query Functions - Privacy-aware data aggregation
@@ -259,7 +261,7 @@ export const support_getMeetingContext = onCall(
 
       const context: MeetingContextSummary = {
         meetingId,
-        creatorId: meeting?.creatorId,
+        earnerId: meeting?.earnerId,
         bookerId: meeting?.bookerId,
         startTime: meeting?.startTime,
         endTime: meeting?.endTime,
@@ -345,14 +347,14 @@ export const support_getTransactionContext = onCall(
       }
 
       // Calculate shares if applicable
-      let avaloShare: number | undefined;
-      let creatorShare: number | undefined;
+      let platform: number | undefined;
+      let earner: number | undefined;
 
-      if (tx?.metadata?.avaloShare !== undefined) {
-        avaloShare = tx.metadata.avaloShare;
+      if (tx?.metadata?.platform !== undefined) {
+        platform = tx.metadata.platform;
       }
-      if (tx?.metadata?.creatorShare !== undefined) {
-        creatorShare = tx.metadata.creatorShare;
+      if (tx?.metadata?.earner !== undefined) {
+        earner = tx.metadata.earner;
       }
 
       // Determine status
@@ -371,8 +373,8 @@ export const support_getTransactionContext = onCall(
         currency: tx?.currency,
         fromUserId: tx?.fromUserId,
         toUserId: tx?.toUserId,
-        avaloShare,
-        creatorShare,
+        platform,
+        earner,
         relatedBookingId: tx?.bookingId,
         relatedChatSessionId: tx?.chatSessionId,
         relatedAiSessionId: tx?.aiSessionId,
@@ -513,6 +515,20 @@ export const support_getSafetyContext = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

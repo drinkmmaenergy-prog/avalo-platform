@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * SmartMatch Scoring Utility
  * ===========================
@@ -264,3 +265,4 @@ export function getMatchTierLabel(tier: MatchTier): string {
       return 'Potential Match';
   }
 }
+

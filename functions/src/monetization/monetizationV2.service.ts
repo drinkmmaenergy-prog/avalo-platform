@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * MONETIZATION V2 SERVICE — Consolidated Non-Chat Monetization Flows
  *
@@ -68,7 +70,7 @@ async function executeCharge(
   const ledgerType = featureToLedgerType(feature);
 
   // 3. Determine effective counterparty
-  // For 100% Avalo features, counterpartyId is null (no creator payout).
+  // For 100% Avalo features, counterpartyId is null (no earner payout).
   const effectiveCounterparty = hasCreatorPayout(feature) ? counterpartyId : null;
 
   // 4. Execute atomic wallet mutation
@@ -110,7 +112,7 @@ async function executeCharge(
  */
 export async function chargeMediaUnlock(request: MediaUnlockRequest): Promise<ChargeResult> {
   if (!request.counterpartyId) {
-    throw new Error('[MonetizationV2] Media unlock requires a counterpartyId (content creator)');
+    throw new Error('[MonetizationV2] Media unlock requires a counterpartyId (content earner)');
   }
   if (!request.mediaId) {
     throw new Error('[MonetizationV2] Media unlock requires a mediaId');
@@ -239,7 +241,7 @@ export async function reserveCallEscrow(request: CallEscrowRequest): Promise<Cha
     throw new Error('[MonetizationV2] Call escrow requires a counterpartyId');
   }
 
-  // Escrow: debit payer, 100% held by platform (no creator split yet)
+  // Escrow: debit payer, 100% held by platform (no earner split yet)
   const walletResult = await transactTokens({
     type: 'CALL_ESCROW_RESERVE',
     actorId: request.actorId,
@@ -288,7 +290,7 @@ export async function chargeSubscriptionPayment(
   request: SubscriptionPaymentRequest,
 ): Promise<ChargeResult> {
   if (!request.counterpartyId) {
-    throw new Error('[MonetizationV2] Subscription payment requires a counterpartyId (creator)');
+    throw new Error('[MonetizationV2] Subscription payment requires a counterpartyId (earner)');
   }
   if (!request.subscriptionId) {
     throw new Error('[MonetizationV2] Subscription payment requires a subscriptionId');
@@ -309,7 +311,7 @@ export async function chargeSubscriptionPayment(
 
 // ============================================================================
 // 6. ROYAL MEMBERSHIP — 100 tokens/month, 100% Avalo
-//    No creator split. Must not interfere with earned Royal status.
+//    No earner split. Must not interfere with earned Royal status.
 // ============================================================================
 
 /**
@@ -318,7 +320,7 @@ export async function chargeSubscriptionPayment(
  * RULES:
  * - Always exactly 100 tokens.
  * - 100% Avalo revenue.
- * - No creator payout.
+ * - No earner payout.
  * - Earned Royal takes priority over paid Royal.
  *
  * @param request — RoyalMembershipRequest
@@ -334,7 +336,7 @@ export async function chargeRoyalMembership(
   return executeCharge(
     'ROYAL_MEMBERSHIP',
     request.actorId,
-    null, // No creator — 100% Avalo
+    null, // No earner — 100% Avalo
     request.amountTokens,
     request.idempotencyKey,
     {
@@ -492,7 +494,7 @@ export async function chargeAICompanion(
  * Burn tokens for a boost impression batch.
  *
  * RULES:
- * - 100% Avalo. No creator payout.
+ * - 100% Avalo. No earner payout.
  * - No refund under any circumstances.
  * - Ledger entry required per burn.
  *
@@ -503,7 +505,7 @@ export async function chargeBoostBurn(request: BoostBurnRequest): Promise<Charge
   return executeCharge(
     'BOOST_IMPRESSION',
     request.actorId,
-    null, // No creator — 100% Avalo
+    null, // No earner — 100% Avalo
     request.amountTokens,
     request.idempotencyKey,
     {
@@ -512,6 +514,22 @@ export async function chargeBoostBurn(request: BoostBurnRequest): Promise<Charge
     },
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

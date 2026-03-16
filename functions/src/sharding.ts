@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ==================================================================
  * AVALO FIRESTORE SHARDING STRATEGY - 20M USER SCALE
@@ -355,6 +357,20 @@ export const ShardingStrategy = {
 };
 
 logger.info('✅ Firestore sharding strategy loaded - 20M user scale ready');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

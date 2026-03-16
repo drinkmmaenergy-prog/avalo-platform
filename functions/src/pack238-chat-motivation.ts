@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 238 — Chat Motivation Engine
  * AI-driven conversation boosters that increase chemistry → paid chat duration → paid calls/meetings
@@ -324,7 +326,7 @@ export async function calculateChemistryScore(input: ChemistryInput): Promise<nu
   // Weighted factors for chemistry calculation
   const sentimentWeight = 0.25;
   const engagementWeight = 0.25;
-  const depthWeight = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+  const depthWeight = MONETIZATION_SPLITS.EVENT_TICKET.platform;
   const reciprocityWeight = 0.15;
   const sharedInterestsWeight = 0.15;
   
@@ -920,6 +922,22 @@ export const cleanupExpiredBoosters = onSchedule("every 15 minutes", async (even
     await batch.commit();
     console.log(`Cleaned up ${expiredBoostersSnapshot.size} expired boosters`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

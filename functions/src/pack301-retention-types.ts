@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301 - Growth & Retention Engine
  * TypeScript type definitions for user retention, onboarding, and engagement
@@ -173,7 +175,7 @@ export interface RetentionMetrics {
 export interface ChurnRiskFactors {
   noChatsIn5Days: boolean;       // +0.15
   noSwipesIn72h: boolean;        // +0.10
-  noAppOpenRecent: boolean;      // +MONETIZATION_SPLITS.EVENT_TICKET.avalo
+  noAppOpenRecent: boolean;      // +MONETIZATION_SPLITS.EVENT_TICKET.platform
   profileNotUpdated30d: boolean; // +0.05
   noLikesIn72h: boolean;         // +0.10
   noPhotosAdded: boolean;        // +0.15
@@ -360,6 +362,22 @@ export const WIN_BACK_MESSAGES: WinBackMessage[] = [
     priority: 'HIGH',
   },
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

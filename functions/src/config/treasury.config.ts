@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 128 - Treasury Configuration
  * Bank-grade treasury system configuration
  * 
  * CRITICAL NON-NEGOTIABLE RULES:
- * - Revenue split: 65% creator / 35% Avalo (IMMUTABLE)
+ * - Revenue split: 65% earner / 35% Avalo (IMMUTABLE)
  * - No bonuses, discounts, or cashback
  * - No fast-payout for fee
  * - No payout incentives
@@ -87,7 +89,7 @@ export const SECURITY_POLICY = {
  * Fiat to token conversion
  */
 export const PURCHASE_POLICY = {
-  FIXED_RATE_PER_TOKEN_USD: MONETIZATION_SPLITS.EVENT_TICKET.avalo,      // 1 token = €MONETIZATION_SPLITS.EVENT_TICKET.avalo (from PACK 83)
+  FIXED_RATE_PER_TOKEN_USD: MONETIZATION_SPLITS.EVENT_TICKET.platform,      // 1 token = €MONETIZATION_SPLITS.EVENT_TICKET.platform (from PACK 83)
   MIN_PURCHASE_TOKENS: 100,            // Minimum purchase
   MAX_PURCHASE_TOKENS: 1000000,        // Maximum single purchase
   SUPPORTED_CURRENCIES: ['USD', 'USD', 'USD', 'USD'],
@@ -101,7 +103,7 @@ export const PURCHASE_POLICY = {
  */
 export const FRAUD_THRESHOLDS = {
   HIGH_VELOCITY_SPENDS_PER_HOUR: 50,   // Unusual spending rate
-  SUSPICIOUS_REFUND_RATE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,        // 20%+ refund rate
+  SUSPICIOUS_REFUND_RATE: MONETIZATION_SPLITS.EVENT_TICKET.platform,        // 20%+ refund rate
   RAPID_PAYOUT_REQUESTS: 5,            // Too many payout requests
   GIFTING_LOOP_THRESHOLD: 10,          // Circular gifting detection
   SAME_RECIPIENT_LIMIT_PER_HOUR: 20,   // Anti-farming limit
@@ -126,8 +128,8 @@ export const AUDIT_POLICY = {
  */
 export const DEFAULT_TREASURY_CONFIG: Omit<TreasuryConfig, 'id' | 'updatedAt' | 'updatedBy'> = {
   // Revenue split (IMMUTABLE)
-  creatorSplitPercent: REVENUE_SPLIT.CREATOR_PERCENT,
-  avaloSplitPercent: REVENUE_SPLIT.AVALO_PERCENT,
+  earnerSplitPercent: REVENUE_SPLIT.CREATOR_PERCENT,
+  platformSplitPercent: REVENUE_SPLIT.AVALO_PERCENT,
 
   // Refund policy
   refundGraceWindowMinutes: REFUND_POLICY.GRACE_WINDOW_MINUTES,
@@ -157,31 +159,31 @@ export const DEFAULT_TREASURY_CONFIG: Omit<TreasuryConfig, 'id' | 'updatedAt' | 
  * @returns Split breakdown
  */
 export function calculateRevenueSplit(tokenAmount: number): {
-  creatorAmount: number;
-  avaloAmount: number;
+  earnerAmount: number;
+  platformAmount: number;
   total: number;
 } {
   if (tokenAmount <= 0) {
     throw new Error('Token amount must be positive');
   }
 
-  const creatorAmount = Math.floor(tokenAmount * TREASURY_CONSTANTS.CREATOR_SPLIT);
-  const avaloAmount = Math.floor(tokenAmount * TREASURY_CONSTANTS.AVALO_SPLIT);
+  const earnerAmount = Math.floor(tokenAmount * TREASURY_CONSTANTS.CREATOR_SPLIT);
+  const platformAmount = Math.floor(tokenAmount * TREASURY_CONSTANTS.AVALO_SPLIT);
 
   // Ensure split equals original (handle rounding)
-  const total = creatorAmount + avaloAmount;
+  const total = earnerAmount + platformAmount;
   if (total !== tokenAmount) {
-    // Adjust creator amount to match exactly (creator gets benefit of rounding)
+    // Adjust earner amount to match exactly (earner gets benefit of rounding)
     return {
-      creatorAmount: tokenAmount - avaloAmount,
-      avaloAmount,
+      earnerAmount: tokenAmount - platformAmount,
+      platformAmount,
       total: tokenAmount,
     };
   }
 
   return {
-    creatorAmount,
-    avaloAmount,
+    earnerAmount,
+    platformAmount,
     total: tokenAmount,
   };
 }
@@ -225,6 +227,24 @@ export function getTreasuryConfigSummary(): Record<string, any> {
 
 // Validate on module load
 validateTreasuryConfig();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

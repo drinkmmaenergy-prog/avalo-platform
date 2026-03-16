@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * CANONICAL CHAT ENGINE — LEGACY REDIRECT SHIM
  *
@@ -10,8 +12,8 @@
  * - Routes all billing through canonical-chat-engine.ts
  *
  * LEGACY PATHS REDIRECTED:
- * 1. chats.ts processMessageBilling → canonical processMessage
- * 2. chatMonetization.ts processMessageBilling → canonical processMessage
+ * 1. chats.ts shimProcessMessageBilling → canonical processMessage
+ * 2. chatMonetization.ts shimProcessMessageBilling → canonical processMessage
  * 3. pack273ChatEngine.ts pack273_processMessage → canonical processMessage
  * 4. pack328b-chat-session-timeouts.ts → canonical expireInactiveChats
  *
@@ -52,13 +54,13 @@ function logDeprecation(legacyPath: string, replacement: string): void {
 }
 
 // ============================================================================
-// SHIM: chatMonetization.ts processMessageBilling
+// SHIM: chatMonetization.ts shimProcessMessageBilling
 // ============================================================================
 
 /**
  * @deprecated Use processMessage from canonical-chat-engine.ts
  *
- * Redirects chatMonetization.ts processMessageBilling calls to the canonical engine.
+ * Redirects chatMonetization.ts shimProcessMessageBilling calls to the canonical engine.
  * For v2_canonical chats, forwards directly.
  * For legacy chats, logs a warning and attempts to route.
  */
@@ -68,7 +70,7 @@ export async function shimProcessMessageBilling(
   messageText: string,
   _wordCount?: number // Legacy param, ignored — recalculated
 ): Promise<any> {
-  logDeprecation('chatMonetization.processMessageBilling', 'canonical-chat-engine.processMessage');
+  logDeprecation('chatMonetization.shimProcessMessageBilling', 'canonical-chat-engine.processMessage');
 
   // Check if chat is v2_canonical
   const chatSnap = await db.collection('chats').doc(chatId).get();
@@ -237,6 +239,20 @@ export async function routeMessageBilling(
 ): Promise<any> {
   return processMessage(chatId, senderId, messageText);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

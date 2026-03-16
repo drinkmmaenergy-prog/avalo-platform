@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 105 — Immutable Business Audit Logger
  * 
@@ -148,7 +150,7 @@ export async function logTokenPurchase(params: {
  * Log earning recorded
  */
 export async function logEarningRecorded(params: {
-  creatorId: string;
+  earnerId: string;
   sourceType: string;
   sourceId: string;
   grossTokens: number;
@@ -157,7 +159,7 @@ export async function logEarningRecorded(params: {
 }): Promise<string> {
   return logBusinessAudit({
     eventType: 'EARNING_RECORDED',
-    userId: params.creatorId,
+    userId: params.earnerId,
     relatedId: params.sourceId,
     context: {
       sourceType: params.sourceType,
@@ -525,6 +527,20 @@ export async function exportAuditLogs(params: {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

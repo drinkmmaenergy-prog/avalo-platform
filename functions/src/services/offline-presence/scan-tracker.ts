@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 135: Scan Tracker
  * Anonymous QR scan tracking and analytics
@@ -264,6 +266,22 @@ export const getTotalScans = ScanTracker.getTotalScans.bind(ScanTracker);
 export const getScansByCity = ScanTracker.getScansByCity.bind(ScanTracker);
 export const getScansByDevice = ScanTracker.getScansByDevice.bind(ScanTracker);
 export const getRecentScansSummary = ScanTracker.getRecentScansSummary.bind(ScanTracker);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

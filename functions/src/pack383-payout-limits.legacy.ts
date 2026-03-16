@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 383 - Global Payment Routing, Compliance & Cross-Border Payout Engine
  * Payout Frequency & Limit Management
@@ -473,6 +475,20 @@ async function convertToUSD(amount: number, fromCurrency: string): Promise<numbe
 
   return amount * (simplifiedRates[fromCurrency] || 1);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

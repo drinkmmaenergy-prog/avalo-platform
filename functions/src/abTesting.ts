@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 53 - A/B Testing Framework
  *
@@ -425,7 +427,7 @@ export const getABResultsV1 = onCall(
     logger.info(`Fetching AB results for: ${testKey}`, { uid });
 
     try {
-      // Check if user has permission (admin or test creator)
+      // Check if user has permission (admin or test earner)
       const userDoc = await db.collection("users").doc(uid).get();
       const testDoc = await db.collection("abTests").doc(testKey).get();
 
@@ -438,7 +440,7 @@ export const getABResultsV1 = onCall(
       const isCreator = test.createdBy === uid;
 
       if (!isAdmin && !isCreator) {
-        throw new HttpsError("permission-denied", "Only test creator or admin can view results");
+        throw new HttpsError("permission-denied", "Only test earner or admin can view results");
       }
 
       // Fetch variant metrics
@@ -600,7 +602,7 @@ function normalCDF(z: number): number {
     d *
     t *
     (0.3193815 +
-      t * (-MONETIZATION_SPLITS.CHAT.avalo65638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+      t * (-MONETIZATION_SPLITS.CHAT.platform + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
 
   return z > 0 ? 1 - p : p;
 }
@@ -636,6 +638,23 @@ function determineRecommendation(
  * Export types for use in other modules
  */
 export type { ABTest, ABVariant, ABEvent, ABResults, VariantMetrics };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

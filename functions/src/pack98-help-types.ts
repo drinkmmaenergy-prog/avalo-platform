@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 98 — IN-APP HELP CENTER, GUIDED ONBOARDING & CONTEXTUAL EDUCATION
  * Type definitions for help center, onboarding, and contextual tips
@@ -161,6 +163,20 @@ export interface GetOnboardingStateResponse {
   hasSeenGeneralOnboarding: boolean;
   hasAcceptedMonetizationIntro: boolean;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 289 — KYC (Know Your Customer) Functions
  * 
@@ -7,7 +9,7 @@
  * - Admin review/approval
  * - Document verification
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -462,6 +464,20 @@ export {
   isValidIBAN,
   isValidPostalCode,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

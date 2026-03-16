@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 74 — Relationship Risk Engine
  * 
@@ -397,6 +399,20 @@ export {
   RISK_WEIGHTS,
   THRESHOLDS,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

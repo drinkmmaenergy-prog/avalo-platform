@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 162: Quiz and Checkpoint System
  * 
@@ -19,7 +21,7 @@ interface Quiz {
   quizId: string;
   courseId: string;
   episodeId: string;
-  creatorId: string;
+  earnerId: string;
   
   title: string;
   description: string;
@@ -83,7 +85,7 @@ export const createQuiz = onCall(
     }
 
     const episode = episodeDoc.data();
-    if (episode?.creatorId !== uid) {
+    if (episode?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Not your episode');
     }
 
@@ -106,7 +108,7 @@ export const createQuiz = onCall(
       quizId,
       courseId,
       episodeId,
-      creatorId: uid,
+      earnerId: uid,
       title,
       description,
       passingScore,
@@ -255,6 +257,20 @@ export const getQuizResults = onCall(
 export const pack162_createQuiz = createQuiz;
 export const pack162_takeQuiz = takeQuiz;
 export const pack162_getQuizResults = getQuizResults;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

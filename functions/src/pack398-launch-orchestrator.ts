@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 398 - PUBLIC LAUNCH ORCHESTRATOR
  * 
@@ -536,6 +538,20 @@ export const getLaunchStatus = functions.https.onCall(async (request) => {
     recentEvents: recentEvents.docs.map(doc => ({ id: doc.id, ...doc.data() })),
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 72 — AI-Driven Auto-Moderation V2 + Sensitive Media Classification
  * Cloud Functions for Content Moderation
@@ -519,6 +521,20 @@ export const generateModerationStats = onSchedule("every 1 hours", async (event)
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

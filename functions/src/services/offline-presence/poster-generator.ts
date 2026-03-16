@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 135: Poster Generator
  * Creates print-ready posters, business cards, stickers, and event materials
@@ -9,7 +11,7 @@ import { moderatePoster, checkRateLimit } from './moderation';
 import { generateQRimageUrl } from './qr-generator';
 
 export class PosterGenerator {
-  private static readonly BASE_URL = process.env.AVALO_BASE_URL || 'https://avalo.app';
+  private static readonly BASE_URL = process.env.AVALO_BASE_URL || 'https://platform.app';
 
   /**
    * Poster format templates
@@ -308,7 +310,7 @@ export class PosterGenerator {
     eventData: {
       name: string;
       organizer: string;
-      creators: Array<{
+      earners: Array<{
         userId: string;
         displayName: string;
         profilePhoto?: string;
@@ -318,21 +320,21 @@ export class PosterGenerator {
   ): Promise<string[]> {
     const posterIds: string[] = [];
 
-    for (const creator of eventData.creators) {
+    for (const earner of eventData.earners) {
       try {
         const poster = await this.generatePoster(
-          creator.userId,
+          earner.userId,
           'vertical',
           {
-            displayName: creator.displayName,
-            tagline: creator.tagline,
-            profilePhoto: creator.profilePhoto,
+            displayName: earner.displayName,
+            tagline: earner.tagline,
+            profilePhoto: earner.profilePhoto,
             customText: `${eventData.name} - ${eventData.organizer}`,
           }
         );
         posterIds.push(poster.id);
       } catch (error) {
-        console.error(`Failed to generate poster for ${creator.userId}:`, error);
+        console.error(`Failed to generate poster for ${earner.userId}:`, error);
       }
     }
 
@@ -405,6 +407,22 @@ export const generateEventBundle = PosterGenerator.generateEventBundle.bind(Post
 export const submitForReview = PosterGenerator.submitForReview.bind(PosterGenerator);
 export const moderatePosterAsset = PosterGenerator.moderatePosterAsset.bind(PosterGenerator);
 export const getUserAssets = PosterGenerator.getUserAssets.bind(PosterGenerator);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

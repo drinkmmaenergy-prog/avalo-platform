@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO MEDIA SYSTEM
@@ -54,15 +56,15 @@ const SIZE_LIMITS = {
   storyVideo: 100 * 1024 * 1024,       // 100MB
   chatImage: 20 * 1024 * 1024,         // 20MB
   chatVideo: 50 * 1024 * 1024,         // 50MB
-  creatorContent: 200 * 1024 * 1024,   // 200MB
+  earnerContent: 200 * 1024 * 1024,   // 200MB
 };
 
 // Unlock pricing (tokens)
 const UNLOCK_PRICING = {
   feedImage: 5,
   storyVideo: 10,
-  creatorImage: 15,
-  creatorVideo: 25,
+  earnerImage: 15,
+  earnerVideo: 25,
 };
 
 // Compression settings
@@ -91,8 +93,8 @@ export enum MediaType {
   STORY_VIDEO = "story_video",
   CHAT_IMAGE = "chat_image",
   CHAT_VIDEO = "chat_video",
-  CREATOR_IMAGE = "creator_image",
-  CREATOR_VIDEO = "creator_video",
+  CREATOR_IMAGE = "earner_image",
+  CREATOR_VIDEO = "earner_video",
 }
 
 export enum MediaAccessType {
@@ -129,7 +131,7 @@ export interface MediaUnlock {
   mediaId: string;
   unlockedAt: Timestamp;
   paidTokens: number;
-  creatorId: string;
+  earnerId: string;
 }
 
 // ============================================================================
@@ -437,13 +439,13 @@ export const unlockMediaV1 = onCall(
           tokens: FieldValue.increment(-unlockPrice),
         });
 
-        // Credit creator
-        const creatorShare = Math.floor(unlockPrice * 0.8); // 80% to creator
-        const platformFee = unlockPrice - creatorShare;
+        // Credit earner
+        const earner = Math.floor(unlockPrice * 0.8); // 80% to earner
+        const platformFee = unlockPrice - earner;
 
         transaction.update(db.collection("users").doc(media.userId), {
-          tokens: FieldValue.increment(creatorShare),
-          "creatorStats.mediaRevenue": FieldValue.increment(creatorShare),
+          tokens: FieldValue.increment(earner),
+          "earnerStats.mediaRevenue": FieldValue.increment(earner),
         });
 
         // Record unlock
@@ -452,9 +454,9 @@ export const unlockMediaV1 = onCall(
           id: unlockRef.id,
           userId: uid,
           mediaId,
-          creatorId: media.userId,
+          earnerId: media.userId,
           paidTokens: unlockPrice,
-          creatorShare,
+          earner,
           platformFee,
           unlockedAt: FieldValue.serverTimestamp(),
         });
@@ -462,7 +464,7 @@ export const unlockMediaV1 = onCall(
         // Update media stats
         transaction.update(mediaDoc.ref, {
           unlockCount: FieldValue.increment(1),
-          revenue: FieldValue.increment(creatorShare),
+          revenue: FieldValue.increment(earner),
         });
 
         // Record transaction
@@ -470,8 +472,8 @@ export const unlockMediaV1 = onCall(
           type: "media_unlock",
           userId: uid,
           amount: unlockPrice,
-          creatorId: media.userId,
-          creatorShare,
+          earnerId: media.userId,
+          earner,
           platformFee,
           metadata: { mediaId, mediaType: media.type },
           createdAt: FieldValue.serverTimestamp(),
@@ -624,13 +626,13 @@ export const getMediaV1 = onCall(
 );
 
 /**
- * Check if user is following creator
+ * Check if user is following earner
  */
-async function checkIfFollowing(userId: string, creatorId: string): Promise<boolean> {
+async function checkIfFollowing(userId: string, earnerId: string): Promise<boolean> {
   const followDoc = await db
     .collection("follows")
     .where("followerId", "==", userId)
-    .where("followingId", "==", creatorId)
+    .where("followingId", "==", earnerId)
     .limit(1)
     .get();
 
@@ -780,7 +782,7 @@ export const uploadChatMediaV1 = onCall(
 // ============================================================================
 
 /**
- * Get media analytics for creator
+ * Get media analytics for earner
  */
 export const getMediaAnalyticsV1 = onCall(
   {
@@ -894,6 +896,20 @@ export default {
   getMediaAnalyticsV1,
   deleteExpiredStories,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

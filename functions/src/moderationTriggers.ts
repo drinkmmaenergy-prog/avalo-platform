@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { onDocumentCreated } from './runtime';
 /**
  * PACK 54 - Moderation Triggers
@@ -46,6 +48,20 @@ export const onReportCreated = onDocumentCreated('reports/{reportId}', async (ev
       // Don't throw - let the report exist even if case creation fails
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

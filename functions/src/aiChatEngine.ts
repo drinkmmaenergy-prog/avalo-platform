@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * AI Chat Engine
  * Phase 12: AI Companions 2.0 (Creator Bots)
@@ -132,7 +134,7 @@ export async function startAiChat(
     chatId,
     botId: request.botId,
     userId,
-    creatorId: bot.creatorId,
+    earnerId: bot.earnerId,
     state: 'FREE_ACTIVE',
     billing: {
       wordsPerToken,
@@ -331,15 +333,15 @@ export async function processAiMessage(
       chatUpdates['billing.escrowBalance'] = increment(-tokensCost);
       chatUpdates['billing.totalConsumed'] = increment(tokensCost);
       
-      // Calculate revenue split (80% creator, 20% Avalo)
-      const creatorShare = Math.floor(tokensCost * (CREATOR_SHARE_PERCENT / 100));
-      const avaloShare = tokensCost - creatorShare;
+      // Calculate revenue split (80% earner, 20% Avalo)
+      const earner = Math.floor(tokensCost * (CREATOR_SHARE_PERCENT / 100));
+      const platform = tokensCost - earner;
       
-      // Credit creator wallet
-      const creatorWalletRef = db.collection('users').doc(chat.creatorId).collection('wallet').doc('current');
-      transaction.update(creatorWalletRef, {
-        balance: increment(creatorShare),
-        earned: increment(creatorShare),
+      // Credit earner wallet
+      const earnerWalletRef = db.collection('users').doc(chat.earnerId).collection('wallet').doc('current');
+      transaction.update(earnerWalletRef, {
+        balance: increment(earner),
+        earned: increment(earner),
       });
       
       // Deduct from user's pending
@@ -355,12 +357,12 @@ export async function processAiMessage(
       transaction.set(earningsRef, {
         recordId: earningsRef.id,
         botId: chat.botId,
-        creatorId: chat.creatorId,
+        earnerId: chat.earnerId,
         chatId: request.chatId,
         userId,
         tokensEarned: tokensCost,
-        creatorShare,
-        avaloShare,
+        earner,
+        platform,
         messageCount: 1,
         wordCount,
         timestamp: serverTimestamp(),
@@ -390,7 +392,7 @@ export async function processAiMessage(
       
       await recordRankingAction({
         type: 'paid_chat',
-        creatorId: chat.creatorId,
+        earnerId: chat.earnerId,
         payerId: userId,
         points: tokensCost,
         timestamp: new Date(),
@@ -554,6 +556,20 @@ export default {
   processAiChatDeposit,
   closeAiChat,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

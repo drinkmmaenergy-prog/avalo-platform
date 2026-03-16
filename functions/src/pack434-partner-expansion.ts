@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Offline Partner Expansion Module
@@ -152,11 +154,11 @@ export interface PartnerEvent {
   };
   
   // Avalo integration
-  avaloPromotion: {
+  platformPromotion: {
     qrCode: string;
     tokenGiveaway?: number;
     vipDiscount?: number;
-    creatorBooth?: boolean;
+    earnerBooth?: boolean;
   };
   
   // Performance
@@ -315,9 +317,9 @@ export class PartnerExpansionService {
       partnerId,
       attendees: 0,
       checkedIn: 0,
-      avaloPromotion: {
-        ...data.avaloPromotion,
-        qrCode: `https://avalo.app/event/${eventId}`,
+      platformPromotion: {
+        ...data.platformPromotion,
+        qrCode: `https://platform.app/event/${eventId}`,
       },
       metrics: {
         qrScans: 0,
@@ -578,12 +580,12 @@ export class PartnerExpansionService {
     // Generate marketing assets
     // This would integrate with design generation service
     const marketingKit = {
-      logoUrl: `https://avalo.app/assets/partner/${partnerId}/logo.png`,
+      logoUrl: `https://platform.app/assets/partner/${partnerId}/logo.png`,
       posterUrls: [
-        `https://avalo.app/assets/partner/${partnerId}/poster-1.png`,
-        `https://avalo.app/assets/partner/${partnerId}/poster-2.png`,
+        `https://platform.app/assets/partner/${partnerId}/poster-1.png`,
+        `https://platform.app/assets/partner/${partnerId}/poster-2.png`,
       ],
-      digitalAssetsUrl: `https://avalo.app/assets/partner/${partnerId}/digital-kit.zip`,
+      digitalAssetsUrl: `https://platform.app/assets/partner/${partnerId}/digital-kit.zip`,
     };
 
     await this.db.collection('partners').doc(partnerId).update({
@@ -595,7 +597,7 @@ export class PartnerExpansionService {
    * Generate partner QR code
    */
   private generatePartnerQRCode(partnerId: string): string {
-    return `https://avalo.app/p/${partnerId}`;
+    return `https://platform.app/p/${partnerId}`;
   }
 
   /**
@@ -706,6 +708,20 @@ export function createPartnerExpansionService(
 ): PartnerExpansionService {
   return new PartnerExpansionService(db);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

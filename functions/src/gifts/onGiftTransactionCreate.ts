@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 79 — In-Chat Paid Gifts
  * Firebase Function: onGiftTransactionCreate
@@ -219,6 +221,22 @@ async function checkGiftAchievements(
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Feature Flags API Endpoints
  * 
@@ -221,9 +223,9 @@ async function applyUserOverrides(
       };
     }
 
-    // Apply creator flags
+    // Apply earner flags
     if (userData.isCreator === true) {
-      overrides.creatorFeaturesEnabled = true;
+      overrides.earnerFeaturesEnabled = true;
     }
 
     return { ...flags, ...overrides };
@@ -319,6 +321,22 @@ export const healthCheck = onRequest({}, (req, res) => {
     version: '1.0.0',
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 339 — Disaster Recovery & Legal Crisis Management
  * 
@@ -128,7 +130,7 @@ const BACKUP_COLLECTIONS = {
   critical: [
     'walletTransactions',
     'payoutRequests',
-    'creatorBalances',
+    'earnerBalances',
     'userProfiles',
     'userComplianceStatus',
     'kycVerifications',
@@ -214,7 +216,7 @@ export const pack339_runIncrementalBackup = onSchedule("every 15 minutes", async
 
       // Trigger Firestore export (metadata only, actual export via gcloud)
       // In production, this would call Cloud Storage APIs
-      const storageLocation = `gs://avalo-backups/firestore/incremental/${backupId}`;
+      const storageLocation = `gs://platform-backups/firestore/incremental/${backupId}`;
 
       // Mark as success (in production, wait for export completion)
       await db.collection('backupSnapshots').doc(backupId).update({
@@ -281,7 +283,7 @@ export const pack339_runDailyBackup = onSchedule({ schedule: "every day 03:00", 
       await db.collection('backupSnapshots').doc(backupId).set(snapshot);
 
       // Full backup location
-      const storageLocation = `gs://avalo-backups/firestore/daily/${backupId}`;
+      const storageLocation = `gs://platform-backups/firestore/daily/${backupId}`;
 
       await db.collection('backupSnapshots').doc(backupId).update({
         status: 'SUCCESS',
@@ -906,7 +908,7 @@ export const pack339_processEvidenceExport = onDocumentCreated('evidenceExportJo
       const evidenceData = await collectEvidenceData(job);
 
       // Encrypt and store
-      const exportLocation = `gs://avalo-legal-exports/${jobId}.encrypted`;
+      const exportLocation = `gs://platform-legal-exports/${jobId}.encrypted`;
 
       // In production, this would:
       // 1. Serialize evidence data
@@ -981,7 +983,7 @@ async function collectEvidenceData(job: EvidenceExportJob): Promise<any> {
     evidence.payouts = payoutSnapshot.docs.map((d) => d.data());
 
     // Bookings (limited to date range if provided)
-    let bookingQuery = db.collection('bookings').where('creatorId', '==', userId);
+    let bookingQuery = db.collection('bookings').where('earnerId', '==', userId);
     
     if (job.dateRange) {
       bookingQuery = bookingQuery
@@ -1314,6 +1316,20 @@ export const pack339_initializeDisasterRecoveryPlans = onCall(async (request) =>
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

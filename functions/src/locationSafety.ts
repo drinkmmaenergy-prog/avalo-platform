@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 175 — Cyberstalking & Location Safety Defender
  * Location Safety Protection Layer
@@ -533,6 +535,20 @@ export function getLocationSafetyRules() {
     forbiddenFeatures: LOCATION_SAFETY_RULES.forbiddenFeatures,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

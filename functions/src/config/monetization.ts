@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Monetization Configuration for Firebase Functions
  * Shared constants for server-side validation
@@ -5,18 +7,18 @@
 
 export const PAID_CONTENT_CONFIG = {
   /** Creator earning percentage from paid content (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.earner, // 70% to earner, 30% to Avalo
   
   /** Avalo platform fee on paid content (as decimal) */
-  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
 } as const;
 
 export const EARN_TO_CHAT_CONFIG = {
   /** Creator earnings percentage from escrow (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to creator
+  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.earner, // 80% to earner
   
   /** Avalo cut from escrow (as decimal) */
-  AVALO_CUT: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 20% to Avalo
+  AVALO_CUT: MONETIZATION_SPLITS.EVENT_TICKET.platform, // 20% to Avalo
   
   /** Average words per token for escrow billing */
   WORDS_PER_TOKEN: 11,
@@ -39,11 +41,29 @@ export const CALL_CONFIG = {
 
 export const TIPS_CONFIG = {
   /** Creator earning percentage from tips (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to creator, 20% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.earner, // 80% to earner, 20% to Avalo
   
   /** Avalo platform fee on tips (as decimal) */
-  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.platform,
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

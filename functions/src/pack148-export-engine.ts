@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 148 - Ledger Export Engine
  * Export transaction history, payout reports, and tax summaries
@@ -66,8 +68,8 @@ function convertToCSV(transactions: LedgerTransaction[]): string {
     tx.tokenAmount.toString(),
     tx.usdEquivalent.toFixed(2),
     tx.status,
-    tx.platformShare.toString(),
-    tx.creatorShare.toString(),
+    tx.platform.toString(),
+    tx.earner.toString(),
     tx.blockchainHash,
     tx.blockchainVerified ? 'Yes' : 'No',
   ]);
@@ -94,8 +96,8 @@ function convertToJSON(transactions: LedgerTransaction[]): string {
       tokenAmount: tx.tokenAmount,
       usdEquivalent: tx.usdEquivalent,
       status: tx.status,
-      platformShare: tx.platformShare,
-      creatorShare: tx.creatorShare,
+      platform: tx.platform,
+      earner: tx.earner,
       blockchainHash: tx.blockchainHash,
       blockchainVerified: tx.blockchainVerified,
       regionTag: tx.regionTag,
@@ -222,29 +224,29 @@ async function generatePayoutReport(
     // Only count if user is receiver
     if (tx.receiverHash !== userHash) continue;
     
-    totalEarned += tx.creatorShare;
-    platformFees += tx.platformShare;
+    totalEarned += tx.earner;
+    platformFees += tx.platform;
     
     // Track by type
     if (!earningsByType[tx.productType]) {
       earningsByType[tx.productType] = 0;
     }
-    earningsByType[tx.productType] += tx.creatorShare;
+    earningsByType[tx.productType] += tx.earner;
     
     // Track by status
     switch (tx.status) {
       case 'completed':
-        totalPaidOut += tx.creatorShare;
+        totalPaidOut += tx.earner;
         completedCount++;
         break;
       case 'escrowed':
-        inEscrow += tx.creatorShare;
+        inEscrow += tx.earner;
         break;
       case 'pending':
-        pendingPayout += tx.creatorShare;
+        pendingPayout += tx.earner;
         break;
       case 'refunded':
-        refunded += tx.creatorShare;
+        refunded += tx.earner;
         break;
       case 'disputed':
         disputedCount++;
@@ -317,12 +319,12 @@ async function generateTaxSummary(
   for (const tx of yearTransactions) {
     if (tx.receiverHash !== userHash) continue;
     
-    totalTokens += tx.creatorShare;
-    totalIncome += tx.creatorShare * tx.conversionRate;
-    platformFees += tx.platformShare * tx.conversionRate;
+    totalTokens += tx.earner;
+    totalIncome += tx.earner * tx.conversionRate;
+    platformFees += tx.platform * tx.conversionRate;
     
     if (tx.status === 'refunded') {
-      refundsIssued += tx.creatorShare * tx.conversionRate;
+      refundsIssued += tx.earner * tx.conversionRate;
     }
     
     // By type
@@ -333,14 +335,14 @@ async function generateTaxSummary(
         transactionCount: 0,
       };
     }
-    incomeByType[tx.productType].tokens += tx.creatorShare;
-    incomeByType[tx.productType].usd += tx.creatorShare * tx.conversionRate;
+    incomeByType[tx.productType].tokens += tx.earner;
+    incomeByType[tx.productType].usd += tx.earner * tx.conversionRate;
     incomeByType[tx.productType].transactionCount += 1;
     
     // Monthly
     const month = tx.timestamp.toDate().getMonth();
-    monthlyBreakdown[month].tokens += tx.creatorShare;
-    monthlyBreakdown[month].usd += tx.creatorShare * tx.conversionRate;
+    monthlyBreakdown[month].tokens += tx.earner;
+    monthlyBreakdown[month].usd += tx.earner * tx.conversionRate;
     monthlyBreakdown[month].transactions += 1;
   }
   
@@ -446,15 +448,15 @@ async function processExport(
         
         if (format === 'csv') {
           content = convertToCSV(filtered);
-          filename = `avalo-transactions-${Date.now()}.csv`;
+          filename = `platform-transactions-${Date.now()}.csv`;
           mimeType = 'text/csv';
         } else if (format === 'json') {
           content = convertToJSON(filtered);
-          filename = `avalo-transactions-${Date.now()}.json`;
+          filename = `platform-transactions-${Date.now()}.json`;
           mimeType = 'application/json';
         } else {
           content = generatePDFContent(filtered, userId);
-          filename = `avalo-transactions-${Date.now()}.html`;
+          filename = `platform-transactions-${Date.now()}.html`;
           mimeType = 'text/html';
         }
         break;
@@ -468,7 +470,7 @@ async function processExport(
         );
         
         content = JSON.stringify(report, null, 2);
-        filename = `avalo-payout-report-${Date.now()}.json`;
+        filename = `platform-payout-report-${Date.now()}.json`;
         mimeType = 'application/json';
         break;
       }
@@ -478,7 +480,7 @@ async function processExport(
         const taxSummary = await generateTaxSummary(userId, year, 'US');
         
         content = JSON.stringify(taxSummary, null, 2);
-        filename = `avalo-tax-summary-${year}.json`;
+        filename = `platform-tax-summary-${year}.json`;
         mimeType = 'application/json';
         break;
       }
@@ -486,7 +488,7 @@ async function processExport(
       case 'dispute_history': {
         // Placeholder for dispute history
         content = JSON.stringify({ message: 'Dispute history not yet implemented' }, null, 2);
-        filename = `avalo-disputes-${Date.now()}.json`;
+        filename = `platform-disputes-${Date.now()}.json`;
         mimeType = 'application/json';
         break;
       }
@@ -635,6 +637,20 @@ export async function cleanupExpiredExports(): Promise<number> {
   console.log(`Deleted ${deleted} expired exports`);
   return deleted;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

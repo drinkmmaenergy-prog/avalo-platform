@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 155: Data Deletion Service
  * GDPR Article 17, CCPA §1798.105 - Right to Erasure
@@ -468,8 +470,8 @@ async function anonymizeTransactions(userId: string): Promise<void> {
   }
 
   const earningsQuery = db
-    .collection('creator_earnings')
-    .where('creatorId', '==', userId)
+    .collection('earner_earnings')
+    .where('earnerId', '==', userId)
     .limit(500);
 
   hasMore = true;
@@ -485,9 +487,9 @@ async function anonymizeTransactions(userId: string): Promise<void> {
     const batch = db.batch();
     snapshot.docs.forEach(doc => {
       batch.update(doc.ref, {
-        creatorId: 'ANONYMIZED',
-        creatorEmail: null,
-        creatorName: null,
+        earnerId: 'ANONYMIZED',
+        earnerEmail: null,
+        earnerName: null,
         anonymizedAt: Timestamp.now()
       });
     });
@@ -650,6 +652,22 @@ export async function getDeletionRequestStatus(
 
   return requestQuery.docs[0].data() as DataDeletionRequestSchema;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

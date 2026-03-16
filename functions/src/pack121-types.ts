@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 121 — Avalo Global Ads Network (Privacy-Safe)
  * Type Definitions
@@ -7,8 +9,8 @@
  * - No gambling, crypto speculation, or get-rich-quick ads
  * - No data selling or cross-platform tracking pixels
  * - No token bonuses or discounts based on ads
- * - No impact on creator ranking or visibility
- * - Ads monetize Avalo only, not creators
+ * - No impact on earner ranking or visibility
+ * - Ads monetize Avalo only, not earners
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
@@ -446,6 +448,20 @@ export interface AdSafetyScanResult {
   }[];
   scanTimestamp: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

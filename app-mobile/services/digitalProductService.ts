@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 116: Digital Product Service
  * SAFE content only, token-based purchases with 65/35 split
@@ -467,3 +468,4 @@ export function getCategoryDisplay(category: ProductCategory): string {
   
   return displayNames[category] || category;
 }
+

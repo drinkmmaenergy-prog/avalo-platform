@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 86 - Dispute Center & Transaction Issue Reporting
  * Type definitions for dispute/issue reporting system
@@ -46,7 +48,7 @@ export type TransactionIssueStatus =
 export interface TransactionIssue {
   id: string;
   reporterId: string;        // User who submits the issue
-  reportedUserId: string;    // User the complaint is about (e.g. creator)
+  reportedUserId: string;    // User the complaint is about (e.g. earner)
   relatedType: TransactionIssueRelatedType;
   relatedId?: string;        // ID of transaction/content (giftId, storyUnlockId, etc.)
   chatId?: string;           // Optional, if related to chat
@@ -164,6 +166,22 @@ export function isValidStatusTransition(
 export function getReportWeight(reasonCode: TransactionIssueReasonCode): number {
   return REPORT_WEIGHT_MAP[reasonCode] || 5;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

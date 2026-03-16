@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 307 — Fake Profile Detection & Catfish Risk Engine
  * 
@@ -91,7 +93,7 @@ const CATFISH_RISK_CONFIG = {
   WEIGHTS: {
     AI_FACE: 0.25,
     FILTER_INTENSITY: 0.15,
-    PHOTO_CONSISTENCY: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    PHOTO_CONSISTENCY: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     IDENTITY_MATCH: 0.25,
     GENDER_MISMATCH: 0.10,
     AGE_MISMATCH: 0.10,
@@ -955,6 +957,22 @@ async function getCatfishRiskStats(): Promise<any> {
   
   return counters;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

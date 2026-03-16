@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Impersonation Detection
  * Detect and handle identity theft, fake brands, fake celebrities
@@ -408,6 +410,22 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists && userDoc.data()?.role === 'admin';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

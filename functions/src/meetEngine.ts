@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { MeetProfile, MeetBooking, MeetDispute, MeetType, MeetStatus, DisputeStatus } from './types/meet';
@@ -289,7 +291,7 @@ export async function bookMeet(params: {
     }
 
     const price = meetType === 'real_meet' ? hostProfile.realMeetPrice : hostProfile.socialMeetPrice;
-    const avaloFee = Math.floor(price * 0.2);
+    const platformFee = Math.floor(price * 0.2);
     const escrowAmount = Math.floor(price * 0.8);
 
     const guestWalletRef = db.collection('balances').doc(guestId).collection('wallet').doc('wallet');
@@ -314,7 +316,7 @@ export async function bookMeet(params: {
       guestId,
       price,
       escrowAmount,
-      avaloFee,
+      platformFee,
       status: 'booked',
       scheduledDate: Timestamp.fromDate(scheduledDate),
       location: meetType === 'real_meet' ? location : undefined,
@@ -344,7 +346,7 @@ export async function bookMeet(params: {
         senderUid: guestId,
         receiverUid: hostId,
         tokensAmount: price,
-        avaloFee,
+        platformFee,
         escrowAmount,
         bookingId,
         transactionType: 'meet_booking',
@@ -352,13 +354,13 @@ export async function bookMeet(params: {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      const avaloTransactionRef = db.collection('transactions').doc();
-      transaction.set(avaloTransactionRef, {
+      const platformTransactionRef = db.collection('transactions').doc();
+      transaction.set(platformTransactionRef, {
         senderUid: guestId,
-        receiverUid: 'avalo_platform',
-        tokensAmount: avaloFee,
+        receiverUid: 'platform_platform',
+        tokensAmount: platformFee,
         bookingId,
-        transactionType: 'meet_avalo_fee',
+        transactionType: 'meet_platform_fee',
         meetType,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
@@ -404,8 +406,8 @@ export async function cancelMeet(params: {
     await db.runTransaction(async (transaction) => {
       if (isGuest) {
         refundAmount = 0;
-        const avaloWalletRef = db.collection('balances').doc('avalo_platform').collection('wallet').doc('wallet');
-        transaction.update(avaloWalletRef, {
+        const platformWalletRef = db.collection('balances').doc('platform_platform').collection('wallet').doc('wallet');
+        transaction.update(platformWalletRef, {
           tokens: admin.firestore.FieldValue.increment(booking.escrowAmount),
           lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -429,7 +431,7 @@ export async function cancelMeet(params: {
       const cancelTransactionRef = db.collection('transactions').doc();
       transaction.set(cancelTransactionRef, {
         senderUid: userId,
-        receiverUid: isHost ? booking.guestId : 'avalo_platform',
+        receiverUid: isHost ? booking.guestId : 'platform_platform',
         tokensAmount: refundAmount,
         bookingId,
         transactionType: 'meet_cancellation',
@@ -631,6 +633,20 @@ async function autoSettleBooking(bookingId: string): Promise<void> {
     console.error('Error auto-settling booking:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

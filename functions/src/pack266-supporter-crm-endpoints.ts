@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 266: Smart Supporter CRM - Cloud Functions Endpoints
  * 
@@ -40,7 +42,7 @@ const db = getFirestore();
 // ============================================================================
 
 /**
- * Verify creator has earnOn enabled
+ * Verify earner has earnOn enabled
  */
 async function verifyCreatorAccess(userId: string): Promise<boolean> {
   const userDoc = await db.doc(`users/${userId}`).get();
@@ -52,12 +54,12 @@ async function verifyCreatorAccess(userId: string): Promise<boolean> {
  * Log CRM activity for audit trail
  */
 async function logCRMActivity(
-  creatorId: string,
+  earnerId: string,
   actionType: string,
   metadata: any
 ): Promise<void> {
-  await db.collection(`crmActivityLog/${creatorId}/activities`).add({
-    creatorId,
+  await db.collection(`crmActivityLog/${earnerId}/activities`).add({
+    earnerId,
     actionType,
     metadata: sanitizeSupporterData(metadata),
     timestamp: Timestamp.now()
@@ -69,7 +71,7 @@ async function logCRMActivity(
 // ============================================================================
 
 /**
- * Segment all supporters for a creator
+ * Segment all supporters for a earner
  * This should be called periodically (daily) or on-demand
  */
 export const segmentCreatorSupporters = onCall(
@@ -81,14 +83,14 @@ export const segmentCreatorSupporters = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = data.creatorId || auth.uid;
+    const earnerId = data.earnerId || auth.uid;
 
-    // Verify creator access
-    if (creatorId !== auth.uid) {
-      throw new HttpsError('permission-denied', 'Cannot segment supporters for another creator');
+    // Verify earner access
+    if (earnerId !== auth.uid) {
+      throw new HttpsError('permission-denied', 'Cannot segment supporters for another earner');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -97,11 +99,11 @@ export const segmentCreatorSupporters = onCall(
     }
 
     try {
-      logger.info(`Segmenting supporters for creator: ${creatorId}`);
+      logger.info(`Segmenting supporters for earner: ${earnerId}`);
       
-      const segments = await segmentSupporters(db, creatorId);
+      const segments = await segmentSupporters(db, earnerId);
 
-      await logCRMActivity(creatorId, 'segment_supporters', {
+      await logCRMActivity(earnerId, 'segment_supporters', {
         totalSupporters: segments.length,
         vips: segments.filter(s => s.segment === 'vip').length,
         hotLeads: segments.filter(s => s.segment === 'hot_lead').length,
@@ -142,10 +144,10 @@ export const getCRMInbox = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { tab, limit = 50 } = data;
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -158,9 +160,9 @@ export const getCRMInbox = onCall(
     }
 
     try {
-      logger.info(`Getting CRM inbox for creator ${creatorId}, tab: ${tab}`);
+      logger.info(`Getting CRM inbox for earner ${earnerId}, tab: ${tab}`);
 
-      const entries = await generateInboxEntries(db, creatorId, tab, limit);
+      const entries = await generateInboxEntries(db, earnerId, tab, limit);
 
       console.log('Scheduled job result:', {
         success: true,
@@ -191,10 +193,10 @@ export const refreshInboxTab = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { tab } = data;
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -204,7 +206,7 @@ export const refreshInboxTab = onCall(
 
     try {
       // Re-generate entries for this tab
-      await generateInboxEntries(db, creatorId, tab);
+      await generateInboxEntries(db, earnerId, tab);
 
       return {
         success: true,
@@ -234,14 +236,14 @@ export const getSupporterProfile = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { supporterId } = data;
 
     if (!supporterId) {
       throw new HttpsError('invalid-argument', 'supporterId is required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -250,11 +252,11 @@ export const getSupporterProfile = onCall(
     }
 
     try {
-      logger.info(`Getting supporter profile for creator ${creatorId}, supporter: ${supporterId}`);
+      logger.info(`Getting supporter profile for earner ${earnerId}, supporter: ${supporterId}`);
 
-      const profile = await buildSupporterProfile(db, creatorId, supporterId);
+      const profile = await buildSupporterProfile(db, earnerId, supporterId);
 
-      await logCRMActivity(creatorId, 'view_supporter_profile', {
+      await logCRMActivity(earnerId, 'view_supporter_profile', {
         supporterId
       });
 
@@ -285,14 +287,14 @@ export const getSupporterSignals = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { supporterId } = data;
 
     if (!supporterId) {
       throw new HttpsError('invalid-argument', 'supporterId is required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -301,7 +303,7 @@ export const getSupporterSignals = onCall(
     }
 
     try {
-      const signals = await calculateBehavioralSignals(db, creatorId, supporterId);
+      const signals = await calculateBehavioralSignals(db, earnerId, supporterId);
 
       console.log('Scheduled job result:', {
         success: true,
@@ -334,14 +336,14 @@ export const executeCRMAction = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { actionType, supporterId, metadata = {} } = data;
 
     if (!actionType || !supporterId) {
       throw new HttpsError('invalid-argument', 'actionType and supporterId are required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -356,14 +358,14 @@ export const executeCRMAction = onCall(
     }
 
     try {
-      logger.info(`Executing CRM action: ${actionType} for creator ${creatorId}, supporter: ${supporterId}`);
+      logger.info(`Executing CRM action: ${actionType} for earner ${earnerId}, supporter: ${supporterId}`);
 
       const actionRef = db.collection('crmActions').doc();
       
       const action = {
         actionId: actionRef.id,
         type: actionType,
-        creatorId,
+        earnerId,
         supporterId,
         status: 'pending',
         metadata: sanitizeSupporterData(metadata),
@@ -376,19 +378,19 @@ export const executeCRMAction = onCall(
       let result;
       switch (actionType) {
         case 'dm_reminder':
-          result = await executeDMReminder(creatorId, supporterId);
+          result = await executeDMReminder(earnerId, supporterId);
           break;
         case 'invite_to_live':
-          result = await executeInviteToLive(creatorId, supporterId, metadata);
+          result = await executeInviteToLive(earnerId, supporterId, metadata);
           break;
         case 'offer_fan_club':
-          result = await executeOfferFanClub(creatorId, supporterId, metadata);
+          result = await executeOfferFanClub(earnerId, supporterId, metadata);
           break;
         case 'event_early_access':
-          result = await executeEventEarlyAccess(creatorId, supporterId, metadata);
+          result = await executeEventEarlyAccess(earnerId, supporterId, metadata);
           break;
         case 'prioritize_reply':
-          result = await executePrioritizeReply(creatorId, supporterId);
+          result = await executePrioritizeReply(earnerId, supporterId);
           break;
         default:
           throw new Error('Unknown action type');
@@ -401,7 +403,7 @@ export const executeCRMAction = onCall(
         result
       });
 
-      await logCRMActivity(creatorId, actionType, {
+      await logCRMActivity(earnerId, actionType, {
         supporterId,
         result
       });
@@ -423,12 +425,12 @@ export const executeCRMAction = onCall(
 );
 
 // Action execution helpers
-async function executeDMReminder(creatorId: string, supporterId: string) {
+async function executeDMReminder(earnerId: string, supporterId: string) {
   // Mark the supporter's chat for priority attention
   const chatsQuery = await db
     .collection('chats')
     .where('participants', 'array-contains', supporterId)
-    .where('roles.earnerId', '==', creatorId)
+    .where('roles.earnerId', '==', earnerId)
     .limit(1)
     .get();
 
@@ -447,14 +449,14 @@ async function executeDMReminder(creatorId: string, supporterId: string) {
   };
 }
 
-async function executeInviteToLive(creatorId: string, supporterId: string, metadata: any) {
+async function executeInviteToLive(earnerId: string, supporterId: string, metadata: any) {
   // Create a notification for the supporter
   await db.collection('notifications').add({
     userId: supporterId,
     type: 'live_invite',
     title: 'Live Stream Invitation',
     message: 'You\'re invited to an upcoming live stream!',
-    creatorId,
+    earnerId,
     liveStreamId: metadata.liveStreamId,
     scheduledFor: metadata.scheduledFor,
     createdAt: Timestamp.now(),
@@ -467,14 +469,14 @@ async function executeInviteToLive(creatorId: string, supporterId: string, metad
   };
 }
 
-async function executeOfferFanClub(creatorId: string, supporterId: string, metadata: any) {
+async function executeOfferFanClub(earnerId: string, supporterId: string, metadata: any) {
   // Create a notification with fan club offer
   await db.collection('notifications').add({
     userId: supporterId,
     type: 'fan_club_offer',
     title: 'Exclusive Fan Club Invitation',
     message: 'Join my Fan Club for exclusive content and perks!',
-    creatorId,
+    earnerId,
     suggestedTier: metadata.suggestedTier,
     createdAt: Timestamp.now(),
     read: false
@@ -486,12 +488,12 @@ async function executeOfferFanClub(creatorId: string, supporterId: string, metad
   };
 }
 
-async function executeEventEarlyAccess(creatorId: string, supporterId: string, metadata: any) {
+async function executeEventEarlyAccess(earnerId: string, supporterId: string, metadata: any) {
   // Grant early access to event
   await db.collection('eventEarlyAccess').add({
     eventId: metadata.eventId,
     userId: supporterId,
-    creatorId,
+    earnerId,
     grantedAt: Timestamp.now(),
     expiresAt: Timestamp.fromMillis(Timestamp.now().toMillis() + 24 * 60 * 60 * 1000)
   });
@@ -502,7 +504,7 @@ async function executeEventEarlyAccess(creatorId: string, supporterId: string, m
     type: 'event_early_access',
     title: 'Early Access Granted',
     message: 'You have early access to an exclusive event!',
-    creatorId,
+    earnerId,
     eventId: metadata.eventId,
     createdAt: Timestamp.now(),
     read: false
@@ -514,10 +516,10 @@ async function executeEventEarlyAccess(creatorId: string, supporterId: string, m
   };
 }
 
-async function executePrioritizeReply(creatorId: string, supporterId: string) {
+async function executePrioritizeReply(earnerId: string, supporterId: string) {
   // Add to priority reply queue
-  await db.doc(`priorityReplies/${creatorId}_${supporterId}`).set({
-    creatorId,
+  await db.doc(`priorityReplies/${earnerId}_${supporterId}`).set({
+    earnerId,
     supporterId,
     prioritizedAt: Timestamp.now(),
     processed: false
@@ -534,7 +536,7 @@ async function executePrioritizeReply(creatorId: string, supporterId: string) {
 // ============================================================================
 
 /**
- * Get smart alerts for a creator
+ * Get smart alerts for a earner
  */
 export const getSmartAlerts = onCall(
   { maxInstances: 10 },
@@ -545,10 +547,10 @@ export const getSmartAlerts = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { unreadOnly = false, limit = 50 } = data;
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -558,7 +560,7 @@ export const getSmartAlerts = onCall(
 
     try {
       let query = db
-        .collection(`smartAlerts/${creatorId}/alerts`)
+        .collection(`smartAlerts/${earnerId}/alerts`)
         .orderBy('createdAt', 'desc')
         .limit(limit);
 
@@ -605,14 +607,14 @@ export const markAlertRead = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { alertId } = data;
 
     if (!alertId) {
       throw new HttpsError('invalid-argument', 'alertId is required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -621,7 +623,7 @@ export const markAlertRead = onCall(
     }
 
     try {
-      await db.doc(`smartAlerts/${creatorId}/alerts/${alertId}`).update({
+      await db.doc(`smartAlerts/${earnerId}/alerts/${alertId}`).update({
         readAt: Timestamp.now()
       });
 
@@ -651,14 +653,14 @@ export const dismissAlert = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { alertId } = data;
 
     if (!alertId) {
       throw new HttpsError('invalid-argument', 'alertId is required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -667,7 +669,7 @@ export const dismissAlert = onCall(
     }
 
     try {
-      await db.doc(`smartAlerts/${creatorId}/alerts/${alertId}`).update({
+      await db.doc(`smartAlerts/${earnerId}/alerts/${alertId}`).update({
         dismissedAt: Timestamp.now()
       });
 
@@ -690,7 +692,7 @@ export const dismissAlert = onCall(
 // ============================================================================
 
 /**
- * Get CRM settings for a creator
+ * Get CRM settings for a earner
  */
 export const getCRMSettings = onCall(
   { maxInstances: 10 },
@@ -701,9 +703,9 @@ export const getCRMSettings = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -712,12 +714,12 @@ export const getCRMSettings = onCall(
     }
 
     try {
-      const settingsDoc = await db.doc(`crmSettings/${creatorId}`).get();
+      const settingsDoc = await db.doc(`crmSettings/${earnerId}`).get();
 
       if (!settingsDoc.exists) {
         // Create default settings
         const defaultSettings = {
-          creatorId,
+          earnerId,
           enabled: true,
           preferences: {
             enableAlerts: true,
@@ -737,7 +739,7 @@ export const getCRMSettings = onCall(
           updatedAt: Timestamp.now()
         };
 
-        await db.doc(`crmSettings/${creatorId}`).set(defaultSettings);
+        await db.doc(`crmSettings/${earnerId}`).set(defaultSettings);
         console.log('Scheduled job result:', {
           success: true,
           settings: defaultSettings,
@@ -774,14 +776,14 @@ export const updateCRMSettings = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = auth.uid;
+    const earnerId = auth.uid;
     const { settings } = data;
 
     if (!settings) {
       throw new HttpsError('invalid-argument', 'settings is required');
     }
 
-    const hasAccess = await verifyCreatorAccess(creatorId);
+    const hasAccess = await verifyCreatorAccess(earnerId);
     if (!hasAccess) {
       throw new HttpsError(
         'permission-denied',
@@ -790,12 +792,12 @@ export const updateCRMSettings = onCall(
     }
 
     try {
-      await db.doc(`crmSettings/${creatorId}`).update({
+      await db.doc(`crmSettings/${earnerId}`).update({
         ...settings,
         updatedAt: Timestamp.now()
       });
 
-      await logCRMActivity(creatorId, 'update_settings', {
+      await logCRMActivity(earnerId, 'update_settings', {
         changes: Object.keys(settings)
       });
 
@@ -819,7 +821,7 @@ export const updateCRMSettings = onCall(
 // ============================================================================
 
 /**
- * Daily supporter segmentation for all active creators
+ * Daily supporter segmentation for all active earners
  * Runs at 3 AM UTC
  */
 export const dailySupporterSegmentation = onSchedule(
@@ -828,8 +830,8 @@ export const dailySupporterSegmentation = onSchedule(
     logger.info('Starting daily supporter segmentation');
 
     try {
-      // Get all creators with earnOn enabled
-      const creatorsQuery = await db
+      // Get all earners with earnOn enabled
+      const earnersQuery = await db
         .collection('users')
         .where('earnOnChat', '==', true)
         .get();
@@ -837,16 +839,16 @@ export const dailySupporterSegmentation = onSchedule(
       let processedCount = 0;
       let errorCount = 0;
 
-      for (const doc of creatorsQuery.docs) {
-        const creatorId = doc.id;
+      for (const doc of earnersQuery.docs) {
+        const earnerId = doc.id;
         
         try {
-          await segmentSupporters(db, creatorId);
+          await segmentSupporters(db, earnerId);
           processedCount++;
-          logger.info(`Segmented supporters for creator: ${creatorId}`);
+          logger.info(`Segmented supporters for earner: ${earnerId}`);
         } catch (error: any) {
           errorCount++;
-          logger.error(`Error segmenting for creator ${creatorId}:`, error);
+          logger.error(`Error segmenting for earner ${earnerId}:`, error);
         }
       }
 
@@ -867,7 +869,7 @@ export const generateSmartAlerts = onSchedule(
     logger.info('Generating smart alerts');
 
     try {
-      // Get all creators with CRM enabled
+      // Get all earners with CRM enabled
       const settingsQuery = await db
         .collection('crmSettings')
         .where('enabled', '==', true)
@@ -875,26 +877,26 @@ export const generateSmartAlerts = onSchedule(
         .get();
 
       for (const settingsDoc of settingsQuery.docs) {
-        const creatorId = settingsDoc.id;
+        const earnerId = settingsDoc.id;
         const settings = settingsDoc.data();
 
         try {
           // Check for VIP online
           if (settings.preferences.alertTypes.includes('vip_online')) {
-            await checkVIPOnline(creatorId);
+            await checkVIPOnline(earnerId);
           }
 
           // Check for hot lead activity
           if (settings.preferences.alertTypes.includes('hot_lead_active')) {
-            await checkHotLeadActivity(creatorId);
+            await checkHotLeadActivity(earnerId);
           }
 
           // Check for dormant reactivation
           if (settings.preferences.alertTypes.includes('dormant_reactivation')) {
-            await checkDormantReactivation(creatorId);
+            await checkDormantReactivation(earnerId);
           }
         } catch (error: any) {
-          logger.error(`Error generating alerts for creator ${creatorId}:`, error);
+          logger.error(`Error generating alerts for earner ${earnerId}:`, error);
         }
       }
 
@@ -905,10 +907,10 @@ export const generateSmartAlerts = onSchedule(
   }
 );
 
-async function checkVIPOnline(creatorId: string) {
+async function checkVIPOnline(earnerId: string) {
   // Get VIP supporters
   const vipsQuery = await db
-    .collection(`supporterSegments/${creatorId}/supporters`)
+    .collection(`supporterSegments/${earnerId}/supporters`)
     .where('segment', '==', 'vip')
     .get();
 
@@ -918,7 +920,7 @@ async function checkVIPOnline(creatorId: string) {
     if (supporter.signals?.isCurrentlyOnline) {
       // Check if alert already sent recently
       const recentAlertQuery = await db
-        .collection(`smartAlerts/${creatorId}/alerts`)
+        .collection(`smartAlerts/${earnerId}/alerts`)
         .where('type', '==', 'vip_online')
         .where('supporterId', '==', supporter.supporterId)
         .where('createdAt', '>', Timestamp.fromMillis(Timestamp.now().toMillis() - 60 * 60 * 1000))
@@ -926,9 +928,9 @@ async function checkVIPOnline(creatorId: string) {
 
       if (recentAlertQuery.empty) {
         // Create alert
-        await db.collection(`smartAlerts/${creatorId}/alerts`).add({
+        await db.collection(`smartAlerts/${earnerId}/alerts`).add({
           type: 'vip_online',
-          creatorId,
+          earnerId,
           supporterId: supporter.supporterId,
           priority: 'urgent',
           message: `💎 VIP supporter is online now — high conversion probability`,
@@ -946,10 +948,10 @@ async function checkVIPOnline(creatorId: string) {
   }
 }
 
-async function checkHotLeadActivity(creatorId: string) {
+async function checkHotLeadActivity(earnerId: string) {
   // Get hot leads
   const hotLeadsQuery = await db
-    .collection(`supporterSegments/${creatorId}/supporters`)
+    .collection(`supporterSegments/${earnerId}/supporters`)
     .where('segment', '==', 'hot_lead')
     .where('signals.isCurrentlyOnline', '==', true)
     .get();
@@ -959,16 +961,16 @@ async function checkHotLeadActivity(creatorId: string) {
 
     // Check if alert already sent recently
     const recentAlertQuery = await db
-      .collection(`smartAlerts/${creatorId}/alerts`)
+      .collection(`smartAlerts/${earnerId}/alerts`)
       .where('type', '==', 'hot_lead_active')
       .where('supporterId', '==', supporter.supporterId)
       .where('createdAt', '>', Timestamp.fromMillis(Timestamp.now().toMillis() - 60 * 60 * 1000))
       .get();
 
     if (recentAlertQuery.empty) {
-      await db.collection(`smartAlerts/${creatorId}/alerts`).add({
+      await db.collection(`smartAlerts/${earnerId}/alerts`).add({
         type: 'hot_lead_active',
-        creatorId,
+        earnerId,
         supporterId: supporter.supporterId,
         priority: 'high',
         message: `🔥 High conversion lead is active now`,
@@ -985,10 +987,10 @@ async function checkHotLeadActivity(creatorId: string) {
   }
 }
 
-async function checkDormantReactivation(creatorId: string) {
+async function checkDormantReactivation(earnerId: string) {
   // Get dormant supporters who recently viewed profile
   const dormantQuery = await db
-    .collection(`supporterSegments/${creatorId}/supporters`)
+    .collection(`supporterSegments/${earnerId}/supporters`)
     .where('segment', '==', 'dormant')
     .get();
 
@@ -999,23 +1001,23 @@ async function checkDormantReactivation(creatorId: string) {
     const recentViewQuery = await db
       .collection('profileViews')
       .where('viewerId', '==', supporter.supporterId)
-      .where('profileOwnerId', '==', creatorId)
+      .where('profileOwnerId', '==', earnerId)
       .where('viewedAt', '>', Timestamp.fromMillis(Timestamp.now().toMillis() - 24 * 60 * 60 * 1000))
       .get();
 
     if (!recentViewQuery.empty) {
       // Check if alert already sent recently
       const recentAlertQuery = await db
-        .collection(`smartAlerts/${creatorId}/alerts`)
+        .collection(`smartAlerts/${earnerId}/alerts`)
         .where('type', '==', 'dormant_reactivation')
         .where('supporterId', '==', supporter.supporterId)
         .where('createdAt', '>', Timestamp.fromMillis(Timestamp.now().toMillis() - 24 * 60 * 60 * 1000))
         .get();
 
       if (recentAlertQuery.empty) {
-        await db.collection(`smartAlerts/${creatorId}/alerts`).add({
+        await db.collection(`smartAlerts/${earnerId}/alerts`).add({
           type: 'dormant_reactivation',
-          creatorId,
+          earnerId,
           supporterId: supporter.supporterId,
           priority: 'medium',
           message: `🌙 Dormant supporter viewed your profile — reactivation opportunity`,
@@ -1031,6 +1033,20 @@ async function checkDormantReactivation(creatorId: string) {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

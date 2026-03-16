@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 134 — Personalized Feed Generator
  * 
  * Generates personalized content feeds based on:
  * - User interests (behavioral)
  * - Time-of-day patterns
- * - New creator fairness boost
+ * - New earner fairness boost
  * - Diversity injection
  * - Safety filtering
  * 
@@ -77,7 +79,7 @@ export async function generatePersonalizedFeed(
       timePreferences
     );
     
-    // 6. Apply fairness boost for new creators
+    // 6. Apply fairness boost for new earners
     const boostedContent = await applyFairnessBoost(rankedContent);
     
     // 7. Apply diversity injection
@@ -117,9 +119,9 @@ export async function generatePersonalizedFeed(
 interface CandidateContent {
   contentId: string;
   contentType: 'POST' | 'STORY' | 'REEL';
-  creatorId: string;
-  creatorName: string;
-  creatorPhotoUrl?: string;
+  earnerId: string;
+  earnerName: string;
+  earnerPhotoUrl?: string;
   categories: InterestCategory[];
   createdAt: Timestamp;
   engagementScore: number;
@@ -181,27 +183,27 @@ async function fetchCandidateContent(
   for (const doc of snapshot.docs) {
     const data = doc.data();
     
-    // Get creator info
-    const creatorDoc = await db.collection('users').doc(data.userId).get();
-    const creatorData = creatorDoc.data();
+    // Get earner info
+    const earnerDoc = await db.collection('users').doc(data.userId).get();
+    const earnerData = earnerDoc.data();
     
-    if (!creatorData) continue;
+    if (!earnerData) continue;
     
     // Get content categories
     const categoryDoc = await db.collection('content_category_profiles').doc(doc.id).get();
     const categoryData = categoryDoc.data();
     
-    // Check if creator is "new"
-    const accountAgeMs = Date.now() - creatorData.createdAt.toMillis();
+    // Check if earner is "new"
+    const accountAgeMs = Date.now() - earnerData.createdAt.toMillis();
     const accountAgeDays = accountAgeMs / (1000 * 60 * 60 * 24);
     const isNewCreator = accountAgeDays < config.newCreatorDefinitionDays;
     
     candidates.push({
       contentId: doc.id,
       contentType: data.type || 'POST',
-      creatorId: data.userId,
-      creatorName: creatorData.displayName || 'Unknown',
-      creatorPhotoUrl: creatorData.photoURL,
+      earnerId: data.userId,
+      earnerName: earnerData.displayName || 'Unknown',
+      earnerPhotoUrl: earnerData.photoURL,
       categories: categoryData?.primaryCategory ? 
         [categoryData.primaryCategory, ...(categoryData.secondaryCategories || [])] : 
         ['lifestyle'],
@@ -275,7 +277,7 @@ async function filterForSafety(
   const safeContent: CandidateContent[] = [];
   
   for (const candidate of candidates) {
-    const isSafe = await checkSafetyFilters(userId, candidate.creatorId, candidate.contentId);
+    const isSafe = await checkSafetyFilters(userId, candidate.earnerId, candidate.contentId);
     
     if (isSafe) {
       safeContent.push(candidate);
@@ -335,7 +337,7 @@ async function scoreAndRankContent(
     
     // Combine scores with weights
     const relevanceScore = 
-      (interestMatch * MONETIZATION_SPLITS.CHAT.avalo) +
+      (interestMatch * MONETIZATION_SPLITS.CHAT.platform) +
       (timeRelevance * 0.15) +
       (freshnessScore * 0.25) +
       (qualityScore * 0.25);
@@ -423,7 +425,7 @@ function calculateFreshnessScore(createdAt: Timestamp): number {
 // ============================================================================
 
 /**
- * Apply fairness boost to new creators
+ * Apply fairness boost to new earners
  */
 async function applyFairnessBoost(
   content: ScoredContent[]
@@ -438,7 +440,7 @@ async function applyFairnessBoost(
   
   for (const item of boostedContent) {
     if (item.isNewCreator) {
-      const boost = await calculateNewCreatorBoost(item.creatorId);
+      const boost = await calculateNewCreatorBoost(item.earnerId);
       item.relevanceScore *= boost.boostMultiplier;
     }
   }
@@ -550,7 +552,7 @@ async function generateRecommendationReasons(
       explanation = 'You prefer this content at this time';
     } else if (item.isNewCreator) {
       primaryReason = 'NEW_CREATOR_BOOST';
-      explanation = `New creator in ${item.categories[0]}`;
+      explanation = `New earner in ${item.categories[0]}`;
     } else if (item.freshnessScore > 0.8) {
       primaryReason = 'TRENDING_CATEGORY';
       explanation = `Popular in categories you like`;
@@ -591,9 +593,9 @@ async function generateRecommendationReasons(
     itemsWithReasons.push({
       contentId: item.contentId,
       contentType: item.contentType,
-      creatorId: item.creatorId,
-      creatorName: item.creatorName,
-      creatorPhotoUrl: item.creatorPhotoUrl,
+      earnerId: item.earnerId,
+      earnerName: item.earnerName,
+      earnerPhotoUrl: item.earnerPhotoUrl,
       categories: item.categories,
       relevanceScore: item.relevanceScore,
       reasonId,
@@ -622,6 +624,22 @@ export async function getRecommendationReason(
   
   return reasonDoc.data() as RecommendationReason;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

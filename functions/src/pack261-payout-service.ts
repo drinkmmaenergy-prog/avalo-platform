@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
@@ -23,7 +25,7 @@ type PayoutStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'cancell
 
 interface PayoutRequest {
   id: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
   currency: string;
   tokens: number;
@@ -67,7 +69,7 @@ export const processPendingPayouts = onSchedule("0 * * * *", async (event) => {
           processedAt: admin.firestore.Timestamp.now(),
         });
 
-        // Refund tokens to creator
+        // Refund tokens to earner
         await refundFailedPayout(payout);
       }
     }
@@ -110,14 +112,14 @@ async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
     processedAt: admin.firestore.Timestamp.now(),
   });
 
-  // Update creator's pending payout
-  await db.collection('creators').doc(payout.creatorId)
+  // Update earner's pending payout
+  await db.collection('earners').doc(payout.earnerId)
     .collection('earningSummary').doc('current').update({
       pendingPayout: admin.firestore.FieldValue.increment(-payout.amount),
     });
 
   // Send success notification
-  await sendPayoutNotification(payout.creatorId, 'completed', payout.amount, payout.currency);
+  await sendPayoutNotification(payout.earnerId, 'completed', payout.amount, payout.currency);
 }
 
 // Wise payout processing
@@ -265,7 +267,7 @@ async function processPayPalPayout(payout: PayoutRequest): Promise<string> {
         sender_batch_header: {
           sender_batch_id: payout.id,
           email_subject: 'You have received a payment from Avalo',
-          email_message: 'Your creator earnings have been transferred.',
+          email_message: 'Your earner earnings have been transferred.',
         },
         items: [
           {
@@ -359,24 +361,24 @@ async function processSWIFTPayout(payout: PayoutRequest): Promise<string> {
 // Refund failed payout
 async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
   // Return tokens to available balance
-  await db.collection('creators').doc(payout.creatorId)
+  await db.collection('earners').doc(payout.earnerId)
     .collection('earningSummary').doc('current').update({
       availableTokens: admin.firestore.FieldValue.increment(payout.tokens),
       pendingPayout: admin.firestore.FieldValue.increment(-payout.amount),
     });
 
   // Send notification
-  await sendPayoutNotification(payout.creatorId, 'failed', payout.amount, payout.currency);
+  await sendPayoutNotification(payout.earnerId, 'failed', payout.amount, payout.currency);
 }
 
 // Send payout notification
 async function sendPayoutNotification(
-  creatorId: string,
+  earnerId: string,
   status: 'completed' | 'failed',
   amount: number,
   currency: string
 ): Promise<void> {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -442,7 +444,7 @@ export const verifyPayoutMethod = functions.https.onCall(async (request) => {
 
     if (verified) {
       // Save verified payout method
-      await db.collection('creators').doc(request.auth.uid)
+      await db.collection('earners').doc(request.auth.uid)
         .collection('payoutMethods').add({
           type: method,
           details: methodDetails,
@@ -516,7 +518,7 @@ export const cancelPayout = functions.https.onCall(async (request) => {
 
     const payout = payoutDoc.data() as PayoutRequest;
 
-    if (payout.creatorId !== request.auth.uid) {
+    if (payout.earnerId !== request.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized');
     }
 
@@ -542,6 +544,20 @@ export const cancelPayout = functions.https.onCall(async (request) => {
     throw error;
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

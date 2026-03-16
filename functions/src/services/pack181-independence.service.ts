@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import {
   ViolationType,
@@ -31,7 +33,7 @@ const ENTITLEMENT_PATTERNS: EntitlementDetectionPattern[] = [
     weight: 0.8
   },
   {
-    pattern: /you('re| are) mine|you belong to me|my (creator|girl|boy)/i,
+    pattern: /you('re| are) mine|you belong to me|my (earner|girl|boy)/i,
     type: 'ownership_claim',
     severity: 'critical',
     weight: 0.95
@@ -52,7 +54,7 @@ const ENTITLEMENT_PATTERNS: EntitlementDetectionPattern[] = [
     pattern: /(answer|reply to) me (first|before)|you should prioritize me/i,
     type: 'time_demand',
     severity: 'medium',
-    weight: MONETIZATION_SPLITS.CHAT.creator
+    weight: MONETIZATION_SPLITS.CHAT.earner
   },
   {
     pattern: /i('ll| will) (pay|spend) more if|if you (act like|be my)|exclusive (relationship|attention)/i,
@@ -238,7 +240,7 @@ function determineRecommendedAction(
   if (violationCount >= 3) {
     return {
       type: 'ban',
-      reason: 'Multiple creator independence violations',
+      reason: 'Multiple earner independence violations',
       severity: 'critical'
     };
   }
@@ -268,7 +270,7 @@ function determineRecommendedAction(
       return {
         type: 'freeze',
         duration: DEFAULT_CONFIG.cooldownDurations.critical,
-        reason: 'Critical creator independence violation',
+        reason: 'Critical earner independence violation',
         severity: 'critical'
       };
   }
@@ -276,17 +278,17 @@ function determineRecommendedAction(
 
 export async function applyCreatorIndependenceMeasures(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   measure: IndependenceMeasure,
   detectionResult: DetectionResult
 ): Promise<IndependenceEnforcementResult> {
   const batch = db.batch();
 
   try {
-    const caseRef = db.collection('creator_independence_cases').doc();
+    const caseRef = db.collection('earner_independence_cases').doc();
     const caseData: CreatorIndependenceCase = {
       caseId: caseRef.id,
-      creatorId,
+      earnerId,
       fanId,
       violationType: mapEventToViolation(detectionResult.eventType!),
       evidence: {
@@ -306,7 +308,7 @@ export async function applyCreatorIndependenceMeasures(
     const eventData: FanEntitlementEvent = {
       eventId: eventRef.id,
       fanId,
-      creatorId,
+      earnerId,
       eventType: detectionResult.eventType!,
       messageContent: '[Auto-detected violation]',
       severity: detectionResult.severity!,
@@ -330,7 +332,7 @@ export async function applyCreatorIndependenceMeasures(
       const restrictionData: FanRestrictionRecord = {
         recordId: restrictionRef.id,
         fanId,
-        creatorId,
+        earnerId,
         restrictionType: mapMeasureToRestriction(measure.type),
         reason: measure.reason,
         startTime: Timestamp.now(),
@@ -402,13 +404,13 @@ function mapMeasureToRestriction(measureType: string): RestrictionType {
 }
 
 export async function enforceCreatorBoundaryTools(
-  creatorId: string,
+  earnerId: string,
   messageContent: string,
   fanId: string
 ): Promise<{ blocked: boolean; reason?: string }> {
   const settingsDoc = await db
-    .collection('creator_boundary_settings')
-    .doc(creatorId)
+    .collection('earner_boundary_settings')
+    .doc(earnerId)
     .get();
 
   if (!settingsDoc.exists) {
@@ -424,10 +426,10 @@ export async function enforceCreatorBoundaryTools(
     
     for (const pattern of guiltPatterns) {
       if (pattern.pattern.test(messageContent)) {
-        await logEmotionalPressure(fanId, creatorId, 'guilt', true);
+        await logEmotionalPressure(fanId, earnerId, 'guilt', true);
         return { 
           blocked: true, 
-          reason: 'Message blocked by creator boundary settings (guilt/emotional debt detected)' 
+          reason: 'Message blocked by earner boundary settings (guilt/emotional debt detected)' 
         };
       }
     }
@@ -441,10 +443,10 @@ export async function enforceCreatorBoundaryTools(
     
     for (const pattern of romancePatterns) {
       if (pattern.test(messageContent)) {
-        await logEmotionalPressure(fanId, creatorId, 'exclusivity_request', true);
+        await logEmotionalPressure(fanId, earnerId, 'exclusivity_request', true);
         return { 
           blocked: true, 
-          reason: 'Message blocked by creator boundary settings (romance declined)' 
+          reason: 'Message blocked by earner boundary settings (romance declined)' 
         };
       }
     }
@@ -467,7 +469,7 @@ export async function enforceCreatorBoundaryTools(
 
 async function logEmotionalPressure(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   pressureType: PressureType,
   blocked: boolean
 ): Promise<void> {
@@ -475,7 +477,7 @@ async function logEmotionalPressure(
   const logData: EmotionalPressureLog = {
     logId: logRef.id,
     fanId,
-    creatorId,
+    earnerId,
     messageId: 'auto-detected',
     pressureType,
     detected: true,
@@ -495,7 +497,7 @@ export async function resolveCreatorIndependenceCase(
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const caseRef = db.collection('creator_independence_cases').doc(caseId);
+    const caseRef = db.collection('earner_independence_cases').doc(caseId);
     await caseRef.update({
       status: 'resolved',
       resolution: {
@@ -515,38 +517,38 @@ export async function resolveCreatorIndependenceCase(
 }
 
 export async function getCreatorIndependenceStats(
-  creatorId: string,
+  earnerId: string,
   days: number = 30
 ): Promise<CreatorIndependenceStats> {
   const startDate = Timestamp.fromMillis(Date.now() - days * 24 * 60 * 60 * 1000);
   
   const casesSnapshot = await db
-    .collection('creator_independence_cases')
-    .where('creatorId', '==', creatorId)
+    .collection('earner_independence_cases')
+    .where('earnerId', '==', earnerId)
     .where('timestamp', '>=', startDate)
     .get();
 
   const eventsSnapshot = await db
     .collection('fan_entitlement_events')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('timestamp', '>=', startDate)
     .get();
 
   const logsSnapshot = await db
     .collection('emotional_pressure_logs')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('timestamp', '>=', startDate)
     .get();
 
   const restrictionsSnapshot = await db
     .collection('fan_restriction_records')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'active')
     .get();
 
   const settingsDoc = await db
-    .collection('creator_boundary_settings')
-    .doc(creatorId)
+    .collection('earner_boundary_settings')
+    .doc(earnerId)
     .get();
 
   const casesBySeverity: Record<SeverityLevel, number> = {
@@ -585,7 +587,7 @@ export async function getCreatorIndependenceStats(
     : 0;
 
   return {
-    creatorId,
+    earnerId,
     totalCases: casesSnapshot.size,
     casesBySeverity,
     casesByType,
@@ -600,7 +602,7 @@ export async function getCreatorIndependenceStats(
 
 export async function getFanBehaviorProfile(fanId: string): Promise<FanBehaviorProfile> {
   const casesSnapshot = await db
-    .collection('creator_independence_cases')
+    .collection('earner_independence_cases')
     .where('fanId', '==', fanId)
     .get();
 
@@ -623,12 +625,12 @@ export async function getFanBehaviorProfile(fanId: string): Promise<FanBehaviorP
   };
 
   let lastViolation: Timestamp | undefined;
-  const creatorsAffected = new Set<string>();
+  const earnersAffected = new Set<string>();
 
   casesSnapshot.docs.forEach(doc => {
     const data = doc.data() as CreatorIndependenceCase;
     violationsByType[data.violationType]++;
-    creatorsAffected.add(data.creatorId);
+    earnersAffected.add(data.earnerId);
     
     if (!lastViolation || data.timestamp.toMillis() > lastViolation.toMillis()) {
       lastViolation = data.timestamp;
@@ -653,7 +655,7 @@ export async function getFanBehaviorProfile(fanId: string): Promise<FanBehaviorP
     activeRestrictions: restrictionsSnapshot.size,
     riskScore,
     isPermanentlyBanned,
-    creatorsAffected: Array.from(creatorsAffected)
+    earnersAffected: Array.from(earnersAffected)
   };
 }
 
@@ -675,12 +677,12 @@ function calculateRiskScore(
 
 export async function checkActiveRestriction(
   fanId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<{ restricted: boolean; restriction?: FanRestrictionRecord }> {
   const snapshot = await db
     .collection('fan_restriction_records')
     .where('fanId', '==', fanId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'active')
     .get();
 
@@ -700,6 +702,23 @@ export async function checkActiveRestriction(
 
   return { restricted: true, restriction };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

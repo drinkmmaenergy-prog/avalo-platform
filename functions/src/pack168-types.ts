@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 168 — Avalo Anti-Farming & Wealth-Protection Engine
  * Types and Interfaces
@@ -310,10 +312,24 @@ export interface SpendingThreshold {
 }
 
 export interface EarningThreshold {
-  level: "normal" | "high" | "very_high" | "top_creator";
+  level: "normal" | "high" | "very_high" | "top_earner";
   monthlyEarnings: number;
   protectionTriggered: boolean;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

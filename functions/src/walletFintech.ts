@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * WALLET 2.0 + FINTECH LAYER - COMPLETE IMPLEMENTATION
@@ -18,7 +20,7 @@
  * - AML/KYC compliance
  * - Withdrawal processing
  * - Settlement reports
- * - Tax statements for creators
+ * - Tax statements for earners
  * - Invoice generation
  * - Refund logic
  *
@@ -281,7 +283,7 @@ const TOKEN_PACKS: TokenPack[] = [
     bonus: 0,
     totalTokens: 100,
     popular: false,
-    pricePerToken: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    pricePerToken: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
   },
   {
     packId: "value",
@@ -316,7 +318,7 @@ const TOKEN_PACKS: TokenPack[] = [
     bonus: 0,
     totalTokens: 5000,
     popular: false,
-    pricePerToken: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    pricePerToken: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     savings: 33.3,
   },
 ];
@@ -761,17 +763,17 @@ export const generateSettlementReport = onCall(
 
       // Estimate platform fees (would be tracked separately in production)
       if (tx.type === "product_sale") {
-        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo); // Reverse calc
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.earner * MONETIZATION_SPLITS.CHAT.platform); // Reverse calc
         breakdown.products += tx.amount;
       } else if (tx.type === "message") {
-        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.CHAT.earner * MONETIZATION_SPLITS.CHAT.platform);
         breakdown.messages += tx.amount;
       } else if (tx.type === "tip" || tx.type === "live_tip") {
-        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.creator * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.earner * MONETIZATION_SPLITS.EVENT_TICKET.platform);
         if (tx.type === "live_tip") breakdown.live += tx.amount;
         else breakdown.tips += tx.amount;
       } else if (tx.type === "calendar") {
-        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.creator * MONETIZATION_SPLITS.EVENT_TICKET.avalo);
+        platformFees += Math.floor(tx.amount / MONETIZATION_SPLITS.EVENT_TICKET.earner * MONETIZATION_SPLITS.EVENT_TICKET.platform);
         breakdown.calendar += tx.amount;
       }
     });
@@ -900,6 +902,22 @@ export const getCashbackStatus = onCall(
 );
 
 logger.info("✅ Wallet 2.0 + Fintech module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

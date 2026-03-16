@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 305 — Legal & Audit Snapshot Export
  * Background processor for generating snapshot content
@@ -121,7 +123,7 @@ async function generateInvestorOverview(
   const [
     userMetrics,
     economicsData,
-    creatorData,
+    earnerData,
     safetyStats,
     legalDocs,
   ] = await Promise.all([
@@ -147,7 +149,7 @@ async function generateInvestorOverview(
       },
       userAndGrowth: userMetrics,
       economics: economicsData,
-      creatorActivity: creatorData,
+      earnerActivity: earnerData,
       riskAndSafety: safetyStats,
       legalDocs: legalDocs,
     },
@@ -249,16 +251,16 @@ async function aggregateEconomics(from: string, to: string) {
   return {
     gmvTokens: 0,
     gmvUSD: 0,
-    avaloFeesTokens: 0,
-    avaloFeesUSD: 0,
-    creatorShareTokens: 0,
+    platformFeesTokens: 0,
+    platformFeesUSD: 0,
+    earnerTokens: 0,
     numberOfPayouts: 0,
     totalPayoutFiat: 0,
   };
 }
 
 async function aggregateCreatorActivity(from: string, to: string) {
-  // TODO: Connect to creatorEarningsMonthly from PACK 303
+  // TODO: Connect to earnerEarningsMonthly from PACK 303
   return {
     numberOfEarningCreators: 0,
     averageMonthlyEarnings: 0,
@@ -526,6 +528,22 @@ async function logSnapshotAudit(auditLog: any): Promise<void> {
     console.error('Error logging snapshot audit:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

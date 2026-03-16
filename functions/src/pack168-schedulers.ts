@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 168 — Anti-Farming Schedulers
  * Periodic scanning and audit functions
@@ -350,7 +352,7 @@ export const escrowProtectionReview = onSchedule(
       const userId = doc.id;
       const data = doc.data();
       
-      const earningsSnapshot = await db.collection("creator_earnings")
+      const earningsSnapshot = await db.collection("earner_earnings")
         .where("userId", "==", userId)
         .where("inEscrow", "==", true)
         .get();
@@ -432,6 +434,20 @@ async function detectFakeReferrals(userId: string, referrals: string[]): Promise
 
   return fakeCount;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 81 — Creator Earnings Wallet & Payout Ledger
  * Complete implementation for unified earnings tracking and reporting
@@ -5,7 +7,7 @@
  * Business Rules (NON-NEGOTIABLE):
  * - No free tokens, no promo-codes, no discounts, no cashback
  * - Token price per unit MUST NOT be changed
- * - Revenue split: 65% creator / 35% Avalo (fixed)
+ * - Revenue split: 65% earner / 35% Avalo (fixed)
  * - Earnings are non-reversible (no refunds)
  */
 
@@ -21,8 +23,8 @@ import { auth, functions, storage, onSchedule } from './runtime';
 // ============================================================================
 
 const EARNINGS_CONFIG = {
-  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.creator,    // 65% to creator
-  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.earner,    // 65% to earner
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.platform, // 35% to Avalo
   CSV_EXPORT_EXPIRY_HOURS: 24,
   MAX_LEDGER_PAGE_SIZE: 100,
   DEFAULT_LEDGER_PAGE_SIZE: 50,
@@ -42,7 +44,7 @@ export type EarningSourceType =
 
 export interface EarningsLedgerEntry {
   id: string;
-  creatorId: string;
+  earnerId: string;
   sourceType: EarningSourceType;
   sourceId: string;
   fromUserId: string;
@@ -110,21 +112,21 @@ export interface LedgerPage {
  * Called by payment functions (gifts, stories, paid media, etc.)
  */
 export async function recordEarning(params: {
-  creatorId: string;
+  earnerId: string;
   sourceType: EarningSourceType;
   sourceId: string;
   fromUserId: string;
   grossTokens: number;
   metadata?: Record<string, any>;
 }): Promise<string> {
-  const { creatorId, sourceType, sourceId, fromUserId, grossTokens, metadata } = params;
+  const { earnerId, sourceType, sourceId, fromUserId, grossTokens, metadata } = params;
 
   // Validate commission split
   const netTokensCreator = Math.floor(grossTokens * EARNINGS_CONFIG.CREATOR_SHARE);
   const commissionAvalo = grossTokens - netTokensCreator;
 
   const ledgerEntry: Omit<EarningsLedgerEntry, 'id'> = {
-    creatorId,
+    earnerId,
     sourceType,
     sourceId,
     fromUserId,
@@ -138,10 +140,10 @@ export async function recordEarning(params: {
   // Write to ledger
   const ledgerRef = await db.collection('earnings_ledger').add(ledgerEntry);
   
-  // Update creator balance atomically
-  await updateCreatorBalance(creatorId, netTokensCreator);
+  // Update earner balance atomically
+  await updateCreatorBalance(earnerId, netTokensCreator);
 
-  logger.info(`Recorded earning: ${ledgerRef.id} for creator ${creatorId}`, {
+  logger.info(`Recorded earning: ${ledgerRef.id} for earner ${earnerId}`, {
     sourceType,
     netTokensCreator,
   });
@@ -150,13 +152,13 @@ export async function recordEarning(params: {
 }
 
 /**
- * Update creator balance atomically
+ * Update earner balance atomically
  */
 async function updateCreatorBalance(
-  creatorId: string,
+  earnerId: string,
   netTokensCreator: number
 ): Promise<void> {
-  const balanceRef = db.collection('creator_balances').doc(creatorId);
+  const balanceRef = db.collection('earner_balances').doc(earnerId);
 
   await db.runTransaction(async (transaction) => {
     const balanceDoc = await transaction.get(balanceRef);
@@ -164,7 +166,7 @@ async function updateCreatorBalance(
     if (!balanceDoc.exists) {
       // Create new balance record
       transaction.set(balanceRef, {
-        userId: creatorId,
+        userId: earnerId,
         availableTokens: netTokensCreator,
         lifetimeEarned: netTokensCreator,
         updatedAt: serverTimestamp(),
@@ -185,7 +187,7 @@ async function updateCreatorBalance(
 // ============================================================================
 
 /**
- * Get creator wallet summary
+ * Get earner wallet summary
  * Returns current balance, lifetime earnings, and breakdown by source
  */
 export const getCreatorWalletSummary = onCall(
@@ -204,7 +206,7 @@ export const getCreatorWalletSummary = onCall(
 
     try {
       // Fetch balance
-      const balanceSnap = await db.collection('creator_balances').doc(userId).get();
+      const balanceSnap = await db.collection('earner_balances').doc(userId).get();
       
       const balance: CreatorBalance = balanceSnap.exists
         ? (balanceSnap.data() as CreatorBalance)
@@ -254,7 +256,7 @@ async function calculateEarningsBreakdown(
 ): Promise<EarningsBreakdown> {
   let query: FirebaseFirestore.Query = db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId);
+    .where('earnerId', '==', userId);
 
   if (fromDate) {
     query = query.where('createdAt', '>=', Timestamp.fromDate(fromDate));
@@ -355,7 +357,7 @@ async function fetchLedgerPage(
 ): Promise<LedgerPage> {
   let query: FirebaseFirestore.Query = db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .orderBy('createdAt', 'desc');
 
   // Apply filters
@@ -404,7 +406,7 @@ async function fetchLedgerPage(
   // Get total count (for UI display)
   const countQuery = db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId);
+    .where('earnerId', '==', userId);
   
   const countSnapshot = await countQuery.count().get();
   const total = countSnapshot.data().count;
@@ -443,7 +445,7 @@ export const exportEarningsCSV = onCall(
       // Fetch all ledger entries for the period
       let query: FirebaseFirestore.Query = db
         .collection('earnings_ledger')
-        .where('creatorId', '==', userId)
+        .where('earnerId', '==', userId)
         .orderBy('createdAt', 'desc');
 
       if (fromDate) {
@@ -534,21 +536,21 @@ export const aggregateCreatorEarningsDaily = onSchedule(
     try {
       logger.info('Starting daily earnings aggregation');
 
-      // Get all creators with earnings
-      const creatorsSnapshot = await db.collection('creator_balances').get();
+      // Get all earners with earnings
+      const earnersSnapshot = await db.collection('earner_balances').get();
 
       let processedCount = 0;
       const batch = db.batch();
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const creatorId = creatorDoc.id;
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const earnerId = earnerDoc.id;
 
         // Calculate last 30 days breakdown
         const now = new Date();
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         
         const breakdown = await calculateEarningsBreakdown(
-          creatorId,
+          earnerId,
           thirtyDaysAgo,
           now
         );
@@ -556,10 +558,10 @@ export const aggregateCreatorEarningsDaily = onSchedule(
         // Store pre-computed breakdown
         const aggregateRef = db
           .collection('earnings_aggregates')
-          .doc(`${creatorId}_last30days`);
+          .doc(`${earnerId}_last30days`);
 
         batch.set(aggregateRef, {
-          creatorId,
+          earnerId,
           period: 'last30days',
           breakdown,
           computedAt: serverTimestamp(),
@@ -578,7 +580,7 @@ export const aggregateCreatorEarningsDaily = onSchedule(
         await batch.commit();
       }
 
-      logger.info(`Completed daily aggregation for ${processedCount} creators`);
+      logger.info(`Completed daily aggregation for ${processedCount} earners`);
 
       return;
     } catch (error: any) {
@@ -587,6 +589,22 @@ export const aggregateCreatorEarningsDaily = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

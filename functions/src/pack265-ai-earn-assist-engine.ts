@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 265: AI EARN ASSIST ENGINE
  * Core logic for behavior prediction and suggestion generation
@@ -30,14 +32,14 @@ import { admin, functions } from './runtime';
  * Analyze supporter behavior and calculate conversion probability
  */
 export async function analyzeSupporterBehavior(
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<SupporterBehaviorSignal> {
   // Get supporter's interaction history
   const chatQuery = await db
     .collection('chats')
     .where('participants', 'array-contains', supporterId)
-    .where('participants', 'array-contains', creatorId)
+    .where('participants', 'array-contains', earnerId)
     .limit(1)
     .get();
 
@@ -64,7 +66,7 @@ export async function analyzeSupporterBehavior(
   const giftTransactions = await db
     .collection('transactions')
     .where('fromUserId', '==', supporterId)
-    .where('toUserId', '==', creatorId)
+    .where('toUserId', '==', earnerId)
     .where('type', '==', 'gift')
     .orderBy('createdAt', 'desc')
     .limit(50)
@@ -86,7 +88,7 @@ export async function analyzeSupporterBehavior(
   const profileViews = await db
     .collection('profileViews')
     .where('viewerId', '==', supporterId)
-    .where('profileId', '==', creatorId)
+    .where('profileId', '==', earnerId)
     .where('viewedAt', '>', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
     .get();
 
@@ -101,7 +103,7 @@ export async function analyzeSupporterBehavior(
   const liveViews = await db
     .collection('liveViewers')
     .where('userId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('joinedAt', 'desc')
     .limit(10)
     .get();
@@ -130,7 +132,7 @@ export async function analyzeSupporterBehavior(
   const matches = await db
     .collection('matches')
     .where('participants', 'array-contains', supporterId)
-    .where('participants', 'array-contains', creatorId)
+    .where('participants', 'array-contains', earnerId)
     .where('matchedAt', '>', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
     .limit(1)
     .get();
@@ -145,7 +147,7 @@ export async function analyzeSupporterBehavior(
   const likes = await db
     .collection('likes')
     .where('likerId', '==', supporterId)
-    .where('likedUserId', '==', creatorId)
+    .where('likedUserId', '==', earnerId)
     .get();
 
   const likesWithoutChat = {
@@ -168,7 +170,7 @@ export async function analyzeSupporterBehavior(
 
   const signal: SupporterBehaviorSignal = {
     supporterId,
-    creatorId,
+    earnerId,
     recentChatActivity,
     previousGiftingBehavior,
     profileViewActivity,
@@ -183,7 +185,7 @@ export async function analyzeSupporterBehavior(
   // Save to Firestore
   await db
     .collection('supporterBehavior')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('signals')
     .doc(supporterId)
     .set(signal);
@@ -266,15 +268,15 @@ function calculatePredictedValue(
 }
 
 /**
- * Get top conversion targets for a creator
+ * Get top conversion targets for a earner
  */
 export async function getConversionTargets(
-  creatorId: string,
+  earnerId: string,
   limit: number = 10
 ): Promise<ConversionTarget[]> {
   const signalsSnapshot = await db
     .collection('supporterBehavior')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('signals')
     .where('conversionProbability', '>', 50)
     .orderBy('conversionProbability', 'desc')
@@ -338,7 +340,7 @@ export async function getConversionTargets(
   for (const target of targets) {
     const ref = db
       .collection('aiEarnAssist')
-      .doc(creatorId)   .collection('conversionTargets')
+      .doc(earnerId)   .collection('conversionTargets')
       .doc(target.supporterId);
     batch.set(ref, target);
   }
@@ -352,15 +354,15 @@ export async function getConversionTargets(
 // ============================================================================
 
 /**
- * Generate Live schedule recommendation for creator
+ * Generate Live schedule recommendation for earner
  */
 export async function generateLiveScheduleRecommendation(
-  creatorId: string
+  earnerId: string
 ): Promise<LiveScheduleRecommendation> {
   // Analyze historical Live performance
   const liveSessionsSnapshot = await db
     .collection('liveSessions')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'ended')
     .where('endedAt', '>', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)) // Last 90 days
     .orderBy('endedAt', 'desc')
@@ -369,7 +371,7 @@ export async function generateLiveScheduleRecommendation(
 
   if (liveSessionsSnapshot.empty) {
     // No historical data, return general best practices
-    return getDefaultLiveRecommendation(creatorId);
+    return getDefaultLiveRecommendation(earnerId);
   }
 
   // Analyze by day and time
@@ -432,8 +434,8 @@ export async function generateLiveScheduleRecommendation(
   const avgDuration = durations.reduce((sum, d) => sum + d, 0) / durations.length;
   const recommendedDuration = Math.round(avgDuration / 15) * 15; // Round to nearest 15 min
 
-  // Get creator's audience interests for topic suggestions
-  const topicSuggestions = await generateTopicSuggestions(creatorId);
+  // Get earner's audience interests for topic suggestions
+  const topicSuggestions = await generateTopicSuggestions(earnerId);
 
   // Calculate average performance
   const totalGifts = liveSessionsSnapshot.docs.reduce((sum, doc) => sum + (doc.data().totalGifts || 0), 0);
@@ -443,7 +445,7 @@ export async function generateLiveScheduleRecommendation(
   const percentageAboveAverage = Math.round(((bestDayGifts - avgGifts) / avgGifts) * 100);
 
   const recommendation: LiveScheduleRecommendation = {
-    creatorId,
+    earnerId,
     recommendedDay: bestDay,
     recommendedTime: `${bestHour}:00`,
     recommendedDuration: Math.max(30, Math.min(120, recommendedDuration)),
@@ -474,7 +476,7 @@ export async function generateLiveScheduleRecommendation(
   const dateKey = new Date().toISOString().slice(0, 10);
   await db
     .collection('aiEarnAssist_schedule')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('liveRecommendations')
     .doc(dateKey)
     .set(recommendation);
@@ -485,9 +487,9 @@ export async function generateLiveScheduleRecommendation(
 /**
  * Get default Live recommendation when no historical data exists
  */
-function getDefaultLiveRecommendation(creatorId: string): LiveScheduleRecommendation {
+function getDefaultLiveRecommendation(earnerId: string): LiveScheduleRecommendation {
   return {
-    creatorId,
+    earnerId,
     recommendedDay: 'Saturday',
     recommendedTime: '20:30',
     recommendedDuration: 60,
@@ -514,11 +516,11 @@ function getDefaultLiveRecommendation(creatorId: string): LiveScheduleRecommenda
 /**
  * Generate topic suggestions based on audience interests
  */
-async function generateTopicSuggestions(creatorId: string): Promise<string[]> {
-  // Get creator's most successful content
+async function generateTopicSuggestions(earnerId: string): Promise<string[]> {
+  // Get earner's most successful content
   const contentSnapshot = await db
     .collection('stories')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('stats.views', '>', 50)
     .orderBy('stats.views', 'desc')
     .limit(10)
@@ -586,6 +588,20 @@ export function sanitizeSuggestion(suggestion: string): string {
 
   return sanitized;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

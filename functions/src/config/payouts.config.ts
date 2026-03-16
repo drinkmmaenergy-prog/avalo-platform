@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PAYOUTS CONFIG (USD-CANONICAL)
  *
  * Canonical rules:
  * - Accounting is USD-only.
  * - No PLN/EUR/GBP in production logic.
- * - Platform payout fee is charged to the payout flow (creator side), not subsidized by Avalo.
+ * - Platform payout fee is charged to the payout flow (earner side), not subsidized by Avalo.
  */
 
 import { db } from "../init";
@@ -90,6 +92,22 @@ export async function ensurePayoutConfig(): Promise<PayoutConfig> {
   await ref.set(PAYOUT_CONFIG, { merge: false });
   return PAYOUT_CONFIG;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

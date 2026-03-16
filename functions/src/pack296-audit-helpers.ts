@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 296 — Compliance & Audit Layer
  * Core audit logging helpers and utilities
@@ -25,7 +27,7 @@ export const DATA_RETENTION = {
   financialRecordsYears: 10,
 };
 
-const AUDIT_SALT = process.env.AUDIT_IP_SALT || 'avalo-audit-salt-2025';
+const AUDIT_SALT = process.env.AUDIT_IP_SALT || 'platform-audit-salt-2025';
 
 // ============================================================================
 // CORE AUDIT LOGGING FUNCTION
@@ -250,7 +252,7 @@ export async function logBookingEvent(
   actionType: 'CALENDAR_BOOKING_CREATED' | 'CALENDAR_BOOKING_CANCELLED' | 'CALENDAR_REFUND_APPLIED',
   metadata: {
     bookingId: string;
-    creatorId?: string;
+    earnerId?: string;
     meetingTime?: string;
     amountTokens?: number;
     reason?: string;
@@ -514,6 +516,20 @@ export async function isSuperAdmin(adminId: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

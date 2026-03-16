@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Live Streaming Engine for Avalo
  * 
@@ -11,7 +13,7 @@
  * IMPORTANT Phase 14 Rules:
  * - NO deposit required (unlike chat)
  * - All gifts NON-REFUNDABLE
- * - 70% creator / 30% Avalo split
+ * - 70% earner / 30% Avalo split
  * - Anyone can send gifts (no hetero rule)
  * - Must be 18+ verified to host
  */
@@ -107,8 +109,8 @@ export interface LiveGiftTransaction {
   giftTypeId: string;
   giftName: string;
   tokens: number;
-  creatorTokens: number;
-  avaloTokens: number;
+  earnerTokens: number;
+  platformTokens: number;
   createdAt: any; // Timestamp
 }
 
@@ -334,7 +336,7 @@ export async function startLiveSession(
   try {
     await recordRankingAction({
       type: 'boost', // Live session start gets boost points
-      creatorId: hostId,
+      earnerId: hostId,
       payerId: hostId, // Self-action
       points: 200, // Boost points from scoring table
       timestamp: new Date(),
@@ -363,8 +365,8 @@ export async function endLiveSession(
 ): Promise<{
   durationSeconds: number;
   totalRevenue: number;
-  creatorEarnings: number;
-  avaloEarnings: number;
+  earnerEarnings: number;
+  platformEarnings: number;
 }> {
   
   // Get session
@@ -412,7 +414,7 @@ export async function endLiveSession(
   const totalRevenue = totalGiftsTokens + totalQueueTokens;
   
   // Calculate earnings split
-  const { creatorTokens, avaloTokens } = calculateLiveSplit(totalRevenue);
+  const { earnerTokens, platformTokens } = calculateLiveSplit(totalRevenue);
 
   // Update session
   await sessionRef.update({
@@ -421,8 +423,8 @@ export async function endLiveSession(
     durationSeconds,
     totalGiftsTokens,
     totalQueueTokens,
-    earningsCreatorTokens: creatorTokens,
-    earningsAvaloTokens: avaloTokens,
+    earningsCreatorTokens: earnerTokens,
+    earningsAvaloTokens: platformTokens,
     updatedAt: serverTimestamp(),
   });
 
@@ -436,7 +438,7 @@ export async function endLiveSession(
 
   // Update live earnings aggregate
   await updateLiveEarnings(hostId, {
-    tokensEarned: creatorTokens,
+    tokensEarned: earnerTokens,
     sessionDuration: durationSeconds,
     sessionCompleted: true,
   });
@@ -446,7 +448,7 @@ export async function endLiveSession(
     if (totalRevenue > 0) {
       await recordRankingAction({
         type: 'tip', // Live revenue counts as tips
-        creatorId: hostId,
+        earnerId: hostId,
         payerId: 'live_session', // System action
         tokensAmount: totalRevenue,
         points: totalRevenue, // 1 point per token
@@ -479,13 +481,13 @@ export async function endLiveSession(
     logger.error('Failed to record trust event for session end:', error);
   }
 
-  logger.info(`Live session ${sessionId} ended - Duration: ${durationSeconds}s, Revenue: ${totalRevenue} tokens (Creator: ${creatorTokens}, Avalo: ${avaloTokens})`);
+  logger.info(`Live session ${sessionId} ended - Duration: ${durationSeconds}s, Revenue: ${totalRevenue} tokens (Creator: ${earnerTokens}, Avalo: ${platformTokens})`);
 
   return {
     durationSeconds,
     totalRevenue,
-    creatorEarnings: creatorTokens,
-    avaloEarnings: avaloTokens,
+    earnerEarnings: earnerTokens,
+    platformEarnings: platformTokens,
   };
 }
 
@@ -505,7 +507,7 @@ export async function sendLiveGift(
 ): Promise<{
   success: boolean;
   gift: LiveGift;
-  creatorReceived: number;
+  earnerReceived: number;
   newBalance: number;
 }> {
   
@@ -551,7 +553,7 @@ export async function sendLiveGift(
   }
 
   // Calculate split
-  const { creatorTokens, avaloTokens } = calculateLiveSplit(gift.tokenCost);
+  const { earnerTokens, platformTokens } = calculateLiveSplit(gift.tokenCost);
 
   // Execute transaction
   await db.runTransaction(async (transaction) => {
@@ -560,11 +562,11 @@ export async function sendLiveGift(
       balance: increment(-gift.tokenCost),
     });
 
-    // Credit creator
+    // Credit earner
     const hostWalletRef = db.collection('users').doc(room.hostId).collection('wallet').doc('current');
     transaction.update(hostWalletRef, {
-      balance: increment(creatorTokens),
-      earned: increment(creatorTokens),
+      balance: increment(earnerTokens),
+      earned: increment(earnerTokens),
     });
 
     // Record gift transaction
@@ -579,8 +581,8 @@ export async function sendLiveGift(
       giftTypeId: gift.id,
       giftName: gift.name,
       tokens: gift.tokenCost,
-      creatorTokens,
-      avaloTokens,
+      earnerTokens,
+      platformTokens,
       createdAt: serverTimestamp(),
     };
     transaction.set(giftRef, giftTransaction);
@@ -589,8 +591,8 @@ export async function sendLiveGift(
     const sessionRef = db.collection(LIVE_COLLECTIONS.LIVE_SESSIONS).doc(sessionId);
     transaction.update(sessionRef, {
       totalGiftsTokens: increment(gift.tokenCost),
-      earningsCreatorTokens: increment(creatorTokens),
-      earningsAvaloTokens: increment(avaloTokens),
+      earningsCreatorTokens: increment(earnerTokens),
+      earningsAvaloTokens: increment(platformTokens),
       giftsCount: increment(1),
       updatedAt: serverTimestamp(),
     });
@@ -624,7 +626,7 @@ export async function sendLiveGift(
   try {
     await recordRankingAction({
       type: 'tip',
-      creatorId: room.hostId,
+      earnerId: room.hostId,
       payerId: senderId,
       tokensAmount: gift.tokenCost,
       points: gift.tokenCost, // 1 point per token
@@ -643,7 +645,7 @@ export async function sendLiveGift(
   return {
     success: true,
     gift,
-    creatorReceived: creatorTokens,
+    earnerReceived: earnerTokens,
     newBalance,
   };
 }
@@ -818,7 +820,7 @@ export async function updateQueueEntryStatus(
 
   if (newStatus === 'completed' && queueEntry.status === 'on_stage') {
     // Complete stage time - tokens go to host
-    const { creatorTokens, avaloTokens } = calculateLiveSplit(queueEntry.tokensPaid);
+    const { earnerTokens, platformTokens } = calculateLiveSplit(queueEntry.tokensPaid);
 
     await db.runTransaction(async (transaction) => {
       // Update queue entry
@@ -831,16 +833,16 @@ export async function updateQueueEntryStatus(
       // Credit host
       const hostWalletRef = db.collection('users').doc(session.hostId).collection('wallet').doc('current');
       transaction.update(hostWalletRef, {
-        balance: increment(creatorTokens),
-        earned: increment(creatorTokens),
+        balance: increment(earnerTokens),
+        earned: increment(earnerTokens),
       });
 
       // Update session stats
       const sessionRef = db.collection(LIVE_COLLECTIONS.LIVE_SESSIONS).doc(queueEntry.sessionId);
       transaction.update(sessionRef, {
         totalQueueTokens: increment(queueEntry.tokensPaid),
-        earningsCreatorTokens: increment(creatorTokens),
-        earningsAvaloTokens: increment(avaloTokens),
+        earningsCreatorTokens: increment(earnerTokens),
+        earningsAvaloTokens: increment(platformTokens),
         updatedAt: serverTimestamp(),
       });
     });
@@ -1029,6 +1031,20 @@ export async function getHostLiveDashboard(hostId: string): Promise<any> {
     canGoLive: await validateHostEligibility(hostId),
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

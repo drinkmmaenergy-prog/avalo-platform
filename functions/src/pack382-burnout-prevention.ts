@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 382 — Creator Burnout Prevention System
- * Detects and prevents creator burnout through automated monitoring
+ * Detects and prevents earner burnout through automated monitoring
  */
 
 import * as functions from 'firebase-functions';
@@ -18,7 +20,7 @@ import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 const db = getFirestore();
 
 /**
- * Detect burnout risk for a creator
+ * Detect burnout risk for a earner
  */
 export const pack382_detectCreatorBurnout = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -60,9 +62,9 @@ export const pack382_detectCreatorBurnout = functions.https.onCall(async (reques
         };
       }
 
-      // Get creator profile
+      // Get earner profile
       const profileDoc = await db
-        .collection('creatorEarningProfiles')
+        .collection('earnerEarningProfiles')
         .doc(userId)
         .get();
 
@@ -122,10 +124,10 @@ export const pack382_detectCreatorBurnout = functions.https.onCall(async (reques
           });
       }
 
-      // Update creator profile with burnout risk
+      // Update earner profile with burnout risk
       if (profile) {
         await db
-          .collection('creatorEarningProfiles')
+          .collection('earnerEarningProfiles')
           .doc(userId)
           .update({
             burnoutRiskScore: score,
@@ -163,7 +165,7 @@ async function gatherBurnoutFactors(
   // Workload factors
   const chatsLast7Days = await db
     .collection('chatSessions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('startedAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
     .count()
     .get();
@@ -191,7 +193,7 @@ async function gatherBurnoutFactors(
   // Quality decline indicators
   const recentRefunds = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', '==', 'refund')
     .where('createdAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
     .count()
@@ -199,7 +201,7 @@ async function gatherBurnoutFactors(
 
   const recentRatings = await db
     .collection('ratings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
     .get();
 
@@ -215,7 +217,7 @@ async function gatherBurnoutFactors(
   // Compare with historical data
   const historicalRatings = await db
     .collection('ratings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '<', Timestamp.fromMillis(sevenDaysAgo))
     .where('createdAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
     .get();
@@ -242,7 +244,7 @@ async function gatherBurnoutFactors(
   // Financial stress indicators
   const recentEarnings = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', '==', 'payment')
     .where('status', '==', 'completed')
     .where('createdAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
@@ -250,7 +252,7 @@ async function gatherBurnoutFactors(
 
   const historicalEarnings = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', '==', 'payment')
     .where('status', '==', 'completed')
     .where('createdAt', '<', Timestamp.fromMillis(sevenDaysAgo))
@@ -557,17 +559,17 @@ export const pack382_resolveBurnout = functions.https.onCall(async (request) => 
 export const pack382_dailyBurnoutMonitoring = onSchedule({ schedule: "0 1 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting daily burnout monitoring...');
 
-    // Get active creators
+    // Get active earners
     const activeCreators = await db
-      .collection('creatorEarningProfiles')
+      .collection('earnerEarningProfiles')
       .where('burnoutRiskScore', '>=', 50)
       .get();
 
     let assessmentsCreated = 0;
     let actionsApplied = 0;
 
-    for (const creatorDoc of activeCreators.docs) {
-      const profile = creatorDoc.data() as CreatorEarningProfile;
+    for (const earnerDoc of activeCreators.docs) {
+      const profile = earnerDoc.data() as CreatorEarningProfile;
       const userId = profile.userId;
 
       try {
@@ -618,7 +620,7 @@ export const pack382_dailyBurnoutMonitoring = onSchedule({ schedule: "0 1 * * *"
             });
         }
       } catch (error) {
-        console.error(`Error monitoring creator ${userId}:`, error);
+        console.error(`Error monitoring earner ${userId}:`, error);
       }
     }
 
@@ -627,6 +629,20 @@ export const pack382_dailyBurnoutMonitoring = onSchedule({ schedule: "0 1 * * *"
     );
     return null;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

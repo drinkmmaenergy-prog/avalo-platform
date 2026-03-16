@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 265: AI EARN ASSIST ENGINE
  * Type definitions for smart revenue optimization
@@ -27,7 +29,7 @@ export enum SuggestionPriority {
 
 export interface AIEarningSuggestion {
   id: string;
-  creatorId: string;
+  earnerId: string;
   type: SuggestionType;
   priority: SuggestionPriority;
   title: string;
@@ -63,7 +65,7 @@ export interface AIEarningSuggestion {
 
 export interface SupporterBehaviorSignal {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Signals with weights
   recentChatActivity: {
@@ -123,7 +125,7 @@ export interface ConversionTarget {
 // ============================================================================
 
 export interface LiveScheduleRecommendation {
-  creatorId: string;
+  earnerId: string;
   
   recommendedDay: string; // e.g., "Saturday"
   recommendedTime: string; // e.g., "20:30"
@@ -169,7 +171,7 @@ export enum DMPriority {
 export interface DMPriorityLabel {
   chatId: string;
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   priority: DMPriority;
   
   reasoning: string;
@@ -180,7 +182,7 @@ export interface DMPriorityLabel {
     lifetimeSpent: number;
     recentActivity: number; // messages in last 7 days
     conversionProbability: number;
-    avgResponseTime: number; // creator's typical response time to this user
+    avgResponseTime: number; // earner's typical response time to this user
   };
   
   updatedAt: Date;
@@ -191,7 +193,7 @@ export interface DMPriorityLabel {
 // ============================================================================
 
 export interface ContentOptimizationTip {
-  creatorId: string;
+  earnerId: string;
   type: 'profile_photo' | 'story_content' | 'pricing' | 'description';
   
   suggestion: string;
@@ -202,7 +204,7 @@ export interface ContentOptimizationTip {
   basedOnPeers: {
     sampleSize: number;
     region?: string;
-    creatorType?: string;
+    earnerType?: string;
   };
   
   createdAt: Date;
@@ -214,7 +216,7 @@ export interface ContentOptimizationTip {
 // ============================================================================
 
 export interface FeatureAwarenessPrompt {
-  creatorId: string;
+  earnerId: string;
   featureId: string;
   featureName: string;
   
@@ -226,7 +228,7 @@ export interface FeatureAwarenessPrompt {
   reasoning: string;
   relevanceScore: number; // 0-100
   
-  // Has creator used this feature before?
+  // Has earner used this feature before?
   neverUsed: boolean;
   lastUsedAt?: Date;
   
@@ -247,7 +249,7 @@ export interface FeatureAwarenessPrompt {
 // ============================================================================
 
 export interface AIEarnAssistMetrics {
-  creatorId: string;
+  earnerId: string;
   period: string; // 'YYYY-MM'
   
   suggestionsGenerated: number;
@@ -274,7 +276,7 @@ export interface AIEarnAssistMetrics {
 // ============================================================================
 
 export interface AIEarnAssistSettings {
-  creatorId: string;
+  earnerId: string;
   
   enabled: boolean;
   
@@ -334,25 +336,39 @@ export const ALLOWED_SUGGESTION_TEMPLATES = {
 /**
  * Firestore Collections:
  * 
- * aiEarnAssist/{creatorId}
+ * aiEarnAssist/{earnerId}
  *   - settings: AIEarnAssistSettings
  *   - suggestions/{suggestionId}: AIEarningSuggestion
  *   - conversionTargets/{supporterId}: ConversionTarget
  *   - dmPriorities/{chatId}: DMPriorityLabel
  *   - metrics/{period}: AIEarnAssistMetrics
  * 
- * aiEarnAssist_schedule/{creatorId}
+ * aiEarnAssist_schedule/{earnerId}
  *   - liveRecommendations/{date}: LiveScheduleRecommendation
  * 
- * aiEarnAssist_content/{creatorId}
+ * aiEarnAssist_content/{earnerId}
  *   - optimizations/{id}: ContentOptimizationTip
  * 
- * aiEarnAssist_features/{creatorId}
+ * aiEarnAssist_features/{earnerId}
  *   - prompts/{featureId}: FeatureAwarenessPrompt
  * 
- * supporterBehavior/{creatorId}/signals/{supporterId}
+ * supporterBehavior/{earnerId}/signals/{supporterId}
  *   - SupporterBehaviorSignal
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

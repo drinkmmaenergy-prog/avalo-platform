@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { db } from '../init';
 import { FieldValue } from 'firebase-admin/firestore';
 import { aiModerator } from './aiModeration';
@@ -327,6 +329,22 @@ export async function isContentAllowedInFeed(
   
   return true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

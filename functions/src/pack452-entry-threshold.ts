@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 452 — Configurable Entry Threshold System
  *
@@ -139,6 +141,20 @@ export async function updateChatEntryTokens(
 export async function getEffectiveChatEntryTokens(earnerId: string): Promise<number> {
   return getChatEntryTokens(earnerId);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

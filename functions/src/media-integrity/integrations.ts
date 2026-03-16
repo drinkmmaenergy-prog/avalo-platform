@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import { enforcement } from '../extortion/enforcement';
 import {
@@ -343,6 +345,22 @@ export class MediaIntegritySafetyIntegration {
 }
 
 export const safetyIntegration = new MediaIntegritySafetyIntegration();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

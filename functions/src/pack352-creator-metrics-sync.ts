@@ -1,12 +1,14 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 352 — Creator Metrics Sync
  * 
- * On-demand recompute of creator metrics for a specific creator and date range.
+ * On-demand recompute of earner metrics for a specific earner and date range.
  * Useful for:
- * - Debugging creator earnings discrepancies
+ * - Debugging earner earnings discrepancies
  * - Support/dispute handling
  * - Backfilling historical data
- * - Real-time creator dashboards
+ * - Real-time earner dashboards
  * 
  * This is analytics-only: no changes to business logic.
  */
@@ -28,15 +30,15 @@ const db = admin.firestore();
 // ============================================================================
 
 /**
- * Recompute metrics for a single creator across a date range
+ * Recompute metrics for a single earner across a date range
  * 
- * @param creatorId - Creator user ID
+ * @param earnerId - Creator user ID
  * @param dateRange - Start and end dates (YYYY-MM-DD)
  * @returns Array of computed metrics per day
  */
 export const syncCreatorMetrics = functions.https.onCall(async (request) => {
   const data = request.data;
-    const { creatorId, dateRange } = data;
+    const { earnerId, dateRange } = data;
 
     // Verify authentication and permissions
     if (!request.auth) {
@@ -46,9 +48,9 @@ export const syncCreatorMetrics = functions.https.onCall(async (request) => {
       );
     }
 
-    // Allow admins or the creator themselves
+    // Allow admins or the earner themselves
     const isAdmin = request.auth.token.role === 'admin';
-    const isCreator = request.auth.uid === creatorId;
+    const isCreator = request.auth.uid === earnerId;
 
     if (!isAdmin && !isCreator) {
       throw new functions.https.HttpsError(
@@ -58,10 +60,10 @@ export const syncCreatorMetrics = functions.https.onCall(async (request) => {
     }
 
     // Validate inputs
-    if (!creatorId) {
+    if (!earnerId) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'creatorId is required'
+        'earnerId is required'
       );
     }
 
@@ -80,24 +82,24 @@ export const syncCreatorMetrics = functions.https.onCall(async (request) => {
     }
 
     try {
-      const metrics = await computeCreatorMetricsForRange(creatorId, dateRange);
+      const metrics = await computeCreatorMetricsForRange(earnerId, dateRange);
 
       // If admin, also save to Firestore
       if (isAdmin) {
-        await saveCreatorMetrics(creatorId, metrics);
+        await saveCreatorMetrics(earnerId, metrics);
       }
 
       return {
         success: true,
-        creatorId,
+        earnerId,
         dateRange,
         metrics,
       };
     } catch (error) {
-      console.error('Error syncing creator metrics:', error);
+      console.error('Error syncing earner metrics:', error);
       throw new functions.https.HttpsError(
         'internal',
-        'Failed to sync creator metrics',
+        'Failed to sync earner metrics',
         error
       );
     }
@@ -105,12 +107,12 @@ export const syncCreatorMetrics = functions.https.onCall(async (request) => {
 );
 
 /**
- * Get current metrics for a creator (today + recent history)
- * Optimized for real-time creator dashboards
+ * Get current metrics for a earner (today + recent history)
+ * Optimized for real-time earner dashboards
  */
 export const getCreatorCurrentMetrics = functions.https.onCall(async (request) => {
   const data = request.data;
-    const { creatorId, days = 30 } = data;
+    const { earnerId, days = 30 } = data;
 
     // Verify authentication
     if (!request.auth) {
@@ -120,9 +122,9 @@ export const getCreatorCurrentMetrics = functions.https.onCall(async (request) =
       );
     }
 
-    // Allow admins or the creator themselves
+    // Allow admins or the earner themselves
     const isAdmin = request.auth.token.role === 'admin';
-    const isCreator = request.auth.uid === creatorId;
+    const isCreator = request.auth.uid === earnerId;
 
     if (!isAdmin && !isCreator) {
       throw new functions.https.HttpsError(
@@ -143,31 +145,31 @@ export const getCreatorCurrentMetrics = functions.https.onCall(async (request) =
       };
 
       // Try to get from cache first (daily metrics documents)
-      const cachedMetrics = await getCreatorMetricsFromCache(creatorId, dateRange);
+      const cachedMetrics = await getCreatorMetricsFromCache(earnerId, dateRange);
 
       if (cachedMetrics.length > 0) {
         return {
           success: true,
-          creatorId,
+          earnerId,
           metrics: cachedMetrics,
           source: 'cache',
         };
       }
 
       // If not in cache, compute on-demand
-      const computedMetrics = await computeCreatorMetricsForRange(creatorId, dateRange);
+      const computedMetrics = await computeCreatorMetricsForRange(earnerId, dateRange);
 
       return {
         success: true,
-        creatorId,
+        earnerId,
         metrics: computedMetrics,
         source: 'computed',
       };
     } catch (error) {
-      console.error('Error getting creator current metrics:', error);
+      console.error('Error getting earner current metrics:', error);
       throw new functions.https.HttpsError(
         'internal',
-        'Failed to get creator metrics',
+        'Failed to get earner metrics',
         error
       );
     }
@@ -175,7 +177,7 @@ export const getCreatorCurrentMetrics = functions.https.onCall(async (request) =
 );
 
 /**
- * Batch sync for multiple creators
+ * Batch sync for multiple earners
  * Admin only - useful for backfilling
  */
 export const syncMultipleCreators = functions.https.onCall(async (request) => {
@@ -188,27 +190,27 @@ export const syncMultipleCreators = functions.https.onCall(async (request) => {
       );
     }
 
-    const { creatorIds, dateRange } = data;
+    const { earnerIds, dateRange } = data;
 
-    if (!Array.isArray(creatorIds) || creatorIds.length === 0) {
+    if (!Array.isArray(earnerIds) || earnerIds.length === 0) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'creatorIds must be a non-empty array'
+        'earnerIds must be a non-empty array'
       );
     }
 
-    if (creatorIds.length > 100) {
+    if (earnerIds.length > 100) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'Maximum 100 creators per batch'
+        'Maximum 100 earners per batch'
       );
     }
 
     try {
       const results = await Promise.allSettled(
-        creatorIds.map((creatorId) =>
-          computeCreatorMetricsForRange(creatorId, dateRange).then((metrics) =>
-            saveCreatorMetrics(creatorId, metrics)
+        earnerIds.map((earnerId) =>
+          computeCreatorMetricsForRange(earnerId, dateRange).then((metrics) =>
+            saveCreatorMetrics(earnerId, metrics)
           )
         )
       );
@@ -218,15 +220,15 @@ export const syncMultipleCreators = functions.https.onCall(async (request) => {
 
       return {
         success: true,
-        total: creatorIds.length,
+        total: earnerIds.length,
         successful,
         failed,
       };
     } catch (error) {
-      console.error('Error syncing multiple creators:', error);
+      console.error('Error syncing multiple earners:', error);
       throw new functions.https.HttpsError(
         'internal',
-        'Failed to sync creators',
+        'Failed to sync earners',
         error
       );
     }
@@ -238,17 +240,17 @@ export const syncMultipleCreators = functions.https.onCall(async (request) => {
 // ============================================================================
 
 /**
- * Compute creator metrics for a date range
+ * Compute earner metrics for a date range
  */
 async function computeCreatorMetricsForRange(
-  creatorId: string,
+  earnerId: string,
   dateRange: DateRange
 ): Promise<CreatorPerformanceMetrics[]> {
   const dates = generateDateArray(dateRange.startDate, dateRange.endDate);
   const metricsArray: CreatorPerformanceMetrics[] = [];
 
   for (const date of dates) {
-    const metrics = await computeCreatorMetricsForDay(creatorId, date);
+    const metrics = await computeCreatorMetricsForDay(earnerId, date);
     metricsArray.push(metrics);
   }
 
@@ -256,15 +258,15 @@ async function computeCreatorMetricsForRange(
 }
 
 /**
- * Compute creator metrics for a single day
+ * Compute earner metrics for a single day
  */
 async function computeCreatorMetricsForDay(
-  creatorId: string,
+  earnerId: string,
   date: string
 ): Promise<CreatorPerformanceMetrics> {
   const { startTimestamp, endTimestamp } = getDateRange(date);
 
-  // Query all events where this creator earned tokens
+  // Query all events where this earner earned tokens
   const eventsSnapshot = await db
     .collection('kpiEvents')
     .where('createdAt', '>=', startTimestamp)
@@ -300,12 +302,12 @@ async function computeCreatorMetricsForDay(
     const event = doc.data();
     const context = event.context as any;
 
-    // Check if this event is for our creator
+    // Check if this event is for our earner
     const eventCreatorId =
-      context.creatorId || context.organizerId || (context.participantIds && context.participantIds[1]);
+      context.earnerId || context.organizerId || (context.participantIds && context.participantIds[1]);
 
-    if (eventCreatorId !== creatorId) {
-      return; // Skip events not for this creator
+    if (eventCreatorId !== earnerId) {
+      return; // Skip events not for this earner
     }
 
     const tokens = context.tokensCharged || context.ticketPrice || 0;
@@ -315,7 +317,7 @@ async function computeCreatorMetricsForDay(
       case KpiEventType.CHAT_PAID_STARTED:
       case KpiEventType.CHAT_PAID_ENDED:
         chatSessionsPaid++;
-        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator; // Creator gets 65%
+        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner; // Creator gets 65%
         tokensEarnedChat += chatEarnings;
         tokensEarned += chatEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -323,7 +325,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.VOICE_CALL_ENDED:
         voiceCallsPaid++;
-        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedVoiceCalls += voiceEarnings;
         tokensEarned += voiceEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -331,7 +333,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.VIDEO_CALL_ENDED:
         videoCallsPaid++;
-        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedVideoCalls += videoEarnings;
         tokensEarned += videoEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -339,7 +341,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.CALENDAR_BOOKING_COMPLETED:
         calendarBookings++;
-        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator; // Creator gets 80%
+        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.earner; // Creator gets 80%
         tokensEarnedCalendar += calendarEarnings;
         tokensEarned += calendarEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -347,7 +349,7 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.EVENT_TICKET_PURCHASED:
         eventTicketsSold++;
-        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator; // Organizer gets 80%
+        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.earner; // Organizer gets 80%
         tokensEarnedEvents += eventEarnings;
         tokensEarned += eventEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -355,14 +357,14 @@ async function computeCreatorMetricsForDay(
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         aiCompanionSessions++;
-        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedAI += aiEarnings;
         tokensEarned += aiEarnings;
         if (userId) uniquePayingUsers.add(userId);
         break;
 
       case KpiEventType.PAYOUT_REQUESTED:
-        if (context.creatorId === creatorId) {
+        if (context.earnerId === earnerId) {
           payoutsRequested++;
           payoutsPending++;
           hasActivePayouts = true;
@@ -370,7 +372,7 @@ async function computeCreatorMetricsForDay(
         break;
 
       case KpiEventType.PAYOUT_COMPLETED:
-        if (context.creatorId === creatorId) {
+        if (context.earnerId === earnerId) {
           payoutsCompleted++;
           if (payoutsPending > 0) payoutsPending--;
         }
@@ -379,7 +381,7 @@ async function computeCreatorMetricsForDay(
       case KpiEventType.FRAUD_FLAG_RAISED:
       case KpiEventType.USER_BANNED:
       case KpiEventType.USER_SUSPENDED:
-        if (context.targetUserId === creatorId || event.userId === creatorId) {
+        if (context.targetUserId === earnerId || event.userId === earnerId) {
           isFlagged = true;
         }
         break;
@@ -388,13 +390,13 @@ async function computeCreatorMetricsForDay(
 
   // Calculate returning payers
   const returningPayersCount = await calculateReturningPayers(
-    creatorId,
+    earnerId,
     Array.from(uniquePayingUsers),
     date
   );
 
   return {
-    creatorId,
+    earnerId,
     date,
     tokensEarned,
     tokensEarnedChat,
@@ -418,15 +420,15 @@ async function computeCreatorMetricsForDay(
     returningPayersCount,
     hasActivePayouts,
     isFlagged,
-    isTopPerformer: false, // Computed relative to other creators
+    isTopPerformer: false, // Computed relative to other earners
   };
 }
 
 /**
- * Calculate how many users paid this creator before this date
+ * Calculate how many users paid this earner before this date
  */
 async function calculateReturningPayers(
-  creatorId: string,
+  earnerId: string,
   todayPayers: string[],
   date: string
 ): Promise<number> {
@@ -435,7 +437,7 @@ async function calculateReturningPayers(
   const { startTimestamp } = getDateRange(date);
   let returningCount = 0;
 
-  // For each user who paid today, check if they paid this creator before
+  // For each user who paid today, check if they paid this earner before
   for (const userId of todayPayers) {
     const priorPayments = await db
       .collection('kpiEvents')
@@ -452,16 +454,16 @@ async function calculateReturningPayers(
       .get();
 
     if (!priorPayments.empty) {
-      // Check if any of these prior payments were to this creator
+      // Check if any of these prior payments were to this earner
       for (const doc of priorPayments.docs) {
         const event = doc.data();
         const context = event.context as any;
         const eventCreatorId =
-          context.creatorId ||
+          context.earnerId ||
           context.organizerId ||
           (context.participantIds && context.participantIds[1]);
 
-        if (eventCreatorId === creatorId) {
+        if (eventCreatorId === earnerId) {
           returningCount++;
           break;
         }
@@ -477,23 +479,23 @@ async function calculateReturningPayers(
 // ============================================================================
 
 /**
- * Get creator metrics from cached daily metrics documents
+ * Get earner metrics from cached daily metrics documents
  */
 async function getCreatorMetricsFromCache(
-  creatorId: string,
+  earnerId: string,
   dateRange: DateRange
 ): Promise<CreatorPerformanceMetrics[]> {
   const dates = generateDateArray(dateRange.startDate, dateRange.endDate);
   const metrics: CreatorPerformanceMetrics[] = [];
 
   for (const date of dates) {
-    const docId = `${creatorId}_${date}`;
-    const doc = await db.collection('creatorDailyMetrics').doc(docId).get();
+    const docId = `${earnerId}_${date}`;
+    const doc = await db.collection('earnerDailyMetrics').doc(docId).get();
 
     if (doc.exists) {
       const data = doc.data() as CreatorDailyMetricsDocument;
       metrics.push({
-        creatorId: data.creatorId,
+        earnerId: data.earnerId,
         date: data.date,
         tokensEarned: data.tokensEarned,
         tokensEarnedChat: data.tokensEarnedChat,
@@ -529,14 +531,14 @@ async function getCreatorMetricsFromCache(
  * Save computed metrics to Firestore
  */
 async function saveCreatorMetrics(
-  creatorId: string,
+  earnerId: string,
   metrics: CreatorPerformanceMetrics[]
 ): Promise<void> {
   const batch = db.batch();
 
   for (const metric of metrics) {
-    const docId = `${creatorId}_${metric.date}`;
-    const docRef = db.collection('creatorDailyMetrics').doc(docId);
+    const docId = `${earnerId}_${metric.date}`;
+    const docRef = db.collection('earnerDailyMetrics').doc(docId);
 
     const doc: CreatorDailyMetricsDocument = {
       ...metric,
@@ -604,6 +606,22 @@ function getDateRange(
     endTimestamp: admin.firestore.Timestamp.fromDate(endDate),
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

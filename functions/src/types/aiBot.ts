@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * AI Bot Type Definitions
  * Phase 12: AI Companions 2.0 (Creator Bots)
@@ -52,7 +54,7 @@ export interface BotStats {
 
 export interface AIBot {
   botId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Identity
   name: string;
@@ -114,7 +116,7 @@ export interface AIChat {
   chatId: string;
   botId: string;
   userId: string;
-  creatorId: string;
+  earnerId: string;
   
   // State
   state: AiChatState;
@@ -164,14 +166,14 @@ export interface AiMessage {
 export interface BotEarningRecord {
   recordId: string;
   botId: string;
-  creatorId: string;
+  earnerId: string;
   chatId: string;
   userId: string;
   
   // Earnings
   tokensEarned: number;
-  creatorShare: number;    // 80%
-  avaloShare: number;      // 20%
+  earner: number;    // 80%
+  platform: number;      // 20%
   
   // Message Info
   messageCount: number;
@@ -192,7 +194,7 @@ export type AnalyticsPeriod = 'daily' | 'weekly' | 'monthly' | 'lifetime';
 
 export interface BotAnalytics {
   botId: string;
-  creatorId: string;
+  earnerId: string;
   period: AnalyticsPeriod;
   periodKey: string;       // e.g., "2025-11-20" or "2025-11"
   
@@ -204,8 +206,8 @@ export interface BotAnalytics {
   
   // Revenue Stats
   totalEarnings: number;
-  creatorEarnings: number;
-  avaloEarnings: number;
+  earnerEarnings: number;
+  platformEarnings: number;
   
   // Top Payers
   topPayers: TopPayer[];
@@ -343,13 +345,29 @@ export interface BotListItem {
 }
 
 export interface CreatorBotDashboard {
-  creatorId: string;
+  earnerId: string;
   totalBots: number;
   activeBots: number;
   totalEarnings: number;
   totalMessages: number;
   bots: BotListItem[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

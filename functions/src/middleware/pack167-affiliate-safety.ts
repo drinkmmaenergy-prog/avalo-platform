@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 167 - Affiliate Safety Middleware
  * Detects and blocks romantic/sexual manipulation and forbidden content
@@ -322,7 +324,7 @@ export function validateRevenueSplit(params: {
 export async function logBlockedContent(
   firestore: FirebaseFirestore.Firestore,
   params: {
-    creatorId: string;
+    earnerId: string;
     contentType: 'link' | 'banner' | 'description';
     contentId: string;
     blockedText?: string;
@@ -332,7 +334,7 @@ export async function logBlockedContent(
 ): Promise<void> {
   if (!params.safetyCheck.isAllowed) {
     await firestore.collection('blocked_affiliate_content').add({
-      creatorId: params.creatorId,
+      earnerId: params.earnerId,
       contentType: params.contentType,
       contentId: params.contentId,
       blockedText: params.blockedText || '',
@@ -345,6 +347,22 @@ export async function logBlockedContent(
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

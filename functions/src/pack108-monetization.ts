@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — NSFW Monetization Safety
  *
@@ -23,8 +25,8 @@ import { admin, increment, timestamp } from './runtime';
 
 // Token economy constants (from core system - NEVER CHANGED)
 const TOKEN_PRICE_USD = 0.10; // $0.10 per token
-const CREATOR_SPLIT = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
-const PLATFORM_SPLIT = MONETIZATION_SPLITS.CHAT.avalo; // 35% to platform
+const CREATOR_SPLIT = MONETIZATION_SPLITS.CHAT.earner; // 65% to earner
+const PLATFORM_SPLIT = MONETIZATION_SPLITS.CHAT.platform; // 35% to platform
 
 // ============================================================================
 // MONETIZATION CHECKS
@@ -203,11 +205,11 @@ export async function processNSFWUnlockTransaction(
     }
 
     // Calculate earnings (STANDARD SPLIT - NEVER CHANGES)
-    const creatorEarnings = tokenAmount * CREATOR_SPLIT;
+    const earnerEarnings = tokenAmount * CREATOR_SPLIT;
     const platformCommission = tokenAmount * PLATFORM_SPLIT;
 
     // Verify split adds up (sanity check)
-    if (Math.abs((creatorEarnings + platformCommission) - tokenAmount) > 0.01) {
+    if (Math.abs((earnerEarnings + platformCommission) - tokenAmount) > 0.01) {
       throw new Error('Revenue split calculation error');
     }
 
@@ -221,7 +223,7 @@ export async function processNSFWUnlockTransaction(
       sellerId,
       complianceCheck: check,
       tokenAmount,
-      creatorEarnings,
+      earnerEarnings,
       platformCommission,
       createdAt: serverTimestamp() as Timestamp,
       status: 'COMPLETED',
@@ -241,10 +243,10 @@ export async function processNSFWUnlockTransaction(
       unlockedAt: serverTimestamp(),
     });
 
-    // Update creator earnings (standard flow, no special handling)
-    await db.collection('creator_earnings').doc(sellerId).update({
-      totalEarnings: FieldValue.increment(creatorEarnings),
-      pendingBalance: FieldValue.increment(creatorEarnings),
+    // Update earner earnings (standard flow, no special handling)
+    await db.collection('earner_earnings').doc(sellerId).update({
+      totalEarnings: FieldValue.increment(earnerEarnings),
+      pendingBalance: FieldValue.increment(earnerEarnings),
       updatedAt: serverTimestamp(),
     });
 
@@ -263,7 +265,7 @@ export async function processNSFWUnlockTransaction(
       buyerId,
       sellerId,
       tokenAmount,
-      creatorEarnings,
+      earnerEarnings,
       platformCommission,
       timestamp:serverTimestamp(),
     });
@@ -312,9 +314,9 @@ export async function refundNSFWTransaction(
     }
 
     // Reverse earnings
-    await db.collection('creator_earnings').doc(tx.sellerId).update({
-      totalEarnings: FieldValue.increment(-tx.creatorEarnings),
-      pendingBalance: FieldValue.increment(-tx.creatorEarnings),
+    await db.collection('earner_earnings').doc(tx.sellerId).update({
+      totalEarnings: FieldValue.increment(-tx.earnerEarnings),
+      pendingBalance: FieldValue.increment(-tx.earnerEarnings),
       updatedAt: serverTimestamp(),
     });
 
@@ -456,10 +458,10 @@ export async function checkMonetizationBypass(
 // ============================================================================
 
 /**
- * Get NSFW monetization stats for creator
+ * Get NSFW monetization stats for earner
  */
 export async function getNSFWMonetizationStats(
-  creatorId: string,
+  earnerId: string,
   startDate: Date,
   endDate: Date
 ): Promise<{
@@ -472,7 +474,7 @@ export async function getNSFWMonetizationStats(
   try {
     const txSnapshot = await db
       .collection('nsfw_monetization_transactions')
-      .where('sellerId', '==', creatorId)
+      .where('sellerId', '==', earnerId)
       .where('status', '==', 'COMPLETED')
       .where('createdAt', '>=', Timestamp.fromDate(startDate))
       .where('createdAt', '<=', Timestamp.fromDate(endDate))
@@ -492,11 +494,11 @@ export async function getNSFWMonetizationStats(
       const tx = doc.data() as NSFWMonetizationTransaction;
       totalTransactions++;
       totalTokens += tx.tokenAmount;
-      totalEarnings += tx.creatorEarnings;
+      totalEarnings += tx.earnerEarnings;
 
       byLevel[tx.nsfwLevel].count++;
       byLevel[tx.nsfwLevel].tokens += tx.tokenAmount;
-      byLevel[tx.nsfwLevel].earnings += tx.creatorEarnings;
+      byLevel[tx.nsfwLevel].earnings += tx.earnerEarnings;
     });
 
     const averageTransaction = totalTransactions > 0 ? totalTokens / totalTransactions : 0;
@@ -513,6 +515,22 @@ export async function getNSFWMonetizationStats(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 53 - Notification Event Hooks
  * Integration hooks for existing systems to trigger notifications
@@ -67,7 +69,7 @@ export async function onAIReply(params: {
  * Called when user's paid media content is purchased/unlocked
  */
 export async function onMediaUnlock(params: {
-  creatorId: string;
+  earnerId: string;
   buyerId: string;
   buyerName: string;
   mediaMessageId: string;
@@ -76,7 +78,7 @@ export async function onMediaUnlock(params: {
 }): Promise<void> {
   try {
     await createNotification({
-      userId: params.creatorId,
+      userId: params.earnerId,
       type: "MEDIA_UNLOCK",
       title: "Media content unlocked",
       body: `${params.buyerName} unlocked your content for ${params.tokensEarned} tokens`,
@@ -152,10 +154,10 @@ export async function onRoyalTierChange(params: {
 
 /**
  * Hook: Significant earnings event
- * Called when creator has significant earnings (e.g., daily threshold or big single event)
+ * Called when earner has significant earnings (e.g., daily threshold or big single event)
  */
 export async function onEarningsEvent(params: {
-  creatorId: string;
+  earnerId: string;
   earningsEventId: string;
   amount: number;
   type: "daily_summary" | "large_transaction";
@@ -173,7 +175,7 @@ export async function onEarningsEvent(params: {
     }
 
     await createNotification({
-      userId: params.creatorId,
+      userId: params.earnerId,
       type: "EARNINGS",
       title,
       body,
@@ -186,6 +188,20 @@ export async function onEarningsEvent(params: {
     console.error("Error in onEarningsEvent notification hook:", error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

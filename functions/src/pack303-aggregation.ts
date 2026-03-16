@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Aggregation Service
  * 
  * Aggregates earnings data from wallet transactions into monthly summaries
  * Runs as scheduled cron job (daily or hourly)
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -18,7 +20,7 @@ import {
   REVENUE_SPLITS,
   TOKEN_TOKEN_PAYOUT_USD,
   AggregationResult,
-} from './types/pack303-creator-earnings.types';
+} from './types/pack303-earner-earnings.types';
 import { admin } from './runtime';
 
 // ============================================================================
@@ -28,7 +30,7 @@ import { admin } from './runtime';
 /**
  * Get revenue split for a transaction source
  */
-function getRevenueSplit(source: string): { creator: number; avalo: number } {
+function getRevenueSplit(source: string): { earner: number; platform: number } {
   const upperSource = source.toUpperCase();
   
   if (upperSource.includes('CHAT')) {
@@ -200,14 +202,14 @@ export async function aggregateUserMonthlyEarnings(
     
     earnings.tokensNetEarned = totalEarned - totalRefunded;
     
-    // Calculate creator vs Avalo shares
+    // Calculate earner vs Avalo shares
     // Note: This is an approximation since we don't track exact split per transaction
     // We use weighted average based on revenue splits
-    const chatWeight = earnings.tokensEarnedChat * REVENUE_SPLITS.CHAT.creator;
-    const callsWeight = earnings.tokensEarnedCalls * REVENUE_SPLITS.CALLS.creator;
-    const calendarWeight = earnings.tokensEarnedCalendar * REVENUE_SPLITS.CALENDAR.creator;
-    const eventsWeight = earnings.tokensEarnedEvents * REVENUE_SPLITS.EVENTS.creator;
-    const otherWeight = earnings.tokensEarnedOther * REVENUE_SPLITS.OTHER.creator;
+    const chatWeight = earnings.tokensEarnedChat * REVENUE_SPLITS.CHAT.earner;
+    const callsWeight = earnings.tokensEarnedCalls * REVENUE_SPLITS.CALLS.earner;
+    const calendarWeight = earnings.tokensEarnedCalendar * REVENUE_SPLITS.CALENDAR.earner;
+    const eventsWeight = earnings.tokensEarnedEvents * REVENUE_SPLITS.EVENTS.earner;
+    const otherWeight = earnings.tokensEarnedOther * REVENUE_SPLITS.OTHER.earner;
     
     earnings.tokensCreatorShare = Math.floor(
       chatWeight + callsWeight + calendarWeight + eventsWeight + otherWeight
@@ -240,7 +242,7 @@ export async function aggregateUserMonthlyEarnings(
     // Save aggregated earnings
     earnings.updatedAt = new Date().toISOString();
     
-    await db.collection('creatorEarningsMonthly').doc(docId).set(earnings, { merge: true });
+    await db.collection('earnerEarningsMonthly').doc(docId).set(earnings, { merge: true });
     
     return {
       userId,
@@ -265,7 +267,7 @@ export async function aggregateUserMonthlyEarnings(
 }
 
 /**
- * Get list of active creators (users who have earned tokens)
+ * Get list of active earners (users who have earned tokens)
  */
 async function getActiveCreators(
   startDate: Date,
@@ -281,24 +283,24 @@ async function getActiveCreators(
       .limit(limit * 10); // Get more since we'll deduplicate
     
     const transactionsSnap = await transactionsQuery.get();
-    const creatorIds = new Set<string>();
+    const earnerIds = new Set<string>();
     
     for (const doc of transactionsSnap.docs) {
       const tx = doc.data();
       if (tx.userId && tx.type && (tx.type === 'EARN' || tx.type.includes('EARN'))) {
-        creatorIds.add(tx.userId);
+        earnerIds.add(tx.userId);
       }
     }
     
-    return Array.from(creatorIds).slice(0, limit);
+    return Array.from(earnerIds).slice(0, limit);
   } catch (error) {
-    console.error('Error getting active creators:', error);
+    console.error('Error getting active earners:', error);
     return [];
   }
 }
 
 /**
- * Run monthly aggregation for active creators
+ * Run monthly aggregation for active earners
  */
 export async function runMonthlyAggregation(
   year?: number,
@@ -315,16 +317,16 @@ export async function runMonthlyAggregation(
     
     console.log(`Running aggregation for ${targetYear}-${String(targetMonth).padStart(2, '0')}`);
     
-    // Get active creators for this period
-    const creatorIds = await getActiveCreators(start, end, batchSize);
+    // Get active earners for this period
+    const earnerIds = await getActiveCreators(start, end, batchSize);
     
-    console.log(`Found ${creatorIds.length} active creators`);
+    console.log(`Found ${earnerIds.length} active earners`);
     
     const results: AggregationResult[] = [];
     let errors = 0;
     
     // Process in batches
-    for (const userId of creatorIds) {
+    for (const userId of earnerIds) {
       const result = await aggregateUserMonthlyEarnings(userId, targetYear, targetMonth);
       results.push(result);
       
@@ -342,14 +344,14 @@ export async function runMonthlyAggregation(
       statusId,
       year: targetYear,
       month: targetMonth,
-      creatorsProcessed: creatorIds.length,
+      earnersProcessed: earnerIds.length,
       successCount: results.filter(r => r.success).length,
       errorCount: errors,
       lastRunAt: serverTimestamp(),
       completedAt: serverTimestamp(),
     });
     
-    console.log(`Aggregation complete: ${results.length} creators, ${errors} errors`);
+    console.log(`Aggregation complete: ${results.length} earners, ${errors} errors`);
     
     return {
       success: errors === 0,
@@ -401,6 +403,21 @@ export async function backfillAggregation(
   
   return results;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

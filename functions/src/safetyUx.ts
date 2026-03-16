@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 73 — Safety UX API
  * Manages user safety onboarding and contextual messaging state
@@ -182,6 +184,20 @@ export async function getSafetyHint(req: Request, res: Response): Promise<void> 
     res.status(500).json({ error: "Internal server error" });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

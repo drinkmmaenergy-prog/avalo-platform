@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 390 - TAX & VAT HANDLING
  * Automated tax calculation, VAT detection, and financial reporting
@@ -17,23 +19,23 @@ const db = admin.firestore();
 const VAT_RATES: Record<string, number> = {
   PL: 0.23,   // Poland
   DE: 0.19,   // Germany
-  FR: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // France
+  FR: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // France
   ES: 0.21,   // Spain
   IT: 0.22,   // Italy
-  GB: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // UK
+  GB: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // UK
   CZ: 0.21,   // Czech Republic
   RO: 0.19,   // Romania
-  BG: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Bulgaria
+  BG: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // Bulgaria
   HR: 0.25,   // Croatia
-  UA: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Ukraine
-  TR: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // Turkey
+  UA: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // Ukraine
+  TR: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // Turkey
   US: 0.00,   // No federal VAT
-  DEFAULT: MONETIZATION_SPLITS.EVENT_TICKET.avalo
+  DEFAULT: MONETIZATION_SPLITS.EVENT_TICKET.platform
 };
 
 // Platform fee structure
 const PLATFORM_FEES = {
-  calendarBooking: MONETIZATION_SPLITS.EVENT_TICKET.avalo,      // 20% on calendar bookings
+  calendarBooking: MONETIZATION_SPLITS.EVENT_TICKET.platform,      // 20% on calendar bookings
   tokenPurchase: 0.15,        // 15% on token purchases
   eventTicket: 0.10,          // 10% on event tickets
   subscription: 0.15,         // 15% on subscriptions
@@ -118,12 +120,12 @@ export const pack390_calculatePlatformFee = functions.https.onCall(async (reques
   try {
     const feeRate = PLATFORM_FEES[transactionType as keyof typeof PLATFORM_FEES] || 0.15;
     const platformFee = amount * feeRate;
-    const creatorAmount = amount - platformFee;
+    const earnerAmount = amount - platformFee;
     
     console.log('Scheduled job result:', {
       totalAmount: amount,
       platformFee,
-      creatorAmount,
+      earnerAmount,
       feeRate,
       transactionType
     });
@@ -437,18 +439,18 @@ export const pack390_autoGenerateQuarterlyReports = onSchedule({ schedule: "0 2 
       
       console.log(`Generating quarterly reports for Q${quarter} ${year}`);
       
-      // Get all creators with income
-      const creatorsSnapshot = await db.collection('users')
-        .where('role', '==', 'creator')
+      // Get all earners with income
+      const earnersSnapshot = await db.collection('users')
+        .where('role', '==', 'earner')
         .where('hasIncome', '==', true)
         .get();
       
       const batch = db.batch();
       
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const userId = creatorDoc.id;
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const userId = earnerDoc.id;
         
-        // Generate tax report for this creator
+        // Generate tax report for this earner
         const { startDate, endDate } = getDateRange(year, quarter);
         
         // Get income data
@@ -480,7 +482,7 @@ export const pack390_autoGenerateQuarterlyReports = onSchedule({ schedule: "0 2 
       }
       
       await batch.commit();
-      console.log(`Generated ${creatorsSnapshot.size} quarterly tax reports`);
+      console.log(`Generated ${earnersSnapshot.size} quarterly tax reports`);
       
     } catch (error) {
       console.error('Auto tax report generation error:', error);
@@ -542,6 +544,22 @@ export const pack390_getTaxInfo = functions.https.onCall(async (request) => {
   
   return;
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

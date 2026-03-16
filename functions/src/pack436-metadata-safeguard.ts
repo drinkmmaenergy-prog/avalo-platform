@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 436 — App Store Metadata Safeguard
  * 
@@ -670,6 +672,20 @@ export {
   ContentSafetyFlag,
   MetadataHealthReport,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

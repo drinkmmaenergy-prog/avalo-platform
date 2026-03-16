@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 49 — Personalization Event Recording & Profile APIs
  * Records user behavior events and exposes taste profile summaries
@@ -355,6 +357,20 @@ export const onPersonalizationEventCreated = onDocumentCreated('personalization_
       // Don't throw - trigger failures shouldn't block event creation
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 260: Live Broadcasts (Fan-Only + Pay-Per-View + Gifting)
  * High-ARPU Creator Monetization Module
@@ -8,8 +10,8 @@
  * 3. Open Live: Free entry + optional tipping
  * 
  * MONETIZATION:
- * - PPV Tickets: 65% creator / 35% Avalo (non-refundable)
- * - Gifts: 65% creator / 35% Avalo (all modes)
+ * - PPV Tickets: 65% earner / 35% Avalo (non-refundable)
+ * - Gifts: 65% earner / 35% Avalo (all modes)
  * - Milestone Unlocks: Extra time, Q&A, topic choice
  * 
  * SAFETY:
@@ -94,7 +96,7 @@ type ConversionType = 'fan_club' | 'ppv_ticket' | 'one_on_one' | 'event_ticket';
 
 interface LiveStreamSession {
   streamId: string;
-  creatorId: string;
+  earnerId: string;
   mode: LiveStreamMode;
   status: LiveStreamStatus;
   title: string;
@@ -123,7 +125,7 @@ interface LiveStreamTicket {
   ticketId: string;
   streamId: string;
   userId: string;
-  creatorId: string;
+  earnerId: string;
   ticketPrice: number;
   status: 'pending_payment' | 'active' | 'used' | 'expired';
   purchasedAt?: Timestamp;
@@ -135,7 +137,7 @@ interface LiveStreamGift {
   streamId: string;
   senderId: string;
   senderName: string;
-  creatorId: string;
+  earnerId: string;
   giftType: GiftType;
   giftName: string;
   tokenValue: number;
@@ -159,7 +161,7 @@ export const createLiveStream = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = auth.uid;
+  const earnerId = auth.uid;
   const { mode, title, description, scheduledStartAt, plannedDurationMinutes, ticketPrice } = data;
   
   // Validate mode
@@ -167,9 +169,9 @@ export const createLiveStream = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'Invalid live stream mode');
   }
   
-  // Check creator has earnOn
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  if (!creatorDoc.exists || !creatorDoc.data()?.earnOnChat) {
+  // Check earner has earnOn
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  if (!earnerDoc.exists || !earnerDoc.data()?.earnOnChat) {
     throw new HttpsError('permission-denied', 'Must have Earn ON to create live streams');
   }
   
@@ -185,7 +187,7 @@ export const createLiveStream = onCall(async (request) => {
   
   // Validate Fan Club exists for fan_only mode
   if (mode === 'fan_only') {
-    const fanClubDoc = await db.collection('fanClubSettings').doc(creatorId).get();
+    const fanClubDoc = await db.collection('fanClubSettings').doc(earnerId).get();
     if (!fanClubDoc.exists || !fanClubDoc.data()?.enabled) {
       throw new HttpsError('failed-precondition', 'Must have active Fan Club for fan-only streams');
     }
@@ -197,7 +199,7 @@ export const createLiveStream = onCall(async (request) => {
   
   const streamData: Partial<LiveStreamSession> = {
     streamId,
-    creatorId,
+    earnerId,
     mode,
     status: scheduledStartAt ? 'scheduled' : 'live',
     title,
@@ -225,7 +227,7 @@ export const createLiveStream = onCall(async (request) => {
   // Initialize milestone tracker
   await db.collection('liveStreamMilestones').doc(streamId).set({
     streamId,
-    creatorId,
+    earnerId,
     currentGiftTotal: 0,
     milestones: {
       extra5Min: { threshold: LIVE_CONFIG.MILESTONE_THRESHOLDS.EXTRA_5_MIN, unlocked: false },
@@ -242,7 +244,7 @@ export const createLiveStream = onCall(async (request) => {
     lastUpdated: Timestamp.now(),
   });
   
-  logger.info(`Live stream created: ${streamId} by ${creatorId} (mode: ${mode})`);
+  logger.info(`Live stream created: ${streamId} by ${earnerId} (mode: ${mode})`);
   
   console.log('Scheduled job result:', {
     success: true,
@@ -275,8 +277,8 @@ export const startLiveStream = onCall(async (request) => {
   
   const streamData = streamDoc.data();
   
-  if (streamData?.creatorId !== auth.uid) {
-    throw new HttpsError('permission-denied', 'Not the stream creator');
+  if (streamData?.earnerId !== auth.uid) {
+    throw new HttpsError('permission-denied', 'Not the stream earner');
   }
   
   if (streamData?.status !== 'scheduled') {
@@ -317,8 +319,8 @@ export const endLiveStream = onCall(async (request) => {
   
   const streamData = streamDoc.data();
   
-  if (streamData?.creatorId !== auth.uid) {
-    throw new HttpsError('permission-denied', 'Not the stream creator');
+  if (streamData?.earnerId !== auth.uid) {
+    throw new HttpsError('permission-denied', 'Not the stream earner');
   }
   
   if (streamData?.status !== 'live') {
@@ -337,8 +339,8 @@ export const endLiveStream = onCall(async (request) => {
     updatedAt: Timestamp.now(),
   });
   
-  // Update creator analytics
-  await updateCreatorAnalytics(streamData.creatorId, streamId);
+  // Update earner analytics
+  await updateCreatorAnalytics(streamData.earnerId, streamId);
   
   logger.info(`Live stream ended: ${streamId} (duration: ${durationMinutes} min)`);
   
@@ -414,7 +416,7 @@ export const purchasePPVTicket = onCall(async (request) => {
   // Process payment (atomic transaction)
   await db.runTransaction(async (transaction) => {
     const userRef = db.collection('users').doc(userId);
-    const creatorRef = db.collection('users').doc(streamData.creatorId);
+    const earnerRef = db.collection('users').doc(streamData.earnerId);
     const streamRef = db.collection('liveStreamSessions').doc(streamId);
     
     // Deduct from user
@@ -423,12 +425,12 @@ export const purchasePPVTicket = onCall(async (request) => {
     });
     
     // Calculate split
-    const creatorAmount = Math.floor(ticketPrice * (LIVE_CONFIG.CREATOR_CUT_PERCENT / 100));
-    const avaloAmount = ticketPrice - creatorAmount;
+    const earnerAmount = Math.floor(ticketPrice * (LIVE_CONFIG.CREATOR_CUT_PERCENT / 100));
+    const platformAmount = ticketPrice - earnerAmount;
     
-    // Credit creator (immediate, non-refundable)
-    transaction.update(creatorRef, {
-      tokenBalance: FieldValue.increment(creatorAmount),
+    // Credit earner (immediate, non-refundable)
+    transaction.update(earnerRef, {
+      tokenBalance: FieldValue.increment(earnerAmount),
     });
     
     // Update stream revenue
@@ -442,7 +444,7 @@ export const purchasePPVTicket = onCall(async (request) => {
       ticketId: ticketRef.id,
       streamId,
       userId,
-      creatorId: streamData.creatorId,
+      earnerId: streamData.earnerId,
       ticketPrice,
       status: 'active',
       purchasedAt: Timestamp.now(),
@@ -456,10 +458,10 @@ export const purchasePPVTicket = onCall(async (request) => {
       type: 'ppv_ticket',
       streamId,
       userId,
-      creatorId: streamData.creatorId,
+      earnerId: streamData.earnerId,
       amount: ticketPrice,
-      creatorAmount,
-      avaloAmount,
+      earnerAmount,
+      platformAmount,
       status: 'completed',
       createdAt: Timestamp.now(),
     });
@@ -540,7 +542,7 @@ export const sendLiveStreamGift = onCall(async (request) => {
   // Process gift (atomic transaction)
   await db.runTransaction(async (transaction) => {
     const senderRef = db.collection('users').doc(senderId);
-    const creatorRef = db.collection('users').doc(streamData.creatorId);
+    const earnerRef = db.collection('users').doc(streamData.earnerId);
     const streamRef = db.collection('liveStreamSessions').doc(streamId);
     const milestonesRef = db.collection('liveStreamMilestones').doc(streamId);
     
@@ -550,12 +552,12 @@ export const sendLiveStreamGift = onCall(async (request) => {
     });
     
     // Calculate split
-    const creatorAmount = Math.floor(tokenValue * (LIVE_CONFIG.CREATOR_CUT_PERCENT / 100));
-    const avaloAmount = tokenValue - creatorAmount;
+    const earnerAmount = Math.floor(tokenValue * (LIVE_CONFIG.CREATOR_CUT_PERCENT / 100));
+    const platformAmount = tokenValue - earnerAmount;
     
-    // Credit creator (immediate)
-    transaction.update(creatorRef, {
-      tokenBalance: FieldValue.increment(creatorAmount),
+    // Credit earner (immediate)
+    transaction.update(earnerRef, {
+      tokenBalance: FieldValue.increment(earnerAmount),
     });
     
     // Update stream stats
@@ -577,7 +579,7 @@ export const sendLiveStreamGift = onCall(async (request) => {
       streamId,
       senderId,
       senderName,
-      creatorId: streamData.creatorId,
+      earnerId: streamData.earnerId,
       giftType,
       giftName: gift.name,
       tokenValue,
@@ -593,10 +595,10 @@ export const sendLiveStreamGift = onCall(async (request) => {
       type: 'gift',
       streamId,
       userId: senderId,
-      creatorId: streamData.creatorId,
+      earnerId: streamData.earnerId,
       amount: tokenValue,
-      creatorAmount,
-      avaloAmount,
+      earnerAmount,
+      platformAmount,
       giftType,
       giftName: gift.name,
       status: 'completed',
@@ -764,7 +766,7 @@ export const trackViewerWatchTime = onCall(async (request) => {
   if (streamData?.mode === 'fan_only' && watchTimeMinutes >= LIVE_CONFIG.FAN_CLUB_PREVIEW_MINUTES) {
     // Check if user is already a fan club member
     const membershipDoc = await db.collection('fanClubMemberships')
-      .doc(`${streamData.creatorId}_${userId}`)
+      .doc(`${streamData.earnerId}_${userId}`)
       .get();
     
     if (!membershipDoc.exists || membershipDoc.data()?.status !== 'active') {
@@ -814,7 +816,7 @@ async function createConversion(
     conversionId: conversionRef.id,
     streamId,
     userId,
-    creatorId: streamData?.creatorId,
+    earnerId: streamData?.earnerId,
     conversionType,
     status: 'pending',
     metadata,
@@ -856,7 +858,7 @@ export const reportSafetyViolation = onCall(async (request) => {
   await warningRef.set({
     warningId: warningRef.id,
     streamId,
-    creatorId: streamData?.creatorId,
+    earnerId: streamData?.earnerId,
     warningType: warningType as SafetyWarningType,
     description,
     warningNumber: newWarningCount,
@@ -906,10 +908,10 @@ export const reportSafetyViolation = onCall(async (request) => {
 // =====================================================================
 
 /**
- * Update creator analytics after stream ends
+ * Update earner analytics after stream ends
  */
-async function updateCreatorAnalytics(creatorId: string, streamId: string): Promise<void> {
-  const analyticsRef = db.collection('liveStreamAnalytics').doc(creatorId);
+async function updateCreatorAnalytics(earnerId: string, streamId: string): Promise<void> {
+  const analyticsRef = db.collection('liveStreamAnalytics').doc(earnerId);
   const analyticsDoc = await analyticsRef.get();
   
   const streamDoc = await db.collection('liveStreamSessions').doc(streamId).get();
@@ -922,7 +924,7 @@ async function updateCreatorAnalytics(creatorId: string, streamId: string): Prom
   if (!analyticsDoc.exists) {
     // Create initial analytics
     await analyticsRef.set({
-      creatorId,
+      earnerId,
       totalStreams: 1,
       totalRevenue: streamData.totalRevenue || 0,
       totalViewers: streamData.peakViewerCount || 0,
@@ -949,7 +951,7 @@ async function updateCreatorAnalytics(creatorId: string, streamId: string): Prom
 }
 
 /**
- * Get creator live stream analytics
+ * Get earner live stream analytics
  */
 export const getLiveStreamAnalytics = onCall(async (request) => {
   const { auth } = request;
@@ -958,15 +960,15 @@ export const getLiveStreamAnalytics = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = auth.uid;
+  const earnerId = auth.uid;
   
   // Check earnOn
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  if (!creatorDoc.exists || !creatorDoc.data()?.earnOnChat) {
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  if (!earnerDoc.exists || !earnerDoc.data()?.earnOnChat) {
     throw new HttpsError('permission-denied', 'Must have Earn ON to view analytics');
   }
   
-  const analyticsDoc = await db.collection('liveStreamAnalytics').doc(creatorId).get();
+  const analyticsDoc = await db.collection('liveStreamAnalytics').doc(earnerId).get();
   
   if (!analyticsDoc.exists) {
     console.log('Scheduled job result:', {
@@ -1039,6 +1041,20 @@ export const expireOldTickets = onSchedule('every 24 hours', async () => {
 });
 
 logger.info('PACK 260: Live Broadcasts module initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

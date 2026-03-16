@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 236 — Second Chance Mode
  * "Rewrite First Message" feature
@@ -187,7 +189,7 @@ export const rewriteFirstMessage = onCall(
       });
 
       // Add tokens to receiver (65/35 split)
-      const tokensToReceiver = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator);
+      const tokensToReceiver = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.earner);
       const otherUserRef = db.collection('users').doc(otherUserId);
       batch.update(otherUserRef, {
         tokensEarned: FieldValue.increment(tokensToReceiver),
@@ -390,6 +392,23 @@ export const getArchivedConversations = functions
       throw new HttpsError('internal', 'Failed to get archived conversations');
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

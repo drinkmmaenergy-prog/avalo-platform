@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 274 - Calendar Cloud Functions
  * Firebase callable functions for calendar booking system
@@ -271,9 +273,9 @@ export const calculateBookingPayment = functions.https.onCall(async (request) =>
         total: priceTokens,
         hostReceives: payment.hostShare,
         hostPercentage: 80,
-        avaloFee: payment.avaloShare,
-        avaloPercentage: 20,
-        breakdown: `${priceTokens} tokens → Host: ${payment.hostShare} (80%), Avalo: ${payment.avaloShare} (20%)`,
+        platformFee: payment.platform,
+        platformPercentage: 20,
+        breakdown: `${priceTokens} tokens → Host: ${payment.hostShare} (80%), Avalo: ${payment.platform} (20%)`,
       },
     };
   } catch (error: any) {
@@ -356,6 +358,20 @@ export const sendMeetingReminders = onSchedule("every 1 hours", async (event) =>
     console.error('Error sending meeting reminders:', error);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

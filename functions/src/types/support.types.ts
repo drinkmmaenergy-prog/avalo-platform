@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 111 — White-Glove Customer Support & Priority Human Assistance
  * Type definitions for support system
@@ -229,6 +231,22 @@ export interface SupportConfig {
     website: string;
   }>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

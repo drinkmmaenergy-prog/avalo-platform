@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 154 — Avalo Multilingual AI Moderation & Auto-Translation Layer
  * Type definitions for translation system
@@ -375,6 +377,22 @@ export interface TranslationServiceResponse<T = any> {
   error?: string;
   code?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

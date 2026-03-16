@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 170 — Avalo Universal Search 3.0
  * Core search service with ethical ranking and safe-search enforcement
@@ -156,7 +158,7 @@ export class SearchService {
     
     // Weighted ranking formula (no attractiveness or spending factors)
     const weights = {
-      interestMatch: MONETIZATION_SPLITS.CHAT.avalo,
+      interestMatch: MONETIZATION_SPLITS.CHAT.platform,
       qualityScore: 0.25,
       engagement: 0.15,
       recency: 0.10,
@@ -330,7 +332,7 @@ export class SearchService {
     }
     
     // Verified only filter
-    if (filters.verifiedOnly && !entry.creatorVerified) {
+    if (filters.verifiedOnly && !entry.earnerVerified) {
       return false;
     }
     
@@ -379,7 +381,7 @@ export class SearchService {
           entry.title.toLowerCase().includes(q) ||
           entry.description.toLowerCase().includes(q) ||
           entry.tags.some(tag => tag.toLowerCase().includes(q)) ||
-          entry.creatorName?.toLowerCase().includes(q)
+          entry.earnerName?.toLowerCase().includes(q)
         );
       });
     
@@ -406,9 +408,9 @@ export class SearchService {
       title: entry.title,
       description: entry.description,
       thumbnailUrl: undefined,
-      creatorId: entry.creatorId,
-      creatorName: entry.creatorName,
-      creatorAvatar: undefined,
+      earnerId: entry.earnerId,
+      earnerName: entry.earnerName,
+      earnerAvatar: undefined,
       relevanceScore,
       qualityScore: entry.qualityScore,
       format: entry.format,
@@ -419,7 +421,7 @@ export class SearchService {
       metadata: {
         participantCount: entry.participationCount,
         completionRate: entry.completionRate,
-        isVerified: entry.creatorVerified,
+        isVerified: entry.earnerVerified,
         createdAt: entry.createdAt
       }
     };
@@ -483,21 +485,21 @@ export class SearchService {
         });
     }
     
-    // Get matching creators
-    const creators = await db
+    // Get matching earners
+    const earners = await db
       .collection('search_index')
       .where('category', '==', SearchCategory.CREATORS)
       .where('isBanned', '==', false)
       .limit(3)
       .get();
     
-    creators.forEach(doc => {
+    earners.forEach(doc => {
       const data = doc.data() as SearchIndexEntry;
-      if (data.creatorName?.toLowerCase().includes(query.toLowerCase())) {
+      if (data.earnerName?.toLowerCase().includes(query.toLowerCase())) {
         suggestions.push({
-          text: data.creatorName,
+          text: data.earnerName,
           category: SearchCategory.CREATORS,
-          type: 'creator'
+          type: 'earner'
         });
       }
     });
@@ -596,6 +598,23 @@ export class SearchService {
 }
 
 export const searchService = SearchService.getInstance();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

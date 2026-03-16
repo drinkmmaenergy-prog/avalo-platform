@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { arrayUnion, increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
@@ -359,6 +361,22 @@ export const aggregateDailyUserKPIs = onSchedule({ schedule: "0 0 * * *", timeZo
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

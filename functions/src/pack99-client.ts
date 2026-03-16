@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 99 — Client-Facing Config Bundle
  * Callable function for mobile clients to fetch feature configs
@@ -222,6 +224,20 @@ export const getRemoteConfigParam = onCall(async (request) => {
     throw new HttpsError('internal', 'Failed to fetch remote config param');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

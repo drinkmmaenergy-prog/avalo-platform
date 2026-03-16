@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export declare const COMPLIANCE_REGIONS: readonly ["EU", "US", "UK", "APAC"];
 export type ComplianceRegion = typeof COMPLIANCE_REGIONS[number];
 export interface ComplianceRule {
@@ -13,6 +15,23 @@ export interface ComplianceStatus {
 }
 export declare const GDPR_REQUIREMENTS: ComplianceRule[];
 export declare const CCPA_REQUIREMENTS: ComplianceRule[];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

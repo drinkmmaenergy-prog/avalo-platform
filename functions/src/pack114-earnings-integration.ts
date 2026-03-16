@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — Earnings Integration with Agency Splits
  * Extends PACK 81 Creator Earnings to support agency revenue attribution
  * 
  * COMPLIANCE-SAFE REVENUE ATTRIBUTION:
  * - Platform always receives 35% commission
- * - Creator + Agency split ONLY within creator's 65%
+ * - Creator + Agency split ONLY within earner's 65%
  * - No modification to token prices or discovery algorithms
  */
 
@@ -12,7 +14,7 @@ import { db, serverTimestamp, increment } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
 import { applyAgencyEarningsSplit } from './pack114-agency-engine';
-import { EarningSourceType } from './creatorEarnings';
+import { EarningSourceType } from './earnerEarnings';
 import { admin, functions } from './runtime';
 
 // ============================================================================
@@ -36,7 +38,7 @@ export interface PayoutRecordExtended {
   userId: string;
   
   // Split amounts
-  creatorAmount: number;           // Creator's share after agency split
+  earnerAmount: number;           // Creator's share after agency split
   agencyAmount: number;            // Agency's share (if applicable)
   platformAmount: number;          // Always 35% of gross
   
@@ -67,7 +69,7 @@ export interface PayoutRecordExtended {
  * This wraps the original recordEarning function from PACK 81
  */
 export async function recordEarningWithAgencySplit(params: {
-  creatorId: string;
+  earnerId: string;
   sourceType: EarningSourceType;
   sourceId: string;
   fromUserId: string;
@@ -75,24 +77,24 @@ export async function recordEarningWithAgencySplit(params: {
   metadata?: Record<string, any>;
 }): Promise<{
   earningId: string;
-  creatorAmount: number;
+  earnerAmount: number;
   agencyAmount: number;
   platformAmount: number;
 }> {
-  const { creatorId, sourceType, sourceId, fromUserId, grossTokens, metadata } = params;
+  const { earnerId, sourceType, sourceId, fromUserId, grossTokens, metadata } = params;
 
   // Calculate platform share (always 35%)
-  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.avalo);
-  const creatorShareGross = grossTokens - platformAmount; // 65% before agency split
+  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.platform);
+  const earnerGross = grossTokens - platformAmount; // 65% before agency split
 
   // Create earnings ledger entry first
   const earningEntry = {
-    creatorId,
+    earnerId,
     sourceType,
     sourceId,
     fromUserId,
     grossTokens,
-    netTokensCreator: creatorShareGross, // Will be updated if agency split applies
+    netTokensCreator: earnerGross, // Will be updated if agency split applies
     commissionAvalo: platformAmount,
     createdAt: Timestamp.now(),
     metadata: metadata || {},
@@ -103,24 +105,24 @@ export async function recordEarningWithAgencySplit(params: {
 
   // Apply agency split if applicable
   const splitResult = await applyAgencyEarningsSplit({
-    creatorUserId: creatorId,
+    earnerUserId: earnerId,
     grossTokens,
     sourceType,
     sourceId,
     earningId,
   });
 
-  // Update creator balance with agency-adjusted amount
+  // Update earner balance with agency-adjusted amount
   await updateCreatorBalanceWithAgency(
-    creatorId,
-    splitResult.creatorAmount,
+    earnerId,
+    splitResult.earnerAmount,
     splitResult.agencyAmount
   );
 
-  // Update ledger entry with actual creator amount after split
+  // Update ledger entry with actual earner amount after split
   if (splitResult.splitApplied) {
     await ledgerRef.update({
-      netTokensCreator: splitResult.creatorAmount,
+      netTokensCreator: splitResult.earnerAmount,
       agencySplitApplied: true,
       agencyAmount: splitResult.agencyAmount,
     });
@@ -128,31 +130,31 @@ export async function recordEarningWithAgencySplit(params: {
 
   logger.info('Earning recorded with agency split', {
     earningId,
-    creatorId,
+    earnerId,
     grossTokens,
     platformAmount,
-    creatorAmount: splitResult.creatorAmount,
+    earnerAmount: splitResult.earnerAmount,
     agencyAmount: splitResult.agencyAmount,
     splitApplied: splitResult.splitApplied,
   });
 
   return {
     earningId,
-    creatorAmount: splitResult.creatorAmount,
+    earnerAmount: splitResult.earnerAmount,
     agencyAmount: splitResult.agencyAmount,
     platformAmount,
   };
 }
 
 /**
- * Update creator balance atomically with agency tracking
+ * Update earner balance atomically with agency tracking
  */
 async function updateCreatorBalanceWithAgency(
-  creatorId: string,
+  earnerId: string,
   netTokensCreator: number,
   agencyAmount: number
 ): Promise<void> {
-  const balanceRef = db.collection('creator_balances').doc(creatorId);
+  const balanceRef = db.collection('earner_balances').doc(earnerId);
 
   await db.runTransaction(async (transaction) => {
     const balanceDoc = await transaction.get(balanceRef);
@@ -160,7 +162,7 @@ async function updateCreatorBalanceWithAgency(
     if (!balanceDoc.exists) {
       // Create new balance record
       transaction.set(balanceRef, {
-        userId: creatorId,
+        userId: earnerId,
         availableTokens: netTokensCreator,
         lifetimeEarned: netTokensCreator + agencyAmount, // Track total before split
         agencyEarnings: agencyAmount,
@@ -184,18 +186,18 @@ async function updateCreatorBalanceWithAgency(
 
 /**
  * Process payout with agency split tracking
- * Ensures proper accounting of creator vs agency amounts
+ * Ensures proper accounting of earner vs agency amounts
  */
 export async function processPayoutWithAgencyTracking(params: {
   userId: string;
   amountTokens: number;
   method: 'BANK_TRANSFER' | 'WISE' | 'STRIPE';
   details: Record<string, any>;
-}): Promise<{ payoutId: string; creatorAmount: number; agencyAmount: number }> {
+}): Promise<{ payoutId: string; earnerAmount: number; agencyAmount: number }> {
   const { userId, amountTokens, method, details } = params;
 
   // Get current balance
-  const balanceDoc = await db.collection('creator_balances').doc(userId).get();
+  const balanceDoc = await db.collection('earner_balances').doc(userId).get();
   
   if (!balanceDoc.exists) {
     throw new Error('Creator balance not found');
@@ -210,8 +212,8 @@ export async function processPayoutWithAgencyTracking(params: {
 
   // Check for active agency link to determine split
   const linkQuery = await db
-    .collection('creator_agency_links')
-    .where('creatorUserId', '==', userId)
+    .collection('earner_agency_links')
+    .where('earnerUserId', '==', userId)
     .where('status', '==', 'ACTIVE')
     .limit(1)
     .get();
@@ -230,7 +232,7 @@ export async function processPayoutWithAgencyTracking(params: {
     agencyAmount = Math.floor(amountTokens * (agencyPercentage / 100));
   }
 
-  const creatorAmount = amountTokens - agencyAmount;
+  const earnerAmount = amountTokens - agencyAmount;
   const payoutId = db.collection('payouts').doc().id;
 
   // Calculate USD conversion (example rate, should be dynamic)
@@ -241,7 +243,7 @@ export async function processPayoutWithAgencyTracking(params: {
   const payoutRecord: PayoutRecordExtended = {
     payoutId,
     userId,
-    creatorAmount,
+    earnerAmount,
     agencyAmount,
     platformAmount: 0, // Platform commission already taken during earning
     grossAmount: amountTokens,
@@ -259,7 +261,7 @@ export async function processPayoutWithAgencyTracking(params: {
     const payoutRef = db.collection('payouts').doc(payoutId);
     transaction.set(payoutRef, payoutRecord);
 
-    // Deduct from creator balance
+    // Deduct from earner balance
     transaction.update(balanceDoc.ref, {
       availableTokens: increment(-amountTokens),
       updatedAt: serverTimestamp(),
@@ -272,7 +274,7 @@ export async function processPayoutWithAgencyTracking(params: {
         payoutId: agencyPayoutRef.id,
         agencyId,
         linkedPayoutId: payoutId,
-        creatorUserId: userId,
+        earnerUserId: userId,
         amountTokens: agencyAmount,
         amountUSD: agencyAmount * TOKEN_PAYOUT_USD,
         method,
@@ -287,12 +289,12 @@ export async function processPayoutWithAgencyTracking(params: {
     payoutId,
     userId,
     amountTokens,
-    creatorAmount,
+    earnerAmount,
     agencyAmount,
     agencyId,
   });
 
-  return { payoutId, creatorAmount, agencyAmount };
+  return { payoutId, earnerAmount, agencyAmount };
 }
 
 // ============================================================================
@@ -300,7 +302,7 @@ export async function processPayoutWithAgencyTracking(params: {
 // ============================================================================
 
 /**
- * Get creator earnings summary with agency breakdown
+ * Get earner earnings summary with agency breakdown
  */
 export async function getCreatorEarningsSummaryWithAgency(
   userId: string,
@@ -308,14 +310,14 @@ export async function getCreatorEarningsSummaryWithAgency(
   toDate?: Date
 ): Promise<{
   totalEarnings: number;
-  creatorShare: number;
+  earner: number;
   agencyShare: number;
-  platformShare: number;
+  platform: number;
   agencyPercentage: number | null;
 }> {
   let query: FirebaseFirestore.Query = db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId);
+    .where('earnerId', '==', userId);
 
   if (fromDate) {
     query = query.where('createdAt', '>=', Timestamp.fromDate(fromDate));
@@ -327,22 +329,22 @@ export async function getCreatorEarningsSummaryWithAgency(
   const snapshot = await query.get();
 
   let totalEarnings = 0;
-  let creatorShare = 0;
+  let earner = 0;
   let agencyShare = 0;
-  let platformShare = 0;
+  let platform = 0;
 
   snapshot.forEach((doc) => {
     const entry = doc.data();
     totalEarnings += entry.grossTokens || 0;
-    creatorShare += entry.netTokensCreator || 0;
+    earner += entry.netTokensCreator || 0;
     agencyShare += entry.agencyAmount || 0;
-    platformShare += entry.commissionAvalo || 0;
+    platform += entry.commissionAvalo || 0;
   });
 
   // Get current agency percentage if linked
   const linkQuery = await db
-    .collection('creator_agency_links')
-    .where('creatorUserId', '==', userId)
+    .collection('earner_agency_links')
+    .where('earnerUserId', '==', userId)
     .where('status', '==', 'ACTIVE')
     .limit(1)
     .get();
@@ -353,15 +355,15 @@ export async function getCreatorEarningsSummaryWithAgency(
 
   return {
     totalEarnings,
-    creatorShare,
+    earner,
     agencyShare,
-    platformShare,
+    platform,
     agencyPercentage,
   };
 }
 
 /**
- * Get agency earnings summary across all linked creators
+ * Get agency earnings summary across all linked earners
  */
 export async function getAgencyEarningsSummary(
   agencyId: string,
@@ -371,11 +373,11 @@ export async function getAgencyEarningsSummary(
   totalCreatorEarnings: number;
   totalAgencyEarnings: number;
   linkedCreatorCount: number;
-  topEarners: Array<{ creatorId: string; agencyEarnings: number }>;
+  topEarners: Array<{ earnerId: string; agencyEarnings: number }>;
 }> {
   // Get all active links
   const linksQuery = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
     .where('status', '==', 'ACTIVE')
     .get();
@@ -389,9 +391,9 @@ export async function getAgencyEarningsSummary(
     };
   }
 
-  const creatorIds = linksQuery.docs.map((doc) => doc.data().creatorUserId);
+  const earnerIds = linksQuery.docs.map((doc) => doc.data().earnerUserId);
 
-  // Get earnings splits for all linked creators
+  // Get earnings splits for all linked earners
   let splitsQuery: FirebaseFirestore.Query = db
     .collection('agency_earnings_splits')
     .where('agencyId', '==', agencyId);
@@ -411,25 +413,25 @@ export async function getAgencyEarningsSummary(
 
   splitsSnapshot.forEach((doc) => {
     const split = doc.data();
-    totalCreatorEarnings += split.creatorAmount || 0;
+    totalCreatorEarnings += split.earnerAmount || 0;
     totalAgencyEarnings += split.agencyAmount || 0;
 
-    if (split.creatorUserId) {
-      earningsByCreator[split.creatorUserId] =
-        (earningsByCreator[split.creatorUserId] || 0) + (split.agencyAmount || 0);
+    if (split.earnerUserId) {
+      earningsByCreator[split.earnerUserId] =
+        (earningsByCreator[split.earnerUserId] || 0) + (split.agencyAmount || 0);
     }
   });
 
   // Get top earners
   const topEarners = Object.entries(earningsByCreator)
-    .map(([creatorId, agencyEarnings]) => ({ creatorId, agencyEarnings }))
+    .map(([earnerId, agencyEarnings]) => ({ earnerId, agencyEarnings }))
     .sort((a, b) => b.agencyEarnings - a.agencyEarnings)
     .slice(0, 10);
 
   return {
     totalCreatorEarnings,
     totalAgencyEarnings,
-    linkedCreatorCount: creatorIds.length,
+    linkedCreatorCount: earnerIds.length,
     topEarners,
   };
 }
@@ -466,8 +468,8 @@ export async function backfillAgencyEarnings(): Promise<{
         
         // Check if there was an active link at the time
         const linkSnapshot = await db
-          .collection('creator_agency_links')
-          .where('creatorUserId', '==', earning.creatorId)
+          .collection('earner_agency_links')
+          .where('earnerUserId', '==', earning.earnerId)
           .where('status', '==', 'ACTIVE')
           .where('createdAt', '<=', earning.createdAt)
           .limit(1)
@@ -475,14 +477,14 @@ export async function backfillAgencyEarnings(): Promise<{
 
         if (!linkSnapshot.empty) {
           const link = linkSnapshot.docs[0].data();
-          const creatorShareBefore = earning.netTokensCreator || 0;
+          const earnerBefore = earning.netTokensCreator || 0;
           const agencyAmount = Math.floor(
-            creatorShareBefore * (link.percentageForAgency / 100)
+            earnerBefore * (link.percentageForAgency / 100)
           );
-          const creatorAmount = creatorShareBefore - agencyAmount;
+          const earnerAmount = earnerBefore - agencyAmount;
 
           batch.update(earningDoc.ref, {
-            netTokensCreator: creatorAmount,
+            netTokensCreator: earnerAmount,
             agencySplitApplied: true,
             agencyAmount,
           });
@@ -510,6 +512,24 @@ export async function backfillAgencyEarnings(): Promise<{
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

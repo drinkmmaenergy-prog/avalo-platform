@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 133 — Avalo AI Creative Studio
  * Type Definitions
@@ -517,6 +519,20 @@ export interface AIStudioAuditLog {
   metadata: Record<string, any>;
   timestamp: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

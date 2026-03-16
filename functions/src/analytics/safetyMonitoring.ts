@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
@@ -514,6 +516,22 @@ export const aggregateSafetyMetrics = onSchedule({ schedule: "0 3 * * *", timeZo
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

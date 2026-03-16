@@ -21,7 +21,7 @@ echo ""
 
 # Configuration
 PROJECT_ID=${FIREBASE_PROJECT_ID:-"avalo-app"}
-REGION=${FIREBASE_REGION:-"us-central1"}
+REGION=${FIREBASE_REGION:-"europe-west1"}
 
 # Colors for output
 GREEN='\033[0;32m'

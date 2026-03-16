@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 253 — ROYAL UPGRADE FUNNEL ENDPOINTS
  * API endpoints for Royal tier system
@@ -186,7 +188,7 @@ export const createRoyalEvent = onCall(
 
     try {
       const event: Omit<RoyalEvent, 'eventId'> = {
-        creatorId: userId,
+        earnerId: userId,
         title,
         description: description || '',
         startTime,
@@ -431,6 +433,20 @@ export const generateRoyalAnalyticsWeekly = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

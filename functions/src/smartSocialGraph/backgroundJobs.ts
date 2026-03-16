@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Smart Social Graph Background Jobs
  * Scheduled jobs for discovery refresh, safety scanning, and fairness audits
@@ -58,21 +60,21 @@ export const dailyDiscoveryRefresh = onSchedule({ schedule: "0 2 * * *", timeZon
     await jobRef.set(job);
     
     try {
-      // Get all active creators
-      const creatorsSnapshot = await db
+      // Get all active earners
+      const earnersSnapshot = await db
         .collection('users')
-        .where('roles.creator', '==', true)
+        .where('roles.earner', '==', true)
         .where('accountStatus.status', '==', 'active')
         .get();
       
-      logger.info(`Found ${creatorsSnapshot.size} active creators to refresh`);
+      logger.info(`Found ${earnersSnapshot.size} active earners to refresh`);
       
       // Process in batches of 50
       const batchSize = 50;
-      const creators = creatorsSnapshot.docs;
+      const earners = earnersSnapshot.docs;
       
-      for (let i = 0; i < creators.length; i += batchSize) {
-        const batch = creators.slice(i, i + batchSize);
+      for (let i = 0; i < earners.length; i += batchSize) {
+        const batch = earners.slice(i, i + batchSize);
         
         await Promise.all(
           batch.map(async (doc) => {
@@ -80,7 +82,7 @@ export const dailyDiscoveryRefresh = onSchedule({ schedule: "0 2 * * *", timeZon
               await updateCreatorRelevanceScore(doc.id);
               job.profilesProcessed++;
             } catch (error) {
-              logger.error(`Error refreshing creator ${doc.id}:`, error);
+              logger.error(`Error refreshing earner ${doc.id}:`, error);
               job.profilesFailed++;
             }
           })
@@ -92,7 +94,7 @@ export const dailyDiscoveryRefresh = onSchedule({ schedule: "0 2 * * *", timeZon
           profilesFailed: job.profilesFailed,
         });
         
-        logger.info(`Progress: ${job.profilesProcessed}/${creators.length} processed`);
+        logger.info(`Progress: ${job.profilesProcessed}/${earners.length} processed`);
       }
       
       // Mark job as complete
@@ -193,12 +195,12 @@ export const fairnessDiversityAudit = onSchedule({ schedule: "0 3 * * *", timeZo
       // Calculate category distribution
       const categoryDistribution = await calculateCategoryDistribution();
       
-      // Calculate mega-creator dominance
-      const megaDominance = densityStats.creatorsInRotationLimit > 0
-        ? (densityStats.creatorsInRotationLimit / densityStats.totalCreators) * 100
+      // Calculate mega-earner dominance
+      const megaDominance = densityStats.earnersInRotationLimit > 0
+        ? (densityStats.earnersInRotationLimit / densityStats.totalCreators) * 100
         : 0;
       
-      // Calculate new creator visibility
+      // Calculate new earner visibility
       const newCreatorVisibility = await calculateNewCreatorVisibility();
       
       // Check token spending correlation (should be ~0)
@@ -212,13 +214,13 @@ export const fairnessDiversityAudit = onSchedule({ schedule: "0 3 * * *", timeZo
       const recommendations: string[] = [];
       
       if (megaDominance > 10) {
-        issues.push(`Mega-creator dominance too high: ${megaDominance.toFixed(1)}%`);
-        recommendations.push('Increase shadow density penalties for high-exposure creators');
+        issues.push(`Mega-earner dominance too high: ${megaDominance.toFixed(1)}%`);
+        recommendations.push('Increase shadow density penalties for high-exposure earners');
       }
       
       if (newCreatorVisibility < 20) {
-        issues.push(`New creator visibility too low: ${newCreatorVisibility.toFixed(1)}%`);
-        recommendations.push('Grant more guaranteed discovery slots to new creators');
+        issues.push(`New earner visibility too low: ${newCreatorVisibility.toFixed(1)}%`);
+        recommendations.push('Grant more guaranteed discovery slots to new earners');
       }
       
       if (Math.abs(tokenCorrelation) > 0.3) {
@@ -228,7 +230,7 @@ export const fairnessDiversityAudit = onSchedule({ schedule: "0 3 * * *", timeZo
       
       if (regionalBalance < 50) {
         issues.push(`Regional balance low: ${regionalBalance}/100`);
-        recommendations.push('Improve regional creator prioritization');
+        recommendations.push('Improve regional earner prioritization');
       }
       
       const passed = issues.length === 0;
@@ -250,7 +252,7 @@ export const fairnessDiversityAudit = onSchedule({ schedule: "0 3 * * *", timeZo
       // Save audit
       await db.collection('fairness_diversity_audits').doc(auditId).set(audit);
       
-      // If audit passed, grant guaranteed slots to new creators
+      // If audit passed, grant guaranteed slots to new earners
       if (passed || newCreatorVisibility < 30) {
         await grantGuaranteedSlotsToNewCreators();
       }
@@ -280,7 +282,7 @@ async function calculateCategoryDistribution(): Promise<Record<DiscoveryCategory
     const distribution: Record<string, number> = {};
     
     const snapshot = await db
-      .collection('creator_relevance_scores')
+      .collection('earner_relevance_scores')
       .select('primaryCategory', 'weeklyImpressions')
       .get();
     
@@ -311,7 +313,7 @@ async function calculateCategoryDistribution(): Promise<Record<DiscoveryCategory
 }
 
 /**
- * Calculate percentage of impressions going to new creators
+ * Calculate percentage of impressions going to new earners
  */
 async function calculateNewCreatorVisibility(): Promise<number> {
   try {
@@ -338,7 +340,7 @@ async function calculateNewCreatorVisibility(): Promise<number> {
       ? (newCreatorImpressions / totalImpressions) * 100
       : 0;
   } catch (error) {
-    logger.error('Error calculating new creator visibility:', error);
+    logger.error('Error calculating new earner visibility:', error);
     return 0;
   }
 }
@@ -349,20 +351,20 @@ async function calculateNewCreatorVisibility(): Promise<number> {
  */
 async function checkTokenSpendingCorrelation(): Promise<number> {
   try {
-    // Get sample of creators with spending and impression data
-    const creatorsSnapshot = await db
-      .collection('creator_relevance_scores')
+    // Get sample of earners with spending and impression data
+    const earnersSnapshot = await db
+      .collection('earner_relevance_scores')
       .limit(100)
       .get();
     
     const data: Array<{ spending: number; impressions: number }> = [];
     
-    for (const doc of creatorsSnapshot.docs) {
-      const creatorId = doc.id;
+    for (const doc of earnersSnapshot.docs) {
+      const earnerId = doc.id;
       const impressions = doc.data().weeklyImpressions || 0;
       
       // Get spending data
-      const walletDoc = await db.collection('wallets').doc(creatorId).get();
+      const walletDoc = await db.collection('wallets').doc(earnerId).get();
       const spending = walletDoc.exists ? (walletDoc.data()?.spent || 0) : 0;
       
       data.push({ spending, impressions });
@@ -436,16 +438,16 @@ async function calculateRegionalBalance(): Promise<number> {
 }
 
 /**
- * Grant guaranteed discovery slots to eligible new creators
+ * Grant guaranteed discovery slots to eligible new earners
  */
 async function grantGuaranteedSlotsToNewCreators(): Promise<void> {
   try {
     const eligibleCreators = await identifyGuaranteedSlotCreators(50);
     
-    logger.info(`Granting guaranteed slots to ${eligibleCreators.length} new creators`);
+    logger.info(`Granting guaranteed slots to ${eligibleCreators.length} new earners`);
     
-    for (const creatorId of eligibleCreators) {
-      await grantGuaranteedSlots(creatorId, 3);
+    for (const earnerId of eligibleCreators) {
+      await grantGuaranteedSlots(earnerId, 3);
     }
     
     logger.info('Guaranteed slots granted successfully');
@@ -455,6 +457,22 @@ async function grantGuaranteedSlotsToNewCreators(): Promise<void> {
 }
 
 logger.info('✅ Smart Social Graph Background Jobs initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

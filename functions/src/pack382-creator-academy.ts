@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 382 — Creator Academy Core System
  * Course management, progress tracking, and certification
@@ -38,7 +40,7 @@ export const pack382_enrollInCourse = functions.https.onCall(async (request) => 
     try {
       // Check if course exists
       const courseDoc = await db
-        .collection('creatorAcademyCourses')
+        .collection('earnerAcademyCourses')
         .doc(courseId)
         .get();
 
@@ -64,7 +66,7 @@ export const pack382_enrollInCourse = functions.https.onCall(async (request) => 
 
       // Check for existing enrollment
       const existingProgress = await db
-        .collection('creatorAcademyProgress')
+        .collection('earnerAcademyProgress')
         .where('userId', '==', userId)
         .where('courseId', '==', courseId)
         .limit(1)
@@ -89,11 +91,11 @@ export const pack382_enrollInCourse = functions.https.onCall(async (request) => 
         certificateIssued: false,
       };
 
-      await db.collection('creatorAcademyProgress').doc(progressId).set(progress);
+      await db.collection('earnerAcademyProgress').doc(progressId).set(progress);
 
       // Update enrollment count
       await db
-        .collection('creatorAcademyCourses')
+        .collection('earnerAcademyCourses')
         .doc(courseId)
         .update({
           enrollmentCount: (course.enrollmentCount || 0) + 1,
@@ -125,7 +127,7 @@ export const pack382_completeLesson = functions.https.onCall(async (request) => 
     try {
       // Get progress record
       const progressQuery = await db
-        .collection('creatorAcademyProgress')
+        .collection('earnerAcademyProgress')
         .where('userId', '==', userId)
         .where('courseId', '==', courseId)
         .limit(1)
@@ -143,7 +145,7 @@ export const pack382_completeLesson = functions.https.onCall(async (request) => 
 
       // Get course to count total lessons
       const courseDoc = await db
-        .collection('creatorAcademyCourses')
+        .collection('earnerAcademyCourses')
         .doc(courseId)
         .get();
 
@@ -233,11 +235,11 @@ async function issueCertificate(
     verificationHash: generateVerificationHash(certificateId, userId, courseId),
     isValid: true,
     displayName: `${course.title} Certification`,
-    credentialUrl: `https://avalo.app/certificates/${certificateId}`,
+    credentialUrl: `https://platform.app/certificates/${certificateId}`,
   };
 
   await db
-    .collection('creatorAcademyCertificates')
+    .collection('earnerAcademyCertificates')
     .doc(certificateId)
     .set(certificate);
 
@@ -267,7 +269,7 @@ function generateVerificationHash(
  */
 async function grantBadge(userId: string, badgeType: string): Promise<void> {
   // Implementation would integrate with badge system
-  await db.collection('creatorBadges').add({
+  await db.collection('earnerBadges').add({
     badgeId: uuidv4(),
     userId,
     type: badgeType,
@@ -283,7 +285,7 @@ async function grantBadge(userId: string, badgeType: string): Promise<void> {
  */
 async function updateCourseCompletionRate(courseId: string): Promise<void> {
   const enrollmentsSnapshot = await db
-    .collection('creatorAcademyProgress')
+    .collection('earnerAcademyProgress')
     .where('courseId', '==', courseId)
     .get();
 
@@ -297,7 +299,7 @@ async function updateCourseCompletionRate(courseId: string): Promise<void> {
   const completionRate = total > 0 ? (completed / total) * 100 : 0;
 
   await db
-    .collection('creatorAcademyCourses')
+    .collection('earnerAcademyCourses')
     .doc(courseId)
     .update({ completionRate });
 }
@@ -327,7 +329,7 @@ export const pack382_rateCourse = functions.https.onCall(async (request) => {
     try {
       // Update progress record
       const progressQuery = await db
-        .collection('creatorAcademyProgress')
+        .collection('earnerAcademyProgress')
         .where('userId', '==', userId)
         .where('courseId', '==', courseId)
         .limit(1)
@@ -347,7 +349,7 @@ export const pack382_rateCourse = functions.https.onCall(async (request) => {
 
       // Update course average rating
       const allRatings = await db
-        .collection('creatorAcademyProgress')
+        .collection('earnerAcademyProgress')
         .where('courseId', '==', courseId)
         .where('rating', '>', 0)
         .get();
@@ -365,7 +367,7 @@ export const pack382_rateCourse = functions.https.onCall(async (request) => {
 
       const avgRating = count > 0 ? totalRating / count : 0;
 
-      await db.collection('creatorAcademyCourses').doc(courseId).update({
+      await db.collection('earnerAcademyCourses').doc(courseId).update({
         avgRating,
       });
 
@@ -409,7 +411,7 @@ export const pack382_getLocalizedAcademyContent = functions.https.onCall(async (
 
       // Get relevant courses
       let coursesQuery = db
-        .collection('creatorAcademyCourses')
+        .collection('earnerAcademyCourses')
         .where('isPublished', '==', true);
 
       if (category) {
@@ -496,7 +498,7 @@ export const pack382_getUserProgress = functions.https.onCall(async (request) =>
 
     try {
       let query = db
-        .collection('creatorAcademyProgress')
+        .collection('earnerAcademyProgress')
         .where('userId', '==', userId);
 
       if (courseId) {
@@ -519,6 +521,20 @@ export const pack382_getUserProgress = functions.https.onCall(async (request) =>
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

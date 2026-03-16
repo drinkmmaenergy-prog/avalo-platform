@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * MIGRATION SCRIPT: Migrate existing chats to v2_canonical data model
  *
@@ -466,6 +468,22 @@ export async function runFullMigration(
 
   return { chats: chatsResult, pack273: pack273Result };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

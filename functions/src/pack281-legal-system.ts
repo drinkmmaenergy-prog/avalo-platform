@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 281 - Legal Documents & Consent System
  * Cloud Functions for legal document management and user acceptance tracking
@@ -439,6 +441,20 @@ export const adminCreateLegalDocument = functions.https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

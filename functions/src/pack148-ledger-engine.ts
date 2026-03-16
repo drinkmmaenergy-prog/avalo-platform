@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 148 - Ledger Recording Engine
  * Core functionality for recording transactions to immutable ledger
@@ -67,12 +69,12 @@ async function getLatestBlockchainEntry(): Promise<BlockchainEntry | null> {
  * Calculate revenue split (65/35)
  */
 function calculateRevenueSplit(tokenAmount: number): {
-  platformShare: number;
-  creatorShare: number;
+  platform: number;
+  earner: number;
 } {
   return {
-    platformShare: Math.round(tokenAmount * PLATFORM_FEE_PERCENTAGE * 100) / 100,
-    creatorShare: Math.round(tokenAmount * CREATOR_SHARE_PERCENTAGE * 100) / 100,
+    platform: Math.round(tokenAmount * PLATFORM_FEE_PERCENTAGE * 100) / 100,
+    earner: Math.round(tokenAmount * CREATOR_SHARE_PERCENTAGE * 100) / 100,
   };
 }
 
@@ -194,7 +196,7 @@ export async function recordLedgerTransaction(
     : hashForPrivacy(receiverId);
   
   // Calculate revenue split (record only, don't modify)
-  const { platformShare, creatorShare } = calculateRevenueSplit(tokenAmount);
+  const { platform, earner } = calculateRevenueSplit(tokenAmount);
   
   // Calculate USD equivalent
   const usdEquivalent = tokenAmount * conversionRate;
@@ -235,8 +237,8 @@ export async function recordLedgerTransaction(
     regionTag,
     timestamp: now,
     status: escrowId ? 'escrowed' : 'completed',
-    platformShare,
-    creatorShare,
+    platform,
+    earner,
     blockchainTimestamp: now,
     blockchainVerified: true,
     createdAt: now,
@@ -507,6 +509,20 @@ export async function getLedgerStats(userId: string): Promise<{
     verifiedCount,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

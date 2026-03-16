@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 173 — Avalo Global Abuse Firewall
  * Abuse Mitigation & Resolution Engine
@@ -410,10 +412,10 @@ async function updateEnforcementForHarassment(
 // ============================================================================
 
 /**
- * Enable creator shield mode for protection
+ * Enable earner shield mode for protection
  */
 async function enableCreatorShield(userId: string): Promise<void> {
-  const settingsRef = db.collection('creator_shield_settings').doc(userId);
+  const settingsRef = db.collection('earner_shield_settings').doc(userId);
   const settingsDoc = await settingsRef.get();
   
   if (!settingsDoc.exists) {
@@ -658,6 +660,20 @@ export async function checkHarassmentRestrictions(
     }
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

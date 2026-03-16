@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 209: Unified Meeting & Event Refund & Complaint Extensions
  * Type definitions for refund policies, complaints, and voluntary refunds
@@ -38,7 +40,7 @@ export interface MeetingRefundPolicy {
   hoursBeforeMeeting: number;
   refundToPayerPercent: number; // % of earner share (65%)
   earnerKeepPercent: number; // % of earner share (65%)
-  avaloCommissionRefundable: boolean; // Always false (35% always kept)
+  platformCommissionRefundable: boolean; // Always false (35% always kept)
 }
 
 export const MEETING_REFUND_POLICIES: Record<string, MeetingRefundPolicy> = {
@@ -46,19 +48,19 @@ export const MEETING_REFUND_POLICIES: Record<string, MeetingRefundPolicy> = {
     hoursBeforeMeeting: 72,
     refundToPayerPercent: 100, // 100% of earner share (65%) refunded
     earnerKeepPercent: 0,
-    avaloCommissionRefundable: false,
+    platformCommissionRefundable: false,
   },
   MID: {
     hoursBeforeMeeting: 24,
     refundToPayerPercent: 50, // 50% of earner share refunded
     earnerKeepPercent: 50, // 50% of earner share kept
-    avaloCommissionRefundable: false,
+    platformCommissionRefundable: false,
   },
   LATE: {
     hoursBeforeMeeting: 0,
     refundToPayerPercent: 0, // No refund
     earnerKeepPercent: 100, // Earner keeps 100% of their share
-    avaloCommissionRefundable: false,
+    platformCommissionRefundable: false,
   },
 };
 
@@ -72,7 +74,7 @@ export interface EventRefundPolicy {
   };
   organizerCancels: {
     refundToParticipantPercent: number; // 100% of organizer share (80%)
-    avaloCommissionRefundable: boolean; // Always false (20%)
+    platformCommissionRefundable: boolean; // Always false (20%)
   };
   noShow: {
     refundPercent: number; // Always 0 - no refunds for no-show
@@ -85,7 +87,7 @@ export const EVENT_REFUND_POLICY: EventRefundPolicy = {
   },
   organizerCancels: {
     refundToParticipantPercent: 100, // Full organizer share (80%) refunded
-    avaloCommissionRefundable: false,
+    platformCommissionRefundable: false,
   },
   noShow: {
     refundPercent: 0,
@@ -152,8 +154,8 @@ export interface VoluntaryRefund {
   recipientName: string;
   
   originalAmount: number; // Original price paid
-  earnerShareAmount: number; // 65% for meetings, 80% for events
-  avaloCommission: number; // 35% for meetings, 20% for events (never refunded)
+  earnerAmount: number; // 65% for meetings, 80% for events
+  platformCommission: number; // 35% for meetings, 20% for events (never refunded)
   
   refundPercent: number; // 0-100% of earner share
   refundAmount: number; // Actual tokens refunded
@@ -186,12 +188,12 @@ export interface RefundTransaction {
   earnerId: string | null;
   
   originalAmount: number;
-  earnerShare: number;
-  avaloCommission: number;
+  earner: number;
+  platformCommission: number;
   
   refundToPayerAmount: number;
   earnerKeptAmount: number;
-  avaloKeptAmount: number; // Always equals avaloCommission
+  platformKeptAmount: number; // Always equals platformCommission
   
   triggeredBy: string; // User ID who triggered refund
   automaticRefund: boolean;
@@ -256,7 +258,7 @@ export interface RefundCalculation {
   canRefund: boolean;
   refundToPayerAmount: number;
   earnerKeeptAmount: number;
-  avaloKeepsAmount: number;
+  platformKeepsAmount: number;
   policy: MeetingRefundPolicy | EventRefundPolicy;
   reason: string;
 }
@@ -275,6 +277,20 @@ export interface VoluntaryRefundResponse {
   refundAmount?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

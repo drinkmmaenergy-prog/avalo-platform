@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 200 — Track Metrics (SORA Component)
  * 
@@ -6,7 +8,7 @@
  * 
  * COMPLIANCE:
  * - No user PII in metrics
- * - Alerts to engineering only, never to users/creators
+ * - Alerts to engineering only, never to users/earners
  * - Privacy-safe aggregation
  */
 
@@ -369,6 +371,20 @@ export const scheduled_aggregateMetrics = onSchedule("every 5 minutes", async (e
       console.error('[Metrics] Aggregation failed:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

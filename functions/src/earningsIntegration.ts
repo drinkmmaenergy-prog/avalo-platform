@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 81 — Earnings Integration Layer
  * Helper functions to integrate earnings ledger into existing payment modules
  */
 
-import { recordEarning, EarningSourceType } from './creatorEarnings';
+import { recordEarning, EarningSourceType } from './earnerEarnings';
 import { logger } from 'firebase-functions/v2';
 import { functions } from './runtime';
 
@@ -22,7 +24,7 @@ export async function recordGiftEarning(params: {
 }): Promise<void> {
   try {
     await recordEarning({
-      creatorId: params.receiverId,
+      earnerId: params.receiverId,
       sourceType: 'GIFT',
       sourceId: params.transactionId,
       fromUserId: params.senderId,
@@ -46,7 +48,7 @@ export async function recordGiftEarning(params: {
  * Called from PACK 78 premium stories functions
  */
 export async function recordStoryEarning(params: {
-  creatorId: string;
+  earnerId: string;
   buyerId: string;
   storyId: string;
   priceTokens: number;
@@ -54,7 +56,7 @@ export async function recordStoryEarning(params: {
 }): Promise<void> {
   try {
     await recordEarning({
-      creatorId: params.creatorId,
+      earnerId: params.earnerId,
       sourceType: 'PREMIUM_STORY',
       sourceId: params.unlockId,
       fromUserId: params.buyerId,
@@ -75,7 +77,7 @@ export async function recordStoryEarning(params: {
  * Called from PACK 80 paid media functions
  */
 export async function recordPaidMediaEarning(params: {
-  creatorId: string;
+  earnerId: string;
   buyerId: string;
   mediaId: string;
   priceTokens: number;
@@ -85,7 +87,7 @@ export async function recordPaidMediaEarning(params: {
 }): Promise<void> {
   try {
     await recordEarning({
-      creatorId: params.creatorId,
+      earnerId: params.earnerId,
       sourceType: 'PAID_MEDIA',
       sourceId: params.transactionId,
       fromUserId: params.buyerId,
@@ -108,7 +110,7 @@ export async function recordPaidMediaEarning(params: {
  * Can be integrated with future call monetization
  */
 export async function recordCallEarning(params: {
-  creatorId: string;
+  earnerId: string;
   callerId: string;
   callId: string;
   tokensCharged: number;
@@ -116,7 +118,7 @@ export async function recordCallEarning(params: {
 }): Promise<void> {
   try {
     await recordEarning({
-      creatorId: params.creatorId,
+      earnerId: params.earnerId,
       sourceType: 'PAID_CALL',
       sourceId: params.callId,
       fromUserId: params.callerId,
@@ -138,7 +140,7 @@ export async function recordCallEarning(params: {
  * Can be integrated with AI chat monetization
  */
 export async function recordAIEarning(params: {
-  creatorId: string;
+  earnerId: string;
   userId: string;
   conversationId: string;
   tokensCharged: number;
@@ -146,7 +148,7 @@ export async function recordAIEarning(params: {
 }): Promise<void> {
   try {
     await recordEarning({
-      creatorId: params.creatorId,
+      earnerId: params.earnerId,
       sourceType: 'AI_COMPANION',
       sourceId: params.conversationId,
       fromUserId: params.userId,
@@ -162,6 +164,20 @@ export async function recordAIEarning(params: {
     logger.error('Failed to record AI earning in ledger', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

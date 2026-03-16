@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export interface PriorityMessage{
  chatId:string
  messageId:string
@@ -5,3 +7,19 @@ export interface PriorityMessage{
  priorityTokens:number
  createdAt:number
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

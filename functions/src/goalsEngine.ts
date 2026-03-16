@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 26 - Creator Goals & Support Engine
- * Core logic for creator funding goals and supporter tracking
+ * Core logic for earner funding goals and supporter tracking
  *
  * IMPORTANT: This module only ADDS new goals functionality.
  * It does NOT modify ANY existing monetization, chat, call, or payout logic.
@@ -118,12 +120,12 @@ async function canCreateGoals(userId: string): Promise<boolean> {
 }
 
 /**
- * Count active goals for a creator
+ * Count active goals for a earner
  */
-async function countActiveGoals(creatorId: string): Promise<number> {
+async function countActiveGoals(earnerId: string): Promise<number> {
   const goalsSnap = await db
-    .collection('creatorGoals')
-    .where('creatorId', '==', creatorId)
+    .collection('earnerGoals')
+    .where('earnerId', '==', earnerId)
     .where('isActive', '==', true)
     .get();
 
@@ -135,7 +137,7 @@ async function countActiveGoals(creatorId: string): Promise<number> {
 // ============================================================================
 
 /**
- * Create a new creator goal
+ * Create a new earner goal
  */
 export async function createGoal(
   userId: string,
@@ -221,7 +223,7 @@ export async function createGoal(
 
   const goal: CreatorGoal = {
     goalId,
-    creatorId: userId,
+    earnerId: userId,
     title: payload.title.trim(),
     description: payload.description.trim(),
     category: payload.category,
@@ -237,7 +239,7 @@ export async function createGoal(
     metadata: {},
   };
 
-  await db.collection('creatorGoals').doc(goalId).set({
+  await db.collection('earnerGoals').doc(goalId).set({
     ...goal,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -258,7 +260,7 @@ export async function updateGoal(
   goalId: string,
   payload: UpdateGoalPayload
 ): Promise<void> {
-  const goalRef = db.collection('creatorGoals').doc(goalId);
+  const goalRef = db.collection('earnerGoals').doc(goalId);
   const goalSnap = await goalRef.get();
 
   if (!goalSnap.exists) {
@@ -268,7 +270,7 @@ export async function updateGoal(
   const goal = goalSnap.data() as CreatorGoal;
 
   // Check ownership
-  if (goal.creatorId !== userId) {
+  if (goal.earnerId !== userId) {
     throw new HttpsError('permission-denied', 'You can only update your own goals');
   }
 
@@ -334,7 +336,7 @@ export async function closeGoal(
   userId: string,
   goalId: string
 ): Promise<void> {
-  const goalRef = db.collection('creatorGoals').doc(goalId);
+  const goalRef = db.collection('earnerGoals').doc(goalId);
   const goalSnap = await goalRef.get();
 
   if (!goalSnap.exists) {
@@ -344,7 +346,7 @@ export async function closeGoal(
   const goal = goalSnap.data() as CreatorGoal;
 
   // Check ownership
-  if (goal.creatorId !== userId) {
+  if (goal.earnerId !== userId) {
     throw new HttpsError('permission-denied', 'You can only close your own goals');
   }
 
@@ -393,7 +395,7 @@ export async function supportGoal(
   }
 
   // Get goal
-  const goalRef = db.collection('creatorGoals').doc(goalId);
+  const goalRef = db.collection('earnerGoals').doc(goalId);
   const goalSnap = await goalRef.get();
 
   if (!goalSnap.exists) {
@@ -407,8 +409,8 @@ export async function supportGoal(
     throw new HttpsError('failed-precondition', 'This goal is no longer active');
   }
 
-  // Check creator is not supporting their own goal
-  if (goal.creatorId === viewerId) {
+  // Check earner is not supporting their own goal
+  if (goal.earnerId === viewerId) {
     throw new HttpsError('failed-precondition', 'You cannot support your own goal');
   }
 
@@ -442,20 +444,20 @@ export async function supportGoal(
     throw new HttpsError('failed-precondition', 'Insufficient tokens');
   }
 
-  // Calculate revenue split (70% creator, 30% Avalo)
-  const creatorAmount = Math.floor(amountTokens * GOAL_CONSTRAINTS.CREATOR_SPLIT);
-  const avaloAmount = amountTokens - creatorAmount;
+  // Calculate revenue split (70% earner, 30% Avalo)
+  const earnerAmount = Math.floor(amountTokens * GOAL_CONSTRAINTS.CREATOR_SPLIT);
+  const platformAmount = amountTokens - earnerAmount;
 
   // Create support record
   const supportId = generateId();
   const support: GoalSupport = {
     supportId,
     goalId,
-    creatorId: goal.creatorId,
+    earnerId: goal.earnerId,
     supporterId: viewerId,
     amountTokens,
-    creatorReceived: creatorAmount,
-    avaloReceived: avaloAmount,
+    earnerReceived: earnerAmount,
+    platformReceived: platformAmount,
     createdAt: new Date(),
     metadata: { deviceId, ipHash },
   };
@@ -468,24 +470,24 @@ export async function supportGoal(
       lastUpdated: serverTimestamp(),
     });
 
-    // Add to creator earnings
-    const creatorWalletRef = db
+    // Add to earner earnings
+    const earnerWalletRef = db
       .collection('users')
-      .doc(goal.creatorId)
+      .doc(goal.earnerId)
       .collection('wallet')
       .doc('current');
     
-    const creatorWallet = await transaction.get(creatorWalletRef);
-    if (!creatorWallet.exists) {
-      transaction.set(creatorWalletRef, {
-        balance: creatorAmount,
-        earned: creatorAmount,
+    const earnerWallet = await transaction.get(earnerWalletRef);
+    if (!earnerWallet.exists) {
+      transaction.set(earnerWalletRef, {
+        balance: earnerAmount,
+        earned: earnerAmount,
         lastUpdated: serverTimestamp(),
       });
     } else {
-      transaction.update(creatorWalletRef, {
-        balance: increment(creatorAmount),
-        earned: increment(creatorAmount),
+      transaction.update(earnerWalletRef, {
+        balance: increment(earnerAmount),
+        earned: increment(earnerAmount),
         lastUpdated: serverTimestamp(),
       });
     }
@@ -531,10 +533,10 @@ export async function supportGoal(
       amount: -amountTokens,
       metadata: {
         goalId,
-        creatorId: goal.creatorId,
+        earnerId: goal.earnerId,
         supportId,
-        creatorReceived: creatorAmount,
-        avaloReceived: avaloAmount,
+        earnerReceived: earnerAmount,
+        platformReceived: platformAmount,
       },
       createdAt: serverTimestamp(),
     });
@@ -549,7 +551,7 @@ export async function supportGoal(
     const { recordRankingAction } = await import('./rankingEngine');
     await recordRankingAction({
       type: 'tip', // Goals count as tips for ranking
-      creatorId: goal.creatorId,
+      earnerId: goal.earnerId,
       payerId: viewerId,
       points: amountTokens, // 1 point per token
       tokensAmount: amountTokens,
@@ -567,7 +569,7 @@ export async function supportGoal(
       eventType: 'chat', // Use 'chat' as closest match for risk tracking
       metadata: {
         goalId,
-        creatorId: goal.creatorId,
+        earnerId: goal.earnerId,
         amountTokens,
         deviceId,
         ipHash,
@@ -586,8 +588,8 @@ export async function supportGoal(
     supportId,
     goalId,
     amountTokens,
-    creatorReceived: creatorAmount,
-    avaloReceived: avaloAmount,
+    earnerReceived: earnerAmount,
+    platformReceived: platformAmount,
     newBalance,
     goalProgress: {
       currentTokens: updatedGoal.currentTokens,
@@ -605,16 +607,16 @@ export async function supportGoal(
 // ============================================================================
 
 /**
- * Get creator's goals
+ * Get earner's goals
  */
 export async function getCreatorGoals(
   query: GetCreatorGoalsQuery,
   viewerId?: string
 ): Promise<GetCreatorGoalsResponse> {
-  const { creatorId, includeInactive = false, limit = 10, offset = 0 } = query;
+  const { earnerId, includeInactive = false, limit = 10, offset = 0 } = query;
 
   // Build query
-  let goalsQuery = db.collection('creatorGoals').where('creatorId', '==', creatorId);
+  let goalsQuery = db.collection('earnerGoals').where('earnerId', '==', earnerId);
 
   if (!includeInactive) {
     goalsQuery = goalsQuery.where('isActive', '==', true);
@@ -625,18 +627,18 @@ export async function getCreatorGoals(
   const goalsSnap = await goalsQuery.get();
 
   // Check visibility (account status, blocking)
-  const creatorRef = db.collection('users').doc(creatorId);
-  const creatorSnap = await creatorRef.get();
+  const earnerRef = db.collection('users').doc(earnerId);
+  const earnerSnap = await earnerRef.get();
 
-  if (!creatorSnap.exists) {
+  if (!earnerSnap.exists) {
     throw new HttpsError('not-found', 'Creator not found');
   }
 
-  const creatorData = creatorSnap.data();
-  const accountStatus = creatorData?.accountStatus || 'active';
+  const earnerData = earnerSnap.data();
+  const accountStatus = earnerData?.accountStatus || 'active';
 
-  // If viewer is not the creator, check account status
-  if (viewerId !== creatorId && accountStatus !== 'active') {
+  // If viewer is not the earner, check account status
+  if (viewerId !== earnerId && accountStatus !== 'active') {
     return {
       goals: [],
       total: 0,
@@ -644,8 +646,8 @@ export async function getCreatorGoals(
     };
   }
 
-  // Check if viewer has blocked or been blocked by creator
-  if (viewerId && viewerId !== creatorId) {
+  // Check if viewer has blocked or been blocked by earner
+  if (viewerId && viewerId !== earnerId) {
     // Check blocking (simplified - in production, check blocks collection)
     const blockedByCreator = false; // Implement blocking check
     const blockedCreator = false; // Implement blocking check
@@ -685,7 +687,7 @@ export async function getCreatorGoals(
 
     goals.push({
       goalId: goal.goalId,
-      creatorId: goal.creatorId,
+      earnerId: goal.earnerId,
       title: goal.title,
       category: goal.category,
       targetTokens: goal.targetTokens,
@@ -816,6 +818,20 @@ export async function suggestGoalDescription(
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

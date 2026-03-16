@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 127 — Global Creator Compliance & Intellectual Property Rights
  * Type Definitions
@@ -5,7 +7,7 @@
  * NON-NEGOTIABLE RULES:
  * - Token price and 65/35 split remain untouched
  * - No ability to weaponize copyright claims to sabotage competitors
- * - No "premium" copyright feature — all creators protected equally
+ * - No "premium" copyright feature — all earners protected equally
  * - No NSFW loophole — explicit content protection handled under PACK 108
  * - Copyright enforcement must be platform-neutral, not based on earnings
  * - No monetization or ranking effects during disputes
@@ -314,9 +316,9 @@ export interface PiracyDetection {
   // Action taken
   actionTaken?: 'USER_SUSPENDED' | 'PAYOUT_FROZEN' | 'DMCA_FILED' | 'LEGAL_ACTION' | 'NONE';
   
-  // Impact (NO penalty to creator)
-  creatorAffected: boolean;  // Always false
-  creatorEarningsAffected: boolean;  // Always false
+  // Impact (NO penalty to earner)
+  earnerAffected: boolean;  // Always false
+  earnerEarningsAffected: boolean;  // Always false
   leakerPayoutFrozen: boolean;
   
   // Investigation
@@ -575,7 +577,7 @@ export interface IPProtectionConfig {
   // Detection thresholds
   exactMatchThreshold: number;  // 0.95
   perceptualMatchThreshold: number;  // 0.85
-  derivativeMatchThreshold: number;  // MONETIZATION_SPLITS.SUBSCRIPTION.creator
+  derivativeMatchThreshold: number;  // MONETIZATION_SPLITS.SUBSCRIPTION.earner
   
   // Auto-resolution
   autoResolveEnabled: boolean;
@@ -654,7 +656,7 @@ export const DEFAULT_IP_CONFIG: Partial<IPProtectionConfig> = {
   autoFingerprintOnUpload: true,
   exactMatchThreshold: 0.95,
   perceptualMatchThreshold: 0.85,
-  derivativeMatchThreshold: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+  derivativeMatchThreshold: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
   autoResolveEnabled: true,
   autoResolveConfidenceThreshold: 0.90,
   maxClaimsPerDay: 10,
@@ -689,6 +691,22 @@ export const ECONOMIC_ISOLATION_RULES = {
   NO_PAID_IP_PRIORITY: true,
   ALL_CREATORS_PROTECTED_EQUALLY: true,
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

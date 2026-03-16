@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 195: Legal & Tax Command Center Types
- * Contracts, invoicing, tax compliance, and creator protection
+ * Contracts, invoicing, tax compliance, and earner protection
  */
 
 export type ContractType =
@@ -89,8 +91,8 @@ export interface Contract {
   id: string;
   type: ContractType;
   status: ContractStatus;
-  creatorId: string;
-  creator: ContractParty;
+  earnerId: string;
+  earner: ContractParty;
   counterparty: ContractParty;
   terms: ContractTerms;
   createdAt: Date;
@@ -115,7 +117,7 @@ export interface Contract {
 
 export interface Invoice {
   id: string;
-  creatorId: string;
+  earnerId: string;
   customerId: string;
   invoiceNumber: string;
   status: InvoiceStatus;
@@ -139,7 +141,7 @@ export interface Invoice {
     address?: string;
     taxId?: string;
   };
-  creatorInfo: {
+  earnerInfo: {
     legalName: string;
     displayName?: string;
     email: string;
@@ -296,6 +298,22 @@ export interface ContractTemplate {
   updatedAt: Date;
   usageCount: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

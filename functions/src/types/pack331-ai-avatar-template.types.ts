@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 331 — AI Avatar Template Marketplace
  * TypeScript Type Definitions
@@ -110,7 +112,7 @@ export interface PurchaseAvatarTemplateResponse {
   error?: string;
   split?: {
     ownerEarned: number;
-    avaloEarned: number;
+    platformEarned: number;
   };
 }
 
@@ -122,7 +124,7 @@ export interface ListAvatarTemplatesRequest {
     priceMin?: number;
     priceMax?: number;
     officialOnly?: boolean;
-    creatorOnly?: boolean;
+    earnerOnly?: boolean;
   };
   sort?: 'popular' | 'new' | 'top_earning' | 'price_low' | 'price_high';
   limit?: number;
@@ -184,8 +186,8 @@ export interface TemplateReport {
 // ============================================================================
 
 export const AVATAR_TEMPLATE_REVENUE_SPLIT = {
-  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
-  AVALO_SHARE: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  CREATOR_SHARE: MONETIZATION_SPLITS.CHAT.earner, // 65% to earner
+  AVALO_SHARE: MONETIZATION_SPLITS.CHAT.platform, // 35% to Avalo
   OFFICIAL_AVALO_SHARE: 1.0, // 100% to Avalo for official templates
 } as const;
 
@@ -213,6 +215,23 @@ export interface UserAvatarPurchases {
   totalSpent: number;
   purchaseCount: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 55 — Policy Documents Seeding
  * Initialize default policy documents
@@ -37,7 +39,7 @@ By accessing and using Avalo, you agree to be bound by these Terms and Condition
 ## 4. Monetization
 
 - Token-based economy with transparent pricing
-- 65/35 revenue split for creators
+- 65/35 revenue split for earners
 - No refunds for token purchases (except as required by law)
 
 ## 5. Account Termination
@@ -48,7 +50,7 @@ We reserve the right to suspend or terminate accounts that violate these terms.
 
 We may update these terms from time to time. Continued use constitutes acceptance of updated terms.
 
-For full terms, visit: https://avalo.app/legal/terms`,
+For full terms, visit: https://platform.app/legal/terms`,
   },
 
   PRIVACY: {
@@ -90,9 +92,9 @@ We implement industry-standard security measures to protect your data.
 
 ## 6. Contact
 
-For privacy inquiries: privacy@avalo.app
+For privacy inquiries: privacy@platform.app
 
-For full policy, visit: https://avalo.app/legal/privacy`,
+For full policy, visit: https://platform.app/legal/privacy`,
   },
 
   SAFETY: {
@@ -129,7 +131,7 @@ Avalo is committed to providing a safe platform for all users.
 - Share location with trusted contacts
 - SOS emergency features available
 
-For full policy, visit: https://avalo.app/legal/safety`,
+For full policy, visit: https://platform.app/legal/safety`,
   },
 
   AML: {
@@ -162,7 +164,7 @@ We monitor token earnings and transactions for suspicious activity.
 
 Suspicious activity is reported to relevant authorities as required by law.
 
-For full policy, visit: https://avalo.app/legal/aml`,
+For full policy, visit: https://platform.app/legal/aml`,
   },
 
   MONETIZATION: {
@@ -181,7 +183,7 @@ To earn on Avalo, you must:
 
 ## 2. Revenue Split
 
-- 65% to creator
+- 65% to earner
 - 35% platform fee (covers infrastructure, payment processing, moderation)
 
 ## 3. Pricing Rules
@@ -203,7 +205,7 @@ Violations may result in:
 - Permanent ban from monetization
 - Funds held pending investigation
 
-For full policy, visit: https://avalo.app/legal/monetization`,
+For full policy, visit: https://platform.app/legal/monetization`,
   },
 
   MARKETPLACE: {
@@ -214,7 +216,7 @@ For full policy, visit: https://avalo.app/legal/monetization`,
 
 ## 1. Marketplace Participation
 
-The Creator Marketplace allows users to discover and connect with creators who monetize their content.
+The Creator Marketplace allows users to discover and connect with earners who monetize their content.
 
 ## 2. Creator Requirements
 
@@ -235,7 +237,7 @@ The Creator Marketplace allows users to discover and connect with creators who m
 - Disputes are handled by moderation team
 - Repeated violations result in removal from marketplace
 
-For full policy, visit: https://avalo.app/legal/marketplace`,
+For full policy, visit: https://platform.app/legal/marketplace`,
   },
 
   COOKIES: {
@@ -269,7 +271,7 @@ You can manage cookie preferences in your device settings.
 
 We use third-party services (Firebase, Stripe) that may set their own cookies.
 
-For full policy, visit: https://avalo.app/legal/cookies`,
+For full policy, visit: https://platform.app/legal/cookies`,
   },
 };
 
@@ -339,6 +341,20 @@ export async function seedPoliciesCallable(): Promise<{ success: boolean; messag
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

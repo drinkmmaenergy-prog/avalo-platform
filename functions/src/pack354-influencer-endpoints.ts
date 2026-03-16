@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 354 — INFLUENCER ENDPOINTS
@@ -163,7 +165,7 @@ export const getInfluencerApplicationStatus = onCall(
 );
 
 /**
- * Get creator dashboard data
+ * Get earner dashboard data
  */
 export const getCreatorDashboard = onCall(
   { region: 'europe-west1' },
@@ -205,8 +207,8 @@ export const getCreatorDashboard = onCall(
         },
       };
     } catch (error: any) {
-      logger.error('Error getting creator dashboard', error);
-      throw new HttpsError('internal', error.message || 'Failed to get creator dashboard');
+      logger.error('Error getting earner dashboard', error);
+      throw new HttpsError('internal', error.message || 'Failed to get earner dashboard');
     }
   }
 );
@@ -342,7 +344,7 @@ export const adminReviewInfluencerApplication = onCall(
 );
 
 /**
- * Update creator tier (admin only)
+ * Update earner tier (admin only)
  */
 export const adminUpdateCreatorTier = onCall(
   { region: 'europe-west1' },
@@ -360,9 +362,9 @@ export const adminUpdateCreatorTier = onCall(
       throw new HttpsError('permission-denied', 'Admin access required');
     }
 
-    const { creatorId, tier } = request.data;
+    const { earnerId, tier } = request.data;
 
-    if (!creatorId || !tier) {
+    if (!earnerId || !tier) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -371,9 +373,9 @@ export const adminUpdateCreatorTier = onCall(
     }
 
     try {
-      await updateCreatorTier(creatorId, tier);
+      await updateCreatorTier(earnerId, tier);
 
-      logger.info(`Admin ${uid} updated creator ${creatorId} to tier ${tier}`);
+      logger.info(`Admin ${uid} updated earner ${earnerId} to tier ${tier}`);
 
       console.log('Scheduled job result:', {
         success: true,
@@ -383,14 +385,14 @@ export const adminUpdateCreatorTier = onCall(
 
       return;
     } catch (error: any) {
-      logger.error('Error updating creator tier', error);
+      logger.error('Error updating earner tier', error);
       throw new HttpsError('internal', error.message || 'Failed to update tier');
     }
   }
 );
 
 /**
- * Toggle creator capability (admin only)
+ * Toggle earner capability (admin only)
  */
 export const adminToggleCreatorCapability = onCall(
   { region: 'europe-west1' },
@@ -408,9 +410,9 @@ export const adminToggleCreatorCapability = onCall(
       throw new HttpsError('permission-denied', 'Admin access required');
     }
 
-    const { creatorId, capability, enabled } = request.data;
+    const { earnerId, capability, enabled } = request.data;
 
-    if (!creatorId || !capability || enabled === undefined) {
+    if (!earnerId || !capability || enabled === undefined) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -419,10 +421,10 @@ export const adminToggleCreatorCapability = onCall(
     }
 
     try {
-      await toggleCreatorCapability(creatorId, capability, enabled);
+      await toggleCreatorCapability(earnerId, capability, enabled);
 
       logger.info(
-        `Admin ${uid} set ${capability} to ${enabled} for creator ${creatorId}`
+        `Admin ${uid} set ${capability} to ${enabled} for earner ${earnerId}`
       );
 
       console.log('Scheduled job result:', {
@@ -433,14 +435,14 @@ export const adminToggleCreatorCapability = onCall(
 
       return;
     } catch (error: any) {
-      logger.error('Error toggling creator capability', error);
+      logger.error('Error toggling earner capability', error);
       throw new HttpsError('internal', error.message || 'Failed to toggle capability');
     }
   }
 );
 
 /**
- * Force KYC for creator (admin only)
+ * Force KYC for earner (admin only)
  */
 export const adminForceCreatorKYC = onCall(
   { region: 'europe-west1' },
@@ -458,23 +460,23 @@ export const adminForceCreatorKYC = onCall(
       throw new HttpsError('permission-denied', 'Admin access required');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
-    if (!creatorId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId');
+    if (!earnerId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId');
     }
 
     try {
-      await db.collection('creatorProfiles').doc(creatorId).update({
+      await db.collection('earnerProfiles').doc(earnerId).update({
         kycRequired: true,
         updatedAt: Timestamp.now(),
       });
 
-      logger.info(`Admin ${uid} forced KYC for creator ${creatorId}`);
+      logger.info(`Admin ${uid} forced KYC for earner ${earnerId}`);
 
       console.log('Scheduled job result:', {
         success: true,
-        message: 'KYC requirement set for creator',
+        message: 'KYC requirement set for earner',
       });
 
 
@@ -487,7 +489,7 @@ export const adminForceCreatorKYC = onCall(
 );
 
 /**
- * Freeze/unfreeze creator wallet (admin only)
+ * Freeze/unfreeze earner wallet (admin only)
  */
 export const adminToggleWalletFreeze = onCall(
   { region: 'europe-west1' },
@@ -505,20 +507,20 @@ export const adminToggleWalletFreeze = onCall(
       throw new HttpsError('permission-denied', 'Admin access required');
     }
 
-    const { creatorId, frozen } = request.data;
+    const { earnerId, frozen } = request.data;
 
-    if (!creatorId || frozen === undefined) {
+    if (!earnerId || frozen === undefined) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
     try {
-      await db.collection('creatorProfiles').doc(creatorId).update({
+      await db.collection('earnerProfiles').doc(earnerId).update({
         walletFrozen: frozen,
         updatedAt: Timestamp.now(),
       });
 
       logger.info(
-        `Admin ${uid} ${frozen ? 'froze' : 'unfroze'} wallet for creator ${creatorId}`
+        `Admin ${uid} ${frozen ? 'froze' : 'unfroze'} wallet for earner ${earnerId}`
       );
 
       return {
@@ -551,23 +553,23 @@ export const adminBanDeviceAndIP = onCall(
       throw new HttpsError('permission-denied', 'Admin access required');
     }
 
-    const { creatorId, reason } = request.data;
+    const { earnerId, reason } = request.data;
 
-    if (!creatorId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId');
+    if (!earnerId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId');
     }
 
     try {
       // Get application to extract device info
-      const application = await getApplicationStatus(creatorId);
+      const application = await getApplicationStatus(earnerId);
 
       if (application?.deviceInfo) {
         // Add to ban list
-        const banId = `ban_${Date.now()}_${creatorId.substring(0, 8)}`;
+        const banId = `ban_${Date.now()}_${earnerId.substring(0, 8)}`;
 
         await db.collection('deviceBans').doc(banId).set({
           banId,
-          creatorId,
+          earnerId,
           deviceId: application.deviceInfo.deviceId,
           ipAddress: application.deviceInfo.ipAddress,
           reason: reason || 'Admin ban',
@@ -579,7 +581,7 @@ export const adminBanDeviceAndIP = onCall(
       // Update application status to BANNED
       const appSnapshot = await db
         .collection('influencerApplications')
-        .where('userId', '==', creatorId)
+        .where('userId', '==', earnerId)
         .limit(1)
         .get();
 
@@ -592,7 +594,7 @@ export const adminBanDeviceAndIP = onCall(
         });
       }
 
-      logger.warn(`Admin ${uid} banned device/IP for creator ${creatorId}`);
+      logger.warn(`Admin ${uid} banned device/IP for earner ${earnerId}`);
 
       console.log('Scheduled job result:', {
         success: true,
@@ -609,7 +611,7 @@ export const adminBanDeviceAndIP = onCall(
 );
 
 /**
- * Get creator analytics (admin only)
+ * Get earner analytics (admin only)
  */
 export const adminGetCreatorAnalytics = onCall(
   { region: 'europe-west1' },
@@ -628,7 +630,7 @@ export const adminGetCreatorAnalytics = onCall(
     }
 
     try {
-      // Get top earning creators (last 30 days)
+      // Get top earning earners (last 30 days)
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0];
@@ -640,66 +642,66 @@ export const adminGetCreatorAnalytics = onCall(
         .where('date', '<=', today)
         .get();
 
-      // Aggregate by creator
-      const creatorEarnings: Record<string, number> = {};
-      const creatorMetrics: Record<string, any> = {};
+      // Aggregate by earner
+      const earnerEarnings: Record<string, number> = {};
+      const earnerMetrics: Record<string, any> = {};
 
       kpisSnapshot.forEach((doc) => {
         const kpi = doc.data();
-        if (!creatorEarnings[kpi.creatorId]) {
-          creatorEarnings[kpi.creatorId] = 0;
-          creatorMetrics[kpi.creatorId] = {
+        if (!earnerEarnings[kpi.earnerId]) {
+          earnerEarnings[kpi.earnerId] = 0;
+          earnerMetrics[kpi.earnerId] = {
             totalEarnings: 0,
             avgConversion: 0,
             avgRefund: 0,
             days: 0,
           };
         }
-        creatorEarnings[kpi.creatorId] += kpi.tokensEarned;
-        creatorMetrics[kpi.creatorId].totalEarnings += kpi.tokensEarned;
-        creatorMetrics[kpi.creatorId].avgConversion += kpi.conversionRate;
-        creatorMetrics[kpi.creatorId].avgRefund += kpi.refundRatio;
-        creatorMetrics[kpi.creatorId].days += 1;
+        earnerEarnings[kpi.earnerId] += kpi.tokensEarned;
+        earnerMetrics[kpi.earnerId].totalEarnings += kpi.tokensEarned;
+        earnerMetrics[kpi.earnerId].avgConversion += kpi.conversionRate;
+        earnerMetrics[kpi.earnerId].avgRefund += kpi.refundRatio;
+        earnerMetrics[kpi.earnerId].days += 1;
       });
 
       // Calculate averages
-      Object.keys(creatorMetrics).forEach((creatorId) => {
-        const metrics = creatorMetrics[creatorId];
+      Object.keys(earnerMetrics).forEach((earnerId) => {
+        const metrics = earnerMetrics[earnerId];
         metrics.avgConversion = metrics.avgConversion / metrics.days;
         metrics.avgRefund = metrics.avgRefund / metrics.days;
       });
 
       // Sort by earnings
-      const topEarners = Object.entries(creatorEarnings)
+      const topEarners = Object.entries(earnerEarnings)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 20)
-        .map(([creatorId, earnings]) => ({
-          creatorId,
+        .map(([earnerId, earnings]) => ({
+          earnerId,
           earnings,
-          ...creatorMetrics[creatorId],
+          ...earnerMetrics[earnerId],
         }));
 
-      // Get at-risk creators (high refund ratio)
-      const atRiskCreators = Object.entries(creatorMetrics)
+      // Get at-risk earners (high refund ratio)
+      const atRiskCreators = Object.entries(earnerMetrics)
         .filter(([, metrics]) => metrics.avgRefund > 0.15)
-        .map(([creatorId, metrics]) => ({
-          creatorId,
+        .map(([earnerId, metrics]) => ({
+          earnerId,
           ...metrics,
         }));
 
-      logger.info(`Admin ${uid} fetched creator analytics`);
+      logger.info(`Admin ${uid} fetched earner analytics`);
 
       console.log('Scheduled job result:', {
         success: true,
         topEarners,
         atRiskCreators,
-        totalCreators: Object.keys(creatorEarnings).length,
+        totalCreators: Object.keys(earnerEarnings).length,
       });
 
 
       return;
     } catch (error: any) {
-      logger.error('Error fetching creator analytics', error);
+      logger.error('Error fetching earner analytics', error);
       throw new HttpsError('internal', error.message || 'Failed to fetch analytics');
     }
   }
@@ -764,7 +766,7 @@ export const adminCreateRegionalProgram = onCall(
 // ============================================================================
 
 /**
- * Daily risk assessment for all creators
+ * Daily risk assessment for all earners
  */
 export const dailyCreatorRiskAssessment = onSchedule(
   {
@@ -774,30 +776,30 @@ export const dailyCreatorRiskAssessment = onSchedule(
   },
   async (event) => {
     try {
-      logger.info('Starting daily creator risk assessment');
+      logger.info('Starting daily earner risk assessment');
 
-      const creatorsSnapshot = await db.collection('creatorProfiles').get();
+      const earnersSnapshot = await db.collection('earnerProfiles').get();
 
       let processedCount = 0;
       let flaggedCount = 0;
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const creatorId = creatorDoc.id;
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const earnerId = earnerDoc.id;
 
         // Update risk flags
-        await updateCreatorRiskFlags(creatorId);
+        await updateCreatorRiskFlags(earnerId);
 
         // Check safety thresholds
-        await checkCreatorSafetyThresholds(creatorId);
+        await checkCreatorSafetyThresholds(earnerId);
 
         processedCount++;
 
-        const riskDoc = await db.collection('creatorRiskFlags').doc(creatorId).get();
+        const riskDoc = await db.collection('earnerRiskFlags').doc(earnerId).get();
         const riskData = riskDoc.data();
 
         if (riskData && riskData.riskScore > 50) {
           flaggedCount++;
-          logger.warn(`High risk creator detected: ${creatorId} (score: ${riskData.riskScore})`);
+          logger.warn(`High risk earner detected: ${earnerId} (score: ${riskData.riskScore})`);
         }
 
         // Throttle to avoid rate limits
@@ -807,7 +809,7 @@ export const dailyCreatorRiskAssessment = onSchedule(
       }
 
       logger.info(
-        `Completed daily risk assessment: ${processedCount} creators, ${flaggedCount} flagged`
+        `Completed daily risk assessment: ${processedCount} earners, ${flaggedCount} flagged`
       );
 
       return;
@@ -855,6 +857,20 @@ export const dailyRegionalProgramUpdate = onSchedule(
 );
 
 logger.info('✅ PACK 354 Influencer Endpoints loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

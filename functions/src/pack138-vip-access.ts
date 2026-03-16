@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 138 — VIP Access 2.0 Implementation
  * 
@@ -12,7 +14,7 @@
  * 
  * NON-NEGOTIABLE RULES:
  * - Token price & 65/35 split remain untouched
- * - VIP subscriptions DO NOT generate more income for creators
+ * - VIP subscriptions DO NOT generate more income for earners
  * - NO priority attention or guaranteed reply
  * - NO feed ranking or recommendation engine influence
  * - NO NSFW or escort advantages
@@ -778,6 +780,20 @@ export const updateChatEnhancements = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

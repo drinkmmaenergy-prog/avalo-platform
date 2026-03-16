@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 238 — Chat Motivation Engine
  * Safety Enforcement Module
@@ -440,6 +442,20 @@ export async function enforceSafetyFirst(
   // All safety checks passed
   return { allowed: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

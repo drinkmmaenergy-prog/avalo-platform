@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { admin, getFirestore, logger } from './runtime';
 
 ;
@@ -29,8 +31,8 @@ export const FeatureFlags = {
   DISCOVERY_AI_BOOST: "discovery_ai_boost",
 
   // Creator Features
-  CREATOR_STORE: "creator_store",
-  CREATOR_STRIPE_CONNECT: "creator_stripe_connect",
+  CREATOR_STORE: "earner_store",
+  CREATOR_STRIPE_CONNECT: "earner_stripe_connect",
 
   // Trust & Safety
   KYC_REQUIRED: "kyc_required",
@@ -58,7 +60,7 @@ interface FeatureFlagConfig {
   rolloutPercentage?: number; // 0-100, used for gradual rollout
   allowedUserIds?: string[]; // Whitelist specific users
   blockedUserIds?: string[]; // Blacklist specific users
-  allowedRoles?: string[]; // Enable for specific roles (admin, creator, etc.)
+  allowedRoles?: string[]; // Enable for specific roles (admin, earner, etc.)
   requiredVersion?: string; // Minimum app version required
   expiresAt?: Date; // Auto-disable after this date
   metadata?: Record<string, any>;
@@ -302,7 +304,7 @@ export async function seedDefaultFeatureFlags(): Promise<void> {
     },
     [FeatureFlags.CREATOR_STORE]: {
       enabled: false,
-      allowedRoles: ["creator", "admin"],
+      allowedRoles: ["earner", "admin"],
     },
     [FeatureFlags.KYC_REQUIRED]: {
       enabled: false,
@@ -332,6 +334,20 @@ export async function seedDefaultFeatureFlags(): Promise<void> {
 
   logger.info("Default feature flags seeded");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

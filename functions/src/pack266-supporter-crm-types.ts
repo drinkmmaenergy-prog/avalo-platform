@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 266: Smart Supporter CRM (Fans Relationship Manager)
  * 
- * Type definitions for the supporter CRM system that helps creators
+ * Type definitions for the supporter CRM system that helps earners
  * understand their paying audience, retain supporters, and prioritize engagement.
  * 
  * CORE PRINCIPLES:
@@ -35,7 +37,7 @@ export type ConversionPotential =
 
 export interface SupporterSegmentData {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   segment: SupporterSegment;
   conversionPotential: ConversionPotential;
   conversionProbability: number; // 0-100
@@ -107,7 +109,7 @@ export type CRMInboxTab =
 
 export interface CRMInboxFilter {
   tab: CRMInboxTab;
-  creatorId: string;
+  earnerId: string;
   limit?: number;
   sortBy?: 'online_status' | 'conversion_probability' | 'recent_live' | 'last_activity';
 }
@@ -134,9 +136,9 @@ export interface CRMInboxEntry {
 
 export interface SupporterProfile {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   
-  // Spending metrics (VISIBLE to creator only)
+  // Spending metrics (VISIBLE to earner only)
   lifetimeTokensSpent: number;
   monthlyTokensSpent: number;
   weeklyTokensSpent: number;
@@ -237,7 +239,7 @@ export type CRMActionType =
 export interface CRMAction {
   actionId: string;
   type: CRMActionType;
-  creatorId: string;
+  earnerId: string;
   supporterId: string;
   status: 'pending' | 'executed' | 'failed';
   
@@ -288,7 +290,7 @@ export type AlertType =
 export interface SmartAlert {
   alertId: string;
   type: AlertType;
-  creatorId: string;
+  earnerId: string;
   supporterId: string;
   
   priority: 'urgent' | 'high' | 'medium' | 'low';
@@ -315,7 +317,7 @@ export interface SmartAlert {
 // ============================================================================
 
 export interface CRMSettings {
-  creatorId: string;
+  earnerId: string;
   enabled: boolean;
   
   preferences: {
@@ -354,7 +356,7 @@ export interface CRMSettings {
 // ============================================================================
 
 export interface CRMMetrics {
-  creatorId: string;
+  earnerId: string;
   period: 'daily' | 'weekly' | 'monthly';
   date: string;  // YYYY-MM-DD or YYYY-WW or YYYY-MM
   
@@ -412,11 +414,11 @@ export interface CRMMetrics {
 }
 
 // ============================================================================
-// CRM Leaderboard (PRIVATE - only creator sees)
+// CRM Leaderboard (PRIVATE - only earner sees)
 // ============================================================================
 
 export interface CRMLeaderboard {
-  creatorId: string;
+  earnerId: string;
   topSupporters: Array<{
     supporterId: string;
     rank: number;
@@ -482,7 +484,7 @@ export interface PackIntegration {
   };
   
   // From PACK 262 (Levels)
-  creatorLevel?: {
+  earnerLevel?: {
     level: string;
     lifetimeLP: number;
   };
@@ -567,6 +569,20 @@ export interface GetAlertsResponse {
   count: number;
   unreadCount: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

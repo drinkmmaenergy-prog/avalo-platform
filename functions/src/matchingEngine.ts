@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO MATCHMAKING ENGINE
@@ -47,8 +49,8 @@ const MAX_DAILY_MATCHES = 50;
 // Ranking weights
 const RANKING_WEIGHTS = {
   photoQuality: 0.25,
-  profileCompleteness: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  responseRate: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  profileCompleteness: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  responseRate: MONETIZATION_SPLITS.EVENT_TICKET.platform,
   loyaltyTier: 0.15,
   lastActive: 0.10,
   reportCount: -0.10, // Negative weight
@@ -814,6 +816,22 @@ export default {
   getMatchStats,
   updateLastActive,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

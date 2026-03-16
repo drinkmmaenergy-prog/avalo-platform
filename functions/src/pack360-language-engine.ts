@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 360 - Language Engine (i18n)
  * Multi-language support with auto-detection, fallback, and dynamic switching
@@ -594,6 +596,20 @@ export const cacheTranslations = onSchedule("every 24 hours", async (event) => {
       console.error('Error caching translations:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

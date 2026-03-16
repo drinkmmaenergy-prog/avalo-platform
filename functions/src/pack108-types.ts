@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — Adult Content Containment & Region-Based NSFW Governance
  * Type Definitions
@@ -60,7 +62,7 @@ export interface NSFWClassificationCase {
   caseId: string;
   contentId: string;
   contentType: 'POST' | 'STORY' | 'MEDIA' | 'MESSAGE' | 'PROFILE_PHOTO';
-  creatorId: string;
+  earnerId: string;
   
   // Disagreement details
   userMarked: NSFWLevel;
@@ -274,7 +276,7 @@ export interface NSFWMonetizationTransaction {
   
   // Transaction details (same as non-NSFW)
   tokenAmount: number;
-  creatorEarnings: number;  // 65% always
+  earnerEarnings: number;  // 65% always
   platformCommission: number;  // 35% always
   
   // Audit trail
@@ -444,7 +446,7 @@ export interface NSFWNotificationContext {
 export interface NSFWContentCheckInput {
   contentId: string;
   contentType: 'POST' | 'STORY' | 'MEDIA' | 'MESSAGE';
-  creatorId: string;
+  earnerId: string;
   viewerId: string;
   action: 'VIEW' | 'UNLOCK' | 'MONETIZE';
 }
@@ -546,6 +548,20 @@ export const NSFW_VIOLATION_SEVERITY: Record<NSFWModerationReasonCode, NSFWViola
   'NSFW_MISCLASSIFICATION': 'MEDIUM',
   'NSFW_PSP_VIOLATION': 'HIGH',
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

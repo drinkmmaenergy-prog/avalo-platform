@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * CANONICAL CHAT ENGINE — v2_canonical — COMPREHENSIVE TEST SUITE
  *
@@ -297,7 +299,7 @@ describe('I.3 Only earner messages billable; payer messages never billed', () =>
     expect(result.billed).toBe(true);
     expect(result.tokensConsumed).toBe(1);
     expect(result.earnerCredit).toBe(0);
-    expect(result.avaloCredit).toBe(1); // 100% to Avalo
+    expect(result.platformCredit).toBe(1); // 100% to Avalo
   });
 
   test('when earnerId is set → 65% earner, 35% Avalo', () => {
@@ -310,10 +312,10 @@ describe('I.3 Only earner messages billable; payer messages never billed', () =>
     expect(result.billed).toBe(true);
     expect(result.newBuckets).toBe(10);
     expect(result.tokensConsumed).toBe(10);
-    // floor(10 * MONETIZATION_SPLITS.CHAT.creator) = floor(6.5) = 6
+    // floor(10 * MONETIZATION_SPLITS.CHAT.earner) = floor(6.5) = 6
     expect(result.earnerCredit).toBe(6);
     // Remainder: 10 - 6 = 4
-    expect(result.avaloCredit).toBe(4);
+    expect(result.platformCredit).toBe(4);
   });
 });
 
@@ -533,7 +535,7 @@ describe('I.7 Concurrency: no negative escrow, no double spends', () => {
     expect(result2.escrowExhausted).toBe(true);
   });
 
-  test('earnerCredit + avaloCredit always equals tokensConsumed', () => {
+  test('earnerCredit + platformCredit always equals tokensConsumed', () => {
     const multipliers: BurnMultiplier[] = [1, 2, 3, 4, 5, 7, 10, 12, 15, 20];
 
     for (const mult of multipliers) {
@@ -544,7 +546,7 @@ describe('I.7 Concurrency: no negative escrow, no double spends', () => {
         const result = calculateBilling(state, config, words, 'earner_1');
 
         if (result.billed) {
-          expect(result.earnerCredit + result.avaloCredit).toBe(result.tokensConsumed);
+          expect(result.earnerCredit + result.platformCredit).toBe(result.tokensConsumed);
         }
       }
     }
@@ -698,14 +700,14 @@ describe('Deterministic floor for buckets (no Math.round)', () => {
     expect(Math.floor(7 / 7)).toBe(1);
   });
 
-  test('earner credit uses floor: floor(10 * MONETIZATION_SPLITS.CHAT.creator) = 6 (not round to 7)', () => {
+  test('earner credit uses floor: floor(10 * MONETIZATION_SPLITS.CHAT.earner) = 6 (not round to 7)', () => {
     expect(Math.floor(10 * EARNER_REVENUE_SPLIT)).toBe(6);
   });
 
-  test('avalo gets remainder: 10 - floor(10*MONETIZATION_SPLITS.CHAT.creator) = 4', () => {
+  test('platform gets remainder: 10 - floor(10*MONETIZATION_SPLITS.CHAT.earner) = 4', () => {
     const earner = Math.floor(10 * EARNER_REVENUE_SPLIT);
-    const avalo = 10 - earner;
-    expect(avalo).toBe(4);
+    const platform = 10 - earner;
+    expect(platform).toBe(4);
   });
 });
 
@@ -778,6 +780,23 @@ describe('Edge cases', () => {
     expect(state.totalBucketsConsumed).toBe(2);
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

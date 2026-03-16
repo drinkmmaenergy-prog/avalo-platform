@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Module: Intelligent Payout Escrow Service
  * 
- * Manages risk-adjusted escrowholding periods for creator payouts
+ * Manages risk-adjusted escrowholding periods for earner payouts
  * - Automatic escrow period calculation based on integrity score
- * - Escrow shortening for trusted creators
+ * - Escrow shortening for trusted earners
  * - Escrow extension for high-risk scenarios
  */
 
@@ -17,7 +19,7 @@ type Firestore = admin.firestore.Firestore;
 
 export interface PayoutEscrow {
   payoutId: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
   currency: string;
   status: 'PENDING' | 'IN_ESCROW' | 'RELEASED' | 'FROZEN' | 'DISPUTED';
@@ -48,7 +50,7 @@ export interface PayoutEscrow {
 }
 
 export interface CreatePayoutRequest {
-  creatorId: string;
+  earnerId: string;
   amount: number;
   currency: string;
   revenueBreakdown: {
@@ -90,7 +92,7 @@ export class IntelligentPayoutEscrowService {
    */
   async createPayoutEscrow(request: CreatePayoutRequest): Promise<PayoutEscrow> {
     // Get or calculate integrity score
-    const integrity = await this.integrityService.ensureFreshScore(request.creatorId);
+    const integrity = await this.integrityService.ensureFreshScore(request.earnerId);
     
     // Calculate base escrow period
     let cooldownHours = this.calculateBaseEscrowPeriod(integrity.score);
@@ -105,7 +107,7 @@ export class IntelligentPayoutEscrowService {
     cooldownHours = adjustedHours;
     
     // Run compliance checks
-    const complianceChecks = await this.runComplianceChecks(request.creatorId, request.amount);
+    const complianceChecks = await this.runComplianceChecks(request.earnerId, request.amount);
     
     // Create escrow record
     const startTime = Timestamp.now();
@@ -115,7 +117,7 @@ export class IntelligentPayoutEscrowService {
     
     const payoutEscrow: PayoutEscrow = {
       payoutId: this.generatePayoutId(),
-      creatorId: request.creatorId,
+      earnerId: request.earnerId,
       amount: request.amount,
       currency: request.currency,
       status: 'IN_ESCROW',
@@ -241,7 +243,7 @@ export class IntelligentPayoutEscrowService {
    * Run compliance checks
    */
   private async runComplianceChecks(
-    creatorId: string,
+    earnerId: string,
     amount: number
   ): Promise<{
     amlPassed: boolean;
@@ -250,9 +252,9 @@ export class IntelligentPayoutEscrowService {
   }> {
     // Integration with PACK 296 (Compliance) and PACK 324B (Fraud Detection)
     const [amlResult, fraudResult, chargebackResult] = await Promise.all([
-      this.checkAML(creatorId, amount),
-      this.checkFraud(creatorId, amount),
-      this.checkChargebacks(creatorId)
+      this.checkAML(earnerId, amount),
+      this.checkFraud(earnerId, amount),
+      this.checkChargebacks(earnerId)
     ]);
     
     return {
@@ -265,9 +267,9 @@ export class IntelligentPayoutEscrowService {
   /**
    * AML check (Anti-Money Laundering)
    */
-  private async checkAML(creatorId: string, amount: number): Promise<boolean> {
-    // Check if creator has passed KYC
-    const userDoc = await this.db.collection('users').doc(creatorId).get();
+  private async checkAML(earnerId: string, amount: number): Promise<boolean> {
+    // Check if earner has passed KYC
+    const userDoc = await this.db.collection('users').doc(earnerId).get();
     const userData = userDoc.data();
     
     if (!userData?.kyc_verified) {
@@ -279,7 +281,7 @@ export class IntelligentPayoutEscrowService {
       // Flag for manual review (PACK 296 integration)
       await this.db.collection('compliance_reviews').add({
         type: 'AML_THRESHOLD_EXCEEDED',
-        creatorId,
+        earnerId,
         amount,
         createdAt: Timestamp.now(),
         status: 'PENDING'
@@ -292,11 +294,11 @@ export class IntelligentPayoutEscrowService {
   /**
    * Fraud check
    */
-  private async checkFraud(creatorId: string, amount: number): Promise<boolean> {
+  private async checkFraud(earnerId: string, amount: number): Promise<boolean> {
     // Integration with PACK 324B (Real-Time Fraud Detection)
     const fraudScoreDoc = await this.db
       .collection('fraud_scores')
-      .doc(creatorId)
+      .doc(earnerId)
       .get();
     
     if (fraudScoreDoc.exists) {
@@ -310,11 +312,11 @@ export class IntelligentPayoutEscrowService {
   /**
    * Chargeback review
    */
-  private async checkChargebacks(creatorId: string): Promise<boolean> {
+  private async checkChargebacks(earnerId: string): Promise<boolean> {
     // Integration with PACK 438 (Chargeback Defense)
     const recentChargebacks = await this.db
       .collection('chargebacks')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('createdAt', '>=', Timestamp.fromMillis(Date.now() - 7 * 24 * 60 * 60 * 1000))
       .get();
     
@@ -404,12 +406,12 @@ export class IntelligentPayoutEscrowService {
   }
   
   /**
-   * Get all payouts for a creator
+   * Get all payouts for a earner
    */
-  async getCreatorPayouts(creatorId: string, limit: number = 10): Promise<PayoutEscrow[]> {
+  async getCreatorPayouts(earnerId: string, limit: number = 10): Promise<PayoutEscrow[]> {
     const snapshot = await this.db
       .collection('payout_escrow')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .orderBy('metadata.createdAt', 'desc')
       .limit(limit)
       .get();
@@ -445,7 +447,7 @@ export class IntelligentPayoutEscrowService {
   private async triggerPayout(payout: PayoutEscrow): Promise<void> {
     // Integration with PACK 289 (Withdrawals)
     await this.db.collection('withdrawals').add({
-      creatorId: payout.creatorId,
+      earnerId: payout.earnerId,
       amount: payout.amount,
       currency: payout.currency,
       status: 'PENDING',
@@ -474,13 +476,29 @@ export class IntelligentPayoutEscrowService {
       type: 'PAYOUT_ESCROW',
       event,
       payoutId: payout.payoutId,
-      creatorId: payout.creatorId,
+      earnerId: payout.earnerId,
       amount: payout.amount,
       timestamp: Timestamp.now(),
       ...additionalData
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

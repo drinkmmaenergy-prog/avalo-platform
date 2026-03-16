@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
@@ -35,7 +37,7 @@ export const trackChatStart = onDocumentCreated('chats/{chatId}', async (event) 
         event_type: 'chat_started',
         chat_id: chatId,
         user_id: chat.user_id,
-        creator_id: chat.creator_id,
+        earner_id: chat.earner_id,
         is_free: chat.is_free !== false,
         timestamp: timestamp,
         metadata: {
@@ -90,7 +92,7 @@ export const trackChatMessage = onDocumentCreated('chats/{chatId}/messages/{mess
           chat_id: chatId,
           message_id: messageId,
           user_id: message.sender_id,
-          creator_id: chat.creator_id,
+          earner_id: chat.earner_id,
           word_count: wordCount,
           timestamp: timestamp
         });
@@ -130,7 +132,7 @@ export const trackChatPayment = onDocumentCreated('chats/{chatId}/payments/{paym
           event_type: 'free_to_paid_conversion',
           chat_id: chatId,
           user_id: chat.user_id,
-          creator_id: chat.creator_id,
+          earner_id: chat.earner_id,
           tokens: payment.tokens || 0,
           timestamp: timestamp
         });
@@ -144,15 +146,15 @@ export const trackChatPayment = onDocumentCreated('chats/{chatId}/payments/{paym
       }
 
       // Track revenue by tier
-      const creatorDoc = await db.collection('users').doc(chat.creator_id).get();
-      const creatorTier = creatorDoc.exists ? creatorDoc.data()?.tier || 'standard' : 'standard';
+      const earnerDoc = await db.collection('users').doc(chat.earner_id).get();
+      const earnerTier = earnerDoc.exists ? earnerDoc.data()?.tier || 'standard' : 'standard';
 
       await db.collection('analytics_daily').doc(`revenue_${today}`).set({
         metric_type: 'revenue',
         date: today,
         timestamp: timestamp,
         total_revenue: FieldValue.increment(payment.tokens || 0),
-        [`${creatorTier}_revenue`]: FieldValue.increment(payment.tokens || 0)
+        [`${earnerTier}_revenue`]: FieldValue.increment(payment.tokens || 0)
       }, { merge: true });
 
       // Track monetization event
@@ -160,9 +162,9 @@ export const trackChatPayment = onDocumentCreated('chats/{chatId}/payments/{paym
         event_type: 'chat_payment',
         chat_id: chatId,
         user_id: chat.user_id,
-        creator_id: chat.creator_id,
+        earner_id: chat.earner_id,
         tokens: payment.tokens || 0,
-        creator_tier: creatorTier,
+        earner_tier: earnerTier,
         timestamp: timestamp
       });
 
@@ -192,7 +194,7 @@ export const trackChatEnd = onDocumentUpdated('chats/{chatId}', async (event) =>
           event_type: 'chat_ended',
           chat_id: chatId,
           user_id: after.user_id,
-          creator_id: after.creator_id,
+          earner_id: after.earner_id,
           duration_ms: duration,
           total_messages: messageCount,
           total_words: after.total_words || 0,
@@ -232,7 +234,7 @@ export const trackRefund = onDocumentCreated('refunds/{refundId}', async (event)
         refund_id: event.params.refundId,
         chat_id: refund.chat_id,
         user_id: refund.user_id,
-        creator_id: refund.creator_id,
+        earner_id: refund.earner_id,
         tokens_refunded: refund.tokens || 0,
         reason: refund.reason,
         timestamp: timestamp
@@ -345,6 +347,22 @@ export const aggregateChatMonetizationKPIs = onSchedule({ schedule: "0 1 * * *",
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

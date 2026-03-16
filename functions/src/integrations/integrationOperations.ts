@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 150: Integration Operations Functions
  * Handle integration requests, permissions, and consent management
@@ -21,7 +23,7 @@ import { FieldValue, HttpsError, arrayUnion, auth, functions, onCall } from "../
 const db = admin.firestore();
 
 /**
- * Request integration permission from creator
+ * Request integration permission from earner
  */
 export const requestIntegrationPermission = https.onCall(async (request) => {
   const data = request.data;
@@ -33,13 +35,13 @@ export const requestIntegrationPermission = https.onCall(async (request) => {
     const {
       partnerId,
       apiKey,
-      creatorId,
+      earnerId,
       integrationName,
       purpose,
       requestedPermissions
     } = data;
 
-    if (!partnerId || !apiKey || !creatorId || !integrationName || !requestedPermissions) {
+    if (!partnerId || !apiKey || !earnerId || !integrationName || !requestedPermissions) {
       throw new https.HttpsError(
         'invalid-argument',
         'Missing required fields'
@@ -107,7 +109,7 @@ export const requestIntegrationPermission = https.onCall(async (request) => {
     const integrationRequest: IntegrationRequest = {
       requestId,
       partnerId,
-      creatorId,
+      earnerId,
       integrationName,
       category: partner?.category,
       purpose: purpose || '',
@@ -122,13 +124,13 @@ export const requestIntegrationPermission = https.onCall(async (request) => {
     logger.info('Integration permission requested', {
       requestId,
       partnerId,
-      creatorId
+      earnerId
     });
 
     return {
       success: true,
       requestId,
-      message: 'Integration request submitted. Awaiting creator approval.'
+      message: 'Integration request submitted. Awaiting earner approval.'
     };
 
   } catch (error) {
@@ -138,7 +140,7 @@ export const requestIntegrationPermission = https.onCall(async (request) => {
 });
 
 /**
- * Approve integration request (creator only)
+ * Approve integration request (earner only)
  */
 export const approveIntegrationRequest = https.onCall(async (request) => {
   const data = request.data;
@@ -162,10 +164,10 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
 
     const integrationRequest = requestDoc.data() as IntegrationRequest;
 
-    if (integrationRequest.creatorId !== request.auth.uid) {
+    if (integrationRequest.earnerId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
-        'Only the creator can approve this request'
+        'Only the earner can approve this request'
       );
     }
 
@@ -184,7 +186,7 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
     const integration: APIIntegration = {
       integrationId,
       partnerId: integrationRequest.partnerId,
-      creatorId: integrationRequest.creatorId,
+      earnerId: integrationRequest.earnerId,
       integrationName: integrationRequest.integrationName,
       description: integrationRequest.purpose,
       category: integrationRequest.category,
@@ -204,7 +206,7 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
     const consent: IntegrationConsent = {
       consentId,
       integrationId,
-      creatorId: request.creatorId,
+      earnerId: request.earnerId,
       permissions: request.requestedPermissions,
       grantedAt: now,
       expiresAt,
@@ -236,7 +238,7 @@ export const approveIntegrationRequest = https.onCall(async (request) => {
     logger.info('Integration approved', {
       integrationId,
       partnerId: request.partnerId,
-      creatorId: request.creatorId
+      earnerId: request.earnerId
     });
 
     return {
@@ -276,10 +278,10 @@ export const denyIntegrationRequest = https.onCall(async (request) => {
 
     const integrationRequest = requestDoc.data() as IntegrationRequest;
 
-    if (integrationRequest.creatorId !== request.auth.uid) {
+    if (integrationRequest.earnerId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
-        'Only the creator can deny this request'
+        'Only the earner can deny this request'
       );
     }
 
@@ -301,7 +303,7 @@ export const denyIntegrationRequest = https.onCall(async (request) => {
     logger.info('Integration request denied', {
       requestId,
       partnerId: integrationRequest.partnerId,
-      creatorId: integrationRequest.creatorId
+      earnerId: integrationRequest.earnerId
     });
 
     return {
@@ -340,10 +342,10 @@ export const revokeIntegrationPermission = https.onCall(async (request) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== request.auth.uid && !request.auth.token.admin) {
+    if (integration.earnerId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
-        'Only the creator or admin can revoke this integration'
+        'Only the earner or admin can revoke this integration'
       );
     }
 
@@ -353,7 +355,7 @@ export const revokeIntegrationPermission = https.onCall(async (request) => {
     await integrationRef.update({
       status: IntegrationStatus.REVOKED,
       revokedAt: now,
-      revocationReason: reason || 'Revoked by creator',
+      revocationReason: reason || 'Revoked by earner',
       updatedAt: now
     });
 
@@ -370,7 +372,7 @@ export const revokeIntegrationPermission = https.onCall(async (request) => {
         batch.update(doc.ref, {
           revoked: true,
           revokedAt: now,
-          revocationReason: reason || 'Revoked by creator'
+          revocationReason: reason || 'Revoked by earner'
         });
       });
       await batch.commit();
@@ -379,7 +381,7 @@ export const revokeIntegrationPermission = https.onCall(async (request) => {
     logger.info('Integration revoked', {
       integrationId,
       partnerId: integration.partnerId,
-      creatorId: integration.creatorId
+      earnerId: integration.earnerId
     });
 
     return {
@@ -418,10 +420,10 @@ export const renewIntegrationConsent = https.onCall(async (request) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== request.auth.uid) {
+    if (integration.earnerId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
-        'Only the creator can renew consent'
+        'Only the earner can renew consent'
       );
     }
 
@@ -467,7 +469,7 @@ export const renewIntegrationConsent = https.onCall(async (request) => {
     logger.info('Integration consent renewed', {
       integrationId,
       partnerId: integration.partnerId,
-      creatorId: integration.creatorId
+      earnerId: integration.earnerId
     });
 
     return {
@@ -483,7 +485,7 @@ export const renewIntegrationConsent = https.onCall(async (request) => {
 });
 
 /**
- * List creator integrations
+ * List earner integrations
  */
 export const listCreatorIntegrations = https.onCall(async (request) => {
   const data = request.data;
@@ -492,8 +494,8 @@ export const listCreatorIntegrations = https.onCall(async (request) => {
       throw new https.HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { creatorId, status } = data;
-    const queryCreatorId = creatorId || request.auth.uid;
+    const { earnerId, status } = data;
+    const queryCreatorId = earnerId || request.auth.uid;
 
     if (queryCreatorId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
@@ -504,7 +506,7 @@ export const listCreatorIntegrations = https.onCall(async (request) => {
 
     let query = db
       .collection('api_integrations')
-      .where('creatorId', '==', queryCreatorId)
+      .where('earnerId', '==', queryCreatorId)
       .orderBy('createdAt', 'desc');
 
     if (status) {
@@ -554,7 +556,7 @@ export const getIntegrationDetails = https.onCall(async (request) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== request.auth.uid && !request.auth.token.admin) {
+    if (integration.earnerId !== request.auth.uid && !request.auth.token.admin) {
       throw new https.HttpsError(
         'permission-denied',
         'Cannot view this integration'
@@ -610,10 +612,10 @@ export const updateAutoRenew = https.onCall(async (request) => {
 
     const integration = integrationDoc.data() as APIIntegration;
 
-    if (integration.creatorId !== request.auth.uid) {
+    if (integration.earnerId !== request.auth.uid) {
       throw new https.HttpsError(
         'permission-denied',
-        'Only the creator can update auto-renew'
+        'Only the earner can update auto-renew'
       );
     }
 
@@ -634,6 +636,22 @@ export const updateAutoRenew = https.onCall(async (request) => {
     throw error;
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import { mediaIntegrityDetection } from './detection';
 import { consentVerification } from './consent';
@@ -273,6 +275,22 @@ export async function verifyMediaConsent(
 export * from './types';
 export { mediaIntegrityDetection } from './detection';
 export { consentVerification } from './consent';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

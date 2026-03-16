@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324A — KPI Aggregation Engine
  * 
@@ -337,7 +339,7 @@ export async function aggregatePlatformKpiHourly(
 // ============================================================================
 
 /**
- * Aggregate creator KPIs for a specific date
+ * Aggregate earner KPIs for a specific date
  */
 export async function aggregateCreatorKpiDaily(
   userId: string,
@@ -346,7 +348,7 @@ export async function aggregateCreatorKpiDaily(
   const dateStr = formatDate(date);
   const { start, end } = getDateRange(date);
   
-  logger.info(`Aggregating creator KPI for user ${userId} on ${dateStr}`);
+  logger.info(`Aggregating earner KPI for user ${userId} on ${dateStr}`);
   
   const kpi: CreatorKpiDaily = {
     date: dateStr,
@@ -434,7 +436,7 @@ export async function aggregateCreatorKpiDaily(
   try {
     const chatSessionsSnapshot = await db
       .collection('aiChatSessions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(start))
       .where('createdAt', '<=', Timestamp.fromDate(end))
       .count()
@@ -461,7 +463,7 @@ export async function aggregateCreatorKpiDaily(
 }
 
 /**
- * Aggregate creator KPIs for all creators who had activity on a date
+ * Aggregate earner KPIs for all earners who had activity on a date
  */
 export async function aggregateAllCreatorsKpiDaily(
   date: Date,
@@ -469,7 +471,7 @@ export async function aggregateAllCreatorsKpiDaily(
 ): Promise<number> {
   const { start, end } = getDateRange(date);
   
-  logger.info(`Aggregating creator KPIs for all creators on ${formatDate(date)}`);
+  logger.info(`Aggregating earner KPIs for all earners on ${formatDate(date)}`);
   
   // Get all users who received tokens this day
   const transactionsSnapshot = await db
@@ -479,24 +481,24 @@ export async function aggregateAllCreatorsKpiDaily(
     .select('receiverId')
     .get();
   
-  const creatorIds = new Set<string>();
+  const earnerIds = new Set<string>();
   transactionsSnapshot.forEach((doc) => {
     const receiverId = doc.data().receiverId;
-    if (receiverId && receiverId !== 'avalo_platform') {
-      creatorIds.add(receiverId);
+    if (receiverId && receiverId !== 'platform_platform') {
+      earnerIds.add(receiverId);
     }
   });
   
-  logger.info(`Found ${creatorIds.size} creators with activity`);
+  logger.info(`Found ${earnerIds.size} earners with activity`);
   
   // Process in batches
   const batch = db.batch();
   let count = 0;
   
-  for (const creatorId of Array.from(creatorIds)) {
+  for (const earnerId of Array.from(earnerIds)) {
     try {
-      const kpi = await aggregateCreatorKpiDaily(creatorId, date);
-      const docId = `${creatorId}_${kpi.date}`;
+      const kpi = await aggregateCreatorKpiDaily(earnerId, date);
+      const docId = `${earnerId}_${kpi.date}`;
       const docRef = db.collection(KPI_CONFIG.COLLECTIONS.CREATOR_DAILY).doc(docId);
       
       batch.set(docRef, kpi, { merge: true });
@@ -505,10 +507,10 @@ export async function aggregateAllCreatorsKpiDaily(
       // Commit in batches
       if (count % batchSize === 0) {
         await batch.commit();
-        logger.info(`Committed batch of ${count} creator KPIs`);
+        logger.info(`Committed batch of ${count} earner KPIs`);
       }
     } catch (error) {
-      logger.error(`Error aggregating creator ${creatorId}:`, error);
+      logger.error(`Error aggregating earner ${earnerId}:`, error);
     }
   }
   
@@ -517,7 +519,7 @@ export async function aggregateAllCreatorsKpiDaily(
     await batch.commit();
   }
   
-  logger.info(`Aggregated ${count} creator KPIs for ${formatDate(date)}`);
+  logger.info(`Aggregated ${count} earner KPIs for ${formatDate(date)}`);
   return count;
 }
 
@@ -629,7 +631,7 @@ export async function aggregateSafetyKpiDaily(
  */
 export async function aggregateAllKpiDaily(date: Date): Promise<{
   platformKpi: PlatformKpiDaily;
-  creatorsProcessed: number;
+  earnersProcessed: number;
   safetyKpi: SafetyKpiDaily;
 }> {
   logger.info(`Starting full KPI aggregation for ${formatDate(date)}`);
@@ -641,8 +643,8 @@ export async function aggregateAllKpiDaily(date: Date): Promise<{
     .doc(platformKpi.date)
     .set(platformKpi, { merge: true });
   
-  // Aggregate creator KPIs
-  const creatorsProcessed = await aggregateAllCreatorsKpiDaily(date);
+  // Aggregate earner KPIs
+  const earnersProcessed = await aggregateAllCreatorsKpiDaily(date);
   
   // Aggregate safety KPIs
   const safetyKpi = await aggregateSafetyKpiDaily(date);
@@ -655,7 +657,7 @@ export async function aggregateAllKpiDaily(date: Date): Promise<{
   
   return {
     platformKpi,
-    creatorsProcessed,
+    earnersProcessed,
     safetyKpi,
   };
 }
@@ -708,6 +710,20 @@ export async function cleanupOldHourlyKpi(): Promise<number> {
   logger.info(`Deleted ${oldRecords.size} old hourly KPI records`);
   return oldRecords.size;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

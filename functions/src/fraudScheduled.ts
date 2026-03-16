@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 71 — Fraud Analytics Scheduled Functions
  * 
@@ -36,8 +38,8 @@ export const weeklyFraudRecalculation = onSchedule({ schedule: "0 2 * * 0", time
         .select('userId')
         .get();
       
-      // Get users with recent creator earnings
-      const earningsSnapshot = await db.collection('creator_earnings')
+      // Get users with recent earner earnings
+      const earningsSnapshot = await db.collection('earner_earnings')
         .where('updatedAt', '>=', timestamp90dAgo)
         .get();
       
@@ -189,7 +191,7 @@ export const onDisputeCreatedFraudCheck = onDocumentCreated('disputes/{disputeId
   const snap = event.data;
   if (!snap) return;
     const dispute = snap.data();
-    const userId = dispute.userId || dispute.creatorId;
+    const userId = dispute.userId || dispute.earnerId;
     
     if (!userId) {
       console.warn('[Fraud Trigger] No userId in dispute');
@@ -357,6 +359,20 @@ export const triggerFraudRecalculation = functions.https.onCall(async (request) 
     );
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

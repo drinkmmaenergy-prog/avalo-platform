@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 144 - Royal Club & Loyalty Ecosystem 2.0
  * Core functions for luxury loyalty system
@@ -7,7 +9,7 @@
  * - No 65/35 split modifications
  * - No visibility/ranking advantages
  * - No romantic/NSFW features
- * - No creator earning boosts
+ * - No earner earning boosts
  */
 
 import { db, arrayUnion, arrayRemove } from '../init';
@@ -529,6 +531,22 @@ export async function getAvailableRewards(userId: string): Promise<RoyalClubRewa
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 122 — Localized Safety Resources Provider
  * Provides region-specific emergency and support resources
@@ -406,6 +408,20 @@ export async function getSafetyResourceStats(): Promise<{
 // ============================================================================
 
 export { SafetyResource } from './pack122-types';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

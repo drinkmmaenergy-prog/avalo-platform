@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 119 — Creator Agencies SaaS Panel
  * Core Backend Engine
@@ -79,13 +81,13 @@ async function getTeamMemberWithPermission(
 }
 
 /**
- * Verify creator is linked to agency
+ * Verify earner is linked to agency
  */
-async function verifyCreatorLink(agencyId: string, creatorUserId: string): Promise<boolean> {
+async function verifyCreatorLink(agencyId: string, earnerUserId: string): Promise<boolean> {
   const linkQuery = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
-    .where('creatorUserId', '==', creatorUserId)
+    .where('earnerUserId', '==', earnerUserId)
     .where('status', '==', 'ACTIVE')
     .limit(1)
     .get();
@@ -101,7 +103,7 @@ async function logAgencyAudit(params: {
   eventType: AgencySaaSAuditEvent;
   actorId: string;
   actorRole: AgencyRole;
-  creatorUserId?: string;
+  earnerUserId?: string;
   targetId?: string;
   previousValue?: any;
   newValue?: any;
@@ -110,7 +112,7 @@ async function logAgencyAudit(params: {
   const log: AgencySaaSAuditLog = {
     logId: generateId(),
     agencyId: params.agencyId,
-    creatorUserId: params.creatorUserId,
+    earnerUserId: params.earnerUserId,
     eventType: params.eventType,
     actorId: params.actorId,
     actorRole: params.actorRole,
@@ -295,7 +297,7 @@ export const uploadAsset = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId, fileName, mimeType, fileSize, tags, description } = request.data;
+    const { agencyId, earnerUserId, fileName, mimeType, fileSize, tags, description } = request.data;
 
     if (!agencyId || !fileName || !mimeType || !fileSize) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
@@ -309,9 +311,9 @@ export const uploadAsset = onCall(
         'canUploadAssets'
       );
 
-      // Verify creator link if specified
-      if (creatorUserId) {
-        const isLinked = await verifyCreatorLink(agencyId, creatorUserId);
+      // Verify earner link if specified
+      if (earnerUserId) {
+        const isLinked = await verifyCreatorLink(agencyId, earnerUserId);
         if (!isLinked) {
           throw new AgencySaaSError(
             AgencySaaSErrorCode.CREATOR_NOT_LINKED,
@@ -349,7 +351,7 @@ export const uploadAsset = onCall(
       const asset: AgencyAsset = {
         assetId,
         agencyId,
-        creatorUserId,
+        earnerUserId,
         uploadedBy: request.auth.uid,
         fileName,
         fileSize,
@@ -371,7 +373,7 @@ export const uploadAsset = onCall(
         eventType: 'ASSET_UPLOADED',
         actorId: request.auth.uid,
         actorRole: caller.role,
-        creatorUserId,
+        earnerUserId,
         targetId: assetId,
         metadata: { fileName, assetType, fileSize },
       });
@@ -474,7 +476,7 @@ export const listAssets = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId, assetType, limit = 50, offset = 0 } = request.data;
+    const { agencyId, earnerUserId, assetType, limit = 50, offset = 0 } = request.data;
 
     if (!agencyId) {
       throw new HttpsError('invalid-argument', 'Agency ID required');
@@ -493,8 +495,8 @@ export const listAssets = onCall(
         .where('agencyId', '==', agencyId)
         .where('status', '!=', 'DELETED' as AssetStatus);
 
-      if (creatorUserId) {
-        query = query.where('creatorUserId', '==', creatorUserId);
+      if (earnerUserId) {
+        query = query.where('earnerUserId', '==', earnerUserId);
       }
 
       if (assetType) {
@@ -527,7 +529,7 @@ export const listAssets = onCall(
 // ============================================================================
 
 /**
- * Schedule post for creator
+ * Schedule post for earner
  */
 export const schedulePost = onCall(
   { region: 'europe-west1' },
@@ -536,9 +538,9 @@ export const schedulePost = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId, platform, assetId, caption, publishAt } = request.data;
+    const { agencyId, earnerUserId, platform, assetId, caption, publishAt } = request.data;
 
-    if (!agencyId || !creatorUserId || !platform || !assetId || !publishAt) {
+    if (!agencyId || !earnerUserId || !platform || !assetId || !publishAt) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -550,8 +552,8 @@ export const schedulePost = onCall(
         'canSchedulePosts'
       );
 
-      // Verify creator link
-      const isLinked = await verifyCreatorLink(agencyId, creatorUserId);
+      // Verify earner link
+      const isLinked = await verifyCreatorLink(agencyId, earnerUserId);
       if (!isLinked) {
         throw new AgencySaaSError(
           AgencySaaSErrorCode.CREATOR_NOT_LINKED,
@@ -584,7 +586,7 @@ export const schedulePost = onCall(
       const task: AgencySchedulerTask = {
         taskId,
         agencyId,
-        creatorUserId,
+        earnerUserId,
         scheduledBy: request.auth.uid,
         platform,
         assetId,
@@ -603,12 +605,12 @@ export const schedulePost = onCall(
         eventType: 'TASK_SCHEDULED',
         actorId: request.auth.uid,
         actorRole: caller.role,
-        creatorUserId,
+        earnerUserId,
         targetId: taskId,
         metadata: { platform, publishAt },
       });
 
-      logger.info('Post scheduled', { taskId, agencyId, creatorUserId, platform });
+      logger.info('Post scheduled', { taskId, agencyId, earnerUserId, platform });
 
       return { taskId };
     } catch (error: any) {
@@ -670,7 +672,7 @@ export const cancelScheduledTask = onCall(
         eventType: 'TASK_CANCELLED',
         actorId: request.auth.uid,
         actorRole: caller.role,
-        creatorUserId: task.creatorUserId,
+        earnerUserId: task.earnerUserId,
         targetId: taskId,
         metadata: {},
       });
@@ -686,6 +688,20 @@ export const cancelScheduledTask = onCall(
 );
 
 // Continue in next message due to length...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

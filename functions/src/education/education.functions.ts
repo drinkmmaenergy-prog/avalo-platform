@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, serverTimestamp, increment } from '../init';
 import {
@@ -30,8 +32,8 @@ export const uploadCourse = functions.https.onCall(async (request) => {
   const userId = request.auth.uid;
   
   const userDoc = await db.collection('users').doc(userId).get();
-  if (!userDoc.exists || userDoc.data()?.role !== 'creator') {
-    throw new functions.https.HttpsError('permission-denied', 'User must be a creator');
+  if (!userDoc.exists || userDoc.data()?.role !== 'earner') {
+    throw new functions.https.HttpsError('permission-denied', 'User must be a earner');
   }
 
   const complianceCheck = performFullComplianceCheck({
@@ -56,9 +58,9 @@ export const uploadCourse = functions.https.onCall(async (request) => {
 
   const course: Partial<Course> = {
     id: courseRef.id,
-    creatorId: userId,
-    creatorName: userData?.name || 'Unknown Creator',
-    creatorAvatar: userData?.avatar,
+    earnerId: userId,
+    earnerName: userData?.name || 'Unknown Creator',
+    earnerAvatar: userData?.avatar,
     title: data.title,
     description: data.description,
     shortDescription: data.shortDescription,
@@ -111,8 +113,8 @@ export const uploadCourseModule = functions.https.onCall(async (request) => {
   }
 
   const courseData = courseDoc.data() as Course;
-  if (courseData.creatorId !== request.auth.uid) {
-    throw new functions.https.HttpsError('permission-denied', 'You are not the course creator');
+  if (courseData.earnerId !== request.auth.uid) {
+    throw new functions.https.HttpsError('permission-denied', 'You are not the course earner');
   }
 
   const moduleRef = db.collection('courses').doc(data.courseId).collection('modules').doc();
@@ -181,7 +183,7 @@ export const purchaseCourse = functions.https.onCall(async (request) => {
     userId,
     courseId: data.courseId,
     courseName: courseData.title,
-    creatorId: courseData.creatorId,
+    earnerId: courseData.earnerId,
     amount: courseData.price,
     currency: data.currency,
     status: 'pending',
@@ -215,19 +217,19 @@ export const purchaseCourse = functions.https.onCall(async (request) => {
     };
     transaction.set(progressRef, progress);
 
-    const creatorEarnings = courseData.price * MONETIZATION_SPLITS.CHAT.creator;
-    const avaloRevenue = courseData.price * MONETIZATION_SPLITS.CHAT.avalo;
+    const earnerEarnings = courseData.price * MONETIZATION_SPLITS.CHAT.earner;
+    const platformRevenue = courseData.price * MONETIZATION_SPLITS.CHAT.platform;
 
-    const earningsRef = db.collection('creator_earnings').doc(courseData.creatorId);
+    const earningsRef = db.collection('earner_earnings').doc(courseData.earnerId);
     transaction.set(earningsRef, {
-      totalEarnings: increment(creatorEarnings),
-      pendingEarnings: increment(creatorEarnings),
+      totalEarnings: increment(earnerEarnings),
+      pendingEarnings: increment(earnerEarnings),
       lastUpdated: serverTimestamp()
     }, { merge: true });
 
     const revenueRef = db.collection('platform_revenue').doc('education');
     transaction.set(revenueRef, {
-      totalRevenue: increment(avaloRevenue),
+      totalRevenue: increment(platformRevenue),
       courseSales: increment(1),
       lastUpdated: serverTimestamp()
     }, { merge: true });
@@ -353,13 +355,13 @@ export const issueCertificate = functions.https.onCall(async (request) => {
     userName: userData?.name || 'Unknown User',
     courseId: data.courseId,
     courseName: courseData.title,
-    creatorId: courseData.creatorId,
-    creatorName: courseData.creatorName,
+    earnerId: courseData.earnerId,
+    earnerName: courseData.earnerName,
     completionDate: progressData.completedAt,
     issuedAt: serverTimestamp() as any,
     certificateNumber,
     digitalSignature: `sig_${Date.now()}_${Math.random().toString(36).substr(2, 16)}`,
-    verificationUrl: `https://avalo.app/verify-certificate/${certificateRef.id}`,
+    verificationUrl: `https://platform.app/verify-certificate/${certificateRef.id}`,
     skills: courseData.learningObjectives,
     finalScore: data.finalScore
   };
@@ -422,8 +424,8 @@ export const createQASession = functions.https.onCall(async (request) => {
     courseId: data.courseId,
     studentId: userId,
     studentName: userData?.name || 'Unknown Student',
-    coachId: courseData.creatorId,
-    coachName: courseData.creatorName,
+    coachId: courseData.earnerId,
+    coachName: courseData.earnerName,
     question: data.question,
     status: 'pending',
     createdAt: serverTimestamp() as any,
@@ -465,7 +467,7 @@ export const submitComplianceReport = functions.https.onCall(async (request) => 
     id: reportRef.id,
     courseId: data.courseId,
     courseName: courseData.title,
-    creatorId: courseData.creatorId,
+    earnerId: courseData.earnerId,
     reporterId: userId,
     reporterName: userData?.name || 'Anonymous',
     violationType: data.violationType as any,
@@ -518,9 +520,9 @@ export const resolveEducationDisputes = functions.https.onCall(async (request) =
       });
     }
 
-    if (data.action === 'ban_creator') {
-      const creatorRef = db.collection('users').doc(reportData.creatorId);
-      transaction.update(creatorRef, {
+    if (data.action === 'ban_earner') {
+      const earnerRef = db.collection('users').doc(reportData.earnerId);
+      transaction.update(earnerRef, {
         banned: true,
         banReason: 'Serious compliance violations in education content'
       });
@@ -532,6 +534,23 @@ export const resolveEducationDisputes = functions.https.onCall(async (request) =
     action: data.action
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

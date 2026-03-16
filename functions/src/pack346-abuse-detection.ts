@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 346 — Abuse & Fraud Detection Engine
  * Real-time detection of abuse patterns and fraud signals
@@ -110,7 +112,7 @@ export const detectFakeMismatch = onDocumentCreated("safetyEvents/{eventId}", as
     }
 
     const userId = eventData.reportedBy;
-    const creatorId = eventData.reportedUser;
+    const earnerId = eventData.reportedUser;
 
     // Count mismatch reports by this user in last 30 days
     const thirtyDaysAgo = Timestamp.fromDate(
@@ -252,45 +254,45 @@ export const detectAIAbuse = onDocumentCreated("aiInteractions/{interactionId}",
   });
 
 /**
- * Detect creator cancellation farming
+ * Detect earner cancellation farming
  */
 export const detectCancellationFarming = onSchedule("every 6 hours", async (event) => {
     const sevenDaysAgo = Timestamp.fromDate(
       new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     );
 
-    // Find creators with high cancellation rates
+    // Find earners with high cancellation rates
     const bookings = await db
       .collection("calendarBookings")
       .where("createdAt", ">=", sevenDaysAgo)
-      .where("status", "in", ["cancelled_by_creator", "completed"])
+      .where("status", "in", ["cancelled_by_earner", "completed"])
       .get();
 
-    const creatorStats = new Map<string, { total: number; cancelled: number }>();
+    const earnerStats = new Map<string, { total: number; cancelled: number }>();
 
     bookings.forEach((doc) => {
       const booking = doc.data();
-      const creatorId = booking.creatorId;
+      const earnerId = booking.earnerId;
       
-      const stats = creatorStats.get(creatorId) || { total: 0, cancelled: 0 };
+      const stats = earnerStats.get(earnerId) || { total: 0, cancelled: 0 };
       stats.total++;
       
-      if (booking.status === "cancelled_by_creator") {
+      if (booking.status === "cancelled_by_earner") {
         stats.cancelled++;
       }
       
-      creatorStats.set(creatorId, stats);
+      earnerStats.set(earnerId, stats);
     });
 
     // Threshold: >40% cancellation rate with 10+ bookings = farming
-    for (const creatorId of Array.from(creatorStats.keys())) {
-      const stats = creatorStats.get(creatorId)!;
+    for (const earnerId of Array.from(earnerStats.keys())) {
+      const stats = earnerStats.get(earnerId)!;
       if (stats.total >= 10) {
         const cancelRate = stats.cancelled / stats.total;
         
         if (cancelRate > 0.4) {
           await createAbuseSignal({
-            creatorId,
+            earnerId,
             type: "cancel_farming",
             severity: cancelRate > 0.6 ? "critical" : "high",
             metadata: {
@@ -303,7 +305,7 @@ export const detectCancellationFarming = onSchedule("every 6 hours", async (even
       }
     }
 
-    console.log('Scheduled job result:', { processed: creatorStats.size });
+    console.log('Scheduled job result:', { processed: earnerStats.size });
 
 
     return;
@@ -366,7 +368,7 @@ async function createAbuseSignal(
   const fullSignal: AbuseSignal = {
     id: signalId,
     userId: signal.userId,
-    creatorId: signal.creatorId,
+    earnerId: signal.earnerId,
     type: signal.type!,
     severity: signal.severity!,
     detectedAt: serverTimestamp() as any,
@@ -396,14 +398,14 @@ async function createAbuseSignal(
       severity: fullSignal.severity === "critical" ? "emergency" : "critical",
       title: `Abuse Detected: ${fullSignal.type}`,
       message: `${fullSignal.severity.toUpperCase()} severity abuse signal for ${
-        fullSignal.userId || fullSignal.creatorId
+        fullSignal.userId || fullSignal.earnerId
       }`,
       channels: ["admin_dashboard", "slack"],
       metadata: {
         signalId,
         signalType: fullSignal.type,
         userId: fullSignal.userId,
-        creatorId: fullSignal.creatorId,
+        earnerId: fullSignal.earnerId,
       },
     });
   }
@@ -441,7 +443,7 @@ function determineAutoAction(
  * Apply automatic action for abuse signal
  */
 async function applyAutoAction(signal: AbuseSignal): Promise<void> {
-  const targetId = signal.userId || signal.creatorId;
+  const targetId = signal.userId || signal.earnerId;
   
   if (!targetId || !signal.autoAction) {
     return;
@@ -544,6 +546,20 @@ export const resolveAbuseSignal = functions.https.onCall(async (request) => {
     return;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Web Operations Cloud Functions
  * Handles web-specific operations for Avalo Web v1
@@ -15,7 +17,7 @@ interface FunctionResponse<T = any> {
 }
 
 /**
- * Purchase creator content with tokens
+ * Purchase earner content with tokens
  * Cloud Function: purchaseContent
  */
 export const purchaseContentCallable = onCall(
@@ -37,7 +39,7 @@ export const purchaseContentCallable = onCall(
 
       await db.runTransaction(async (transaction) => {
         // Get content document
-        const contentRef = db.collection("creatorContent").doc(contentId);
+        const contentRef = db.collection("earnerContent").doc(contentId);
         const contentSnap = await transaction.get(contentRef);
 
         if (!contentSnap.exists) {
@@ -46,9 +48,9 @@ export const purchaseContentCallable = onCall(
 
         const content = contentSnap.data();
         const priceTokens = content?.priceTokens || 0;
-        const creatorUid = content?.creatorUid;
+        const earnerUid = content?.earnerUid;
 
-        if (!creatorUid) {
+        if (!earnerUid) {
           throw new HttpsError("internal", "Invalid content data");
         }
 
@@ -77,9 +79,9 @@ export const purchaseContentCallable = onCall(
           throw new HttpsError("failed-precondition", "Insufficient tokens");
         }
 
-        // Calculate revenue split (70% creator, 30% Avalo)
-        const creatorEarning = Math.floor(priceTokens * PAID_CONTENT_CONFIG.CREATOR_SPLIT);
-        const avaloFee = priceTokens - creatorEarning;
+        // Calculate revenue split (70% earner, 30% Avalo)
+        const earnerEarning = Math.floor(priceTokens * PAID_CONTENT_CONFIG.CREATOR_SPLIT);
+        const platformFee = priceTokens - earnerEarning;
 
         // Deduct tokens from buyer
         transaction.update(walletRef, {
@@ -87,20 +89,20 @@ export const purchaseContentCallable = onCall(
           spent: increment(priceTokens),
         });
 
-        // Credit creator's wallet
-        const creatorWalletRef = db.collection("users").doc(creatorUid).collection("wallet").doc("current");
-        const creatorWalletSnap = await transaction.get(creatorWalletRef);
+        // Credit earner's wallet
+        const earnerWalletRef = db.collection("users").doc(earnerUid).collection("wallet").doc("current");
+        const earnerWalletSnap = await transaction.get(earnerWalletRef);
 
-        if (creatorWalletSnap.exists) {
-          transaction.update(creatorWalletRef, {
-            earned: increment(creatorEarning),
-            pending: increment(creatorEarning),
+        if (earnerWalletSnap.exists) {
+          transaction.update(earnerWalletRef, {
+            earned: increment(earnerEarning),
+            pending: increment(earnerEarning),
           });
         } else {
-          transaction.set(creatorWalletRef, {
+          transaction.set(earnerWalletRef, {
             balance: 0,
-            earned: creatorEarning,
-            pending: creatorEarning,
+            earned: earnerEarning,
+            pending: earnerEarning,
             spent: 0,
             settlementRate: 0.2,
           });
@@ -112,10 +114,10 @@ export const purchaseContentCallable = onCall(
           id: purchaseId,
           userId,
           contentId,
-          creatorUid,
+          earnerUid,
           priceTokens,
-          creatorEarning,
-          avaloFee,
+          earnerEarning,
+          platformFee,
           purchasedAt: serverTimestamp(),
         });
 
@@ -133,19 +135,19 @@ export const purchaseContentCallable = onCall(
           amountTokens: priceTokens,
           status: "completed",
           source: "content_purchase",
-          metadata: { contentId, creatorUid },
+          metadata: { contentId, earnerUid },
           createdAt: serverTimestamp(),
         });
 
-        const creatorTxId = generateId();
-        transaction.set(db.collection("transactions").doc(creatorTxId), {
-          txId: creatorTxId,
-          uid: creatorUid,
+        const earnerTxId = generateId();
+        transaction.set(db.collection("transactions").doc(earnerTxId), {
+          txId: earnerTxId,
+          uid: earnerUid,
           type: "earning",
-          amountTokens: creatorEarning,
+          amountTokens: earnerEarning,
           status: "completed",
           source: "content_sale",
-          metadata: { contentId, buyerUid: userId, avaloFee },
+          metadata: { contentId, buyerUid: userId, platformFee },
           createdAt: serverTimestamp(),
         });
 
@@ -292,6 +294,20 @@ export const getUserContentPurchasesCallable = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

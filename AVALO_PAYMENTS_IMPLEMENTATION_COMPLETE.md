@@ -286,7 +286,7 @@ APPLE_SANDBOX=false
 
 # URLs
 WEB_URL=https://avalo.app
-FUNCTIONS_URL=https://us-central1-avalo.cloudfunctions.net
+FUNCTIONS_URL=https://europe-west1-avalo.cloudfunctions.net
 ```
 
 ### Firebase Deployment

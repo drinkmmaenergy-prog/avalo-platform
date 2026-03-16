@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 141 - AI Companion Token Billing
  * 
@@ -109,8 +111,8 @@ export async function chargeTokensForAIInteraction(
     companionId,
     quantity,
     revenueAllocation: {
-      avalo: tokensToCharge,      // 100% to Avalo
-      creator: 0,                  // 0% to creators (no creator involved)
+      platform: tokensToCharge,      // 100% to Avalo
+      earner: 0,                  // 0% to earners (no earner involved)
     },
     timestamp: serverTimestamp(),
     status: 'COMPLETED',
@@ -350,7 +352,7 @@ export async function getAICompanionRevenueStats(
 // ============================================================================
 
 /**
- * Verify NO creator revenue split for AI companions
+ * Verify NO earner revenue split for AI companions
  */
 export async function verifyAIRevenueCompliance(
   transactionId: string
@@ -371,12 +373,12 @@ export async function verifyAIRevenueCompliance(
   const violations: string[] = [];
   
   // Verify 100% Avalo revenue
-  if (txn.revenueAllocation?.creator !== 0) {
-    violations.push(`Creator revenue should be 0, got ${txn.revenueAllocation?.creator}`);
+  if (txn.revenueAllocation?.earner !== 0) {
+    violations.push(`Creator revenue should be 0, got ${txn.revenueAllocation?.earner}`);
   }
   
-  if (txn.revenueAllocation?.avalo !== txn.amount) {
-    violations.push(`Avalo revenue should be ${txn.amount}, got ${txn.revenueAllocation?.avalo}`);
+  if (txn.revenueAllocation?.platform !== txn.amount) {
+    violations.push(`Avalo revenue should be ${txn.amount}, got ${txn.revenueAllocation?.platform}`);
   }
   
   // Verify no discounts/bonuses
@@ -389,6 +391,20 @@ export async function verifyAIRevenueCompliance(
     violations,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * ECONOMY CONFIG — Canonical Single Source of Truth (USD-only)
  *
@@ -9,7 +11,7 @@
  * - Historical transactions are not recalculated.
  *
  * Canonical:
- * - TOKEN_PAYOUT_USD: creator payout per earned token (USD)
+ * - TOKEN_PAYOUT_USD: earner payout per earned token (USD)
  *
  * @module config/economyConfig
  * @version 2.0.0 — Extended with SPLITS, CHAT_PRICING, governance hooks
@@ -27,7 +29,7 @@ export const TOKEN_PAYOUT_USD = 0.03;
 export const PAYOUT_PER_TOKEN_USD = TOKEN_PAYOUT_USD;
 
 /**
- * Platform payout fee (taken from creator payout amount; charged to creator side)
+ * Platform payout fee (taken from earner payout amount; charged to earner side)
  * NOTE: You explicitly decided this is NOT covered by Avalo.
  */
 export const PAYOUT_FEE_PLATFORM_PERCENT = 0.05;
@@ -37,7 +39,7 @@ export const PAYOUT_FEE_PLATFORM_PERCENT = 0.05;
 // ============================================================================
 
 /**
- * Platform fee percentage on chat deposits (MONETIZATION_SPLITS.CHAT.avalo = 35%).
+ * Platform fee percentage on chat deposits (MONETIZATION_SPLITS.CHAT.platform = 35%).
  * Charged at deposit time, non-refundable.
  */
 export const PLATFORM_LAYOUT_FEE = 0.05;
@@ -58,28 +60,28 @@ export const MIN_CHAT_CHARGE_TOKENS = 100;
 
 /**
  * Revenue split per surface.
- * { creator: decimal (0–1), avalo: decimal (0–1) }
- * creator + avalo MUST equal 1.0 for each surface.
+ * { earner: decimal (0–1), platform: decimal (0–1) }
+ * earner + platform MUST equal 1.0 for each surface.
  *
  * These values are discovered from the canonical implementations.
  * See docs/SOT_SPLITS_MATRIX.md for conflict report.
  */
 export const SPLITS_BY_SURFACE = {
-  CHAT:           { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALLS_VOICE:    { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALLS_VIDEO:    { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALENDAR:       { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  EVENTS:         { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  TIPS:           { creator: 0.90, avalo: 0.10 },
-  SUBSCRIPTIONS:  { creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, avalo: MONETIZATION_SPLITS.SUBSCRIPTION.avalo },
-  LIVE_STREAMS:   { creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, avalo: MONETIZATION_SPLITS.SUBSCRIPTION.avalo },
-  LIVE_VIP:       { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  AI_COMPANIONS:  { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  BOOSTS_CREATOR: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  BOOSTS_PROMO:   { creator: 0.00, avalo: 1.00 },
-  DIGITAL_PRODUCTS: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  DROPS:          { creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, avalo: MONETIZATION_SPLITS.SUBSCRIPTION.avalo },
-  MARKETPLACE:    { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CHAT:           { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALLS_VOICE:    { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALLS_VIDEO:    { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALENDAR:       { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  EVENTS:         { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  TIPS:           { earner: 0.90, platform: 0.10 },
+  SUBSCRIPTIONS:  { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
+  LIVE_STREAMS:   { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
+  LIVE_VIP:       { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  AI_COMPANIONS:  { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  BOOSTS_CREATOR: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  BOOSTS_PROMO:   { earner: 0.00, platform: 1.00 },
+  DIGITAL_PRODUCTS: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  DROPS:          { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
+  MARKETPLACE:    { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
 } as const;
 
 export type SurfaceKey = keyof typeof SPLITS_BY_SURFACE;
@@ -87,14 +89,14 @@ export type SurfaceKey = keyof typeof SPLITS_BY_SURFACE;
 /**
  * Get split for a given surface. Returns default (65/35) if surface unknown.
  */
-export function getSplitForSurface(surface: string): { creator: number; avalo: number } {
+export function getSplitForSurface(surface: string): { earner: number; platform: number } {
   const key = surface.toUpperCase().replace(/-/g, '_') as SurfaceKey;
-  return SPLITS_BY_SURFACE[key] ?? { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo };
+  return SPLITS_BY_SURFACE[key] ?? { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform };
 }
 
 // Build-time invariant check
 for (const [key, split] of Object.entries(SPLITS_BY_SURFACE)) {
-  if (Math.abs(split.creator + split.avalo - 1.0) > 0.001) {
+  if (Math.abs(split.earner + split.platform - 1.0) > 0.001) {
     throw new Error(`CRITICAL: SPLITS_BY_SURFACE.${key} does not sum to 1.0`);
   }
 }
@@ -123,10 +125,10 @@ export const CHAT_PRICING = {
   DEFAULT_DEPOSIT_TOKENS: 100,
   /** Chat expiry inactivity hours */
   CHAT_EXPIRY_HOURS: 48,
-  /** Platform fee on deposit (MONETIZATION_SPLITS.CHAT.avalo = 35%, non-refundable) */
-  DEPOSIT_PLATFORM_FEE_PCT: MONETIZATION_SPLITS.CHAT.avalo,
-  /** Escrow from deposit (MONETIZATION_SPLITS.CHAT.creator = 65%, refundable unused) */
-  DEPOSIT_ESCROW_PCT: MONETIZATION_SPLITS.CHAT.creator,
+  /** Platform fee on deposit (MONETIZATION_SPLITS.CHAT.platform = 35%, non-refundable) */
+  DEPOSIT_PLATFORM_FEE_PCT: MONETIZATION_SPLITS.CHAT.platform,
+  /** Escrow from deposit (MONETIZATION_SPLITS.CHAT.earner = 65%, refundable unused) */
+  DEPOSIT_ESCROW_PCT: MONETIZATION_SPLITS.CHAT.earner,
 } as const;
 
 // ============================================================================
@@ -198,6 +200,24 @@ export const PAYOUT_FX_RATES = {
 
 
 export const TOKEN_PAYOUT_PLN = TOKEN_PAYOUT_USD * 4.0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

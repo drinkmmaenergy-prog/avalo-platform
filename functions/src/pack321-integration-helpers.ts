@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 321B — Wallet Integration Helper Functions
  * Centralized helpers for feature teams to integrate with wallet system
@@ -35,7 +37,7 @@ export async function chargeForPaidChat(
     amountTokens,
     source: 'CHAT',
     relatedId: chatId,
-    creatorId: earnerId,
+    earnerId: earnerId,
     contextType: 'CHAT_PAID',
     contextRef: `chat:${chatId}`,
     metadata: {
@@ -89,7 +91,7 @@ export async function chargeForVoiceCall(
     amountTokens,
     source: 'CALL',
     relatedId: callId,
-    creatorId: earnerId,
+    earnerId: earnerId,
     contextType: 'CALL_VOICE',
     contextRef: `call:${callId}`,
     metadata: {
@@ -116,7 +118,7 @@ export async function chargeForVideoCall(
     amountTokens,
     source: 'CALL',
     relatedId: callId,
-    creatorId: earnerId,
+    earnerId: earnerId,
     contextType: 'CALL_VIDEO',
     contextRef: `call:${callId}`,
     metadata: {
@@ -163,7 +165,7 @@ export async function refundCallTokens(
  */
 export async function chargeForCalendarBooking(
   bookerId: string,
-  creatorId: string,
+  earnerId: string,
   amountTokens: number,
   bookingId: string,
   scheduledStartTime: Date
@@ -173,7 +175,7 @@ export async function chargeForCalendarBooking(
     amountTokens,
     source: 'CALENDAR',
     relatedId: bookingId,
-    creatorId,
+    earnerId,
     contextType: 'CALENDAR_BOOKING',
     contextRef: `booking:${bookingId}`,
     metadata: {
@@ -276,7 +278,7 @@ export async function chargeForEventTicket(
     amountTokens,
     source: 'EVENT',
     relatedId: eventId,
-    creatorId: organizerId,
+    earnerId: organizerId,
     contextType: 'EVENT_TICKET',
     contextRef: `event:${eventId}:ticket:${ticketId}`,
     metadata: {
@@ -374,7 +376,7 @@ export async function chargeForTip(
     amountTokens,
     source: 'TIP',
     relatedId,
-    creatorId: receiverId,
+    earnerId: receiverId,
     contextType: 'TIP',
     contextRef: `tip:${relatedId}`,
     metadata: {
@@ -394,7 +396,7 @@ export async function chargeForTip(
  */
 export async function chargeForMediaPurchase(
   buyerId: string,
-  creatorId: string,
+  earnerId: string,
   amountTokens: number,
   mediaId: string,
   mediaType: 'photo' | 'video' | 'audio'
@@ -404,7 +406,7 @@ export async function chargeForMediaPurchase(
     amountTokens,
     source: 'MEDIA',
     relatedId: mediaId,
-    creatorId,
+    earnerId,
     contextType: 'MEDIA_PURCHASE',
     contextRef: `media:${mediaId}`,
     metadata: {
@@ -420,7 +422,7 @@ export async function chargeForMediaPurchase(
  */
 export async function chargeForDigitalProduct(
   buyerId: string,
-  creatorId: string,
+  earnerId: string,
   amountTokens: number,
   productId: string,
   productType: string
@@ -430,7 +432,7 @@ export async function chargeForDigitalProduct(
     amountTokens,
     source: 'DIGITAL_PRODUCT',
     relatedId: productId,
-    creatorId,
+    earnerId,
     contextType: 'MEDIA_PURCHASE',
     contextRef: `product:${productId}`,
     metadata: {
@@ -460,7 +462,7 @@ export async function chargeForAISession(
     amountTokens,
     source: 'CHAT',
     relatedId: sessionId,
-    creatorId: aiOwnerId,
+    earnerId: aiOwnerId,
     contextType: 'AI_SESSION',
     contextRef: `ai:${sessionId}`,
     metadata: {
@@ -499,8 +501,8 @@ export function getContextRevenueSplit(context: WalletRevenueContextType): {
   };
 
   return {
-    earnerPercent: Math.round(split.earnerShare * 100),
-    platformPercent: Math.round(split.platformShare * 100),
+    earnerPercent: Math.round(split.earner * 100),
+    platformPercent: Math.round(split.platform * 100),
     description: descriptions[context],
   };
 }
@@ -516,11 +518,26 @@ export function calculateSplit(
   platformAmount: number;
 } {
   const split = getWalletSplitForContext(context);
-  const earnerAmount = Math.floor(totalTokens * split.earnerShare);
+  const earnerAmount = Math.floor(totalTokens * split.earner);
   const platformAmount = totalTokens - earnerAmount;
 
   return { earnerAmount, platformAmount };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

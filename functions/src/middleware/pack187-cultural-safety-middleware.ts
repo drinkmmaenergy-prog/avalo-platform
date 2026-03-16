@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 187: Cultural Safety Middleware
  * Real-time blocking of stereotypes, fetishization, and harmful patterns
@@ -381,6 +383,22 @@ export class CulturalSafetyMiddleware {
 }
 
 export const culturalSafetyMiddleware = new CulturalSafetyMiddleware();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

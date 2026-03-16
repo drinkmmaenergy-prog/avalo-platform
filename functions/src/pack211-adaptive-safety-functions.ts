@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 211 — Adaptive Safety Intelligence Cloud Functions
  * Callable endpoints for adaptive safety system
@@ -199,17 +201,17 @@ export const pack211_recordBookingOutcome = functions.https.onCall(async (reques
       const booking = bookingDoc.data()!;
       
       // Verify caller is involved in booking
-      if (booking.bookerId !== request.auth.uid && booking.creatorId !== request.auth.uid) {
+      if (booking.bookerId !== request.auth.uid && booking.earnerId !== request.auth.uid) {
         throw new functions.https.HttpsError('permission-denied', 'Not authorized');
       }
 
-      await recordBookingAttempt(booking.bookerId, booking.creatorId, outcome);
+      await recordBookingAttempt(booking.bookerId, booking.earnerId, outcome);
 
       // Update risk scores based on outcome
       if (outcome === 'PANIC_ENDED') {
         // Panic alert triggered - update risk score of other party
         const otherId = booking.bookerId === request.auth.uid 
-          ? booking.creatorId 
+          ? booking.earnerId 
           : booking.bookerId;
         
         await updateRiskScore({
@@ -223,11 +225,11 @@ export const pack211_recordBookingOutcome = functions.https.onCall(async (reques
         await updateRiskScore({
           userId: booking.bookerId,
           event: 'SUCCESSFUL_MEETING',
-          relatedUserId: booking.creatorId,
+          relatedUserId: booking.earnerId,
           metadata: { bookingId },
         });
         await updateRiskScore({
-          userId: booking.creatorId,
+          userId: booking.earnerId,
           event: 'SUCCESSFUL_MEETING',
           relatedUserId: booking.bookerId,
           metadata: { bookingId },
@@ -614,6 +616,20 @@ export const pack211_admin_adjustRiskScore = functions.https.onCall(async (reque
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

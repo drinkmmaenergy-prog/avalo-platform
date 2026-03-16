@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — Region Compliance Enforcement
  * Three-layer compliance gate: Legal → Platform → Payment
@@ -503,6 +505,20 @@ export function getComplianceMessage(check: NSFWComplianceCheck): string {
 
   return check.blockReason || 'This content is not available';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

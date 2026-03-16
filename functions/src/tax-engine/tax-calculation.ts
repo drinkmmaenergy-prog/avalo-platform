@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 149: Global Tax Engine & Compliance Hub
  * Tax Calculation and Liability Functions
@@ -37,7 +39,7 @@ export async function calculateTaxLiability(
     }
 
     const grossRevenue = revenueData.reduce((sum, item) => sum + item.amount, 0);
-    const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.avalo;
+    const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.platform;
     const netRevenue = grossRevenue - platformFee;
 
     const revenueByCategory: Record<RevenueCategory, number> = {
@@ -112,7 +114,7 @@ export async function getRevenueDataForPeriod(
   try {
     const transactionsSnapshot = await db
       .collection('transactions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('timestamp', '>=', periodStart)
       .where('timestamp', '<=', periodEnd)
       .where('status', '==', 'completed')
@@ -309,6 +311,23 @@ export async function recalculateTaxLiabilityForPeriod(
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

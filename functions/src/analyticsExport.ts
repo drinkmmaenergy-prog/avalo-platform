@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 18 - Analytics Export to BigQuery
  *
@@ -41,7 +43,7 @@ const db = getFirestore();
 const bigquery = new BigQuery();
 const storage = firebaseStorage;
 
-const DATASET_ID = "avalo";
+const DATASET_ID = "platform";
 const TABLE_ID = "analytics_events";
 const BATCH_SIZE = 500; // Process 500 events per batch
 const MAX_RETRIES = 3;
@@ -374,6 +376,20 @@ export const cleanupAnalyticsEventsScheduler = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

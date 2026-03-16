@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 134 — Avalo Recommendation & Personalization Engine
  * 
@@ -107,8 +109,8 @@ export interface DayPattern {
 // ============================================================================
 
 /**
- * Content category assignment (for creators and posts)
- * Based on content analysis, NOT creator appearance
+ * Content category assignment (for earners and posts)
+ * Based on content analysis, NOT earner appearance
  */
 export interface ContentCategoryProfile {
   targetId: string; // userId or postId
@@ -148,9 +150,9 @@ export interface FeedFilters {
 export interface PersonalizedFeedItem {
   contentId: string;
   contentType: 'POST' | 'STORY' | 'REEL';
-  creatorId: string;
-  creatorName: string;
-  creatorPhotoUrl?: string;
+  earnerId: string;
+  earnerName: string;
+  earnerPhotoUrl?: string;
   categories: InterestCategory[];
   relevanceScore: number;
   reasonId: string; // For "Why am I seeing this?"
@@ -190,7 +192,7 @@ export type RecommendationReasonType =
   | 'LANGUAGE_MATCH' // "Posts in your language"
   | 'TOPIC_FOLLOW' // "You follow this topic"
   | 'SIMILAR_INTERACTION' // "Similar to content you liked"
-  | 'NEW_CREATOR_BOOST' // "New creator in your interests"
+  | 'NEW_CREATOR_BOOST' // "New earner in your interests"
   | 'TRENDING_CATEGORY'; // "Popular in categories you like"
 
 export interface RecommendationFactor {
@@ -204,11 +206,11 @@ export interface RecommendationFactor {
 // ============================================================================
 
 /**
- * New creator boost configuration
- * Ensures new creators get equal discovery chances
+ * New earner boost configuration
+ * Ensures new earners get equal discovery chances
  */
 export interface NewCreatorBoostProfile {
-  creatorId: string;
+  earnerId: string;
   accountAge: number; // Days since creation
   followerCount: number;
   engagementRate: number;
@@ -224,7 +226,7 @@ export interface NewCreatorBoostProfile {
  * Prevents filter bubbles and echo chambers
  */
 export interface DiversityConfig {
-  minNewCreatorRatio: number; // 0.15 = 15% new creators
+  minNewCreatorRatio: number; // 0.15 = 15% new earners
   maxSameCategoryStreak: number; // Max same category in row
   diversityBoostEnabled: boolean;
   explorationRate: number; // 0-1, how much to explore
@@ -251,7 +253,7 @@ export interface SafetyFilterContext {
 
 /**
  * Anti-exploitation validation
- * Prevents suggesting risky creators to vulnerable users
+ * Prevents suggesting risky earners to vulnerable users
  */
 export interface ExploitationCheckResult {
   allowed: boolean;
@@ -261,7 +263,7 @@ export interface ExploitationCheckResult {
 }
 
 export type ExploitationConcern =
-  | 'HIGH_RISK_TO_VULNERABLE' // Risky creator suggested to vulnerable user
+  | 'HIGH_RISK_TO_VULNERABLE' // Risky earner suggested to vulnerable user
   | 'NSFW_TO_MINOR' // NSFW content to underage user
   | 'INTENSE_PERSONALITY_TO_LONELY' // Addictive patterns
   | 'TRAUMA_TRIGGER'; // Known trauma triggers
@@ -279,7 +281,7 @@ export interface RecommendationEvent {
   userId: string;
   contentId: string;
   contentType: string;
-  creatorId: string;
+  earnerId: string;
   eventType: RecommendationEventType;
   reasonId?: string;
   interactionDuration?: number;
@@ -358,7 +360,7 @@ export const DEFAULT_RECOMMENDATION_CONFIG: RecommendationConfig = {
   // Fairness
   newCreatorBoostEnabled: true,
   newCreatorDefinitionDays: 90, // 3 months
-  minNewCreatorRatio: 0.15, // 15% new creators
+  minNewCreatorRatio: 0.15, // 15% new earners
   
   // Diversity
   diversityInjectionEnabled: true,
@@ -449,7 +451,7 @@ export type EthicsViolationType =
 export const FORBIDDEN_SIGNALS = [
   'tokenSpending',
   'tokenEarnings',
-  'creatorIncome',
+  'earnerIncome',
   'vipStatus',
   'royalSubscription',
   'adCampaignBudget',
@@ -468,6 +470,22 @@ export const FORBIDDEN_SIGNALS = [
 ] as const;
 
 export type ForbiddenSignal = typeof FORBIDDEN_SIGNALS[number];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 253 — ROYAL UPGRADE FUNNEL ENGINE
  * Core logic for Royal tier calculation, unlock, and maintenance
@@ -25,7 +27,7 @@ export async function calculateRoyalMetrics(userId: string): Promise<RoyalMetric
   
   // Get paid chat partners in last 90 days
   const paidChatsSnapshot = await db.collection('chats')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('lastPaidAt', '>=', periodStart)
     .where('isPaid', '==', true)
     .get();
@@ -47,7 +49,7 @@ export async function calculateRoyalMetrics(userId: string): Promise<RoyalMetric
   
   // Get average rating from last 90 days
   const ratingsSnapshot = await db.collection('chat_ratings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', periodStart)
     .get();
   
@@ -69,7 +71,7 @@ export async function calculateRoyalMetrics(userId: string): Promise<RoyalMetric
   const eventParticipation = eventsSnapshot.size;
   
   const storyAlbumSnapshot = await db.collection('digital_products')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', 'in', ['story', 'album'])
     .where('soldAt', '>=', periodStart)
     .get();
@@ -516,6 +518,20 @@ export async function generateRoyalAnalytics(userId: string): Promise<RoyalAnaly
   
   return analytics;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

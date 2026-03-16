@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 87 — Enforcement & Account State Machine
  * Integration examples for existing endpoints
@@ -73,9 +75,9 @@ export async function integrateIntoPaidMediaSend(senderId: string, mediaData: an
  * Example: Integrate enforcement into premium story publishing
  * Add this check to your premium stories endpoints (PACK 78)
  */
-export async function integrateIntoPremiumStoryPublish(creatorId: string, storyData: any) {
+export async function integrateIntoPremiumStoryPublish(earnerId: string, storyData: any) {
   // ENFORCEMENT CHECK - Add at start of function
-  await checkCanPublishPremiumStories(creatorId);
+  await checkCanPublishPremiumStories(earnerId);
   
   // Continue with normal story publishing logic
   // ... existing code ...
@@ -89,9 +91,9 @@ export async function integrateIntoPremiumStoryPublish(creatorId: string, storyD
  * Example: Integrate enforcement into payout requests
  * Add this check to your payout endpoints (PACK 83)
  */
-export async function integrateIntoPayoutRequest(creatorId: string, payoutData: any) {
+export async function integrateIntoPayoutRequest(earnerId: string, payoutData: any) {
   // ENFORCEMENT CHECK - Add at start of function
-  await checkCanRequestPayouts(creatorId);
+  await checkCanRequestPayouts(earnerId);
   
   // Continue with normal payout request logic
   // ... existing code ...
@@ -187,6 +189,20 @@ export async function exampleConditionalFeature(userId: string) {
     }
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

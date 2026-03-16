@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 359 — Legal Compliance: Creator Tax Statements
  * 
- * Generates monthly tax statements for creators with:
+ * Generates monthly tax statements for earners with:
  * - Earnings breakdown
  * - Platform fees
  * - Tax withholding
@@ -68,29 +70,29 @@ export interface AnnualTaxSummary {
 // ============================================================================
 
 /**
- * Generate monthly tax statement for creator
+ * Generate monthly tax statement for earner
  */
 export async function generateMonthlyStatement(
-  creatorId: string,
+  earnerId: string,
   year: number,
   month: number
 ): Promise<CreatorTaxStatement> {
-  // Get creator's tax summary for the period
-  const summaryId = `${creatorId}_${year}_${month}`;
-  const summaryDoc = await db.collection('creator_tax_summaries').doc(summaryId).get();
+  // Get earner's tax summary for the period
+  const summaryId = `${earnerId}_${year}_${month}`;
+  const summaryDoc = await db.collection('earner_tax_summaries').doc(summaryId).get();
   
   if (!summaryDoc.exists) {
-    throw new Error(`No tax data found for ${creatorId} in ${year}-${month}`);
+    throw new Error(`No tax data found for ${earnerId} in ${year}-${month}`);
   }
   
   const summaryData = summaryDoc.data()!;
-  const { profile } = await getUserJurisdiction(creatorId);
+  const { profile } = await getUserJurisdiction(earnerId);
   
   // Get transaction breakdown by type
-  const breakdownByType = await getEarningsBreakdown(creatorId, year, month);
+  const breakdownByType = await getEarningsBreakdown(earnerId, year, month);
   
   const statement: CreatorTaxStatement = {
-    userId: creatorId,
+    userId: earnerId,
     period: `${year}-${String(month).padStart(2, '0')}`,
     year,
     month,
@@ -104,7 +106,7 @@ export async function generateMonthlyStatement(
     transactionCount: summaryData.transactionCount || 0,
     breakdownByType,
     generatedAt: new Date(),
-    statementId: `${creatorId}_${year}_${month}_${Date.now()}`,
+    statementId: `${earnerId}_${year}_${month}_${Date.now()}`,
   };
   
   // Store the statement
@@ -117,10 +119,10 @@ export async function generateMonthlyStatement(
 }
 
 /**
- * Generate annual tax summary for creator
+ * Generate annual tax summary for earner
  */
 export async function generateAnnualSummary(
-  creatorId: string,
+  earnerId: string,
   year: number
 ): Promise<AnnualTaxSummary> {
   const monthlyStatements: CreatorTaxStatement[] = [];
@@ -128,7 +130,7 @@ export async function generateAnnualSummary(
   // Generate statements for all 12 months
   for (let month = 1; month <= 12; month++) {
     try {
-      const statement = await generateMonthlyStatement(creatorId, year, month);
+      const statement = await generateMonthlyStatement(earnerId, year, month);
       monthlyStatements.push(statement);
     } catch (error) {
       // Month has no data, skip it
@@ -137,7 +139,7 @@ export async function generateAnnualSummary(
   }
   
   if (monthlyStatements.length === 0) {
-    throw new Error(`No tax data found for ${creatorId} in ${year}`);
+    throw new Error(`No tax data found for ${earnerId} in ${year}`);
   }
   
   // Calculate annual totals
@@ -147,10 +149,10 @@ export async function generateAnnualSummary(
   const totalWithheldTax = monthlyStatements.reduce((sum, s) => sum + s.withheldTax, 0);
   const totalNetPaidOut = monthlyStatements.reduce((sum, s) => sum + s.netPaidOut, 0);
   
-  const { profile } = await getUserJurisdiction(creatorId);
+  const { profile } = await getUserJurisdiction(earnerId);
   
   const annualSummary: AnnualTaxSummary = {
-    userId: creatorId,
+    userId: earnerId,
     year,
     totalGrossEarnings,
     totalPlatformFees,
@@ -163,7 +165,7 @@ export async function generateAnnualSummary(
   };
   
   // Store annual summary
-  await db.collection('annual_tax_summaries').doc(`${creatorId}_${year}`).set({
+  await db.collection('annual_tax_summaries').doc(`${earnerId}_${year}`).set({
     ...annualSummary,
     generatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
@@ -175,7 +177,7 @@ export async function generateAnnualSummary(
  * Get earnings breakdown by transaction type
  */
 async function getEarningsBreakdown(
-  creatorId: string,
+  earnerId: string,
   year: number,
   month: number
 ): Promise<CreatorTaxStatement['breakdownByType']> {
@@ -183,7 +185,7 @@ async function getEarningsBreakdown(
   const endDate = new Date(year, month, 0, 23, 59, 59);
   
   const transactions = await db.collection('tax_ledger')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('timestamp', '>=', startDate)
     .where('timestamp', '<=', endDate)
     .get();
@@ -394,8 +396,8 @@ export const generateMonthlyStatements = onSchedule({ schedule: "0 0 1 * *", tim
     
     console.log(`Generating tax statements for ${year}-${month}`);
     
-    // Get all creators with earnings in the last month
-    const summaries = await db.collection('creator_tax_summaries')
+    // Get all earners with earnings in the last month
+    const summaries = await db.collection('earner_tax_summaries')
       .where('year', '==', year)
       .where('month', '==', month)
       .get();
@@ -404,15 +406,15 @@ export const generateMonthlyStatements = onSchedule({ schedule: "0 0 1 * *", tim
     let count = 0;
     
     for (const doc of summaries.docs) {
-      const creatorId = doc.data().creatorId;
+      const earnerId = doc.data().earnerId;
       
       try {
-        const statement = await generateMonthlyStatement(creatorId, year, month);
+        const statement = await generateMonthlyStatement(earnerId, year, month);
         
-        // Notify creator
+        // Notify earner
         const notificationRef = db.collection('notifications').doc();
         batch.set(notificationRef, {
-          userId: creatorId,
+          userId: earnerId,
           type: 'tax_statement_ready',
           title: 'Monthly Tax Statement Available',
           message: `Your tax statement for ${statement.period} is now available for download.`,
@@ -426,7 +428,7 @@ export const generateMonthlyStatements = onSchedule({ schedule: "0 0 1 * *", tim
         
         count++;
       } catch (error) {
-        console.error(`Failed to generate statement for ${creatorId}:`, error);
+        console.error(`Failed to generate statement for ${earnerId}:`, error);
       }
     }
     
@@ -439,7 +441,7 @@ export const generateMonthlyStatements = onSchedule({ schedule: "0 0 1 * *", tim
 // ============================================================================
 
 /**
- * Get creator's tax statement for a specific period
+ * Get earner's tax statement for a specific period
  */
 export const getCreatorStatement = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -448,14 +450,14 @@ export const getCreatorStatement = functions.https.onCall(async (request) => {
   }
   
   const { year, month } = data;
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   if (!year || !month) {
     throw new functions.https.HttpsError('invalid-argument', 'Year and month required');
   }
   
   try {
-    const statement = await generateMonthlyStatement(creatorId, year, month);
+    const statement = await generateMonthlyStatement(earnerId, year, month);
     return statement;
   } catch (error) {
     throw new functions.https.HttpsError('not-found', 'No tax data found for this period');
@@ -463,7 +465,7 @@ export const getCreatorStatement = functions.https.onCall(async (request) => {
 });
 
 /**
- * Export creator's tax statement in specified format
+ * Export earner's tax statement in specified format
  */
 export const exportStatement = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -472,7 +474,7 @@ export const exportStatement = functions.https.onCall(async (request) => {
   }
   
   const { year, month, format } = data;
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   if (!year || !month || !format) {
     throw new functions.https.HttpsError('invalid-argument', 'Year, month, and format required');
@@ -482,7 +484,7 @@ export const exportStatement = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid format');
   }
   
-  const statement = await generateMonthlyStatement(creatorId, year, month);
+  const statement = await generateMonthlyStatement(earnerId, year, month);
   
   let exportData: TaxStatementExport;
   
@@ -508,7 +510,7 @@ export const exportStatement = functions.https.onCall(async (request) => {
 });
 
 /**
- * Get creator's annual tax summary
+ * Get earner's annual tax summary
  */
 export const getAnnualSummary = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -517,14 +519,14 @@ export const getAnnualSummary = functions.https.onCall(async (request) => {
   }
   
   const { year } = data;
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   if (!year) {
     throw new functions.https.HttpsError('invalid-argument', 'Year required');
   }
   
   try {
-    const summary = await generateAnnualSummary(creatorId, year);
+    const summary = await generateAnnualSummary(earnerId, year);
     return summary;
   } catch (error) {
     throw new functions.https.HttpsError('not-found', 'No tax data found for this year');
@@ -532,7 +534,7 @@ export const getAnnualSummary = functions.https.onCall(async (request) => {
 });
 
 /**
- * List all available tax statements for creator
+ * List all available tax statements for earner
  */
 export const listCreatorStatements = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -540,10 +542,10 @@ export const listCreatorStatements = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   const statements = await db.collection('tax_statements')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .orderBy('year', 'desc')
     .orderBy('month', 'desc')
     .limit(24) // Last 2 years
@@ -551,6 +553,20 @@ export const listCreatorStatements = functions.https.onCall(async (request) => {
   
   return statements.docs.map(doc => doc.data());
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Pack 414 - Integration Registry
 export interface IntegrationConfig {
   id?: string;
@@ -82,6 +84,23 @@ export const CRITICAL_LAUNCH_REQUIREMENTS: string[] = [
 ];
 
 export const AvaloIntegrationRegistry = INTEGRATION_REGISTRY;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

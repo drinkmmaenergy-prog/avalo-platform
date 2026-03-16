@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 264: TOP SUPPORTERS & VIP RANKINGS
  * Spender Retention Engine - API Endpoints
@@ -23,7 +25,7 @@ import {
 import { admin, auth, functions, timestamp } from './runtime';
 
 /**
- * Get supporter ranking for a creator
+ * Get supporter ranking for a earner
  */
 export const getSupporterRanking = onCall(
   { region: 'europe-west1' },
@@ -32,16 +34,16 @@ export const getSupporterRanking = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
-    if (!creatorId) {
+    if (!earnerId) {
       throw new HttpsError('invalid-argument', 'Creator ID required');
     }
 
     try {
       const rankingDoc = await db
-        .collection('creatorSupporters')
-        .doc(creatorId)
+        .collection('earnerSupporters')
+        .doc(earnerId)
         .collection('supporters')
         .doc(request.auth.uid)
         .get();
@@ -59,7 +61,7 @@ export const getSupporterRanking = onCall(
 );
 
 /**
- * Get supporter leaderboard for a creator
+ * Get supporter leaderboard for a earner
  */
 export const getSupporterLeaderboard = onCall(
   { region: 'europe-west1' },
@@ -68,16 +70,16 @@ export const getSupporterLeaderboard = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { creatorId, limit = 10 } = request.data;
+    const { earnerId, limit = 10 } = request.data;
 
-    if (!creatorId) {
+    if (!earnerId) {
       throw new HttpsError('invalid-argument', 'Creator ID required');
     }
 
     try {
       const rankingsSnapshot = await db
-        .collection('creatorSupporters')
-        .doc(creatorId)
+        .collection('earnerSupporters')
+        .doc(earnerId)
         .collection('supporters')
         .orderBy('lifetimeTokensSpent', 'desc')
         .limit(limit)
@@ -172,7 +174,7 @@ export const updateSupporterProfile = onCall(
           notificationPreferences: notificationPreferences || {
             rankChanges: true,
             nearRankup: true,
-            creatorLive: true,
+            earnerLive: true,
             monthlyReset: true,
           },
           createdAt: Timestamp.now(),
@@ -266,7 +268,7 @@ export const markNotificationRead = onCall(
 );
 
 /**
- * Get creator supporter analytics
+ * Get earner supporter analytics
  */
 export const getCreatorSupporterAnalytics = onCall(
   { region: 'europe-west1' },
@@ -276,14 +278,14 @@ export const getCreatorSupporterAnalytics = onCall(
     }
 
     try {
-      // Verify user is the creator
+      // Verify user is the earner
       const userDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!userDoc.exists) {
         throw new HttpsError('not-found', 'User not found');
       }
 
       const analyticsDoc = await db
-        .collection('creatorAnalytics')
+        .collection('earnerAnalytics')
         .doc(request.auth.uid)
         .collection('supporters')
         .doc('stats')
@@ -295,7 +297,7 @@ export const getCreatorSupporterAnalytics = onCall(
 
       return { analytics: analyticsDoc.data() };
     } catch (error: any) {
-      logger.error('Error getting creator analytics', error);
+      logger.error('Error getting earner analytics', error);
       throw new HttpsError('internal', error.message);
     }
   }
@@ -323,7 +325,7 @@ export const onTokenSpending = onDocumentCreated(
     try {
       const tokenEvent: TokenSpendingEvent = {
         supporterId: transaction.senderId,
-        creatorId: transaction.recipientId,
+        earnerId: transaction.recipientId,
         amount: transaction.amount,
         type: determineSpendingType(transaction.metadata?.type),
         transactionId: event.params.transactionId,
@@ -333,11 +335,11 @@ export const onTokenSpending = onDocumentCreated(
       await processTokenSpending(tokenEvent);
 
       // Check if supporter is near rank-up
-      await checkNearRankup(tokenEvent.supporterId, tokenEvent.creatorId);
+      await checkNearRankup(tokenEvent.supporterId, tokenEvent.earnerId);
 
       logger.info('Token spending processed', {
         supporterId: tokenEvent.supporterId,
-        creatorId: tokenEvent.creatorId,
+        earnerId: tokenEvent.earnerId,
         amount: tokenEvent.amount,
       });
     } catch (error: any) {
@@ -383,14 +385,14 @@ export const recalculateSupporterRankings = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
-    if (!creatorId) {
+    if (!earnerId) {
       throw new HttpsError('invalid-argument', 'Creator ID required');
     }
 
     try {
-      // Verify user has admin permissions or is the creator
+      // Verify user has admin permissions or is the earner
       const userDoc = await db.collection('users').doc(request.auth.uid).get();
       if (!userDoc.exists) {
         throw new HttpsError('not-found', 'User not found');
@@ -398,15 +400,15 @@ export const recalculateSupporterRankings = onCall(
 
       const userData = userDoc.data();
       const isAdmin = userData?.role === 'admin' || userData?.role === 'superadmin';
-      const isCreator = request.auth.uid === creatorId;
+      const isCreator = request.auth.uid === earnerId;
 
       if (!isAdmin && !isCreator) {
         throw new HttpsError('permission-denied', 'Insufficient permissions');
       }
 
-      await recalculateRankings(creatorId);
+      await recalculateRankings(earnerId);
 
-      logger.info('Supporter rankings recalculated', { creatorId });
+      logger.info('Supporter rankings recalculated', { earnerId });
 
       return { success: true };
     } catch (error: any) {
@@ -415,6 +417,20 @@ export const recalculateSupporterRankings = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

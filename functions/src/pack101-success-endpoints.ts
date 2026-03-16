@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 101 — Creator Success Toolkit Endpoints
  * Callable functions and scheduled jobs for success signals
@@ -16,7 +18,7 @@ import { logTechEvent } from './pack90-logging';
 import { auth, functions, onSchedule } from './runtime';
 
 /**
- * Get creator success signals for authenticated user
+ * Get earner success signals for authenticated user
  * Returns scorecard and actionable suggestions
  */
 export const getCreatorSuccessSignals = onCall(
@@ -41,7 +43,7 @@ export const getCreatorSuccessSignals = onCall(
     try {
       // Get success signals from Firestore
       const signalsDoc = await db
-        .collection('creator_success_signals')
+        .collection('earner_success_signals')
         .doc(userId)
         .get();
 
@@ -52,7 +54,7 @@ export const getCreatorSuccessSignals = onCall(
 
         // Fetch again
         const newSignalsDoc = await db
-          .collection('creator_success_signals')
+          .collection('earner_success_signals')
           .doc(userId)
           .get();
 
@@ -102,7 +104,7 @@ export const getCreatorSuccessSignals = onCall(
 );
 
 /**
- * Scheduled job: Rebuild creator success signals daily
+ * Scheduled job: Rebuild earner success signals daily
  * Runs every night at 5 AM UTC (after analytics aggregation)
  */
 export const rebuildCreatorSuccessSignalsDaily = onSchedule(
@@ -120,24 +122,24 @@ export const rebuildCreatorSuccessSignalsDaily = onSchedule(
       let processedCount = 0;
       let errorCount = 0;
 
-      // Get all creators who have earned tokens in the last 90 days
+      // Get all earners who have earned tokens in the last 90 days
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-      // Query creator balances to find active creators
-      const creatorsSnapshot = await db
-        .collection('creator_balances')
+      // Query earner balances to find active earners
+      const earnersSnapshot = await db
+        .collection('earner_balances')
         .where('lifetimeEarned', '>', 0)
         .get();
 
-      logger.info(`[SuccessToolkit] Found ${creatorsSnapshot.size} creators to process`);
+      logger.info(`[SuccessToolkit] Found ${earnersSnapshot.size} earners to process`);
 
       // Process in batches of 10 to avoid overwhelming the system
       const batchSize = 10;
-      const creators = creatorsSnapshot.docs.map(doc => doc.id);
+      const earners = earnersSnapshot.docs.map(doc => doc.id);
 
-      for (let i = 0; i < creators.length; i += batchSize) {
-        const batch = creators.slice(i, i + batchSize);
+      for (let i = 0; i < earners.length; i += batchSize) {
+        const batch = earners.slice(i, i + batchSize);
 
         // Process batch in parallel
         const batchResults = await Promise.allSettled(
@@ -157,7 +159,7 @@ export const rebuildCreatorSuccessSignalsDaily = onSchedule(
         }
 
         // Add small delay between batches to avoid rate limits
-        if (i + batchSize < creators.length) {
+        if (i + batchSize < earners.length) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
@@ -198,6 +200,20 @@ export const rebuildCreatorSuccessSignalsDaily = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

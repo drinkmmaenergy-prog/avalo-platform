@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Pack 423 - Ratings Types (flexible)
 export interface Rating {
   id?: string;
@@ -181,6 +183,23 @@ export type ProductArea =
   | 'PAYMENTS'
   | 'PROFILE'
   | 'OVERALL';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

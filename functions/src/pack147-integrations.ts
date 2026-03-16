@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 147 — System Integrations
  * 
@@ -29,21 +31,21 @@ export async function trackRefundImpact(
   try {
     // Determine impact based on outcome
     let buyerImpact = 0;
-    let creatorImpact = 0;
+    let earnerImpact = 0;
     let buyerDimension: 'RELIABILITY' | 'COMMUNICATION' | 'DELIVERY' | 'SAFETY' = 'RELIABILITY';
-    let creatorDimension: 'RELIABILITY' | 'COMMUNICATION' | 'DELIVERY' | 'SAFETY' = 'DELIVERY';
+    let earnerDimension: 'RELIABILITY' | 'COMMUNICATION' | 'DELIVERY' | 'SAFETY' = 'DELIVERY';
     
     switch (outcome) {
       case 'BUYER_WINS_FULL':
         // Creator failed to deliver
-        creatorImpact = -8;
-        creatorDimension = 'DELIVERY';
+        earnerImpact = -8;
+        earnerDimension = 'DELIVERY';
         break;
       
       case 'BUYER_WINS_PARTIAL':
         // Partial failure
-        creatorImpact = -4;
-        creatorDimension = 'DELIVERY';
+        earnerImpact = -4;
+        earnerDimension = 'DELIVERY';
         break;
       
       case 'CREATOR_WINS':
@@ -55,7 +57,7 @@ export async function trackRefundImpact(
       case 'SPLIT_DECISION':
         // Both parties have some responsibility
         buyerImpact = -2;
-        creatorImpact = -2;
+        earnerImpact = -2;
         break;
     }
     
@@ -71,13 +73,13 @@ export async function trackRefundImpact(
       });
     }
     
-    if (creatorImpact !== 0) {
+    if (earnerImpact !== 0) {
       await recordReputationImpact({
         userId: refund.recipientId,
         sourceType: 'REFUND',
         sourceId: refund.refundId,
-        dimension: creatorDimension,
-        scoreImpact: creatorImpact,
+        dimension: earnerDimension,
+        scoreImpact: earnerImpact,
         reason: `Refund ${outcome}: ${refund.reason}`
       });
     }
@@ -219,7 +221,7 @@ export async function releaseCallEscrow(callId: string): Promise<void> {
 export async function createDigitalProductEscrow(params: {
   purchaseId: string;
   payerId: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
 }): Promise<string> {
   
@@ -229,7 +231,7 @@ export async function createDigitalProductEscrow(params: {
     transactionType: 'DIGITAL_PRODUCT',
     transactionId: params.purchaseId,
     payerId: params.payerId,
-    recipientId: params.creatorId,
+    recipientId: params.earnerId,
     totalAmount: params.amount,
     metadata: {
       purchaseId: params.purchaseId
@@ -449,6 +451,20 @@ export async function escalateNSFWRefund(refundId: string): Promise<void> {
   
   logger.warn(`NSFW-related refund escalated: ${refundId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

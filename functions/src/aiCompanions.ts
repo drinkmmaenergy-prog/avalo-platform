@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * AI Companions Module - Subscription-Based
  * Revenue: 100% Avalo (no external earners)
@@ -27,14 +29,14 @@ const SUBSCRIPTION_TIERS = {
     dailyMessageLimit: 10,
     aiAccessLimit: 3,
     nsfwAccess: false,
-    creatorAccess: false,
+    earnerAccess: false,
   },
   Plus: {
     priceMonthly: 39, // USD
     dailyMessageLimit: -1, // Unlimited
     aiAccessLimit: -1, // All standard AIs
     nsfwAccess: false,
-    creatorAccess: false,
+    earnerAccess: false,
     mediaTokenCost: 2,
   },
   Intimate: {
@@ -42,7 +44,7 @@ const SUBSCRIPTION_TIERS = {
     dailyMessageLimit: -1,
     aiAccessLimit: -1,
     nsfwAccess: true,
-    creatorAccess: false,
+    earnerAccess: false,
     mediaTokenCost: 3,
   },
   Creator: {
@@ -50,7 +52,7 @@ const SUBSCRIPTION_TIERS = {
     dailyMessageLimit: -1,
     aiAccessLimit: -1,
     nsfwAccess: true,
-    creatorAccess: true,
+    earnerAccess: true,
     mediaTokenCost: 2,
     canCreateAI: true,
   },
@@ -799,6 +801,20 @@ async function generateAIResponse(
 
   return responses[Math.floor(Math.random() * responses.length)];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

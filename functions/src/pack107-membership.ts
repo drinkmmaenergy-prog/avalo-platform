@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 107 — VIP Memberships, Royal Club & Prestige Identity
  * Backend Implementation
@@ -254,7 +256,7 @@ export const subscribeToMembership = onCall(
           email: userData?.email,
           metadata: {
             userId,
-            avaloMembership: 'true',
+            platformMembership: 'true',
           },
         });
         stripeCustomerId = customer.id;
@@ -941,6 +943,20 @@ export async function handleSubscriptionDeleted(
     subscriptionId: subscription.id,
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

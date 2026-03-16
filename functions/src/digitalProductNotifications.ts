@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 116: Digital Product Purchase Notifications
  * Send notifications when products are purchased
@@ -9,7 +11,7 @@ import * as logger from 'firebase-functions/logger';
 import { functions } from './runtime';
 
 /**
- * Notify creator when their product is purchased
+ * Notify earner when their product is purchased
  */
 export const notifyCreatorOnPurchase = onDocumentCreated(
   {
@@ -24,32 +26,32 @@ export const notifyCreatorOnPurchase = onDocumentCreated(
       purchaseId,
       productTitle,
       buyerName,
-      creatorUserId,
+      earnerUserId,
       tokensAmount,
-      creatorEarnings,
+      earnerEarnings,
     } = purchase;
 
     try {
-      // Create notification for creator
+      // Create notification for earner
       await db.collection('notifications').add({
-        userId: creatorUserId,
+        userId: earnerUserId,
         type: 'digital_product_sale',
         title: '🎉 Product Sold!',
-        body: `${buyerName} purchased "${productTitle}" for ${tokensAmount} tokens. You earned ${creatorEarnings} tokens.`,
+        body: `${buyerName} purchased "${productTitle}" for ${tokensAmount} tokens. You earned ${earnerEarnings} tokens.`,
         data: {
           purchaseId,
           productTitle,
           buyerName,
           tokensAmount,
-          creatorEarnings,
+          earnerEarnings,
         },
         read: false,
         createdAt: new Date(),
       });
 
-      logger.info(`Notification sent to creator ${creatorUserId} for purchase ${purchaseId}`);
+      logger.info(`Notification sent to earner ${earnerUserId} for purchase ${purchaseId}`);
     } catch (error) {
-      logger.error('Error sending creator notification:', error);
+      logger.error('Error sending earner notification:', error);
     }
   }
 );
@@ -97,6 +99,20 @@ export const notifyBuyerOnPurchase = onDocumentCreated(
 );
 
 logger.info('✅ Digital Product Notifications module loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

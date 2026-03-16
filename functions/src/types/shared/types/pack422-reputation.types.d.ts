@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface ReputationScore  {
     userId: string;
     score: number;
@@ -20,6 +22,23 @@ export interface ReputationPolicy  {
   [key: string]: any;
 }
 export type ReputationTier = 'NEW' | 'TRUSTED' | 'VERIFIED' | 'ELITE';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

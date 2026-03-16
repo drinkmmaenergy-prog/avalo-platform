@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 202 - Ambassador & Early Access Program Types
  * 
- * Professional creator ambassador program with strict anti-NSFW safeguards.
+ * Professional earner ambassador program with strict anti-NSFW safeguards.
  * No free tokens, no romantic recruitment, no sexualized marketing.
  */
 
@@ -139,7 +141,7 @@ export interface AmbassadorReferral {
   ambassadorId: string;
   referralCode: string;
   referredUserId: string;
-  referredUserType: 'creator' | 'user';
+  referredUserType: 'earner' | 'user';
   
   // Status
   status: 'pending' | 'active' | 'inactive' | 'removed';
@@ -170,7 +172,7 @@ export interface AmbassadorRevenueLog {
   transactionAmount: number;
   
   // Commission calculation
-  platformShare: number;           // 35% of transaction
+  platform: number;           // 35% of transaction
   commissionRate: number;          // 5% of platform share
   commissionAmount: number;        // Final amount earned
   
@@ -467,7 +469,7 @@ export interface AmbassadorDashboardStats {
   // Referral stats
   totalReferrals: number;
   activeReferrals: number;
-  creatorReferrals: number;
+  earnerReferrals: number;
   userReferrals: number;
   
   // Revenue stats
@@ -700,12 +702,29 @@ export const AMBASSADOR_BENEFITS = {
 export const COMMISSION_STRUCTURE = {
   rate: 0.05,                    // 5%
   source: 'platform_share',      // from Avalo's 35%
-  creatorSplit: MONETIZATION_SPLITS.CHAT.creator,           // Creator still gets 65%
-  platformSplit: MONETIZATION_SPLITS.CHAT.avalo,          // Avalo takes 35%
+  earnerSplit: MONETIZATION_SPLITS.CHAT.earner,           // Creator still gets 65%
+  platformSplit: MONETIZATION_SPLITS.CHAT.platform,          // Avalo takes 35%
   noInflation: true,            // No token inflation
   noBonuses: true,              // No bonus tokens
   noFreeTokens: true            // No free tokens
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 147 — Fraud Detection Engine
  * 
@@ -6,7 +8,7 @@
  * PATTERNS DETECTED:
  * - Refund farming (buy → consume → refund repeatedly)
  * - Token laundering (back-and-forth transfers)
- * - Partial delivery scams (creator side)
+ * - Partial delivery scams (earner side)
  * - Emotional blackmail attempts
  * - Romance manipulation claims
  * - Coordinated attacks
@@ -334,7 +336,7 @@ async function checkCoordinatedAttack(
     Date.now() - FRAUD_THRESHOLDS.COORDINATED_ATTACK.withinTimeWindow
   );
   
-  // Count refund requests against same creator in time window
+  // Count refund requests against same earner in time window
   const refundsSnapshot = await db.collection('refund_requests')
     .where('recipientId', '==', targetCreatorId)
     .where('requestedAt', '>=', windowStart)
@@ -572,6 +574,20 @@ export async function getUserFraudHistory(userId: string): Promise<FraudDetectio
   
   return snapshot.docs.map(doc => doc.data() as FraudDetectionRecord);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

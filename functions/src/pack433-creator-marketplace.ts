@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 433 — Influencer Marketplace & Creator Deal Automation Engine
  * Part 1: Creator Marketplace Core
@@ -6,7 +8,7 @@
  * - Creator profile registry
  * - Multi-platform linking (TikTok, Instagram, YouTube)
  * - Traffic source fingerprinting
- * - Geo-based creator discovery
+ * - Geo-based earner discovery
  * - Category tagging
  */
 
@@ -77,7 +79,7 @@ export interface CreatorProfile {
 
 export interface TrafficSource {
   id: string;
-  creatorId: string;
+  earnerId: string;
   source: string;
   medium: string;
   campaign?: string;
@@ -101,11 +103,11 @@ export interface CreatorDiscoveryFilters {
 // ============================================================================
 
 /**
- * Register as a creator in the marketplace
+ * Register as a earner in the marketplace
  */
 export const registerCreator = onCall(
   { region: 'europe-west1' },
-  async (request): Promise<{ creatorId: string; status: string }> => {
+  async (request): Promise<{ earnerId: string; status: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
@@ -139,15 +141,15 @@ export const registerCreator = onCall(
     try {
       const userId = request.auth.uid;
 
-      // Check if user is already a creator
+      // Check if user is already a earner
       const existingCreator = await db
-        .collection('creator_profiles')
+        .collection('earner_profiles')
         .where('userId', '==', userId)
         .limit(1)
         .get();
 
       if (!existingCreator.empty) {
-        throw new HttpsError('already-exists', 'User is already registered as a creator');
+        throw new HttpsError('already-exists', 'User is already registered as a earner');
       }
 
       // Process platform connections
@@ -160,8 +162,8 @@ export const registerCreator = onCall(
         connectedAt: Timestamp.now(),
       }));
 
-      // Create creator profile
-      const creatorProfile: Omit<CreatorProfile, 'id'> = {
+      // Create earner profile
+      const earnerProfile: Omit<CreatorProfile, 'id'> = {
         userId,
         displayName,
         email,
@@ -181,22 +183,22 @@ export const registerCreator = onCall(
         updatedAt: Timestamp.now(),
       };
 
-      const creatorRef = await db.collection('creator_profiles').add(creatorProfile);
+      const earnerRef = await db.collection('earner_profiles').add(earnerProfile);
 
-      logger.info(`Creator registered: ${creatorRef.id}`, {
+      logger.info(`Creator registered: ${earnerRef.id}`, {
         userId,
         displayName,
         platforms: processedPlatforms.map((p) => p.platform),
       });
 
       return {
-        creatorId: creatorRef.id,
+        earnerId: earnerRef.id,
         status: 'PENDING',
       };
     } catch (error: any) {
-      logger.error('Error registering creator', error);
+      logger.error('Error registering earner', error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError('internal', `Failed to register creator: ${error.message}`);
+      throw new HttpsError('internal', `Failed to register earner: ${error.message}`);
     }
   }
 );
@@ -206,7 +208,7 @@ export const registerCreator = onCall(
 // ============================================================================
 
 /**
- * Get creator profile
+ * Get earner profile
  */
 export const getCreatorProfile = onCall(
   { region: 'europe-west1' },
@@ -215,29 +217,29 @@ export const getCreatorProfile = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = request.data.creatorId;
+    const earnerId = request.data.earnerId;
 
     try {
-      const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+      const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
 
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator profile not found');
       }
 
-      const profile = creatorDoc.data() as CreatorProfile;
+      const profile = earnerDoc.data() as CreatorProfile;
 
       // Security: Users can only view their own profile (unless admin)
       if (profile.userId !== request.auth.uid) {
         // TODO: Check if user is admin
-        throw new HttpsError('permission-denied', 'Cannot access another creator\'s profile');
+        throw new HttpsError('permission-denied', 'Cannot access another earner\'s profile');
       }
 
       return {
-        id: creatorDoc.id,
+        id: earnerDoc.id,
         ...profile,
       };
     } catch (error: any) {
-      logger.error('Error fetching creator profile', error);
+      logger.error('Error fetching earner profile', error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError('internal', `Failed to fetch profile: ${error.message}`);
     }
@@ -245,7 +247,7 @@ export const getCreatorProfile = onCall(
 );
 
 /**
- * Update creator profile
+ * Update earner profile
  */
 export const updateCreatorProfile = onCall(
   { region: 'europe-west1' },
@@ -254,25 +256,25 @@ export const updateCreatorProfile = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, updates } = request.data;
+    const { earnerId, updates } = request.data;
 
-    if (!creatorId || !updates) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId or updates');
+    if (!earnerId || !updates) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId or updates');
     }
 
     try {
-      const creatorRef = db.collection('creator_profiles').doc(creatorId);
-      const creatorDoc = await creatorRef.get();
+      const earnerRef = db.collection('earner_profiles').doc(earnerId);
+      const earnerDoc = await earnerRef.get();
 
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator profile not found');
       }
 
-      const profile = creatorDoc.data() as CreatorProfile;
+      const profile = earnerDoc.data() as CreatorProfile;
 
       // Security check
       if (profile.userId !== request.auth.uid) {
-        throw new HttpsError('permission-denied', 'Cannot update another creator\'s profile');
+        throw new HttpsError('permission-denied', 'Cannot update another earner\'s profile');
       }
 
       // Allowed fields for update
@@ -285,13 +287,13 @@ export const updateCreatorProfile = onCall(
 
       allowedUpdates.updatedAt = Timestamp.now();
 
-      await creatorRef.update(allowedUpdates);
+      await earnerRef.update(allowedUpdates);
 
-      logger.info(`Creator profile updated: ${creatorId}`);
+      logger.info(`Creator profile updated: ${earnerId}`);
 
       return { success: true };
     } catch (error: any) {
-      logger.error('Error updating creator profile', error);
+      logger.error('Error updating earner profile', error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError('internal', `Failed to update profile: ${error.message}`);
     }
@@ -299,7 +301,7 @@ export const updateCreatorProfile = onCall(
 );
 
 /**
- * Add platform connection to creator profile
+ * Add platform connection to earner profile
  */
 export const addPlatformConnection = onCall(
   { region: 'europe-west1' },
@@ -308,28 +310,28 @@ export const addPlatformConnection = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, platform, handle, url, followers } = request.data;
+    const { earnerId, platform, handle, url, followers } = request.data;
 
-    if (!creatorId || !platform || !handle || !url) {
+    if (!earnerId || !platform || !handle || !url) {
       throw new HttpsError(
         'invalid-argument',
-        'Missing required fields: creatorId, platform, handle, url'
+        'Missing required fields: earnerId, platform, handle, url'
       );
     }
 
     try {
-      const creatorRef = db.collection('creator_profiles').doc(creatorId);
-      const creatorDoc = await creatorRef.get();
+      const earnerRef = db.collection('earner_profiles').doc(earnerId);
+      const earnerDoc = await earnerRef.get();
 
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator profile not found');
       }
 
-      const profile = creatorDoc.data() as CreatorProfile;
+      const profile = earnerDoc.data() as CreatorProfile;
 
       // Security check
       if (profile.userId !== request.auth.uid) {
-        throw new HttpsError('permission-denied', 'Cannot modify another creator\'s profile');
+        throw new HttpsError('permission-denied', 'Cannot modify another earner\'s profile');
       }
 
       // Check if platform already connected
@@ -347,12 +349,12 @@ export const addPlatformConnection = onCall(
         connectedAt: Timestamp.now(),
       };
 
-      await creatorRef.update({
+      await earnerRef.update({
         platforms: [...profile.platforms, newPlatform],
         updatedAt: Timestamp.now(),
       });
 
-      logger.info(`Platform added to creator ${creatorId}:`, { platform, handle });
+      logger.info(`Platform added to earner ${earnerId}:`, { platform, handle });
 
       return { success: true };
     } catch (error: any) {
@@ -368,7 +370,7 @@ export const addPlatformConnection = onCall(
 // ============================================================================
 
 /**
- * Discover creators based on filters
+ * Discover earners based on filters
  * Used by admins or for marketplace browsing
  */
 export const discoverCreators = onCall(
@@ -382,7 +384,7 @@ export const discoverCreators = onCall(
     const limit = Math.min(filters.limit || 20, 100);
 
     try {
-      let query: FirebaseFirestore.Query = db.collection('creator_profiles');
+      let query: FirebaseFirestore.Query = db.collection('earner_profiles');
 
       // Apply filters
       if (filters.status) {
@@ -402,17 +404,17 @@ export const discoverCreators = onCall(
 
       const snapshot = await query.get();
 
-      const creators: CreatorProfile[] = snapshot.docs.map((doc) => ({
+      const earners: CreatorProfile[] = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       } as CreatorProfile));
 
       // Apply additional filters (post-query)
-      let filteredCreators = creators;
+      let filteredCreators = earners;
 
       if (filters.minFollowers) {
-        filteredCreators = filteredCreators.filter((creator) => {
-          const totalFollowers = creator.platforms.reduce(
+        filteredCreators = filteredCreators.filter((earner) => {
+          const totalFollowers = earner.platforms.reduce(
             (sum, p) => sum + (p.followers || 0),
             0
           );
@@ -421,8 +423,8 @@ export const discoverCreators = onCall(
       }
 
       if (filters.platforms && filters.platforms.length > 0) {
-        filteredCreators = filteredCreators.filter((creator) => {
-          return creator.platforms.some((p) => filters.platforms?.includes(p.platform));
+        filteredCreators = filteredCreators.filter((earner) => {
+          return earner.platforms.some((p) => filters.platforms?.includes(p.platform));
         });
       }
 
@@ -433,8 +435,8 @@ export const discoverCreators = onCall(
 
       return filteredCreators;
     } catch (error: any) {
-      logger.error('Error discovering creators', error);
-      throw new HttpsError('internal', `Failed to discover creators: ${error.message}`);
+      logger.error('Error discovering earners', error);
+      throw new HttpsError('internal', `Failed to discover earners: ${error.message}`);
     }
   }
 );
@@ -445,15 +447,15 @@ export const discoverCreators = onCall(
 
 /**
  * Register a traffic source for tracking
- * Called when a user clicks a creator's link
+ * Called when a user clicks a earner's link
  */
 export const registerTrafficSource = onCall(
   { region: 'europe-west1' },
   async (request): Promise<{ sourceId: string; fingerprint: string }> => {
-    const { creatorId, source, medium, campaign, country, metadata } = request.data;
+    const { earnerId, source, medium, campaign, country, metadata } = request.data;
 
-    if (!creatorId || !source) {
-      throw new HttpsError('invalid-argument', 'Missing required fields: creatorId, source');
+    if (!earnerId || !source) {
+      throw new HttpsError('invalid-argument', 'Missing required fields: earnerId, source');
     }
 
     try {
@@ -461,7 +463,7 @@ export const registerTrafficSource = onCall(
       const fingerprint = generateId();
 
       const trafficSource: Omit<TrafficSource, 'id'> = {
-        creatorId,
+        earnerId,
         source,
         medium: medium || 'referral',
         campaign,
@@ -474,7 +476,7 @@ export const registerTrafficSource = onCall(
       const sourceRef = await db.collection('traffic_sources').add(trafficSource);
 
       logger.info(`Traffic source registered: ${sourceRef.id}`, {
-        creatorId,
+        earnerId,
         source,
         fingerprint,
       });
@@ -495,7 +497,7 @@ export const registerTrafficSource = onCall(
 // ============================================================================
 
 /**
- * Approve creator application (admin only)
+ * Approve earner application (admin only)
  */
 export const approveCreator = onCall(
   { region: 'europe-west1' },
@@ -505,39 +507,39 @@ export const approveCreator = onCall(
     }
 
     // TODO: Verify admin role
-    const { creatorId, adminNotes } = request.data;
+    const { earnerId, adminNotes } = request.data;
 
-    if (!creatorId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId');
+    if (!earnerId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId');
     }
 
     try {
-      const creatorRef = db.collection('creator_profiles').doc(creatorId);
-      const creatorDoc = await creatorRef.get();
+      const earnerRef = db.collection('earner_profiles').doc(earnerId);
+      const earnerDoc = await earnerRef.get();
 
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      await creatorRef.update({
+      await earnerRef.update({
         status: 'ACTIVE',
         adminNotes: adminNotes || '',
         updatedAt: Timestamp.now(),
       });
 
-      logger.info(`Creator approved: ${creatorId}`, { approvedBy: request.auth.uid });
+      logger.info(`Creator approved: ${earnerId}`, { approvedBy: request.auth.uid });
 
       return { success: true };
     } catch (error: any) {
-      logger.error('Error approving creator', error);
+      logger.error('Error approving earner', error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError('internal', `Failed to approve creator: ${error.message}`);
+      throw new HttpsError('internal', `Failed to approve earner: ${error.message}`);
     }
   }
 );
 
 /**
- * Suspend or ban creator (admin only)
+ * Suspend or ban earner (admin only)
  */
 export const updateCreatorStatus = onCall(
   { region: 'europe-west1' },
@@ -547,10 +549,10 @@ export const updateCreatorStatus = onCall(
     }
 
     // TODO: Verify admin role
-    const { creatorId, status, reason } = request.data;
+    const { earnerId, status, reason } = request.data;
 
-    if (!creatorId || !status) {
-      throw new HttpsError('invalid-argument', 'Missing creatorId or status');
+    if (!earnerId || !status) {
+      throw new HttpsError('invalid-argument', 'Missing earnerId or status');
     }
 
     if (!['PENDING', 'ACTIVE', 'SUSPENDED', 'BANNED'].includes(status)) {
@@ -558,32 +560,46 @@ export const updateCreatorStatus = onCall(
     }
 
     try {
-      const creatorRef = db.collection('creator_profiles').doc(creatorId);
-      const creatorDoc = await creatorRef.get();
+      const earnerRef = db.collection('earner_profiles').doc(earnerId);
+      const earnerDoc = await earnerRef.get();
 
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      await creatorRef.update({
+      await earnerRef.update({
         status,
         adminNotes: reason || '',
         updatedAt: Timestamp.now(),
       });
 
-      logger.info(`Creator status updated: ${creatorId}`, {
+      logger.info(`Creator status updated: ${earnerId}`, {
         newStatus: status,
         updatedBy: request.auth.uid,
       });
 
       return { success: true };
     } catch (error: any) {
-      logger.error('Error updating creator status', error);
+      logger.error('Error updating earner status', error);
       if (error instanceof HttpsError) throw error;
       throw new HttpsError('internal', `Failed to update status: ${error.message}`);
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

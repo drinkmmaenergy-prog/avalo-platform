@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Cloud Functions API
  * HTTP endpoints for country expansion management
@@ -10,7 +12,7 @@ import * as Readiness from './pack425-country-readiness';
 import * as FeatureFlags from './pack425-feature-flags';
 import * as Pricing from './pack425-pricing-matrix';
 import * as Segmentation from './pack425-market-segmentation';
-import * as Bootstrap from './pack425-creator-bootstrap';
+import * as Bootstrap from './pack425-earner-bootstrap';
 import * as Localization from './pack425-localization';
 import { HttpsError, auth, onCall } from './runtime';
 
@@ -163,7 +165,7 @@ export const getExpansionDashboard = functions.https.onCall(async (request) => {
     Readiness.listCountriesByReadiness(),
     Readiness.listCountriesByReadiness(0.75, 'AGGRESSIVE'),
     Readiness.listCountriesByReadiness(0.55, 'STEADY'),
-    Readiness.listCountriesByReadiness(MONETIZATION_SPLITS.CHAT.avalo, 'CAUTIOUS'),
+    Readiness.listCountriesByReadiness(MONETIZATION_SPLITS.CHAT.platform, 'CAUTIOUS'),
     Segmentation.getSegmentDistribution(),
     Localization.getCompletenessReport(),
   ]);
@@ -334,7 +336,7 @@ export const validateCountryLaunch = functions.https.onCall(async (request) => {
   if (!profile) {
     issues.push('No readiness profile found');
   } else {
-    if (profile.launchReadiness < MONETIZATION_SPLITS.CHAT.avalo) {
+    if (profile.launchReadiness < MONETIZATION_SPLITS.CHAT.platform) {
       issues.push(`Launch readiness too low: ${profile.launchReadiness}`);
     }
     if (!profile.paymentProviderReady) {
@@ -387,6 +389,22 @@ export const recomputeAllReadiness = functions.https.onCall(async (request) => {
   const result = await Readiness.recomputeAllReadinessScores();
   return result;
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

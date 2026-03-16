@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 277 — Wallet & Token Store Types
  * Unified wallet system for mobile + web with token packs and payouts
@@ -64,8 +66,8 @@ export type WalletRevenueContextType =
  * Revenue split configuration
  */
 export interface WalletRevenueSplit {
-  platformShare: number;  // Avalo's percentage (0-1)
-  earnerShare: number;    // Creator/Earner's percentage (0-1)
+  platform: number;  // Avalo's percentage (0-1)
+  earner: number;    // Creator/Earner's percentage (0-1)
 }
 
 export interface WalletTransaction {
@@ -82,10 +84,10 @@ export interface WalletTransaction {
     packId?: string;         // For purchases
     paymentIntentId?: string; // For purchases
     receiptData?: string;    // For mobile IAP
-    creatorId?: string;      // For earnings
+    earnerId?: string;      // For earnings
     split?: {                // Revenue split details
-      creatorAmount: number;
-      avaloAmount: number;
+      earnerAmount: number;
+      platformAmount: number;
       splitPercent: number;
     };
   };
@@ -212,7 +214,7 @@ export interface SpendTokensRequest {
   amountTokens: number;
   source: TransactionSource;
   relatedId: string;
-  creatorId?: string;       // If spending on creator content
+  earnerId?: string;       // If spending on earner content
   metadata?: Record<string, any>;
   // PACK 321: Context-based revenue split (optional for backward compatibility)
   contextType?: WalletRevenueContextType;
@@ -223,8 +225,8 @@ export interface SpendTokensResponse {
   success: boolean;
   txId?: string;
   newBalance?: number;
-  creatorEarned?: number;
-  avaloShare?: number;
+  earnerEarned?: number;
+  platform?: number;
   error?: string;
 }
 
@@ -264,6 +266,22 @@ export interface RefundTokensResponse {
   newBalance?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

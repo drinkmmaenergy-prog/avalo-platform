@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 452 — Monetization Engine vNext Types
  *
@@ -243,8 +245,8 @@ export interface PremiumPricingSnapshot {
   entryAtAcceptance: number;
   payoutPerToken: number;
   split: {
-    earnerShare: number;
-    platformShare: number;
+    earner: number;
+    platform: number;
   };
 }
 
@@ -350,6 +352,19 @@ export interface CancelPremiumOfferResponse {
   refundedTokens?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

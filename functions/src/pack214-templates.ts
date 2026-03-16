@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 214 - Return Trigger Message Templates
  * Natural, attractive, and personalized — NOT needy or aggressive
@@ -398,6 +400,20 @@ export function personalizeTemplate(
     body,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

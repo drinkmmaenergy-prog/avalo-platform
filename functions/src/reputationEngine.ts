@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Reputation Engine (Phase 37)
  *
@@ -357,8 +359,8 @@ async function verifyInteraction(
 
       // Check participants
       const isParticipant =
-        (bookingData.bookerId === reviewerId && bookingData.creatorId === reviewedUserId) ||
-        (bookingData.bookerId === reviewedUserId && bookingData.creatorId === reviewerId);
+        (bookingData.bookerId === reviewerId && bookingData.earnerId === reviewedUserId) ||
+        (bookingData.bookerId === reviewedUserId && bookingData.earnerId === reviewerId);
 
       return isParticipant;
     }
@@ -588,6 +590,20 @@ export function getTrustLevelInfo(level: TrustLevel): {
       };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

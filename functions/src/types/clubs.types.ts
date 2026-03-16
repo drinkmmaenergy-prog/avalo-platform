@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 139: Avalo Social Clubs & Private Communities
  * Type definitions for topic-driven social clubs
@@ -549,6 +551,22 @@ export function formatClubCategory(category: ClubCategory): string {
   
   return categoryNames[category] || 'Unknown';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

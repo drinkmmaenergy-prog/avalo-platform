@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 92 — Notification Integrations
  * Integration hooks for existing systems to trigger notifications
@@ -29,18 +31,18 @@ import { db, functions, onCall } from './runtime';
 // ============================================================================
 
 /**
- * Called when a creator earns tokens from any source
- * Wire this into creatorEarnings.recordEarning()
+ * Called when a earner earns tokens from any source
+ * Wire this into earnerEarnings.recordEarning()
  */
 export async function onCreatorEarning(params: {
-  creatorId: string;
+  earnerId: string;
   amount: number;
   source: 'gift' | 'premium story' | 'paid media' | 'paid call';
   sourceId: string;
 }): Promise<void> {
   try {
     await sendEarningsNotification({
-      userId: params.creatorId,
+      userId: params.earnerId,
       amount: params.amount,
       source: params.source === 'premium story' ? 'unlocked your premium story' :
               params.source === 'paid media' ? 'unlocked your paid media' :
@@ -357,20 +359,20 @@ export async function onPanicButtonTriggered(params: {
 // ============================================================================
 
 /**
- * Example: How to integrate into creatorEarnings.ts
+ * Example: How to integrate into earnerEarnings.ts
  * 
- * In creatorEarnings.ts, after successfully recording an earning:
+ * In earnerEarnings.ts, after successfully recording an earning:
  * 
  * 
  * 
  * export async function recordEarning(params) {
  *   // ... existing logic ...
  *   const ledgerRef = await db.collection('earnings_ledger').add(ledgerEntry);
- *   await updateCreatorBalance(creatorId, netTokensCreator);
+ *   await updateCreatorBalance(earnerId, netTokensCreator);
  *   
  *   // PACK 92: Send notification
  *   await onCreatorEarning({
- *     creatorId,
+ *     earnerId,
  *     amount: netTokensCreator,
  *     source: sourceType === 'GIFT' ? 'gift' : 
  *             sourceType === 'PREMIUM_STORY' ? 'premium story' :
@@ -441,6 +443,20 @@ export async function onPanicButtonTriggered(params: {
  *     await Promise.all(updatePromises);
  *   });
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

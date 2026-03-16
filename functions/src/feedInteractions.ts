@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { HttpsError } from 'firebase-functions/v2/https';
 import { auth, db, functions, onCall, serverTimestamp } from './runtime';
 ;
@@ -19,6 +21,20 @@ export const likePostV1 = onCall({ region: "europe-west1" }, async (req) => {
 
   return { success: true };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

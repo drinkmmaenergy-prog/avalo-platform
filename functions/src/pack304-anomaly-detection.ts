@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 304 — Admin Financial Console & Reconciliation
  * Finance Anomaly Detection
@@ -9,7 +11,7 @@
  * - Payouts exceeding earnings
  * - Refund inconsistencies
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -226,11 +228,11 @@ export async function checkTransactionSplits(
       // Check if transaction has proper split metadata
       if (['CHAT_SPEND', 'CALL_SPEND', 'CALENDAR_BOOKING', 'EVENT_TICKET'].includes(txType)) {
         const meta = tx.meta || {};
-        const creatorShare = meta.creatorShare;
-        const avaloShare = meta.avaloShare;
+        const earner = meta.earner;
+        const platform = meta.platform;
 
-        if (creatorShare !== undefined && avaloShare !== undefined) {
-          const totalShares = creatorShare + avaloShare;
+        if (earner !== undefined && platform !== undefined) {
+          const totalShares = earner + platform;
           const tolerance = 1; // 1 token tolerance due to rounding
 
           if (Math.abs(totalShares - amount) > tolerance) {
@@ -238,14 +240,14 @@ export async function checkTransactionSplits(
               type: 'INVALID_SPLIT',
               userId: tx.userId,
               period: { year, month },
-              details: `Transaction ${txDoc.id} has invalid split: ${creatorShare} + ${avaloShare} = ${totalShares}, expected ${amount}`,
+              details: `Transaction ${txDoc.id} has invalid split: ${earner} + ${platform} = ${totalShares}, expected ${amount}`,
               severity: 'MEDIUM',
               metadata: {
                 txId: txDoc.id,
                 txType,
                 amount,
-                creatorShare,
-                avaloShare,
+                earner,
+                platform,
                 totalShares,
               },
             }));
@@ -457,6 +459,21 @@ export async function getUserFinancialSummary(userId: string): Promise<UserFinan
   const result = await checkUserBalanceConsistency(userId);
   return result.summary;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

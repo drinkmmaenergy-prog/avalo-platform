@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Avalo Smart Social Graph 2.0 Types
  * Interest-Driven Discovery Without Matchmaking Bias
@@ -96,7 +98,7 @@ export interface InterestVector {
  * Creator relevance profile (NOT attractiveness or popularity)
  */
 export interface CreatorRelevanceScore {
-  creatorId: string;
+  earnerId: string;
   
   // Primary category
   primaryCategory: DiscoveryCategory;
@@ -154,7 +156,7 @@ export interface DiscoveryRankingFactors {
   // Safety score (good behavior)
   safetyScore: number; // 0-1
   
-  // Shadow density penalty (prevent mega-creator dominance)
+  // Shadow density penalty (prevent mega-earner dominance)
   densityPenalty: number; // 0-1 (lower if too many impressions)
   
   // FORBIDDEN FACTORS (must remain 0):
@@ -190,10 +192,10 @@ export interface DiscoveryScore {
 // ============================================================================
 
 /**
- * Shadow density tracker (prevent mega-creator dominance)
+ * Shadow density tracker (prevent mega-earner dominance)
  */
 export interface ShadowDensityCounter {
-  creatorId: string;
+  earnerId: string;
   
   // Weekly impression tracking
   weeklyImpressions: number;
@@ -203,7 +205,7 @@ export interface ShadowDensityCounter {
   isInRotationLimit: boolean; // true if > 2M impressions/week
   
   // Discovery slot guarantees
-  guaranteedDiscoverySlots: number; // New/mid-size creators get guaranteed slots
+  guaranteedDiscoverySlots: number; // New/mid-size earners get guaranteed slots
   
   // Last updated
   lastUpdated: Timestamp | FieldValue;
@@ -253,7 +255,7 @@ export interface UserDiscoveryPreferences {
  */
 export interface FlirtManipulationFlags {
   contentId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Detection signals
   seductiveThumbnail: boolean;
@@ -295,7 +297,7 @@ export interface SmartSocialGraphRequest {
  * Creator card (NO appearance metrics)
  */
 export interface CreatorCard {
-  creatorId: string;
+  earnerId: string;
   displayName: string;
   
   // Category & expertise
@@ -330,7 +332,7 @@ export interface SmartSocialGraphResponse {
   
   // Transparency
   explanation: string; // Why these recommendations
-  diversityAchieved: boolean; // True if creators from multiple categories
+  diversityAchieved: boolean; // True if earners from multiple categories
 }
 
 // ============================================================================
@@ -376,7 +378,7 @@ export interface FairnessDiversityAudit {
   
   // Diversity metrics
   categoryDistribution: Record<DiscoveryCategory, number>;
-  newCreatorVisibility: number; // % of impressions to new creators
+  newCreatorVisibility: number; // % of impressions to new earners
   megaCreatorDominance: number; // % of impressions to top 1%
   
   // Fairness checks
@@ -394,7 +396,7 @@ export interface FairnessDiversityAudit {
 // ============================================================================
 
 export const DEFAULT_RANKING_WEIGHTS = {
-  topical: MONETIZATION_SPLITS.CHAT.avalo,      // Primary factor
+  topical: MONETIZATION_SPLITS.CHAT.platform,      // Primary factor
   language: 0.15,
   region: 0.10,
   recency: 0.15,
@@ -406,6 +408,23 @@ export const DEFAULT_RANKING_WEIGHTS = {
 export const SHADOW_DENSITY_THRESHOLD = 2_000_000; // 2M impressions/week
 
 export const GUARANTEED_NEW_CREATOR_SLOTS = 3; // Per feed page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Daily Churn Risk Recalculation
  * Scheduled function to recalculate churn scores and trigger segment transitions
@@ -311,6 +313,20 @@ export const getChurnStatistics = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ PACK 301B - Daily Churn Recalculation initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 146 — Download Control & PDF Security
  * Secure downloads with watermarking and tracking
@@ -260,7 +262,7 @@ async function generateSecureDownloadURL(
   // 4. Generate signed URL
   
   // For now, return a mock URL with params
-  const baseURL = `https://storage.avalo.app/downloads/${productId}`;
+  const baseURL = `https://storage.platform.app/downloads/${productId}`;
   const queryParams = new URLSearchParams({
     buyer: params.buyerId,
     download: params.downloadId,
@@ -332,7 +334,7 @@ export async function applyPDFSecurity(
 // ============================================================================
 
 /**
- * Get download analytics for creator
+ * Get download analytics for earner
  */
 export const getDownloadAnalytics = onCall(
   {
@@ -346,7 +348,7 @@ export const getDownloadAnalytics = onCall(
     }
     
     try {
-      // Get all downloads for creator's products
+      // Get all downloads for earner's products
       const downloadsSnapshot = await db.collection('download_records')
         .where('sellerId', '==', uid)
         .get();
@@ -535,6 +537,20 @@ export default {
   revokeDownloadAccess,
   flagSuspiciousDownload,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

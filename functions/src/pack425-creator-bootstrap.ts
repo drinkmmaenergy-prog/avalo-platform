@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Creator Bootstrap Engine
- * Seed creator strategy for new market launches
+ * Seed earner strategy for new market launches
  */
 
 import * as admin from 'firebase-admin';
@@ -116,13 +118,13 @@ export async function initializeBootstrapProgram(
     updatedAt: now,
   };
   
-  await db.collection('creatorBootstrapConfigs').doc(countryCode).set(config);
+  await db.collection('earnerBootstrapConfigs').doc(countryCode).set(config);
   
   return config;
 }
 
 /**
- * Enroll a creator in bootstrap program
+ * Enroll a earner in bootstrap program
  */
 export async function enrollCreatorInBootstrap(
   userId: string,
@@ -133,7 +135,7 @@ export async function enrollCreatorInBootstrap(
   const now = admin.firestore.Timestamp.now();
   
   // Get bootstrap config
-  const configDoc = await db.collection('creatorBootstrapConfigs').doc(countryCode).get();
+  const configDoc = await db.collection('earnerBootstrapConfigs').doc(countryCode).get();
   if (!configDoc.exists) {
     throw new Error(`No bootstrap program found for country: ${countryCode}`);
   }
@@ -141,7 +143,7 @@ export async function enrollCreatorInBootstrap(
   const config = configDoc.data() as CountryBootstrapConfig;
   
   // Check if already enrolled
-  const existingDoc = await db.collection('creatorBootstrap')
+  const existingDoc = await db.collection('earnerBootstrap')
     .where('userId', '==', userId)
     .where('countryCode', '==', countryCode)
     .limit(1)
@@ -179,22 +181,22 @@ export async function enrollCreatorInBootstrap(
     updatedAt: now,
   };
   
-  const docRef = await db.collection('creatorBootstrap').add(profile);
+  const docRef = await db.collection('earnerBootstrap').add(profile);
   
   // Update config count
-  await db.collection('creatorBootstrapConfigs').doc(countryCode).update({
+  await db.collection('earnerBootstrapConfigs').doc(countryCode).update({
     currentCreatorCount: admin.firestore.FieldValue.increment(1),
     updatedAt: now,
   });
   
-  // Create incentive records for creator
+  // Create incentive records for earner
   await applyCreatorIncentives(userId, countryCode, config.defaultIncentives);
   
   return { ...profile };
 }
 
 /**
- * Apply bootstrap incentives to a creator
+ * Apply bootstrap incentives to a earner
  */
 async function applyCreatorIncentives(
   userId: string,
@@ -204,8 +206,8 @@ async function applyCreatorIncentives(
   const db = admin.firestore();
   const now = admin.firestore.Timestamp.now();
   
-  // Store in creator incentives collection
-  await db.collection('creatorIncentives').doc(userId).set({
+  // Store in earner incentives collection
+  await db.collection('earnerIncentives').doc(userId).set({
     bootstrapProgram: true,
     countryCode,
     revenueSplitCreator: incentives.revenueSplitCreator,
@@ -219,7 +221,7 @@ async function applyCreatorIncentives(
 }
 
 /**
- * Update creator bootstrap metrics
+ * Update earner bootstrap metrics
  */
 export async function updateCreatorMetrics(
   userId: string,
@@ -229,7 +231,7 @@ export async function updateCreatorMetrics(
   const db = admin.firestore();
   const now = admin.firestore.Timestamp.now();
   
-  const snapshot = await db.collection('creatorBootstrap')
+  const snapshot = await db.collection('earnerBootstrap')
     .where('userId', '==', userId)
     .where('countryCode', '==', countryCode)
     .limit(1)
@@ -257,7 +259,7 @@ export async function updateCreatorMetrics(
 }
 
 /**
- * Check if creator meets graduation criteria
+ * Check if earner meets graduation criteria
  */
 async function checkGraduationEligibility(
   userId: string,
@@ -265,7 +267,7 @@ async function checkGraduationEligibility(
 ): Promise<boolean> {
   const db = admin.firestore();
   
-  const snapshot = await db.collection('creatorBootstrap')
+  const snapshot = await db.collection('earnerBootstrap')
     .where('userId', '==', userId)
     .where('countryCode', '==', countryCode)
     .limit(1)
@@ -290,7 +292,7 @@ async function checkGraduationEligibility(
 }
 
 /**
- * Graduate creator from bootstrap program
+ * Graduate earner from bootstrap program
  */
 export async function graduateCreator(
   userId: string,
@@ -299,7 +301,7 @@ export async function graduateCreator(
   const db = admin.firestore();
   const now = admin.firestore.Timestamp.now();
   
-  const snapshot = await db.collection('creatorBootstrap')
+  const snapshot = await db.collection('earnerBootstrap')
     .where('userId', '==', userId)
     .where('countryCode', '==', countryCode)
     .limit(1)
@@ -315,8 +317,8 @@ export async function graduateCreator(
     updatedAt: now,
   });
   
-  // Transition to standard creator incentives
-  await db.collection('creatorIncentives').doc(userId).update({
+  // Transition to standard earner incentives
+  await db.collection('earnerIncentives').doc(userId).update({
     bootstrapProgram: false,
     revenueSplitCreator: 70, // Standard split
     revenueSplitPlatform: 30,
@@ -345,7 +347,7 @@ export async function getBootstrapStatus(
   countryCode: string
 ): Promise<{
   config: CountryBootstrapConfig | null;
-  creators: CreatorBootstrapProfile[];
+  earners: CreatorBootstrapProfile[];
   stats: {
     invited: number;
     onboarded: number;
@@ -358,31 +360,31 @@ export async function getBootstrapStatus(
   const db = admin.firestore();
   
   // Get config
-  const configDoc = await db.collection('creatorBootstrapConfigs').doc(countryCode).get();
+  const configDoc = await db.collection('earnerBootstrapConfigs').doc(countryCode).get();
   const config = configDoc.exists ? configDoc.data() as CountryBootstrapConfig : null;
   
-  // Get creators
-  const creatorsSnapshot = await db.collection('creatorBootstrap')
+  // Get earners
+  const earnersSnapshot = await db.collection('earnerBootstrap')
     .where('countryCode', '==', countryCode)
     .get();
   
-  const creators = creatorsSnapshot.docs.map(doc => doc.data() as CreatorBootstrapProfile);
+  const earners = earnersSnapshot.docs.map(doc => doc.data() as CreatorBootstrapProfile);
   
   // Calculate stats
   const stats = {
-    invited: creators.filter(c => c.status === 'INVITED').length,
-    onboarded: creators.filter(c => c.status === 'ONBOARDED').length,
-    active: creators.filter(c => c.status === 'ACTIVE').length,
-    graduated: creators.filter(c => c.status === 'GRADUATED').length,
-    churned: creators.filter(c => c.status === 'CHURNED').length,
-    targetProgress: config ? (creators.length / config.targetCreatorCount) * 100 : 0,
+    invited: earners.filter(c => c.status === 'INVITED').length,
+    onboarded: earners.filter(c => c.status === 'ONBOARDED').length,
+    active: earners.filter(c => c.status === 'ACTIVE').length,
+    graduated: earners.filter(c => c.status === 'GRADUATED').length,
+    churned: earners.filter(c => c.status === 'CHURNED').length,
+    targetProgress: config ? (earners.length / config.targetCreatorCount) * 100 : 0,
   };
   
-  return { config, creators, stats };
+  return { config, earners, stats };
 }
 
 /**
- * Get top performing bootstrap creators
+ * Get top performing bootstrap earners
  */
 export async function getTopBootstrapCreators(
   countryCode: string,
@@ -391,16 +393,16 @@ export async function getTopBootstrapCreators(
 ): Promise<CreatorBootstrapProfile[]> {
   const db = admin.firestore();
   
-  const snapshot = await db.collection('creatorBootstrap')
+  const snapshot = await db.collection('earnerBootstrap')
     .where('countryCode', '==', countryCode)
     .get();
   
-  const creators = snapshot.docs.map(doc => doc.data() as CreatorBootstrapProfile);
+  const earners = snapshot.docs.map(doc => doc.data() as CreatorBootstrapProfile);
   
   // Sort by metric
-  creators.sort((a, b) => b.metrics[metric] - a.metrics[metric]);
+  earners.sort((a, b) => b.metrics[metric] - a.metrics[metric]);
   
-  return creators.slice(0, limit);
+  return earners.slice(0, limit);
 }
 
 /**
@@ -413,7 +415,7 @@ export async function updateBootstrapPhase(
   const db = admin.firestore();
   const now = admin.firestore.Timestamp.now();
   
-  await db.collection('creatorBootstrapConfigs').doc(countryCode).update({
+  await db.collection('earnerBootstrapConfigs').doc(countryCode).update({
     phase,
     updatedAt: now,
   });
@@ -429,14 +431,14 @@ export async function closeBootstrapProgram(
   const now = admin.firestore.Timestamp.now();
   
   // Update config
-  await db.collection('creatorBootstrapConfigs').doc(countryCode).update({
+  await db.collection('earnerBootstrapConfigs').doc(countryCode).update({
     phase: 'CLOSED',
     actualEndDate: now,
     updatedAt: now,
   });
   
-  // Graduate all active creators
-  const snapshot = await db.collection('creatorBootstrap')
+  // Graduate all active earners
+  const snapshot = await db.collection('earnerBootstrap')
     .where('countryCode', '==', countryCode)
     .where('status', 'in', ['INVITED', 'ONBOARDED', 'ACTIVE'])
     .get();
@@ -459,16 +461,30 @@ export async function getBootstrapLeaderboard(
   followersGained: number;
   contentCreated: number;
 }>> {
-  const creators = await getTopBootstrapCreators(countryCode, 'tokensEarned', 100);
+  const earners = await getTopBootstrapCreators(countryCode, 'tokensEarned', 100);
   
-  return creators.map((creator, index) => ({
-    userId: creator.userId,
+  return earners.map((earner, index) => ({
+    userId: earner.userId,
     rank: index + 1,
-    tokensEarned: creator.metrics.tokensEarned,
-    followersGained: creator.metrics.followersGained,
-    contentCreated: creator.metrics.contentCreated,
+    tokensEarned: earner.metrics.tokensEarned,
+    followersGained: earner.metrics.followersGained,
+    contentCreated: earner.metrics.contentCreated,
   }));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

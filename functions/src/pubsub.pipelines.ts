@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ==================================================================
  * AVALO PUB/SUB PIPELINES - 20M USER SCALE
@@ -36,50 +38,50 @@ const db = getFirestore();
 
 export const TOPICS = {
   // User events
-  USER_CREATED: 'avalo-user-created',
-  USER_VERIFIED: 'avalo-user-verified',
-  USER_DELETED: 'avalo-user-deleted',
+  USER_CREATED: 'platform-user-created',
+  USER_VERIFIED: 'platform-user-verified',
+  USER_DELETED: 'platform-user-deleted',
 
   // Matchmaking
-  MATCH_CREATED: 'avalo-match-created',
-  MATCH_EXPIRED: 'avalo-match-expired',
+  MATCH_CREATED: 'platform-match-created',
+  MATCH_EXPIRED: 'platform-match-expired',
 
   // Feed operations
-  POST_CREATED: 'avalo-post-created',
-  POST_LIKED: 'avalo-post-liked',
-  FEED_FANOUT: 'avalo-feed-fanout',
+  POST_CREATED: 'platform-post-created',
+  POST_LIKED: 'platform-post-liked',
+  FEED_FANOUT: 'platform-feed-fanout',
 
   // Chat operations
-  MESSAGE_SENT: 'avalo-message-sent',
-  CHAT_CREATED: 'avalo-chat-created',
+  MESSAGE_SENT: 'platform-message-sent',
+  CHAT_CREATED: 'platform-chat-created',
 
   // Payments
-  PAYMENT_COMPLETED: 'avalo-payment-completed',
-  WITHDRAWAL_REQUESTED: 'avalo-withdrawal-requested',
+  PAYMENT_COMPLETED: 'platform-payment-completed',
+  WITHDRAWAL_REQUESTED: 'platform-withdrawal-requested',
 
   // AI operations
-  AI_GENERATION_REQUEST: 'avalo-ai-generation',
-  AI_MODERATION_REQUEST: 'avalo-ai-moderation',
+  AI_GENERATION_REQUEST: 'platform-ai-generation',
+  AI_MODERATION_REQUEST: 'platform-ai-moderation',
 
   // Notifications
-  NOTIFICATION_BATCH: 'avalo-notification-batch',
-  PUSH_NOTIFICATION: 'avalo-push-notification',
+  NOTIFICATION_BATCH: 'platform-notification-batch',
+  PUSH_NOTIFICATION: 'platform-push-notification',
 
   // Analytics
-  ANALYTICS_EVENT: 'avalo-analytics-event',
-  ANALYTICS_AGGREGATION: 'avalo-analytics-aggregation',
+  ANALYTICS_EVENT: 'platform-analytics-event',
+  ANALYTICS_AGGREGATION: 'platform-analytics-aggregation',
 
   // Media processing
-  MEDIA_UPLOAD: 'avalo-media-upload',
-  MEDIA_TRANSCODE: 'avalo-media-transcode',
+  MEDIA_UPLOAD: 'platform-media-upload',
+  MEDIA_TRANSCODE: 'platform-media-transcode',
 
   // Fraud detection
-  FRAUD_CHECK: 'avalo-fraud-check',
-  RISK_EVALUATION: 'avalo-risk-evaluation',
+  FRAUD_CHECK: 'platform-fraud-check',
+  RISK_EVALUATION: 'platform-risk-evaluation',
 
   // System operations
-  CLEANUP_TASK: 'avalo-cleanup-task',
-  BACKUP_REQUEST: 'avalo-backup-request',
+  CLEANUP_TASK: 'platform-cleanup-task',
+  BACKUP_REQUEST: 'platform-backup-request',
 } as const;
 
 // =================================================================
@@ -620,6 +622,20 @@ export const PubSubPipelines = {
 };
 
 logger.info('✅ Pub/Sub pipelines loaded - Async processing ready for 20M scale');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

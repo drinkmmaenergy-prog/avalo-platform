@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Pack 420 - Data Rights Types
 export interface DataRequest {
   id?: string;
@@ -165,6 +167,23 @@ export interface DeletionJobResult {
   completedAt?: any;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

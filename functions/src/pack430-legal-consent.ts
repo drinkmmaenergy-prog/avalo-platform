@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 430 — CONSENT & LEGAL ACCEPTANCE LAYER
  * 
@@ -552,6 +554,20 @@ export async function checkConsentsForEventCreation(userId: string): Promise<boo
 // ─────────────────────────────────────────────────────────────────
 
 export default LegalConsentEngine;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

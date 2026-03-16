@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 94 — Discovery & Ranking Engine v2
  * Trust-/Region-/Earnings-Aware Feed & Search
@@ -6,7 +8,7 @@
  * 
  * CRITICAL CONSTRAINTS:
  * - No token price changes
- * - No revenue split changes (65% creator / 35% Avalo)
+ * - No revenue split changes (65% earner / 35% Avalo)
  * - No free tokens, discounts, cashback, promo codes
  * - No pay-to-rank boosting (monetization signals used for engagement only)
  * - Risky/violating accounts have lower visibility or zero exposure
@@ -107,10 +109,10 @@ async function calculatePreferenceMatch(
   
   // Age matching
   if (viewerPrefs.minAge && candidate.age < viewerPrefs.minAge) {
-    score -= MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+    score -= MONETIZATION_SPLITS.EVENT_TICKET.platform;
   }
   if (viewerPrefs.maxAge && candidate.age > viewerPrefs.maxAge) {
-    score -= MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+    score -= MONETIZATION_SPLITS.EVENT_TICKET.platform;
   }
   
   // Interest matching (if available)
@@ -451,7 +453,7 @@ export async function searchProfiles(
       // Calculate ranking score (with higher weight on match for search)
       const searchWeights: RankingWeights = {
         ...WEIGHTS,
-        w_match: MONETIZATION_SPLITS.CHAT.avalo, // Increase match weight for search
+        w_match: MONETIZATION_SPLITS.CHAT.platform, // Increase match weight for search
         w_active: 0.15, // Reduce activity weight
       };
       
@@ -615,6 +617,22 @@ async function getUserPreferences(userId: string): Promise<UserPreferences> {
 }
 
 logger.info('✅ Discovery & Ranking Engine v2 initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

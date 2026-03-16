@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 206c — Adult Mode Cloud Functions
  * Romantic & Sexual Conversation System — Consent-Based
@@ -483,6 +485,20 @@ export const getAgeVerificationStatus = onCall(
     return await getUserAgeVerification(request.auth.uid);
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

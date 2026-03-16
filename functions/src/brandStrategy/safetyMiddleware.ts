@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { ContentSuggestion, SafetyCheckResult } from '../types/brandStrategy';
 
 // Forbidden patterns that indicate sexualization, parasocial manipulation, or emotional exploitation
@@ -428,6 +430,22 @@ export function getAlternativeSuggestions(blockedCategory: string, niche: string
   
   return suggestions;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

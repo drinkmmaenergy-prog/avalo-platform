@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Pack 422 - Reputation Types (flexible)
 export interface UserReputation {
   userId?: string;
@@ -156,9 +158,9 @@ export interface ReputationWeights {
 export const DEFAULT_REPUTATION_WEIGHTS: ReputationWeights = {
   verification: 0.25,
   accountAge: 0.15,
-  activity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  reports: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  interactions: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  activity: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  reports: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  interactions: MONETIZATION_SPLITS.EVENT_TICKET.platform,
 };
 
 export interface ReputationHistoryEvent {
@@ -170,6 +172,24 @@ export interface ReputationHistoryEvent {
   module?: string;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

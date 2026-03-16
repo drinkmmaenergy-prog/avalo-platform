@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 304 — Admin Financial Console & Reconciliation
  * Monthly Finance Aggregation
@@ -5,9 +7,9 @@
  * Aggregates platform financial data from:
  * - walletTransactions (PACK 277)
  * - withdrawalRequests (PACK 289)
- * - creatorEarningsMonthly (PACK 303)
+ * - earnerEarningsMonthly (PACK 303)
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -46,32 +48,32 @@ function getMonthDocId(year: number, month: number): string {
 /**
  * Determine revenue split based on transaction type
  */
-function getRevenueSplit(txType: string): { creatorShare: number; avaloShare: number } {
+function getRevenueSplit(txType: string): { earner: number; platform: number } {
   switch (txType) {
     case 'CHAT_SPEND':
       return {
-        creatorShare: FINANCE_CONSTANTS.SPLIT_CHAT_CREATOR,
-        avaloShare: FINANCE_CONSTANTS.SPLIT_CHAT_AVALO,
+        earner: FINANCE_CONSTANTS.SPLIT_CHAT_CREATOR,
+        platform: FINANCE_CONSTANTS.SPLIT_CHAT_AVALO,
       };
     case 'CALL_SPEND':
       return {
-        creatorShare: FINANCE_CONSTANTS.SPLIT_CALLS_CREATOR,
-        avaloShare: FINANCE_CONSTANTS.SPLIT_CALLS_AVALO,
+        earner: FINANCE_CONSTANTS.SPLIT_CALLS_CREATOR,
+        platform: FINANCE_CONSTANTS.SPLIT_CALLS_AVALO,
       };
     case 'CALENDAR_BOOKING':
       return {
-        creatorShare: FINANCE_CONSTANTS.SPLIT_CALENDAR_CREATOR,
-        avaloShare: FINANCE_CONSTANTS.SPLIT_CALENDAR_AVALO,
+        earner: FINANCE_CONSTANTS.SPLIT_CALENDAR_CREATOR,
+        platform: FINANCE_CONSTANTS.SPLIT_CALENDAR_AVALO,
       };
     case 'EVENT_TICKET':
       return {
-        creatorShare: FINANCE_CONSTANTS.SPLIT_EVENTS_CREATOR,
-        avaloShare: FINANCE_CONSTANTS.SPLIT_EVENTS_AVALO,
+        earner: FINANCE_CONSTANTS.SPLIT_EVENTS_CREATOR,
+        platform: FINANCE_CONSTANTS.SPLIT_EVENTS_AVALO,
       };
     default:
       return {
-        creatorShare: FINANCE_CONSTANTS.SPLIT_OTHER_CREATOR,
-        avaloShare: FINANCE_CONSTANTS.SPLIT_OTHER_AVALO,
+        earner: FINANCE_CONSTANTS.SPLIT_OTHER_CREATOR,
+        platform: FINANCE_CONSTANTS.SPLIT_OTHER_AVALO,
       };
   }
 }
@@ -177,12 +179,12 @@ export async function aggregateMonthlyFinance(
           aggregation.gmvTokens += amountTokens;
           
           const split = getRevenueSplit(txType);
-          const creatorTokens = Math.floor(amountTokens * split.creatorShare);
-          const avaloTokens = amountTokens - creatorTokens;
+          const earnerTokens = Math.floor(amountTokens * split.earner);
+          const platformTokens = amountTokens - earnerTokens;
           
-          aggregation.totalCreatorShareTokens += creatorTokens;
-          aggregation.totalAvaloShareTokens += avaloTokens;
-          aggregation.feesFromChatTokens += avaloTokens;
+          aggregation.totalCreatorShareTokens += earnerTokens;
+          aggregation.totalAvaloShareTokens += platformTokens;
+          aggregation.feesFromChatTokens += platformTokens;
           break;
         }
 
@@ -191,12 +193,12 @@ export async function aggregateMonthlyFinance(
           aggregation.gmvTokens += amountTokens;
           
           const split = getRevenueSplit(txType);
-          const creatorTokens = Math.floor(amountTokens * split.creatorShare);
-          const avaloTokens = amountTokens - creatorTokens;
+          const earnerTokens = Math.floor(amountTokens * split.earner);
+          const platformTokens = amountTokens - earnerTokens;
           
-          aggregation.totalCreatorShareTokens += creatorTokens;
-          aggregation.totalAvaloShareTokens += avaloTokens;
-          aggregation.feesFromCallsTokens += avaloTokens;
+          aggregation.totalCreatorShareTokens += earnerTokens;
+          aggregation.totalAvaloShareTokens += platformTokens;
+          aggregation.feesFromCallsTokens += platformTokens;
           break;
         }
 
@@ -205,12 +207,12 @@ export async function aggregateMonthlyFinance(
           aggregation.gmvTokens += amountTokens;
           
           const split = getRevenueSplit(txType);
-          const creatorTokens = Math.floor(amountTokens * split.creatorShare);
-          const avaloTokens = amountTokens - creatorTokens;
+          const earnerTokens = Math.floor(amountTokens * split.earner);
+          const platformTokens = amountTokens - earnerTokens;
           
-          aggregation.totalCreatorShareTokens += creatorTokens;
-          aggregation.totalAvaloShareTokens += avaloTokens;
-          aggregation.feesFromCalendarTokens += avaloTokens;
+          aggregation.totalCreatorShareTokens += earnerTokens;
+          aggregation.totalAvaloShareTokens += platformTokens;
+          aggregation.feesFromCalendarTokens += platformTokens;
           break;
         }
 
@@ -219,12 +221,12 @@ export async function aggregateMonthlyFinance(
           aggregation.gmvTokens += amountTokens;
           
           const split = getRevenueSplit(txType);
-          const creatorTokens = Math.floor(amountTokens * split.creatorShare);
-          const avaloTokens = amountTokens - creatorTokens;
+          const earnerTokens = Math.floor(amountTokens * split.earner);
+          const platformTokens = amountTokens - earnerTokens;
           
-          aggregation.totalCreatorShareTokens += creatorTokens;
-          aggregation.totalAvaloShareTokens += avaloTokens;
-          aggregation.feesFromEventsTokens += avaloTokens;
+          aggregation.totalCreatorShareTokens += earnerTokens;
+          aggregation.totalAvaloShareTokens += platformTokens;
+          aggregation.feesFromEventsTokens += platformTokens;
           break;
         }
 
@@ -241,12 +243,12 @@ export async function aggregateMonthlyFinance(
             aggregation.gmvTokens += amountTokens;
             
             const split = getRevenueSplit(txType);
-            const creatorTokens = Math.floor(amountTokens * split.creatorShare);
-            const avaloTokens = amountTokens - creatorTokens;
+            const earnerTokens = Math.floor(amountTokens * split.earner);
+            const platformTokens = amountTokens - earnerTokens;
             
-            aggregation.totalCreatorShareTokens += creatorTokens;
-            aggregation.totalAvaloShareTokens += avaloTokens;
-            aggregation.feesFromOtherTokens += avaloTokens;
+            aggregation.totalCreatorShareTokens += earnerTokens;
+            aggregation.totalAvaloShareTokens += platformTokens;
+            aggregation.feesFromOtherTokens += platformTokens;
           }
           break;
         }
@@ -288,17 +290,17 @@ export async function aggregateMonthlyFinance(
 
     logger.info('Calculating outstanding liability...');
 
-    // Get all creator earnings up to this month (cumulative)
-    const creatorEarningsQuery = db
-      .collection('creatorEarningsMonthly')
+    // Get all earner earnings up to this month (cumulative)
+    const earnerEarningsQuery = db
+      .collection('earnerEarningsMonthly')
       .where('year', '<=', year);
 
-    const creatorEarningsSnapshot = await creatorEarningsQuery.get();
+    const earnerEarningsSnapshot = await earnerEarningsQuery.get();
     
     let lifetimeCreatorTokens = 0;
     let lifetimePayoutTokens = 0;
 
-    for (const earningDoc of creatorEarningsSnapshot.docs) {
+    for (const earningDoc of earnerEarningsSnapshot.docs) {
       const earning = earningDoc.data();
       
       // Only include earnings up to and including this month
@@ -429,6 +431,21 @@ export async function getMonthlyAggregationRange(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

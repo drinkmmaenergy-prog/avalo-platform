@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Ambassador Compensation Engine
@@ -152,7 +154,7 @@ export interface TierPromotion {
   // Performance snapshot
   performance: {
     referrals: number;
-    creators: number;
+    earners: number;
     events: number;
     revenue: number;
   };
@@ -488,7 +490,7 @@ export class AmbassadorCompensationService {
       effectiveAt: firestore.Timestamp.now(),
       performance: {
         referrals: performance.verifiedReferrals,
-        creators: performance.creatorsRecruited,
+        earners: performance.earnersRecruited,
         events: performance.eventsHosted,
         revenue: performance.revenue,
       },
@@ -785,6 +787,20 @@ export function createAmbassadorCompensationService(
 ): AmbassadorCompensationService {
   return new AmbassadorCompensationService(db);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

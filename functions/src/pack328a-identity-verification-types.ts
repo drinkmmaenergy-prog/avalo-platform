@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 328A: Identity Verification Types
  * Bank-ID & Document Fallback Verification (18+ Enforcement Layer)
@@ -282,6 +284,20 @@ export const VERIFICATION_TRIGGERS: VerificationTrigger[] = [
     priority: 3,
   },
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

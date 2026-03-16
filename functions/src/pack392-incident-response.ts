@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 392 - Automated Store Incident Response Protocol
  * Triggered when storeRiskState = CRITICAL
@@ -434,7 +436,7 @@ async function exportEvidencePack(
     const evidenceRef = await db.collection('evidencePacks').add(evidencePack);
     
     // Generate export URL (would integrate with Cloud Storage in production)
-    const exportUrl = `https://storage.avalo.app/evidence/${evidenceRef.id}.json`;
+    const exportUrl = `https://storage.platform.app/evidence/${evidenceRef.id}.json`;
     await evidenceRef.update({ exportUrl });
     
     action.status = 'COMPLETED';
@@ -719,6 +721,20 @@ export const pack392_disableSafeMode = functions
 
     return { success: true };
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

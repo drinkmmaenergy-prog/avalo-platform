@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 435 — Global Events Engine: Creator & Fan Event Logic
  * 
@@ -14,9 +16,9 @@ import { FieldValue, Timestamp, arrayUnion, increment } from './runtime';
 // ============================================================================
 
 export interface CreatorEvent extends EventConfig {
-  creatorId: string;
-  creatorName: string;
-  creatorVerified: boolean;
+  earnerId: string;
+  earnerName: string;
+  earnerVerified: boolean;
   
   // Event branding
   eventTheme: string;
@@ -43,7 +45,7 @@ export interface CreatorEvent extends EventConfig {
   
   // Stats
   totalRevenue: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
   fanAttendance: number;
   subscriptionConversions: number;
 }
@@ -61,7 +63,7 @@ export interface MeetAndGreetSlot {
 
 export interface CreatorMerch {
   merchId: string;
-  creatorId: string;
+  earnerId: string;
   eventId: string;
   
   // Product info
@@ -98,7 +100,7 @@ export interface CreatorMerch {
 export interface TippingTransaction {
   tipId: string;
   eventId: string;
-  creatorId: string;
+  earnerId: string;
   fromUserId: string;
   
   amount: number;
@@ -121,7 +123,7 @@ export interface TippingTransaction {
 export interface SubscriptionUpsell {
   upsellId: string;
   eventId: string;
-  creatorId: string;
+  earnerId: string;
   userId: string;
   
   // Offer details
@@ -147,48 +149,48 @@ export interface SubscriptionUpsell {
 // ============================================================================
 
 export async function createCreatorEvent(
-  creatorId: string,
+  earnerId: string,
   eventData: Partial<CreatorEvent>
 ): Promise<string> {
   const db = admin.firestore();
   
-  // Validate creator
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  if (!creatorDoc.exists) {
+  // Validate earner
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  if (!earnerDoc.exists) {
     throw new Error('Creator not found');
   }
   
-  const creator = creatorDoc.data();
+  const earner = earnerDoc.data();
   
-  // Check if creator is verified or has creator status
-  if (!creator?.isCreator && !creator?.verifiedBadge) {
-    throw new Error('User is not a verified creator');
+  // Check if earner is verified or has earner status
+  if (!earner?.isCreator && !earner?.verifiedBadge) {
+    throw new Error('User is not a verified earner');
   }
   
-  // Create event with creator-specific fields
+  // Create event with earner-specific fields
   const eventRef = db.collection('events').doc();
   const eventId = eventRef.id;
   
-  const creatorEvent: Partial<CreatorEvent> = {
+  const earnerEvent: Partial<CreatorEvent> = {
     ...eventData,
     eventId,
-    organizerId: creatorId,
-    creatorId,
-    creatorName: creator.displayName || 'Creator',
-    creatorVerified: creator.verifiedBadge || false,
-    type: 'creator_fan_event' as any,
+    organizerId: earnerId,
+    earnerId,
+    earnerName: earner.displayName || 'Creator',
+    earnerVerified: earner.verifiedBadge || false,
+    type: 'earner_fan_event' as any,
     enableTipping: eventData.enableTipping !== false, // default true
     enableMerchSales: eventData.enableMerchSales !== false, // default true
     enableSubscriptionUpsell: eventData.enableSubscriptionUpsell !== false, // default true
     totalRevenue: 0,
-    creatorEarnings: 0,
+    earnerEarnings: 0,
     fanAttendance: 0,
     subscriptionConversions: 0,
     createdAt: admin.firestore.Timestamp.now(),
     updatedAt: admin.firestore.Timestamp.now(),
   };
   
-  await eventRef.set(creatorEvent);
+  await eventRef.set(earnerEvent);
   
   // Create meet & greet slots if specified
   if (eventData.meetAndGreetSlots) {
@@ -196,7 +198,7 @@ export async function createCreatorEvent(
       await db.collection('meetAndGreetSlots').doc(slot.slotId).set({
         ...slot,
         eventId,
-        creatorId,
+        earnerId,
       });
     }
   }
@@ -294,7 +296,7 @@ export async function bookMeetAndGreet(
       userId,
       eventId,
       slotId,
-      creatorId: slot.slotId.split('-')[0],
+      earnerId: slot.slotId.split('-')[0],
       bookedAt: admin.firestore.Timestamp.now(),
       status: 'confirmed',
     });
@@ -327,7 +329,7 @@ export async function bookMeetAndGreet(
 
 export async function tipCreatorDuringEvent(
   fromUserId: string,
-  creatorId: string,
+  earnerId: string,
   eventId: string,
   amount: number,
   context: TippingTransaction['tippedDuring'],
@@ -350,19 +352,19 @@ export async function tipCreatorDuringEvent(
       'wallet.balance': admin.firestore.FieldValue.increment(-amount),
     });
     
-    // Add to creator wallet (90% of tip, 10% platform fee)
-    const creatorAmount = Math.floor(amount * 0.9);
-    const platformFee = amount - creatorAmount;
+    // Add to earner wallet (90% of tip, 10% platform fee)
+    const earnerAmount = Math.floor(amount * 0.9);
+    const platformFee = amount - earnerAmount;
     
-    await db.collection('users').doc(creatorId).update({
-      'wallet.balance': admin.firestore.FieldValue.increment(creatorAmount),
-      'creatorStats.totalTipsReceived': admin.firestore.FieldValue.increment(creatorAmount),
+    await db.collection('users').doc(earnerId).update({
+      'wallet.balance': admin.firestore.FieldValue.increment(earnerAmount),
+      'earnerStats.totalTipsReceived': admin.firestore.FieldValue.increment(earnerAmount),
     });
     
     // Create tip transaction
     const tipRef = await db.collection('tippingTransactions').add({
       eventId,
-      creatorId,
+      earnerId,
       fromUserId: isAnonymous ? 'anonymous' : fromUserId,
       amount,
       currency: 'USD',
@@ -378,13 +380,13 @@ export async function tipCreatorDuringEvent(
     // Update event stats
     await db.collection('events').doc(eventId).update({
       totalRevenue: admin.firestore.FieldValue.increment(amount),
-      creatorEarnings: admin.firestore.FieldValue.increment(creatorAmount),
+      earnerEarnings: admin.firestore.FieldValue.increment(earnerAmount),
     });
     
-    // Notify creator (unless anonymous)
+    // Notify earner (unless anonymous)
     if (!isAnonymous) {
       await db.collection('notifications').add({
-        userId: creatorId,
+        userId: earnerId,
         type: 'tip_received',
         title: 'You received a tip!',
         body: `${userDoc.data()?.displayName || 'A fan'} tipped you $${amount} during your event`,
@@ -417,7 +419,7 @@ export async function purchaseCreatorMerch(
   
   try {
     // Get merch details
-    const merchDoc = await db.collection('creatorMerch').doc(merchId).get();
+    const merchDoc = await db.collection('earnerMerch').doc(merchId).get();
     if (!merchDoc.exists) {
       return { success: false, error: 'Merch not found' };
     }
@@ -449,19 +451,19 @@ export async function purchaseCreatorMerch(
       'wallet.balance': admin.firestore.FieldValue.increment(-merch.price),
     });
     
-    // Credit creator (85% of sale, 15% platform fee)
-    const creatorAmount = Math.floor(merch.price * 0.85);
+    // Credit earner (85% of sale, 15% platform fee)
+    const earnerAmount = Math.floor(merch.price * 0.85);
     
-    await db.collection('users').doc(merch.creatorId).update({
-      'wallet.balance': admin.firestore.FieldValue.increment(creatorAmount),
-      'creatorStats.merchRevenue': admin.firestore.FieldValue.increment(creatorAmount),
+    await db.collection('users').doc(merch.earnerId).update({
+      'wallet.balance': admin.firestore.FieldValue.increment(earnerAmount),
+      'earnerStats.merchRevenue': admin.firestore.FieldValue.increment(earnerAmount),
     });
     
     // Create purchase record
     await db.collection('merchPurchases').add({
       userId,
       merchId,
-      creatorId: merch.creatorId,
+      earnerId: merch.earnerId,
       eventId: merch.eventId,
       amount: merch.price,
       currency: merch.currency,
@@ -471,7 +473,7 @@ export async function purchaseCreatorMerch(
     });
     
     // Update merch stats
-    await db.collection('creatorMerch').doc(merchId).update({
+    await db.collection('earnerMerch').doc(merchId).update({
       soldCount: admin.firestore.FieldValue.increment(1),
       revenue: admin.firestore.FieldValue.increment(merch.price),
       ...(merch.type === 'physical' && {
@@ -483,7 +485,7 @@ export async function purchaseCreatorMerch(
     if (merch.type === 'digital' && merch.digitalContent) {
       await db.collection('userPurchasedContent').add({
         userId,
-        contentType: 'creator_merch',
+        contentType: 'earner_merch',
         contentId: merchId,
         contentUrl: merch.digitalContent.url,
         downloadable: merch.digitalContent.downloadable,
@@ -509,22 +511,22 @@ export async function purchaseCreatorMerch(
 export async function offerSubscriptionUpsell(
   eventId: string,
   userId: string,
-  creatorId: string,
+  earnerId: string,
   discountPercent: number = 20
 ): Promise<string> {
   const db = admin.firestore();
   
-  // Get creator's subscription info
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const subscriptionTier = creatorDoc.data()?.creatorProfile?.subscriptionTier || 'standard';
-  const regularPrice = creatorDoc.data()?.creatorProfile?.subscriptionPrice || 9.99;
+  // Get earner's subscription info
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const subscriptionTier = earnerDoc.data()?.earnerProfile?.subscriptionTier || 'standard';
+  const regularPrice = earnerDoc.data()?.earnerProfile?.subscriptionPrice || 9.99;
   
   const offerPrice = regularPrice * (1 - discountPercent / 100);
   
   // Create upsell offer
   const upsellRef = await db.collection('subscriptionUpsells').add({
     eventId,
-    creatorId,
+    earnerId,
     userId,
     subscriptionTier,
     discountPercent,
@@ -540,9 +542,9 @@ export async function offerSubscriptionUpsell(
   await db.collection('notifications').add({
     userId,
     type: 'subscription_offer',
-    title: `Special Offer: Subscribe to ${creatorDoc.data()?.displayName}`,
+    title: `Special Offer: Subscribe to ${earnerDoc.data()?.displayName}`,
     body: `Get ${discountPercent}% off - Only $${offerPrice.toFixed(2)}/month!`,
-    data: { upsellId: upsellRef.id, eventId, creatorId },
+    data: { upsellId: upsellRef.id, eventId, earnerId },
     createdAt: admin.firestore.Timestamp.now(),
     read: false,
   });
@@ -592,9 +594,9 @@ export async function acceptSubscriptionUpsell(
       'wallet.balance': admin.firestore.FieldValue.increment(-upsell.offerPrice),
     });
     
-    await db.collection('creatorSubscriptions').add({
+    await db.collection('earnerSubscriptions').add({
       userId,
-      creatorId: upsell.creatorId,
+      earnerId: upsell.earnerId,
       tier: upsell.subscriptionTier,
       price: upsell.offerPrice,
       status: 'active',
@@ -670,6 +672,20 @@ export default {
   acceptSubscriptionUpsell,
   setupCreatorBooth,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 79 — In-Chat Paid Gifts
  * TypeScript types for gift system
@@ -296,3 +297,4 @@ export function sortGiftsByRarity(gifts: GiftCatalog[]): GiftCatalog[] {
     return b.priceTokens - a.priceTokens; // Higher price first within same rarity
   });
 }
+

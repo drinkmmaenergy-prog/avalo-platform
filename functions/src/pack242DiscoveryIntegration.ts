@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 242 - Discovery Feed Integration
  * Adjusts profile visibility based on price tiers to protect conversion rates
@@ -160,7 +162,7 @@ export async function filterProfilesByBudget(
 
 /**
  * Get recommended visibility adjustment for a user's current price level
- * Useful for showing creators what will happen if they change their price
+ * Useful for showing earners what will happen if they change their price
  */
 export async function getVisibilityPreview(
   userId: string,
@@ -251,6 +253,20 @@ export async function getBudgetDistribution(): Promise<{
     total: activeUsers.size
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

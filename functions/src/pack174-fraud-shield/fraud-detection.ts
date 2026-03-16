@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Core Fraud Detection
  * Main fraud detection and case management functions
@@ -390,6 +392,22 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists && userDoc.data()?.role === 'admin';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

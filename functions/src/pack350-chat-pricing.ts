@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 350 - Chat Pricing with Subscription Word Buckets
  * 
@@ -43,13 +45,12 @@ export async function getPack350ChatWordBucket(params: {
 
 /**
  * Calculate earnings split for chat (65/35)
- * IMPORTANT: No changes to revenue splits, only word bucket sizes
  */
 export function calculateChatEarningsSplit(totalTokens: number): {
   earnerReceives: number;
   platformReceives: number;
 } {
-  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.creator);  // 65% to earner
+  const earnerReceives = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.earner);  // 65% to earner
   const platformReceives = totalTokens - earnerReceives;   // 35% to platform
   
   return {
@@ -63,6 +64,22 @@ export function calculateChatEarningsSplit(totalTokens: number): {
  * IMPORTANT: No changes regardless of subscription tier
  */
 export const CHAT_ENTRY_PRICE = 100;  // tokens
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

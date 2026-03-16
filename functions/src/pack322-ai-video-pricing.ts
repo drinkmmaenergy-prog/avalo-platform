@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 322 — AI Video Pricing Helper
  * Per-minute billing with VIP/Royal discounts
@@ -36,6 +38,20 @@ export function calculateVideoTokens(minutes: number, tier: AiVideoTier): number
   const pricePerMinute = getAiVideoPricePerMinuteTokens(tier);
   return Math.floor(minutes * pricePerMinute);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

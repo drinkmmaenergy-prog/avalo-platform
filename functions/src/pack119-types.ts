@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 119 — Creator Agencies SaaS Panel
  * Type Definitions
@@ -6,7 +8,7 @@
  * - No access to private messages or buyer data
  * - No token transfer or payout control
  * - No ranking manipulation or visibility boosts
- * - Agency splits handled by PACK 114 (inside creator's 65%)
+ * - Agency splits handled by PACK 114 (inside earner's 65%)
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
@@ -101,7 +103,7 @@ export type AssetStatus = 'PENDING_SCAN' | 'APPROVED' | 'REJECTED' | 'DELETED';
 export interface AgencyAsset {
   assetId: string;
   agencyId: string;
-  creatorUserId?: string; // Optional: specific creator this asset is for
+  earnerUserId?: string; // Optional: specific earner this asset is for
   uploadedBy: string;
   fileName: string;
   fileSize: number;
@@ -149,7 +151,7 @@ export type ScheduleStatus =
 export interface AgencySchedulerTask {
   taskId: string;
   agencyId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   scheduledBy: string;
   platform: SchedulePlatform;
   assetId: string;
@@ -175,9 +177,9 @@ export interface AgencySchedulerTask {
 
 export interface CreatorPortfolio {
   portfolioId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   agencyId?: string;
-  handle: string; // URL: portfolio.avalo.app/{handle}
+  handle: string; // URL: portfolio.platform.app/{handle}
   displayName: string;
   bio?: string;
   profileimageUrl?: string;
@@ -211,7 +213,7 @@ export interface CreatorPortfolio {
 
 export interface AgencyDashboardAnalytics {
   agencyId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   period: 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LIFETIME';
   
   // Follower metrics (numeric only, no identities)
@@ -246,7 +248,7 @@ export interface AgencyDashboardAnalytics {
 
 export interface CreatorOAuthToken {
   tokenId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   platform: SchedulePlatform;
   accessToken: string; // Encrypted
   refreshToken?: string; // Encrypted
@@ -317,7 +319,7 @@ export type AgencySaaSAuditEvent =
 export interface AgencySaaSAuditLog {
   logId: string;
   agencyId: string;
-  creatorUserId?: string;
+  earnerUserId?: string;
   eventType: AgencySaaSAuditEvent;
   actorId: string;
   actorRole: AgencyRole;
@@ -393,6 +395,21 @@ export function getPlatformDisplayName(platform: SchedulePlatform): string {
   };
   return names[platform];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

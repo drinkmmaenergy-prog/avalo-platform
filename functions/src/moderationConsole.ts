@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 88 — Moderator Console Cloud Functions
  * Admin-facing APIs for case management
@@ -190,9 +192,9 @@ export const admin_getCaseDetails = onCall(
         }
 
         case 'PAYOUT': {
-          // Get payout request and creator balance
+          // Get payout request and earner balance
           const payoutDoc = await db.collection('payout_requests').doc(caseData.sourceId).get();
-          const balanceDoc = await db.collection('creator_balances').doc(caseData.subjectUserId).get();
+          const balanceDoc = await db.collection('earner_balances').doc(caseData.subjectUserId).get();
           const methodId = payoutDoc.data()?.methodId;
           let payoutMethod = null;
           
@@ -203,7 +205,7 @@ export const admin_getCaseDetails = onCall(
           
           underlyingData = {
             payoutRequest: payoutDoc.exists ? { id: payoutDoc.id, ...payoutDoc.data() } : null,
-            creatorBalance: balanceDoc.exists ? balanceDoc.data() : null,
+            earnerBalance: balanceDoc.exists ? balanceDoc.data() : null,
             payoutMethod,
           };
           break;
@@ -790,7 +792,7 @@ export const admin_setPayoutStatusFromCase = onCall(
           throw new HttpsError('invalid-argument', 'Rejection reason is required');
         }
 
-        const balanceRef = db.collection('creator_balances').doc(caseData.subjectUserId);
+        const balanceRef = db.collection('earner_balances').doc(caseData.subjectUserId);
 
         await db.runTransaction(async (transaction) => {
           const balanceDoc = await transaction.get(balanceRef);
@@ -1004,6 +1006,20 @@ export const admin_setEnforcementFromCase = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

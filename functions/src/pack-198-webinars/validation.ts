@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 198 — Event Validation & Content Filtering
  * Ensures all events remain professional, educational, and SFW
@@ -373,11 +375,11 @@ export function shouldAutoModerate(
 
 export function validateRevenueShare(
   totalRevenue: number
-): { creatorShare: number; platformShare: number } {
-  const creatorShare = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.creator * 100) / 100;
-  const platformShare = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.avalo * 100) / 100;
+): { earner: number; platform: number } {
+  const earner = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.earner * 100) / 100;
+  const platform = Math.round(totalRevenue * MONETIZATION_SPLITS.CHAT.platform * 100) / 100;
   
-  return { creatorShare, platformShare };
+  return { earner, platform };
 }
 
 export function canEnableCertificate(
@@ -399,6 +401,23 @@ export function canEnableCertificate(
   
   return educationalTypes.includes(eventType);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 50 — Royal Club Stripe Webhook Handler
  * Handles subscription events for Royal Club tiers
@@ -161,6 +163,20 @@ function determineRoyalTierFromSubscription(
 }
 
 console.log('✅ Royal Webhooks initialized - PACK 50');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

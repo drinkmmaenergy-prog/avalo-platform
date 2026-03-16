@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 156: Mystery Shopper & Compliance Audit Types
  * Decoy Users · Marketplace Fraud Catching · NSFW/Romance Trap Detection
@@ -8,7 +10,7 @@ import { timestamp } from '../runtime';
 export type DecoyUserType =
   | 'new_user'
   | 'high_spender'
-  | 'beginner_creator'
+  | 'beginner_earner'
   | 'event_attendee'
   | 'digital_product_customer';
 
@@ -283,7 +285,7 @@ export const PROBE_SCENARIOS: ProbeScenario[] = [
   {
     id: 'visibility_barter',
     probeType: 'visibility_bartering',
-    targetDecoyType: 'beginner_creator',
+    targetDecoyType: 'beginner_earner',
     scriptLines: [
       'I can help you get more visibility',
       'If you promote my stuff, I will promote yours',
@@ -316,6 +318,22 @@ export const REASON_CODES = {
   SAF_001: 'Offline safety policy violation',
   MIS_001: 'Misleading service description'
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 315 - Push Notifications & Growth Funnels
  * Notification Templates
@@ -596,6 +598,22 @@ export function getLocalizedText(
   const firstKey = Object.keys(localizedText)[0];
   return localizedText[firstKey] || '';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

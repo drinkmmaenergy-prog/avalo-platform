@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 120 — Multi-Sided Brand Partnerships & Sponsored Challenges
  * Type Definitions
@@ -327,6 +329,20 @@ export interface CampaignModerationLog {
   timestamp: Timestamp;
   metadata?: Record<string, any>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 102 — Cross-Platform Audience Growth Engine Endpoints
  * 
@@ -46,15 +48,15 @@ import { auth, functions, onSchedule } from './runtime';
 
 /**
  * Log external visit (public, no auth required)
- * Called when someone clicks a creator's public profile link
+ * Called when someone clicks a earner's public profile link
  */
 export const audienceGrowth_logVisit = onCall(
   { region: 'europe-west1' },
   async (request): Promise<LogExternalVisitResponse> => {
     const data = request.data as LogExternalVisitRequest;
     
-    if (!data.creatorId || !data.platform) {
-      throw new HttpsError('invalid-argument', 'creatorId and platform are required');
+    if (!data.earnerId || !data.platform) {
+      throw new HttpsError('invalid-argument', 'earnerId and platform are required');
     }
 
     try {
@@ -77,7 +79,7 @@ export const audienceGrowth_logVisit = onCall(
 // ============================================================================
 
 /**
- * Get creator's audience growth metrics
+ * Get earner's audience growth metrics
  * Returns funnel data for specified date range
  */
 export const audienceGrowth_getMetrics = onCall(
@@ -133,7 +135,7 @@ export const audienceGrowth_getMetrics = onCall(
 // ============================================================================
 
 /**
- * Update creator's social links
+ * Update earner's social links
  * Stores platform handles/usernames for Smart Links
  */
 export const audienceGrowth_updateSocialLinks = onCall(
@@ -147,12 +149,12 @@ export const audienceGrowth_updateSocialLinks = onCall(
     const data = request.data as UpdateSocialLinksRequest;
 
     try {
-      const socialLinksRef = db.collection('creator_social_links').doc(userId);
+      const socialLinksRef = db.collection('earner_social_links').doc(userId);
       const socialLinksSnap = await socialLinksRef.get();
 
       const updatedLinks: Partial<CreatorSocialLinks> = {
         ...(socialLinksSnap.exists ? socialLinksSnap.data() : {}),
-        creatorId: userId,
+        earnerId: userId,
         updatedAt: serverTimestamp() as any,
       };
 
@@ -214,7 +216,7 @@ export const audienceGrowth_generateSmartLinks = onCall(
       const username = userData?.username || userId;
 
       // Generate smart links for each platform
-      const baseURL = 'https://avalo.app/u';
+      const baseURL = 'https://platform.app/u';
       const smartLinks: Partial<Record<string, string>> = {
         tiktok: `${baseURL}/${username}?src=tiktok`,
         instagram: `${baseURL}/${username}?src=instagram`,
@@ -260,8 +262,8 @@ export const audienceGrowth_generateSmartLinks = onCall(
 // ============================================================================
 
 /**
- * Get public creator preview (no auth required)
- * Returns sanitized creator data for web landing page
+ * Get public earner preview (no auth required)
+ * Returns sanitized earner data for web landing page
  */
 export const audienceGrowth_getPublicCreatorPage = onCall(
   { region: 'europe-west1' },
@@ -302,13 +304,13 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
       const userId = userDoc.id;
 
       // Check if public profile is enabled
-      const socialLinksDoc = await db.collection('creator_social_links').doc(userId).get();
+      const socialLinksDoc = await db.collection('earner_social_links').doc(userId).get();
       const socialLinks = socialLinksDoc.data();
 
       if (!socialLinks || !socialLinks.publicProfileEnabled) {
         console.log('Scheduled job result:', {
           success: false,
-          error: 'Public profile is not enabled for this creator',
+          error: 'Public profile is not enabled for this earner',
         });
 
         return;
@@ -325,22 +327,22 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
           : undefined,
         isVerified: userData.verification?.status === 'VERIFIED' || false,
         ctaText: 'Join Avalo to follow and message me',
-        deepLink: `avalo://profile/${userId}`,
+        deepLink: `platform://profile/${userId}`,
       };
 
       console.log('Scheduled job result:', {
         success: true,
-        creator: preview,
+        earner: preview,
       });
 
 
       return;
     } catch (error: any) {
-      logger.error('[AudienceGrowth] Error getting public creator page:', error);
+      logger.error('[AudienceGrowth] Error getting public earner page:', error);
       
       console.log('Scheduled job result:', {
         success: false,
-        error: 'Failed to load creator profile',
+        error: 'Failed to load earner profile',
       });
 
       
@@ -355,7 +357,7 @@ export const audienceGrowth_getPublicCreatorPage = onCall(
 
 /**
  * Daily job to rebuild audience attribution metrics
- * Runs every night at 5 AM UTC (after creator analytics)
+ * Runs every night at 5 AM UTC (after earner analytics)
  */
 export const audienceGrowth_dailyAggregation = onSchedule(
   {
@@ -383,6 +385,20 @@ export const audienceGrowth_dailyAggregation = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

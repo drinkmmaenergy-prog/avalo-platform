@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 101 — Creator Success Toolkit Engine
  * Suggestion generation and scorecard calculation logic
@@ -85,7 +87,7 @@ async function calculateActivity(userId: string): Promise<number> {
     
     // Story posts (30 points)
     const storiesSnapshot = await db.collection('premium_stories')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo))
       .get();
     const storyCount = storiesSnapshot.size;
@@ -139,9 +141,9 @@ async function calculateResponsiveness(userId: string): Promise<number> {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     
-    // Get recent conversations where user is creator
+    // Get recent conversations where user is earner
     const conversationsSnapshot = await db.collection('conversations')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('lastMessageAt', '>=', Timestamp.fromDate(sevenDaysAgo))
       .limit(20)
       .get();
@@ -191,7 +193,7 @@ async function calculateContentMomentum(userId: string): Promise<number> {
     
     // Get recent earnings (proxy for content engagement)
     const earningsSnapshot = await db.collection('earnings_ledger')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo))
       .get();
     
@@ -223,7 +225,7 @@ async function calculateAudienceLoyalty(userId: string): Promise<number> {
     
     // Get earnings from last 30 days
     const earningsSnapshot = await db.collection('earnings_ledger')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo))
       .get();
     
@@ -318,7 +320,7 @@ async function generateProfileSuggestions(
         body: 'Users with photos get discovered more often. Add at least 3-4 clear photos to improve visibility.',
         priority: 'HIGH',
         helpArticleSlug: 'profile-photos',
-        actionLink: 'avalo://profile/edit/photos',
+        actionLink: 'platform://profile/edit/photos',
       });
     } else if (photoCount < 3) {
       suggestions.push({
@@ -328,7 +330,7 @@ async function generateProfileSuggestions(
         body: 'Users with 4+ profile photos get discovered more often. Consider adding clearer profile photos.',
         priority: 'MEDIUM',
         helpArticleSlug: 'profile-photos',
-        actionLink: 'avalo://profile/edit/photos',
+        actionLink: 'platform://profile/edit/photos',
       });
     }
     
@@ -341,7 +343,7 @@ async function generateProfileSuggestions(
         body: 'Users with completed bios are more likely to appear in discovery recommendations.',
         priority: 'HIGH',
         helpArticleSlug: 'profile-bio',
-        actionLink: 'avalo://profile/edit/bio',
+        actionLink: 'platform://profile/edit/bio',
       });
     }
     
@@ -354,7 +356,7 @@ async function generateProfileSuggestions(
         body: 'Adding interests helps you connect with users who share your passions.',
         priority: 'MEDIUM',
         helpArticleSlug: 'profile-interests',
-        actionLink: 'avalo://profile/edit/interests',
+        actionLink: 'platform://profile/edit/interests',
       });
     }
     
@@ -380,7 +382,7 @@ async function generateContentSuggestions(
     
     // Check recent story activity
     const storiesSnapshot = await db.collection('premium_stories')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo))
       .get();
     
@@ -394,7 +396,7 @@ async function generateContentSuggestions(
         body: 'Stories help you stay visible and engaged with your audience. Start with a simple introduction.',
         priority: 'HIGH',
         helpArticleSlug: 'creating-stories',
-        actionLink: 'avalo://stories/create',
+        actionLink: 'platform://stories/create',
       });
     } else if (storyCount < 2) {
       suggestions.push({
@@ -404,7 +406,7 @@ async function generateContentSuggestions(
         body: 'Stories posted consistently (2-4 per week) tend to get higher engagement.',
         priority: 'MEDIUM',
         helpArticleSlug: 'story-strategy',
-        actionLink: 'avalo://stories/create',
+        actionLink: 'platform://stories/create',
       });
     }
     
@@ -434,7 +436,7 @@ async function generateMessagingSuggestions(
         body: 'Replies within 1 hour lead to improved relationship building and message continuation.',
         priority: 'HIGH',
         helpArticleSlug: 'response-best-practices',
-        actionLink: 'avalo://messages',
+        actionLink: 'platform://messages',
       });
     }
     
@@ -463,7 +465,7 @@ async function generateEngagementSuggestions(
         title: 'Stay active regularly',
         body: 'Regular activity helps maintain visibility. Try logging in daily and engaging with your audience.',
         priority: 'MEDIUM',
-        helpArticleSlug: 'creator-activity',
+        helpArticleSlug: 'earner-activity',
       });
     }
     
@@ -566,7 +568,7 @@ export async function generateSuggestions(
 }
 
 /**
- * Rebuild creator success signals for a specific user
+ * Rebuild earner success signals for a specific user
  */
 export async function rebuildSuccessSignalsForUser(userId: string): Promise<void> {
   try {
@@ -586,7 +588,7 @@ export async function rebuildSuccessSignalsForUser(userId: string): Promise<void
       suggestions,
     };
     
-    await db.collection('creator_success_signals').doc(userId).set(signalsDoc);
+    await db.collection('earner_success_signals').doc(userId).set(signalsDoc);
     
     // Process optional notifications (respectsuser opt-in)
     try {
@@ -624,6 +626,20 @@ export async function rebuildSuccessSignalsForUser(userId: string): Promise<void
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

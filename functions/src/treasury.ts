@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 128 - Treasury & Payment Vault System
  * Core treasury functions for bank-grade token accounting
@@ -50,7 +52,7 @@ async function createLedgerEntry(
   tokenAmount: number,
   vault: VaultType,
   metadata: Record<string, any> = {},
-  creatorId?: string
+  earnerId?: string
 ): Promise<string> {
   const ledgerId = generateId();
   
@@ -58,7 +60,7 @@ async function createLedgerEntry(
     ledgerId,
     eventType,
     userId,
-    creatorId,
+    earnerId,
     tokenAmount,
     vault,
     timestamp: serverTimestamp() as any,
@@ -121,10 +123,10 @@ async function ensureUserWallet(userId: string): Promise<void> {
 }
 
 /**
- * Initialize creator vault if doesn't exist
+ * Initialize earner vault if doesn't exist
  */
 async function ensureCreatorVault(userId: string): Promise<void> {
-  const vaultRef = db.collection('creator_vaults').doc(userId);
+  const vaultRef = db.collection('earner_vaults').doc(userId);
   const vault = await vaultRef.get();
 
   if (!vault.exists) {
@@ -145,7 +147,7 @@ async function ensureCreatorVault(userId: string): Promise<void> {
  * Initialize Avalo revenue vault (singleton)
  */
 async function ensureAvaloVault(): Promise<void> {
-  const vaultRef = db.collection('avalo_revenue_vault').doc('platform');
+  const vaultRef = db.collection('platform_revenue_vault').doc('platform');
   const vault = await vaultRef.get();
 
   if (!vault.exists) {
@@ -248,10 +250,10 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { userId, creatorId, tokenAmount, transactionType, contentId, metadata = {} } = request.data;
+    const { userId, earnerId, tokenAmount, transactionType, contentId, metadata = {} } = request.data;
 
     // Validate input
-    if (!userId || !creatorId || !tokenAmount || !transactionType) {
+    if (!userId || !earnerId || !tokenAmount || !transactionType) {
       throw new HttpsError('invalid-argument', 'Missing required parameters');
     }
 
@@ -259,7 +261,7 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
       throw new HttpsError('invalid-argument', 'Token amount must be positive');
     }
 
-    if (userId === creatorId) {
+    if (userId === earnerId) {
       throw new HttpsError('invalid-argument', 'Cannot spend tokens on own content');
     }
 
@@ -274,7 +276,7 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
       const result = await db.runTransaction(async (transaction) => {
         // Ensure all vaults exist
         await ensureUserWallet(userId);
-        await ensureCreatorVault(creatorId);
+        await ensureCreatorVault(earnerId);
         await ensureAvaloVault();
 
         // Get user wallet
@@ -293,15 +295,15 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
         // Calculate 65/35 split
         const split = calculateRevenueSplit(tokenAmount);
 
-        // Get creator vault
-        const creatorVaultRef = db.collection('creator_vaults').doc(creatorId);
-        const creatorSnap = await transaction.get(creatorVaultRef);
-        const creatorVault = creatorSnap.data() as CreatorVault;
+        // Get earner vault
+        const earnerVaultRef = db.collection('earner_vaults').doc(earnerId);
+        const earnerSnap = await transaction.get(earnerVaultRef);
+        const earnerVault = earnerSnap.data() as CreatorVault;
 
         // Get Avalo vault
-        const avaloVaultRef = db.collection('avalo_revenue_vault').doc('platform');
-        const avaloSnap = await transaction.get(avaloVaultRef);
-        const avaloVault = avaloSnap.data() as AvaloRevenueVault;
+        const platformVaultRef = db.collection('platform_revenue_vault').doc('platform');
+        const platformSnap = await transaction.get(platformVaultRef);
+        const platformVault = platformSnap.data() as AvaloRevenueVault;
 
         // Update user wallet (deduct tokens)
         transaction.update(walletRef, {
@@ -311,26 +313,26 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
           updatedAt: serverTimestamp(),
         });
 
-        // Update creator vault (add 65%)
-        transaction.update(creatorVaultRef, {
-          availableTokens: creatorVault.availableTokens + split.creatorAmount,
-          lifetimeEarned: creatorVault.lifetimeEarned + split.creatorAmount,
+        // Update earner vault (add 65%)
+        transaction.update(earnerVaultRef, {
+          availableTokens: earnerVault.availableTokens + split.earnerAmount,
+          lifetimeEarned: earnerVault.lifetimeEarned + split.earnerAmount,
           lastEarnedAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
 
         // Update Avalo vault (add 35%)
-        transaction.update(avaloVaultRef, {
-          totalRevenue: avaloVault.totalRevenue + split.avaloAmount,
-          availableRevenue: avaloVault.availableRevenue + split.avaloAmount,
+        transaction.update(platformVaultRef, {
+          totalRevenue: platformVault.totalRevenue + split.platformAmount,
+          availableRevenue: platformVault.availableRevenue + split.platformAmount,
           lastRevenueAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
 
         return {
           userBalance: wallet.availableTokens - tokenAmount,
-          creatorEarnings: split.creatorAmount,
-          avaloRevenue: split.avaloAmount,
+          earnerEarnings: split.earnerAmount,
+          platformRevenue: split.platformAmount,
         };
       });
 
@@ -355,18 +357,18 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
       // Creator earn ledger entry
       await createLedgerEntry(
         'EARN',
-        creatorId,
-        result.creatorEarnings,
+        earnerId,
+        result.earnerEarnings,
         'CREATOR',
         { ...ledgerMetadata, spendLedgerId },
-        creatorId
+        earnerId
       );
 
       // Avalo commission ledger entry
       await createLedgerEntry(
         'COMMISSION',
         userId,
-        result.avaloRevenue,
+        result.platformRevenue,
         'AVALO_REVENUE',
         { ...ledgerMetadata, spendLedgerId }
       );
@@ -375,14 +377,14 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
         success: true,
         ledgerId: spendLedgerId,
         userBalance: result.userBalance,
-        creatorEarnings: result.creatorEarnings,
-        avaloRevenue: result.avaloRevenue,
+        earnerEarnings: result.earnerEarnings,
+        platformRevenue: result.platformRevenue,
         timestamp: serverTimestamp() as any,
       };
 
       logger.info('Token spend allocated', {
         userId,
-        creatorId,
+        earnerId,
         tokenAmount,
         split: result,
       });
@@ -436,7 +438,7 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
 
       const originalLedger = ledgerSnapshot.docs[0].data() as TreasuryLedgerEntry;
       const userId = originalLedger.userId;
-      const creatorId = originalLedger.creatorId;
+      const earnerId = originalLedger.earnerId;
       const tokenAmount = Math.abs(originalLedger.tokenAmount);
 
       // Check eligibility
@@ -462,14 +464,14 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
         const walletSnap = await transaction.get(walletRef);
         const wallet = walletSnap.data() as UserTokenWallet;
 
-        if (creatorId) {
-          const creatorVaultRef = db.collection('creator_vaults').doc(creatorId);
-          const creatorSnap = await transaction.get(creatorVaultRef);
-          const creatorVault = creatorSnap.data() as CreatorVault;
+        if (earnerId) {
+          const earnerVaultRef = db.collection('earner_vaults').doc(earnerId);
+          const earnerSnap = await transaction.get(earnerVaultRef);
+          const earnerVault = earnerSnap.data() as CreatorVault;
 
-          const avaloVaultRef = db.collection('avalo_revenue_vault').doc('platform');
-          const avaloSnap = await transaction.get(avaloVaultRef);
-          const avaloVault = avaloSnap.data() as AvaloRevenueVault;
+          const platformVaultRef = db.collection('platform_revenue_vault').doc('platform');
+          const platformSnap = await transaction.get(platformVaultRef);
+          const platformVault = platformSnap.data() as AvaloRevenueVault;
 
           // Return tokens to user
           transaction.update(walletRef, {
@@ -477,16 +479,16 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
             updatedAt: serverTimestamp(),
           });
 
-          // Deduct from creator vault
-          transaction.update(creatorVaultRef, {
-            availableTokens: Math.max(0, creatorVault.availableTokens - split.creatorAmount),
+          // Deduct from earner vault
+          transaction.update(earnerVaultRef, {
+            availableTokens: Math.max(0, earnerVault.availableTokens - split.earnerAmount),
             updatedAt: serverTimestamp(),
           });
 
           // Deduct from Avalo vault
-          transaction.update(avaloVaultRef, {
-            availableRevenue: Math.max(0, avaloVault.availableRevenue - split.avaloAmount),
-            totalRevenue: avaloVault.totalRevenue - split.avaloAmount,
+          transaction.update(platformVaultRef, {
+            availableRevenue: Math.max(0, platformVault.availableRevenue - split.platformAmount),
+            totalRevenue: platformVault.totalRevenue - split.platformAmount,
             updatedAt: serverTimestamp(),
           });
         }
@@ -503,10 +505,10 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
 
       await createLedgerEntry('REFUND', userId, tokenAmount, 'USER', refundMetadata);
       
-      if (creatorId) {
+      if (earnerId) {
         const split = calculateRevenueSplit(tokenAmount);
-        await createLedgerEntry('REFUND_CREATOR', creatorId, -split.creatorAmount, 'CREATOR', refundMetadata, creatorId);
-        await createLedgerEntry('REFUND_COMMISSION', userId, -split.avaloAmount, 'AVALO_REVENUE', refundMetadata);
+        await createLedgerEntry('REFUND_CREATOR', earnerId, -split.earnerAmount, 'CREATOR', refundMetadata, earnerId);
+        await createLedgerEntry('REFUND_COMMISSION', userId, -split.platformAmount, 'AVALO_REVENUE', refundMetadata);
       }
 
       // Create refund record
@@ -514,7 +516,7 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
         id: refundId,
         originalTransactionId: transactionId,
         userId,
-        creatorId,
+        earnerId,
         tokenAmount,
         reason,
         status: 'ELIGIBLE',
@@ -591,7 +593,7 @@ export const treasury_getUserBalance = https.onCall<GetBalanceRequest>(
 );
 
 /**
- * Get creator earnings balance
+ * Get earner earnings balance
  */
 export const treasury_getCreatorBalance = https.onCall<GetBalanceRequest>(
   {
@@ -615,7 +617,7 @@ export const treasury_getCreatorBalance = https.onCall<GetBalanceRequest>(
     try {
       await ensureCreatorVault(requestUserId);
       
-      const vaultSnap = await db.collection('creator_vaults').doc(requestUserId).get();
+      const vaultSnap = await db.collection('earner_vaults').doc(requestUserId).get();
       const vault = vaultSnap.data() as CreatorVault;
 
       const response: GetBalanceResponse = {
@@ -627,8 +629,8 @@ export const treasury_getCreatorBalance = https.onCall<GetBalanceRequest>(
 
       return response;
     } catch (error: any) {
-      logger.error('Failed to get creator balance', { error, userId: requestUserId });
-      throw new HttpsError('internal', 'Failed to retrieve creator balance');
+      logger.error('Failed to get earner balance', { error, userId: requestUserId });
+      throw new HttpsError('internal', 'Failed to retrieve earner balance');
     }
   }
 );
@@ -704,6 +706,22 @@ export const treasury_recordPurchase = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

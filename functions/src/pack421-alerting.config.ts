@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 421 — Alerting Configuration
  * 
@@ -193,12 +195,12 @@ export const ALERT_CHANNELS: Partial<Record<AlertChannel, {
   },
   email_ops: {
     type: 'email',
-    target: process.env.OPS_EMAIL || 'ops@avalo.app',
+    target: process.env.OPS_EMAIL || 'ops@platform.app',
     enabled: true,
   },
   email_finance: {
     type: 'email',
-    target: process.env.FINANCE_EMAIL || 'finance@avalo.app',
+    target: process.env.FINANCE_EMAIL || 'finance@platform.app',
     enabled: true,
   },
   safety_team: {
@@ -354,6 +356,20 @@ export function getEnabledChannelsForSeverity(severity: AlertSeverity): AlertCha
   
   return Array.from(channelSet);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

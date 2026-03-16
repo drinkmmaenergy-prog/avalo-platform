@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 257 — Creator Analytics Dashboard Functions
- * Backend implementation for comprehensive creator analytics
+ * Backend implementation for comprehensive earner analytics
  */
 
 import * as functions from 'firebase-functions';
@@ -76,7 +78,7 @@ function anonymizeUserId(userId: string): string {
 // ============================================================================
 
 /**
- * Get complete creator dashboard data
+ * Get complete earner dashboard data
  */
 export const getCreatorDashboard = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -130,7 +132,7 @@ export const getCreatorDashboard = functions.https.onCall(async (request) => {
 
       return dashboardData;
     } catch (error) {
-      console.error('Error fetching creator dashboard:', error);
+      console.error('Error fetching earner dashboard:', error);
       throw new functions.https.HttpsError('internal', 'Failed to fetch dashboard data');
     }
   }
@@ -173,7 +175,7 @@ async function getEarningsOverviewInternal(userId: string): Promise<EarningsOver
   // Query earnings history
   const earningsQuery = db
     .collection('earnings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', fourteenDaysAgo)
     .orderBy('createdAt', 'desc');
 
@@ -210,7 +212,7 @@ async function getEarningsOverviewInternal(userId: string): Promise<EarningsOver
   );
 
   return {
-    lifetimeTokens: treasury.creatorBalance?.lifetimeEarned || 0,
+    lifetimeTokens: treasury.earnerBalance?.lifetimeEarned || 0,
     last7DaysTokens,
     todayTokens,
     escrowExpected,
@@ -225,7 +227,7 @@ async function getEscrowBreakdown(userId: string): Promise<EscrowItem[]> {
   // Query calendar events
   const eventsQuery = db
     .collection('calendar_events')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', 'in', ['pending', 'confirmed'])
     .where('scheduledDate', '>', new Date())
     .orderBy('scheduledDate', 'asc')
@@ -248,7 +250,7 @@ async function getEscrowBreakdown(userId: string): Promise<EscrowItem[]> {
   // Query scheduled calls
   const callsQuery = db
     .collection('scheduled_calls')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', '==', 'scheduled')
     .where('scheduledTime', '>', new Date())
     .orderBy('scheduledTime', 'asc')
@@ -414,7 +416,7 @@ async function calculateTopViewers(
     const paymentsQuery = db
       .collection('paid_interactions')
       .where('payerId', '==', viewerId)
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .limit(1);
 
     const paymentsSnapshot = await paymentsQuery.get();
@@ -504,13 +506,13 @@ async function getConversationAnalyticsInternal(
     const messageCount = messagesSnapshot.size;
     totalMessages += messageCount;
 
-    let creatorReplied = false;
+    let earnerReplied = false;
     let replyCount = 0;
 
     messagesSnapshot.docs.forEach((msgDoc) => {
       const message = msgDoc.data();
       if (message.senderId === userId) {
-        creatorReplied = true;
+        earnerReplied = true;
         replyCount++;
       }
 
@@ -529,7 +531,7 @@ async function getConversationAnalyticsInternal(
       hourlyStatsMap.set(hour, stats);
     });
 
-    if (creatorReplied) {
+    if (earnerReplied) {
       repliedConversations++;
       totalReplies += replyCount;
     }
@@ -596,7 +598,7 @@ async function getMediaSalesAnalyticsInternal(
   // Query paid media sales
   const salesQuery = db
     .collection('paid_media_sales')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .orderBy('purchasedAt', 'desc');
 
   const salesSnapshot = await salesQuery.get();
@@ -715,7 +717,7 @@ async function getPerformanceLevelInternal(userId: string): Promise<PerformanceL
   // Get lifetime earnings
   const treasuryDoc = await db.collection('treasury').doc(userId).get();
   const lifetimeEarned = treasuryDoc.exists
-    ? treasuryDoc.data()!.creatorBalance?.lifetimeEarned || 0
+    ? treasuryDoc.data()!.earnerBalance?.lifetimeEarned || 0
     : 0;
 
   const currentTier = calculatePerformanceTier(lifetimeEarned);
@@ -899,7 +901,7 @@ export const getRoyalAdvancedAnalytics = functions.https.onCall(async (request) 
     if (performanceLevel.currentTier !== 'L6') {
       throw new functions.https.HttpsError(
         'permission-denied',
-        'Royal analytics only available for Royal tier creators'
+        'Royal analytics only available for Royal tier earners'
       );
     }
 
@@ -1009,6 +1011,20 @@ export const actOnSuggestion = functions.https.onCall(async (request) => {
 
   return { success: true };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

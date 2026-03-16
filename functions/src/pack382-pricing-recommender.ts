@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 382 — Dynamic Pricing Recommender
- * AI-powered pricing optimization based on market, demand, and creator performance
+ * AI-powered pricing optimization based on market, demand, and earner performance
  */
 
 import * as functions from 'firebase-functions';
@@ -40,9 +42,9 @@ export const pack382_recommendOptimalPricing = functions.https.onCall(async (req
     }
 
     try {
-      // Get creator profile
+      // Get earner profile
       const profileDoc = await db
-        .collection('creatorEarningProfiles')
+        .collection('earnerEarningProfiles')
         .doc(userId)
         .get();
 
@@ -115,7 +117,7 @@ async function getCurrentPrice(
   serviceType: string
 ): Promise<number> {
   const pricingDoc = await db
-    .collection('creatorPricing')
+    .collection('earnerPricing')
     .doc(userId)
     .get();
 
@@ -142,9 +144,9 @@ async function getCurrentPrice(
 async function getMarketData(serviceType: string, regionCode?: string) {
   const region = regionCode || 'global';
 
-  // Query recent pricing from similar creators
+  // Query recent pricing from similar earners
   const recentPricing = await db
-    .collection('creatorPricing')
+    .collection('earnerPricing')
     .where('isActive', '==', true)
     .get();
 
@@ -434,7 +436,7 @@ export const pack382_applyPricingRecommendation = functions.https.onCall(async (
       // Apply the pricing
       const priceField = `${rec.serviceType}Price`;
       await db
-        .collection('creatorPricing')
+        .collection('earnerPricing')
         .doc(userId)
         .set(
           {
@@ -458,22 +460,22 @@ export const pack382_applyPricingRecommendation = functions.https.onCall(async (
 );
 
 /**
- * Scheduled job: Generate pricing recommendations for all active creators
+ * Scheduled job: Generate pricing recommendations for all active earners
  */
 export const pack382_weeklyPricingReview = onSchedule({ schedule: "0 3 * * 1", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting weekly pricing review...');
 
-    // Get active creators
+    // Get active earners
     const activeCreators = await db
-      .collection('creatorEarningProfiles')
+      .collection('earnerEarningProfiles')
       .where('updatedAt', '>', Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000))
       .get();
 
     const serviceTypes = ['chat', 'voice', 'video', 'calendar', 'event', 'subscription'];
     let recommendationsGenerated = 0;
 
-    for (const creatorDoc of activeCreators.docs) {
-      const profile = creatorDoc.data() as CreatorEarningProfile;
+    for (const earnerDoc of activeCreators.docs) {
+      const profile = earnerDoc.data() as CreatorEarningProfile;
       const userId = profile.userId;
 
       // Generate recommendations for each service type
@@ -527,6 +529,20 @@ export const pack382_weeklyPricingReview = onSchedule({ schedule: "0 3 * * 1", t
     console.log(`[PACK382] Generated ${recommendationsGenerated} pricing recommendations`);
     return null;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { Timestamp } from 'firebase-admin/firestore';
 import { admin } from '../runtime';
 
@@ -26,7 +28,7 @@ export interface MeetBooking {
   guestId: string;
   price: number;
   escrowAmount: number;
-  avaloFee: number;
+  platformFee: number;
   status: MeetStatus;
   scheduledDate: Timestamp;
   location?: string;
@@ -58,6 +60,22 @@ export interface MeetAvailability {
   startTime: string;
   endTime: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

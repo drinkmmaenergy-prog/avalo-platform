@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 310 — AI Companions & Avatar Builder
  * Cloud Functions for AI avatar management and chat
@@ -402,8 +404,8 @@ export const sendAIMessage = onCall<{
 
   // Calculate billing
   const tokensCharged = aiResponse.tokensCharged;
-  const creatorShare = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator); // 65%
-  const avaloShare = tokensCharged - creatorShare; // 35%
+  const earner = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.earner); // 65%
+  const platform = tokensCharged - earner; // 35%
 
   // Check if user has enough tokens
   const userContext = await getUserContext(userId);
@@ -431,11 +433,11 @@ export const sendAIMessage = onCall<{
       spent: increment(tokensCharged)
     });
 
-    // Credit creator
-    const creatorWalletRef = db.collection('users').doc(avatar.ownerId).collection('wallet').doc('current');
-    transaction.update(creatorWalletRef, {
-      balance: increment(creatorShare),
-      earned: increment(creatorShare)
+    // Credit earner
+    const earnerWalletRef = db.collection('users').doc(avatar.ownerId).collection('wallet').doc('current');
+    transaction.update(earnerWalletRef, {
+      balance: increment(earner),
+      earned: increment(earner)
     });
 
     // Save user message
@@ -474,15 +476,15 @@ export const sendAIMessage = onCall<{
     transaction.update(sessionRef, {
       lastMessageAt: new Date().toISOString(),
       tokensCharged: increment(tokensCharged),
-      tokensCreatorShare: increment(creatorShare),
-      tokensAvaloShare: increment(avaloShare)
+      tokensCreatorShare: increment(earner),
+      tokensAvaloShare: increment(platform)
     });
 
     // Update analytics
     const analyticsRef = db.collection('aiAvatarAnalytics').doc(session.avatarId);
     transaction.update(analyticsRef, {
       totalMessages: increment(2), // user + AI
-      totalEarnings: increment(creatorShare),
+      totalEarnings: increment(earner),
       lastSessionAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
@@ -496,8 +498,8 @@ export const sendAIMessage = onCall<{
       metadata: {
         sessionId,
         avatarId: session.avatarId,
-        creatorShare,
-        avaloShare
+        earner,
+        platform
       },
       createdAt: serverTimestamp()
     });
@@ -509,7 +511,7 @@ export const sendAIMessage = onCall<{
     userId: avatar.ownerId,
     avatarId: session.avatarId,
     ownerId: avatar.ownerId,
-    metadata: { tokensEarned: creatorShare, sessionId },
+    metadata: { tokensEarned: earner, sessionId },
     timestamp: new Date().toISOString()
   });
 
@@ -604,6 +606,22 @@ async function logAvatarEvent(event: AIAvatarEvent): Promise<void> {
     createdAt: serverTimestamp()
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

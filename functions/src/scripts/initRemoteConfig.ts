@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 67 — Remote Config Initialization Script
  * Run this once to create initial remote_config documents in Firestore
@@ -180,6 +182,22 @@ async function initRemoteConfig() {
 
 // Run initialization
 initRemoteConfig();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

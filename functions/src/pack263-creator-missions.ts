@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ============================================================================
  * PACK 263 — CREATOR MISSIONS (DAILY + WEEKLY QUESTS)
  * ============================================================================
  * 
- * Gamified mission system that rewards creators for:
+ * Gamified mission system that rewards earners for:
  * - Chat engagement
  * - Live streaming
  * - PPV sales
@@ -59,7 +61,7 @@ export interface MissionTemplate {
 
 export interface ActiveMission {
   missionId: string;
-  creatorId: string;
+  earnerId: string;
   templateId: string;
   missionType: MissionType;
   title: string;
@@ -79,7 +81,7 @@ export interface ActiveMission {
 }
 
 export interface CreatorMissionProfile {
-  creatorId: string;
+  earnerId: string;
   level: CreatorLevel;
   slots: {
     daily: number;
@@ -111,7 +113,7 @@ export interface CreatorMissionProfile {
 
 export interface MissionProgress {
   missionId: string;
-  creatorId: string;
+  earnerId: string;
   activityType: string;
   progressAdded: number;
   newTotal: number;
@@ -124,7 +126,7 @@ export interface MissionProgress {
 // CONSTANTS
 // ============================================================================
 
-// Mission slots based on creator level
+// Mission slots based on earner level
 const MISSION_SLOTS: Record<CreatorLevel, { daily: number; weekly: number; seasonal: number }> = {
   bronze: { daily: 2, weekly: 0, seasonal: 0 },
   silver: { daily: 3, weekly: 1, seasonal: 0 },
@@ -226,7 +228,7 @@ const DEFAULT_MISSION_TEMPLATES: Partial<MissionTemplate>[] = [
   {
     missionType: 'weekly',
     title: 'Top 5% chat reply speed',
-    description: 'Maintain an average reply time in the top 5% of creators',
+    description: 'Maintain an average reply time in the top 5% of earners',
     objective: { type: 'chat_reply_speed', target: 5, unit: 'percentile' },
     reward: { lp: 1500 },
     requiredLevel: 'gold',
@@ -247,7 +249,7 @@ const VALIDATION_RULES = {
 // ============================================================================
 
 /**
- * Initialize creator mission profile
+ * Initialize earner mission profile
  */
 export const initializeCreatorMissions = onCall(
   async (request): Promise<{ success: boolean; data?: CreatorMissionProfile; error?: string }> => {
@@ -258,19 +260,19 @@ export const initializeCreatorMissions = onCall(
       }
 
       // Check if already initialized
-      const existingDoc = await db.collection('creatorMissions').doc(userId).get();
+      const existingDoc = await db.collection('earnerMissions').doc(userId).get();
       if (existingDoc.exists) {
         console.log('Scheduled job result:', { success: true, data: existingDoc.data() as CreatorMissionProfile });
 
         return;
       }
 
-      // Get creator level from PACK 262
-      const levelDoc = await db.collection('creatorLevels').doc(userId).get();
+      // Get earner level from PACK 262
+      const levelDoc = await db.collection('earnerLevels').doc(userId).get();
       const level = (levelDoc.data()?.level as CreatorLevel) || 'bronze';
 
       const profile: CreatorMissionProfile = {
-        creatorId: userId,
+        earnerId: userId,
         level,
         slots: MISSION_SLOTS[level],
         activeMissions: { daily: 0, weekly: 0, seasonal: 0 },
@@ -286,7 +288,7 @@ export const initializeCreatorMissions = onCall(
         createdAt: serverTimestamp() as FirebaseFirestore.Timestamp,
       };
 
-      await db.collection('creatorMissions').doc(userId).set(profile);
+      await db.collection('earnerMissions').doc(userId).set(profile);
 
       // Assign initial daily missions
       await assignDailyMissions(userId, level);
@@ -296,7 +298,7 @@ export const initializeCreatorMissions = onCall(
 
       return;
     } catch (error: any) {
-      console.error('Error initializing creator missions:', error);
+      console.error('Error initializing earner missions:', error);
       console.log('Scheduled job result:', { success: false, error: error.message });
 
       return;
@@ -305,7 +307,7 @@ export const initializeCreatorMissions = onCall(
 );
 
 /**
- * Get creator mission profile and active missions
+ * Get earner mission profile and active missions
  */
 export const getCreatorMissions = onCall(
   async (request): Promise<{ 
@@ -321,14 +323,14 @@ export const getCreatorMissions = onCall(
       }
 
       // Get profile
-      let profileDoc = await db.collection('creatorMissions').doc(userId).get();
+      let profileDoc = await db.collection('earnerMissions').doc(userId).get();
       if (!profileDoc.exists) {
         // Auto-initialize if not exists
-        const levelDoc = await db.collection('creatorLevels').doc(userId).get();
+        const levelDoc = await db.collection('earnerLevels').doc(userId).get();
         const level = (levelDoc.data()?.level as CreatorLevel) || 'bronze';
 
         const profile: CreatorMissionProfile = {
-          creatorId: userId,
+          earnerId: userId,
           level,
           slots: MISSION_SLOTS[level],
           activeMissions: { daily: 0, weekly: 0, seasonal: 0 },
@@ -344,17 +346,17 @@ export const getCreatorMissions = onCall(
           createdAt: serverTimestamp() as FirebaseFirestore.Timestamp,
         };
 
-        await db.collection('creatorMissions').doc(userId).set(profile);
+        await db.collection('earnerMissions').doc(userId).set(profile);
         await assignDailyMissions(userId, level);
         
-        profileDoc = await db.collection('creatorMissions').doc(userId).get();
+        profileDoc = await db.collection('earnerMissions').doc(userId).get();
       }
 
       const profile = profileDoc.data() as CreatorMissionProfile;
 
       // Get active missions
       const activeMissionsSnapshot = await db
-        .collection('creatorMissions')
+        .collection('earnerMissions')
         .doc(userId)
         .collection('activeMissions')
         .where('status', '==', 'active')
@@ -371,7 +373,7 @@ export const getCreatorMissions = onCall(
 
       return;
     } catch (error: any) {
-      console.error('Error getting creator missions:', error);
+      console.error('Error getting earner missions:', error);
       console.log('Scheduled job result:', { success: false, error: error.message });
 
       return;
@@ -408,7 +410,7 @@ export async function recordMissionProgressInternal(
 
     // Get active missions matching this activity type
     const activeMissionsSnapshot = await db
-      .collection('creatorMissions')
+      .collection('earnerMissions')
       .doc(userId)
       .collection('activeMissions')
       .where('status', '==', 'active')
@@ -484,7 +486,7 @@ export const recordMissionProgress = onCall(
 
       // Get active missions matching this activity type
       const activeMissionsSnapshot = await db
-        .collection('creatorMissions')
+        .collection('earnerMissions')
         .doc(userId)
         .collection('activeMissions')
         .where('status', '==', 'active')
@@ -577,7 +579,7 @@ export const claimMissionReward = onCall(
       }
 
       const missionDoc = await db
-        .collection('creatorMissions')
+        .collection('earnerMissions')
         .doc(userId)
         .collection('activeMissions')
         .doc(missionId)
@@ -607,14 +609,14 @@ export const claimMissionReward = onCall(
       await awardMissionLP(userId, mission.reward.lp, mission.title);
 
       // Update profile stats
-      await db.collection('creatorMissions').doc(userId).update({
+      await db.collection('earnerMissions').doc(userId).update({
         totalLPEarned: increment(mission.reward.lp),
         lastUpdated: serverTimestamp(),
       });
 
       // Move to completed archive
       await db
-        .collection('creatorMissions')
+        .collection('earnerMissions')
         .doc(userId)
         .collection('completedMissions')
         .doc(missionId)
@@ -642,9 +644,9 @@ export const claimMissionReward = onCall(
 // ============================================================================
 
 /**
- * Assign daily missions to creator
+ * Assign daily missions to earner
  */
-async function assignDailyMissions(creatorId: string, level: CreatorLevel): Promise<void> {
+async function assignDailyMissions(earnerId: string, level: CreatorLevel): Promise<void> {
   const slots = MISSION_SLOTS[level].daily;
   
   // Get available daily mission templates
@@ -668,7 +670,7 @@ async function assignDailyMissions(creatorId: string, level: CreatorLevel): Prom
     const missionId = db.collection('_').doc().id;
     const mission: ActiveMission = {
       missionId,
-      creatorId,
+      earnerId,
       templateId: template.id || missionId,
       missionType: 'daily',
       title: template.title!,
@@ -686,27 +688,27 @@ async function assignDailyMissions(creatorId: string, level: CreatorLevel): Prom
     };
 
     await db
-      .collection('creatorMissions')
-      .doc(creatorId)
+      .collection('earnerMissions')
+      .doc(earnerId)
       .collection('activeMissions')
       .doc(missionId)
       .set(mission);
   }
 
   // Update profile
-  await db.collection('creatorMissions').doc(creatorId).update({
+  await db.collection('earnerMissions').doc(earnerId).update({
     'activeMissions.daily': slots,
     lastUpdated: serverTimestamp(),
   });
 
   // Send notification
-  await sendMissionNotification(creatorId, 'new_missions', null);
+  await sendMissionNotification(earnerId, 'new_missions', null);
 }
 
 /**
- * Assign weekly missions to creator
+ * Assign weekly missions to earner
  */
-async function assignWeeklyMissions(creatorId: string, level: CreatorLevel): Promise<void> {
+async function assignWeeklyMissions(earnerId: string, level: CreatorLevel): Promise<void> {
   const slots = MISSION_SLOTS[level].weekly;
   
   if (slots === 0) return;
@@ -733,7 +735,7 @@ async function assignWeeklyMissions(creatorId: string, level: CreatorLevel): Pro
     const missionId = db.collection('_').doc().id;
     const mission: ActiveMission = {
       missionId,
-      creatorId,
+      earnerId,
       templateId: template.id || missionId,
       missionType: 'weekly',
       title: template.title!,
@@ -751,15 +753,15 @@ async function assignWeeklyMissions(creatorId: string, level: CreatorLevel): Pro
     };
 
     await db
-      .collection('creatorMissions')
-      .doc(creatorId)
+      .collection('earnerMissions')
+      .doc(earnerId)
       .collection('activeMissions')
       .doc(missionId)
       .set(mission);
   }
 
   // Update profile
-  await db.collection('creatorMissions').doc(creatorId).update({
+  await db.collection('earnerMissions').doc(earnerId).update({
     'activeMissions.weekly': slots,
     lastUpdated: serverTimestamp(),
   });
@@ -769,7 +771,7 @@ async function assignWeeklyMissions(creatorId: string, level: CreatorLevel): Pro
  * Complete a mission and update streaks
  */
 async function completeMission(
-  creatorId: string,
+  earnerId: string,
   missionId: string,
   mission: ActiveMission
 ): Promise<void> {
@@ -777,8 +779,8 @@ async function completeMission(
 
   // Mark mission as completed
   await db
-    .collection('creatorMissions')
-    .doc(creatorId)
+    .collection('earnerMissions')
+    .doc(earnerId)
     .collection('activeMissions')
     .doc(missionId)
     .update({
@@ -788,7 +790,7 @@ async function completeMission(
     });
 
   // Update profile stats
-  const profileRef = db.collection('creatorMissions').doc(creatorId);
+  const profileRef = db.collection('earnerMissions').doc(earnerId);
   const profile = (await profileRef.get()).data() as CreatorMissionProfile;
 
   const updates: any = {
@@ -847,7 +849,7 @@ async function completeMission(
  * Validate activity to prevent exploitation
  */
 async function validateActivity(
-  creatorId: string,
+  earnerId: string,
   activityType: string,
   value: number,
   metadata: any
@@ -875,7 +877,7 @@ async function validateActivity(
           const hourAgo = new Date(Date.now() - 3600000);
           const recentFromUser = await db
             .collection('missionActivityLog')
-            .doc(creatorId)
+            .doc(earnerId)
             .collection('activities')
             .where('metadata.payerId', '==', metadata.payerId)
             .where('timestamp', '>', hourAgo)
@@ -904,16 +906,16 @@ async function validateActivity(
 }
 
 /**
- * Award LP to creator (integrates with PACK 262)
+ * Award LP to earner (integrates with PACK 262)
  */
 async function awardMissionLP(
-  creatorId: string,
+  earnerId: string,
   lpAmount: number,
   source: string
 ): Promise<void> {
   try {
     // Award LP through PACK 262 level system
-    await db.collection('creatorLevels').doc(creatorId).update({
+    await db.collection('earnerLevels').doc(earnerId).update({
       lifetimeLP: increment(lpAmount),
       currentLP: increment(lpAmount),
       lastUpdatedAt: serverTimestamp(),
@@ -922,11 +924,11 @@ async function awardMissionLP(
     // Log LP activity
     await db
       .collection('levelPoints')
-      .doc(creatorId)
+      .doc(earnerId)
       .collection('activities')
       .add({
         activityId: db.collection('_').doc().id,
-        creatorId,
+        earnerId,
         activityType: 'mission_completed',
         lpEarned: lpAmount,
         metadata: { source },
@@ -943,19 +945,19 @@ async function awardMissionLP(
  * Send mission notification
  */
 async function sendMissionNotification(
-  creatorId: string,
+  earnerId: string,
   type: 'new_missions' | 'near_completion' | 'completed' | 'weekly_reset',
   mission: ActiveMission | null
 ): Promise<void> {
   try {
     let title = '';
     let message = '';
-    let actionUrl = '/profile/creator-missions';
+    let actionUrl = '/profile/earner-missions';
 
     switch (type) {
       case 'new_missions':
         title = 'New missions are ready — claim extra LP today!';
-        message = 'Check your creator dashboard for fresh missions';
+        message = 'Check your earner dashboard for fresh missions';
         break;
       case 'near_completion':
         const remaining = mission ? mission.objective.target - mission.progress.current : 0;
@@ -973,7 +975,7 @@ async function sendMissionNotification(
     }
 
     await db.collection('missionNotifications').add({
-      creatorId,
+      earnerId,
       type,
       title,
       message,
@@ -989,11 +991,11 @@ async function sendMissionNotification(
 /**
  * Check and send near-completion notifications
  */
-async function checkNearCompletionNotifications(creatorId: string): Promise<void> {
+async function checkNearCompletionNotifications(earnerId: string): Promise<void> {
   try {
     const activeMissionsSnapshot = await db
-      .collection('creatorMissions')
-      .doc(creatorId)
+      .collection('earnerMissions')
+      .doc(earnerId)
       .collection('activeMissions')
       .where('status', '==', 'active')
       .get();
@@ -1007,7 +1009,7 @@ async function checkNearCompletionNotifications(creatorId: string): Promise<void
         // Check if notification already sent for this milestone
         const recentNotifs = await db
           .collection('missionNotifications')
-          .where('creatorId', '==', creatorId)
+          .where('earnerId', '==', earnerId)
           .where('type', '==', 'near_completion')
           .where('createdAt', '>', new Date(Date.now() - 3600000)) // Last hour
           .get();
@@ -1018,7 +1020,7 @@ async function checkNearCompletionNotifications(creatorId: string): Promise<void
         });
 
         if (!alreadySent) {
-          await sendMissionNotification(creatorId, 'near_completion', mission);
+          await sendMissionNotification(earnerId, 'near_completion', mission);
         }
       }
     }
@@ -1028,15 +1030,15 @@ async function checkNearCompletionNotifications(creatorId: string): Promise<void
 }
 
 /**
- * Update mission slots when creator level changes
+ * Update mission slots when earner level changes
  */
-export const updateMissionSlotsOnLevelChange = onDocumentUpdated('creatorLevels/{creatorId}', async (event) => {
+export const updateMissionSlotsOnLevelChange = onDocumentUpdated('earnerLevels/{earnerId}', async (event) => {
   const change = event.data;
   if (!change) return;
     try {
       const before = change.before.data();
       const after = change.after.data();
-      const creatorId = event.params.creatorId;
+      const earnerId = event.params.earnerId;
 
       // Check if level changed
       if (before.level !== after.level) {
@@ -1044,22 +1046,22 @@ export const updateMissionSlotsOnLevelChange = onDocumentUpdated('creatorLevels/
         const newSlots = MISSION_SLOTS[newLevel];
 
         // Update mission profile
-        await db.collection('creatorMissions').doc(creatorId).update({
+        await db.collection('earnerMissions').doc(earnerId).update({
           level: newLevel,
           slots: newSlots,
           lastUpdated: serverTimestamp(),
         });
 
         // Assign additional missions if slots increased
-        const profile = (await db.collection('creatorMissions').doc(creatorId).get())
+        const profile = (await db.collection('earnerMissions').doc(earnerId).get())
           .data() as CreatorMissionProfile;
 
         if (newSlots.daily > profile.activeMissions.daily) {
-          await assignDailyMissions(creatorId, newLevel);
+          await assignDailyMissions(earnerId, newLevel);
         }
 
         if (newSlots.weekly > profile.activeMissions.weekly) {
-          await assignWeeklyMissions(creatorId, newLevel);
+          await assignWeeklyMissions(earnerId, newLevel);
         }
       }
     } catch (error) {
@@ -1078,20 +1080,20 @@ export const resetDailyMissions = onSchedule('every 1 hours', async (event) => {
   try {
     console.log('Running daily mission reset check...');
 
-    // Get all creator mission profiles
-    const profilesSnapshot = await db.collection('creatorMissions').get();
+    // Get all earner mission profiles
+    const profilesSnapshot = await db.collection('earnerMissions').get();
 
     for (const profileDoc of profilesSnapshot.docs) {
       const profile = profileDoc.data() as CreatorMissionProfile;
-      const creatorId = profile.creatorId;
+      const earnerId = profile.earnerId;
 
-      // Check if it's midnight in creator's timezone (simplified - uses UTC)
+      // Check if it's midnight in earner's timezone (simplified - uses UTC)
       const now = new Date();
       if (now.getHours() === 0) {
         // Expire old daily missions
         const oldMissionsSnapshot = await db
-          .collection('creatorMissions')
-          .doc(creatorId)
+          .collection('earnerMissions')
+          .doc(earnerId)
           .collection('activeMissions')
           .where('missionType', '==', 'daily')
           .get();
@@ -1106,7 +1108,7 @@ export const resetDailyMissions = onSchedule('every 1 hours', async (event) => {
         }
 
         // Assign new daily missions
-        await assignDailyMissions(creatorId, profile.level);
+        await assignDailyMissions(earnerId, profile.level);
       }
     }
 
@@ -1123,17 +1125,17 @@ export const resetWeeklyMissions = onSchedule('59 23 * * 0', async (event) => {
   try {
     console.log('Running weekly mission reset...');
 
-    // Get all creator mission profiles
-    const profilesSnapshot = await db.collection('creatorMissions').get();
+    // Get all earner mission profiles
+    const profilesSnapshot = await db.collection('earnerMissions').get();
 
     for (const profileDoc of profilesSnapshot.docs) {
       const profile = profileDoc.data() as CreatorMissionProfile;
-      const creatorId = profile.creatorId;
+      const earnerId = profile.earnerId;
 
       // Expire old weekly missions
       const oldMissionsSnapshot = await db
-        .collection('creatorMissions')
-        .doc(creatorId)
+        .collection('earnerMissions')
+        .doc(earnerId)
         .collection('activeMissions')
         .where('missionType', '==', 'weekly')
         .get();
@@ -1149,8 +1151,8 @@ export const resetWeeklyMissions = onSchedule('59 23 * * 0', async (event) => {
 
       // Assign new weekly missions
       if (profile.slots.weekly > 0) {
-        await assignWeeklyMissions(creatorId, profile.level);
-        await sendMissionNotification(creatorId, 'weekly_reset', null);
+        await assignWeeklyMissions(earnerId, profile.level);
+        await sendMissionNotification(earnerId, 'weekly_reset', null);
       }
     }
 
@@ -1200,6 +1202,20 @@ export {
   awardMissionLP,
   sendMissionNotification,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

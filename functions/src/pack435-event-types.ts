@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 // Pack 435 - Event Types
 export interface EventConfig {
   id?: string;
@@ -61,6 +63,20 @@ export enum EventVisibility {
   PRIVATE = 'PRIVATE',
   FOLLOWERS_ONLY = 'FOLLOWERS_ONLY',
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

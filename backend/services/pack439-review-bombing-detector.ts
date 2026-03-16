@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 439 - App Store Trust, Ratings & Review Shield
  * ReviewBombingDetector - Detects coordinated review attacks
@@ -410,4 +411,5 @@ export class ReviewBombingDetector {
 }
 
 export const reviewBombingDetector = new ReviewBombingDetector();
+
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 348 — Ranking Service
  * 
@@ -21,7 +23,7 @@ export class RankingService {
   }
 
   /**
-   * Calculate and store ranking score for a creator
+   * Calculate and store ranking score for a earner
    */
   async calculateCreatorRanking(
     userId: string,
@@ -65,7 +67,7 @@ export class RankingService {
   }
 
   /**
-   * Get ranked creators for discovery
+   * Get ranked earners for discovery
    */
   async getRankedCreatorsForDiscovery(
     countryCode: string,
@@ -179,6 +181,22 @@ export class RankingService {
     return this.abTestManager;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

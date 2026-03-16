@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 91 — Regional Policy Engine & Content Classification
  * Core Policy Resolution and Access Control
@@ -442,7 +444,7 @@ function checkAgeRequirement(
  * Check if content can be monetized based on rating and region policy
  * 
  * @param contentRating - Content classification rating
- * @param userRegionPolicy - Regional policy for creator's location
+ * @param userRegionPolicy - Regional policy for earner's location
  * @returns MonetizationDecision with allowed status and reason
  */
 export function canMonetizeContent(
@@ -513,19 +515,19 @@ export function canMonetizeContent(
 }
 
 /**
- * Check if content can be monetized (async version that resolves creator's policy)
+ * Check if content can be monetized (async version that resolves earner's policy)
  * 
  * @param contentRating - Content classification rating
- * @param creatorId - ID of content creator
+ * @param earnerId - ID of content earner
  * @returns MonetizationDecision
  */
 export async function canMonetizeContentForCreator(
   contentRating: ContentRating,
-  creatorId: string
+  earnerId: string
 ): Promise<MonetizationDecision> {
   try {
-    const creatorContext = await resolveUserPolicyContext(creatorId);
-    return canMonetizeContent(contentRating, creatorContext.policy);
+    const earnerContext = await resolveUserPolicyContext(earnerId);
+    return canMonetizeContent(contentRating, earnerContext.policy);
   } catch (error) {
     console.error('[Pack91] canMonetizeContentForCreator failed:', error);
     return {
@@ -608,6 +610,20 @@ export function getMonetizationDenialMessage(
       return 'Monetization not available for this content.';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

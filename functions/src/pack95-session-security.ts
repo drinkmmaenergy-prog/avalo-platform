@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 95 — Account, Device & Session Security
  * Backend Cloud Functions for device and session management
@@ -5,7 +7,7 @@
  * NON-NEGOTIABLE RULES:
  * - No free tokens, no discounts, no promo codes, no cashback, no bonuses
  * - Do not change token price per unit
- * - Do not change revenue split (65% creator / 35% Avalo)
+ * - Do not change revenue split (65% earner / 35% Avalo)
  * - Security actions never alter earnings, wallets, or payouts
  */
 
@@ -361,7 +363,7 @@ export const logoutAllSessions = onCall(
         category: 'ACCOUNT',
         title: 'All devices logged out',
         body: `You have been logged out from ${revokedCount} device${revokedCount !== 1 ? 's' : ''}. If this wasn't you, please change your password.`,
-        deepLink: 'avalo://security/sessions',
+        deepLink: 'platform://security/sessions',
       });
 
       const response: LogoutAllSessionsResponse = {
@@ -509,7 +511,7 @@ async function sendSecurityNotifications(
         category: 'SAFETY',
         title: 'New login location detected',
         body: `Your account was accessed from ${location}. If this wasn't you, log out from other devices and change your password.`,
-        deepLink: 'avalo://security/sessions',
+        deepLink: 'platform://security/sessions',
         payload: {
           sessionId,
           deviceId,
@@ -527,7 +529,7 @@ async function sendSecurityNotifications(
         category: 'SAFETY',
         title: 'Suspicious login detected',
         body: `We detected a login from ${location} shortly after a login from a different location. Please review your account security.`,
-        deepLink: 'avalo://security/sessions',
+        deepLink: 'platform://security/sessions',
         payload: {
           sessionId,
           deviceId,
@@ -545,7 +547,7 @@ async function sendSecurityNotifications(
         category: 'ACCOUNT',
         title: 'New device login',
         body: `Your account was accessed from a new device (${deviceInfo}). If this wasn't you, log out from other devices.`,
-        deepLink: 'avalo://security/sessions',
+        deepLink: 'platform://security/sessions',
         payload: {
           sessionId,
           deviceId,
@@ -575,6 +577,20 @@ function hashIp(ip: string): string {
   const crypto = require('crypto');
   return crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Module: Creator Revenue Integrity Score Service
  * 
- * Calculates and maintains dynamic integrity scores for creators based on:
+ * Calculates and maintains dynamic integrity scores for earners based on:
  * - Revenue source diversity
  * - Refund ratio
  * - Chargeback exposure
@@ -38,7 +40,7 @@ export interface RevenueStats {
 }
 
 export interface CreatorRevenueIntegrity {
-  creatorId: string;
+  earnerId: string;
   score: number; // 0-1000
   scoreComponents: ScoreComponents;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
@@ -53,7 +55,7 @@ export interface CreatorRevenueIntegrity {
 }
 
 export interface CreatorData {
-  creatorId: string;
+  earnerId: string;
   accountCreatedAt: Timestamp;
   transactions: Array<{
     amount: number;
@@ -78,7 +80,7 @@ export class CreatorRevenueIntegrityScoreService {
   private readonly WEIGHTS = {
     revenueSourceDiversity: 0.15,
     refundRatio: 0.25,
-    chargebackExposure: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    chargebackExposure: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
     payerConcentration: 0.15,
     accountAge: 0.10,
     transactionVelocity: 0.05
@@ -89,18 +91,18 @@ export class CreatorRevenueIntegrityScoreService {
   }
   
   /**
-   * Calculate integrity score for a creator
+   * Calculate integrity score for a earner
    */
-  async calculateScore(creatorId: string): Promise<CreatorRevenueIntegrity> {
-    const creatorData = await this.fetchCreatorData(creatorId);
-    const scoreComponents = this.calculateScoreComponents(creatorData);
+  async calculateScore(earnerId: string): Promise<CreatorRevenueIntegrity> {
+    const earnerData = await this.fetchCreatorData(earnerId);
+    const scoreComponents = this.calculateScoreComponents(earnerData);
     const totalScore = this.calculateTotalScore(scoreComponents);
     const riskLevel = this.determineRiskLevel(totalScore);
-    const flags = this.identifyFlags(scoreComponents, creatorData);
-    const revenueStats = this.calculateRevenueStats(creatorData);
+    const flags = this.identifyFlags(scoreComponents, earnerData);
+    const revenueStats = this.calculateRevenueStats(earnerData);
     
     const integrity: CreatorRevenueIntegrity = {
-      creatorId,
+      earnerId,
       score: totalScore,
       scoreComponents,
       riskLevel,
@@ -132,7 +134,7 @@ export class CreatorRevenueIntegrityScoreService {
   
   /**
    * Revenue source diversity: Higher is better
-   * Measures if creator has income from multiple sources (subs, media, calls)
+   * Measures if earner has income from multiple sources (subs, media, calls)
    */
   private calculateDiversityScore(data: CreatorData): number {
     const sources = {
@@ -191,8 +193,8 @@ export class CreatorRevenueIntegrityScoreService {
     if (refundRatio <= 0.02) return 100;
     if (refundRatio <= 0.05) return 90;
     if (refundRatio <= 0.10) return 70;
-    if (refundRatio <= MONETIZATION_SPLITS.EVENT_TICKET.avalo) return 40;
-    if (refundRatio <= MONETIZATION_SPLITS.SUBSCRIPTION.avalo) return 20;
+    if (refundRatio <= MONETIZATION_SPLITS.EVENT_TICKET.platform) return 40;
+    if (refundRatio <= MONETIZATION_SPLITS.SUBSCRIPTION.platform) return 20;
     return 0;
   }
   
@@ -224,7 +226,7 @@ export class CreatorRevenueIntegrityScoreService {
   
   /**
    * Payer concentration: Lower concentration is better
-   * Prevents scenarios where one payer funds most of creator's income (fraud risk)
+   * Prevents scenarios where one payer funds most of earner's income (fraud risk)
    */
   private calculateConcentrationScore(data: CreatorData): number {
     const payerAmounts = new Map<string, number>();
@@ -393,21 +395,21 @@ export class CreatorRevenueIntegrityScoreService {
   }
   
   /**
-   * Fetch creator data from database
+   * Fetch earner data from database
    */
-  private async fetchCreatorData(creatorId: string): Promise<CreatorData> {
+  private async fetchCreatorData(earnerId: string): Promise<CreatorData> {
     // Fetch from multiple collections
     const [userDoc, transactionsSnap, refundsSnap, chargebacksSnap] = await Promise.all([
-      this.db.collection('users').doc(creatorId).get(),
+      this.db.collection('users').doc(earnerId).get(),
       this.db.collection('transactions')
-        .where('recipientId', '==', creatorId)
+        .where('recipientId', '==', earnerId)
         .where('status', '==', 'completed')
         .get(),
       this.db.collection('refunds')
-        .where('creatorId', '==', creatorId)
+        .where('earnerId', '==', earnerId)
         .get(),
       this.db.collection('chargebacks')
-        .where('creatorId', '==', creatorId)
+        .where('earnerId', '==', earnerId)
         .get()
     ]);
     
@@ -440,7 +442,7 @@ export class CreatorRevenueIntegrityScoreService {
     });
     
     return {
-      creatorId,
+      earnerId,
       accountCreatedAt: userData?.createdAt || Timestamp.now(),
       transactions,
       refunds,
@@ -452,7 +454,7 @@ export class CreatorRevenueIntegrityScoreService {
    * Save integrity score to Firestore
    */
   private async saveIntegrityScore(integrity: CreatorRevenueIntegrity): Promise<void> {
-    const docRef = this.db.collection('creator_revenue_integrity').doc(integrity.creatorId);
+    const docRef = this.db.collection('earner_revenue_integrity').doc(integrity.earnerId);
     const existing = await docRef.get();
     
     const historicalScores = existing.exists 
@@ -472,31 +474,48 @@ export class CreatorRevenueIntegrityScoreService {
   /**
    * Get current integrity score (from cache)
    */
-  async getScore(creatorId: string): Promise<CreatorRevenueIntegrity | null> {
-    const doc = await this.db.collection('creator_revenue_integrity').doc(creatorId).get();
+  async getScore(earnerId: string): Promise<CreatorRevenueIntegrity | null> {
+    const doc = await this.db.collection('earner_revenue_integrity').doc(earnerId).get();
     return doc.exists ? doc.data() as CreatorRevenueIntegrity : null;
   }
   
   /**
    * Update score if stale (older than 1 hour)
    */
-  async ensureFreshScore(creatorId: string): Promise<CreatorRevenueIntegrity> {
-    const existing = await this.getScore(creatorId);
+  async ensureFreshScore(earnerId: string): Promise<CreatorRevenueIntegrity> {
+    const existing = await this.getScore(earnerId);
     
     if (!existing) {
-      return this.calculateScore(creatorId);
+      return this.calculateScore(earnerId);
     }
     
     const ageMs = Date.now() - existing.lastUpdated.toMillis();
     const ageHours = ageMs / (1000 * 60 * 60);
     
     if (ageHours > 1) {
-      return this.calculateScore(creatorId);
+      return this.calculateScore(earnerId);
     }
     
     return existing;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

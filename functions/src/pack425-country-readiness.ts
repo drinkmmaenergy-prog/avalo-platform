@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Country Readiness Model
  * Computes launch readiness scores for global market expansion
@@ -95,13 +97,13 @@ export function computeReadinessScore(input: ReadinessComputationInput): number 
  * 
  * >0.75     AGGRESSIVE launch
  * 0.55-0.75 STEADY rollout
- * MONETIZATION_SPLITS.CHAT.avalo-0.55 CAUTIOUS (A/B limited countries)
- * <MONETIZATION_SPLITS.CHAT.avalo     DEFER (Not ready)
+ * MONETIZATION_SPLITS.CHAT.platform-0.55 CAUTIOUS (A/B limited countries)
+ * <MONETIZATION_SPLITS.CHAT.platform     DEFER (Not ready)
  */
 export function determineStrategy(readinessScore: number): LaunchStrategy {
   if (readinessScore > 0.75) return 'AGGRESSIVE';
   if (readinessScore >= 0.55) return 'STEADY';
-  if (readinessScore >= MONETIZATION_SPLITS.CHAT.avalo) return 'CAUTIOUS';
+  if (readinessScore >= MONETIZATION_SPLITS.CHAT.platform) return 'CAUTIOUS';
   return 'DEFER';
 }
 
@@ -286,6 +288,22 @@ export async function recomputeAllReadinessScores(): Promise<{
   
   return { updated, errors };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

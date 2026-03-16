@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 451 — B2B CREATOR AGREEMENT SYSTEM
@@ -8,9 +10,9 @@
  * PURPOSE:
  * - Creators are explicitly classified as independent B2B contractors
  * - Acceptance is explicit, versioned, auditable, enforced server-side
- * - No creator monetization is possible without accepted B2B agreement
+ * - No earner monetization is possible without accepted B2B agreement
  *
- * COLLECTION: creatorAgreements/{userId}
+ * COLLECTION: earnerAgreements/{userId}
  *
  * ⚠️ NO BUSINESS LOGIC CHANGES:
  * - NO token pricing changes
@@ -20,7 +22,7 @@
  * - NO treasury logic changes
  *
  * @version 1.0.0
- * @module pack451-creator-agreement
+ * @module pack451-earner-agreement
  */
 
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
@@ -39,9 +41,9 @@ import { db } from './init';
 export const CREATOR_AGREEMENT_CURRENT_VERSION = 'v1.0';
 
 /**
- * Collection name for creator agreements
+ * Collection name for earner agreements
  */
-export const CREATOR_AGREEMENTS_COLLECTION = 'creatorAgreements';
+export const CREATOR_AGREEMENTS_COLLECTION = 'earnerAgreements';
 
 // ============================================================================
 // TYPES
@@ -54,7 +56,7 @@ export type AgreementSurface = 'app' | 'web';
 
 /**
  * Creator Agreement Document stored in Firestore
- * Collection: creatorAgreements/{userId}
+ * Collection: earnerAgreements/{userId}
  */
 export interface CreatorAgreementDocument {
   userId: string;
@@ -114,12 +116,12 @@ export async function checkCreatorAgreementStatus(userId: string): Promise<{
  * 
  * THROWS: HttpsError('failed-precondition', 'CREATOR_AGREEMENT_REQUIRED')
  * 
- * Use this function at the START of any creator monetization endpoint:
+ * Use this function at the START of any earner monetization endpoint:
  * - getCreatorDashboard
  * - requestPayout
  * - setupPayoutAccount
  * - enableCreatorMode
- * - Any function exposing creator earnings
+ * - Any function exposing earner earnings
  *
  * @param userId - The user ID to enforce agreement for
  * @throws HttpsError if agreement not accepted
@@ -156,7 +158,7 @@ export async function enforceCreatorAgreement(userId: string): Promise<void> {
  *
  * BEHAVIOR:
  * - Requires authenticated user
- * - Writes to creatorAgreements/{userId}
+ * - Writes to earnerAgreements/{userId}
  * - Overwrites only if version < CURRENT_VERSION
  * - Stores: version, timestamp, ip, userAgent, surface
  *
@@ -273,6 +275,20 @@ export {
   acceptCreatorAgreementV1 as default,
   checkCreatorAgreementStatus as checkCreatorAgreement,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 381 — Regional Expansion Engine
  * Region Configuration System
@@ -55,7 +57,7 @@ export interface RegionConfig {
   };
   
   // Creator Economy
-  creator: {
+  earner: {
     monetizationEnabled: boolean;
     verificationRequired: boolean;
     minFollowersForMonetization: number;
@@ -248,10 +250,10 @@ export const pack381_getRegionConfig = functions.https.onCall(async (request) =>
         currency: config.localization.currency,
         taxLabel: config.payment.taxLabel,
       },
-      creator: {
-        monetizationEnabled: config.creator.monetizationEnabled,
-        minFollowersForMonetization: config.creator.minFollowersForMonetization,
-        minAge: config.creator.minAge,
+      earner: {
+        monetizationEnabled: config.earner.monetizationEnabled,
+        minFollowersForMonetization: config.earner.minFollowersForMonetization,
+        minAge: config.earner.minAge,
       },
     };
   }
@@ -409,6 +411,20 @@ export const pack381_validateFeatureAvailability = functions.https.onCall(async 
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

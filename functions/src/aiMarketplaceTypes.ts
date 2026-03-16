@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 311 — AI Companions Marketplace, Ranking & Owner Analytics
  * Backend TypeScript types
@@ -119,6 +121,20 @@ export interface AnalyticsAggregationResult {
   tokensEarned30d: number;
   retentionScore: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

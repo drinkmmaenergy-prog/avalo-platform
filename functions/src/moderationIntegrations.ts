@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 54 - Moderation Integrations
  * Helper functions for integrating enforcement checks into existing modules
@@ -40,18 +42,18 @@ export async function filterDiscoveryCandidates(
 // ============================================================================
 
 /**
- * Filter creator marketplace candidates by enforcement state
- * Remove creators who are suspended, banned, hidden, or have earning disabled
+ * Filter earner marketplace candidates by enforcement state
+ * Remove earners who are suspended, banned, hidden, or have earning disabled
  */
 export async function filterMarketplaceCandidates(
-  creatorIds: string[]
+  earnerIds: string[]
 ): Promise<string[]> {
   const filteredIds: string[] = [];
 
-  for (const creatorId of creatorIds) {
-    const canAppear = await canAppearInMarketplace(creatorId);
+  for (const earnerId of earnerIds) {
+    const canAppear = await canAppearInMarketplace(earnerId);
     if (canAppear) {
-      filteredIds.push(creatorId);
+      filteredIds.push(earnerId);
     }
   }
 
@@ -169,23 +171,23 @@ export async function validateEarnModeEligibility(
 }
 
 /**
- * Bulk check if creators can appear in marketplace
+ * Bulk check if earners can appear in marketplace
  * More efficient for large lists
  */
 export async function bulkCheckMarketplaceEligibility(
-  creatorIds: string[]
+  earnerIds: string[]
 ): Promise<Map<string, boolean>> {
   const eligibilityMap = new Map<string, boolean>();
 
   // Process in batches to avoid overwhelming Firestore
   const batchSize = 50;
-  for (let i = 0; i < creatorIds.length; i += batchSize) {
-    const batch = creatorIds.slice(i, i + batchSize);
+  for (let i = 0; i < earnerIds.length; i += batchSize) {
+    const batch = earnerIds.slice(i, i + batchSize);
     
     await Promise.all(
-      batch.map(async (creatorId) => {
-        const canAppear = await canAppearInMarketplace(creatorId);
-        eligibilityMap.set(creatorId, canAppear);
+      batch.map(async (earnerId) => {
+        const canAppear = await canAppearInMarketplace(earnerId);
+        eligibilityMap.set(earnerId, canAppear);
       })
     );
   }
@@ -217,6 +219,20 @@ export async function bulkCheckDiscoveryEligibility(
 
   return eligibilityMap;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

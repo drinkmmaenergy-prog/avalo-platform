@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 446: AI Governance, Explainability & Model Risk Control
  * Main export file
@@ -31,6 +33,22 @@ export function initializePack446(db: FirebaseFirestore.Firestore) {
 
 // Convenience export for Firebase Functions
 export const pack446Services = initializePack446(admin.firestore());
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

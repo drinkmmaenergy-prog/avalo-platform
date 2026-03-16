@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 134 — API Endpoints
  * 
@@ -376,7 +378,7 @@ export const getPersonalizationDashboard = onCall(
 // ============================================================================
 
 /**
- * Get new creator statistics (admin only)
+ * Get new earner statistics (admin only)
  */
 export const getNewCreatorStatistics = onCall(
   {
@@ -402,7 +404,7 @@ export const getNewCreatorStatistics = onCall(
       const stats = await getNewCreatorStats();
       return stats;
     } catch (error) {
-      logger.error('[Pack134] Get new creator statistics error', { error });
+      logger.error('[Pack134] Get new earner statistics error', { error });
       throw new HttpsError('internal', 'Failed to get statistics');
     }
   }
@@ -525,8 +527,8 @@ async function generateNonPersonalizedFeed(
     items.push({
       contentId: doc.id,
       contentType: 'POST',
-      creatorId: data.userId,
-      creatorName: data.creatorName || 'Unknown',
+      earnerId: data.userId,
+      earnerName: data.earnerName || 'Unknown',
       categories: [],
       relevanceScore: 0,
       reasonId: '',
@@ -542,6 +544,20 @@ async function generateNonPersonalizedFeed(
     personalizationApplied: false,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 153 — Cloud Functions Endpoints
  * 
@@ -312,7 +314,7 @@ export const pack153_startLivestreamModeration = functions.https.onCall(async (r
   try {
     const sessionId = await startLivestreamModeration({
       streamId,
-      creatorId: request.auth.uid,
+      earnerId: request.auth.uid,
       moderatorIds,
     });
 
@@ -635,6 +637,20 @@ export const pack153_admin_getStatistics = functions.https.onCall(async (request
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

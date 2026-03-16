@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 99 — Validation Layer
  * Strict validation to prevent tokenomics manipulation via feature flags/config
@@ -21,7 +23,7 @@ const FORBIDDEN_KEYWORDS = [
   'token_cost',
   'revenue_split',
   'revenue_share',
-  'creator_split',
+  'earner_split',
   'platform_split',
   'free_tokens',
   'bonus_tokens',
@@ -471,6 +473,20 @@ export function logValidationFailure(
     timestamp: new Date().toISOString(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

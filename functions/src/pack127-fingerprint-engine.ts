@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 127 — IP Fingerprint Registration & Matching Engine
  * 
  * Handles content fingerprinting, matching, and duplicate detection
  * 
  * NON-NEGOTIABLE RULES:
- * - All creators protected equally (no paid priority)
+ * - All earners protected equally (no paid priority)
  * - No economic/ranking effects
  * - Automatic protection on upload
  */
@@ -429,7 +431,7 @@ export async function detectDerivative(
       const confidence = similarity / 100;
       
       // Derivative threshold: 70-85% similarity
-      if (confidence >= (DEFAULT_IP_CONFIG.derivativeMatchThreshold || MONETIZATION_SPLITS.SUBSCRIPTION.creator) &&
+      if (confidence >= (DEFAULT_IP_CONFIG.derivativeMatchThreshold || MONETIZATION_SPLITS.SUBSCRIPTION.earner) &&
           confidence < (DEFAULT_IP_CONFIG.perceptualMatchThreshold || 0.85)) {
         
         // Determine derivative type based on metadata differences
@@ -556,6 +558,22 @@ export async function blockUploadDueToMatch(
   
   console.log(`[IP Protection] Blocked upload ${fingerprintId} due to match ${matchId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

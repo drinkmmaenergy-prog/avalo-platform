@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 328C — Calendar & Meetup Selfie Timeout + Mismatch Enforcement
  * Engine for mandatory selfie verification at meetup start
@@ -234,7 +236,7 @@ async function processSelfieMismatchRefund(
 
     const now = new Date().toISOString();
     const fullRefund = booking.payment.totalTokensPaid;
-    const avaloFeeRefund = booking.payment.avaloShareTokens;
+    const platformFeeRefund = booking.payment.platformTokens;
 
     // Update booking status
     await bookingRef.update({
@@ -244,7 +246,7 @@ async function processSelfieMismatchRefund(
       'safety.selfieMismatchReportedAt': now,
       'safety.selfieMismatchReason': reason,
       'payment.refundedUserTokens': fullRefund,
-      'payment.refundedAvaloTokens': avaloFeeRefund,
+      'payment.refundedAvaloTokens': platformFeeRefund,
       'payment.refundReason': 'MISMATCH',
       'timestamps.updatedAt': now,
     });
@@ -327,14 +329,14 @@ async function processSelfieTimeoutRefund(
     const bookingRef = db.collection('calendarBookings').doc(bookingId);
     const now = new Date().toISOString();
     const fullRefund = booking.payment.totalTokensPaid;
-    const avaloFeeRefund = booking.payment.avaloShareTokens;
+    const platformFeeRefund = booking.payment.platformTokens;
 
     // Update booking status
     await bookingRef.update({
       status: 'SELFIE_TIMEOUT',
       'safety.meetupSelfieStatus': 'TIMEOUT',
       'payment.refundedUserTokens': fullRefund,
-      'payment.refundedAvaloTokens': avaloFeeRefund,
+      'payment.refundedAvaloTokens': platformFeeRefund,
       'payment.refundReason': 'TIMEOUT',
       'timestamps.updatedAt': now,
     });
@@ -407,13 +409,13 @@ export async function cancelBookingBeforeSelfie(
 
     const now = new Date().toISOString();
     const fullRefund = booking.payment.totalTokensPaid;
-    const avaloFeeRefund = booking.payment.avaloShareTokens;
+    const platformFeeRefund = booking.payment.platformTokens;
 
     // Update booking
     await bookingRef.update({
       status: 'CANCELLED_BY_HOST',
       'payment.refundedUserTokens': fullRefund,
-      'payment.refundedAvaloTokens': avaloFeeRefund,
+      'payment.refundedAvaloTokens': platformFeeRefund,
       'payment.refundReason': 'HOST_CANCEL',
       'timestamps.cancelledAt': now,
       'timestamps.updatedAt': now,
@@ -461,7 +463,7 @@ async function refundTokens(
       metadata: {
         bookingId,
         reason,
-        refundType: '100_percent_with_avalo_fee',
+        refundType: '100_percent_with_platform_fee',
       },
       createdAt: FieldValue.serverTimestamp(),
     });
@@ -565,6 +567,20 @@ async function sendMeetupStartedNotifications(
     }),
   ]);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

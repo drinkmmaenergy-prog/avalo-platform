@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 304 — Admin Financial Console & Reconciliation
  * Type Definitions
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -37,10 +39,10 @@ export interface PlatformFinanceMonthly {
 
   // Gross Merchandise Value (GMV)
   gmvTokens: number;           // Total tokens spent on monetized features
-  gmvFiatUSD: number;           // GMV in USD (gmvTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo)
+  gmvFiatUSD: number;           // GMV in USD (gmvTokens * MONETIZATION_SPLITS.EVENT_TICKET.platform)
 
   // Revenue Split
-  totalCreatorShareTokens: number;  // Total tokens going to creators
+  totalCreatorShareTokens: number;  // Total tokens going to earners
   totalAvaloShareTokens: number;    // Total tokens going to Avalo (fees)
 
   // Token Purchases (Revenue In)
@@ -48,7 +50,7 @@ export interface PlatformFinanceMonthly {
   totalTokenPurchasesFiatUSD: number;   // True revenue from sales
 
   // Payouts (Cash Outflows)
-  totalPayoutTokens: number;        // Tokens paid out to creators
+  totalPayoutTokens: number;        // Tokens paid out to earners
   totalPayoutFiatUSD: number;       // Fiat equivalent paid out
   totalPayoutTransactions: number;  // Number of payout transactions
 
@@ -259,16 +261,16 @@ export const FINANCE_CONSTANTS = {
   TOKEN_PAYOUT_USD_PER_TOKEN: TOKEN_PAYOUT_USD,
   
   // Revenue Splits (read-only, from existing packs)
-  SPLIT_CHAT_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
-  SPLIT_CHAT_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
-  SPLIT_CALLS_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
-  SPLIT_CALLS_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
-  SPLIT_CALENDAR_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.creator,
-  SPLIT_CALENDAR_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  SPLIT_EVENTS_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.creator,
-  SPLIT_EVENTS_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  SPLIT_OTHER_CREATOR: MONETIZATION_SPLITS.CHAT.creator,
-  SPLIT_OTHER_AVALO: MONETIZATION_SPLITS.CHAT.avalo,
+  SPLIT_CHAT_CREATOR: MONETIZATION_SPLITS.CHAT.earner,
+  SPLIT_CHAT_AVALO: MONETIZATION_SPLITS.CHAT.platform,
+  SPLIT_CALLS_CREATOR: MONETIZATION_SPLITS.CHAT.earner,
+  SPLIT_CALLS_AVALO: MONETIZATION_SPLITS.CHAT.platform,
+  SPLIT_CALENDAR_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.earner,
+  SPLIT_CALENDAR_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  SPLIT_EVENTS_CREATOR: MONETIZATION_SPLITS.EVENT_TICKET.earner,
+  SPLIT_EVENTS_AVALO: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  SPLIT_OTHER_CREATOR: MONETIZATION_SPLITS.CHAT.earner,
+  SPLIT_OTHER_AVALO: MONETIZATION_SPLITS.CHAT.platform,
   
   // Reconciliation
   BALANCE_DISCREPANCY_THRESHOLD: 0.01, // 0.01 tokens tolerance
@@ -323,10 +325,27 @@ export interface MonthlyFinanceExportData {
   breakdown: {
     feature: string;
     gmvTokens: number;
-    avaloFeesTokens: number;
-    creatorShareTokens: number;
+    platformFeesTokens: number;
+    earnerTokens: number;
   }[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

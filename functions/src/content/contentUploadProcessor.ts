@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 
 import * as admin from 'firebase-admin';
 import { Storage } from '@google-cloud/storage';
@@ -8,7 +10,7 @@ const storage = new Storage();
 const db = admin.firestore();
 
 // Default bucket name - uses Firebase default storage bucket
-const DEFAULT_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || 'avalo-default.appspot.com';
+const DEFAULT_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || 'platform-default.appspot.com';
 
 // Helper to get bucket with default
 function getDefaultBucket() {
@@ -271,7 +273,7 @@ export const processContentUpload = onCall(
           break;
       }
 
-      // Update creator stats
+      // Update earner stats
       await updateCreatorStats(userId, data.contentType);
 
       // Delete temp file
@@ -412,11 +414,11 @@ async function processVideoUpload(
 }
 
 /**
- * Update creator daily stats
+ * Update earner daily stats
  */
 async function updateCreatorStats(userId: string, contentType: string) {
   const today = new Date().toISOString().split('T')[0];
-  const statsRef = db.collection('creatorDailyStats').doc(`${userId}_${today}`);
+  const statsRef = db.collection('earnerDailyStats').doc(`${userId}_${today}`);
 
   const increment = admin.firestore.FieldValue.increment(1);
 
@@ -466,6 +468,22 @@ export const cleanupExpiredStories = onSchedule("every 1 hours", async (event) =
     console.log(`Cleaned up ${expiredStories.size} expired stories`);
     return;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

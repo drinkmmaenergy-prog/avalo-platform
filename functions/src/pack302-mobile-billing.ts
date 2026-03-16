@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 302 — Mobile Token & Subscription Verification
  * Endpoints for mobile app purchases via Google Play and App Store
@@ -275,7 +277,7 @@ async function verifyGooglePlayReceipt(
     
     // For now, we'll do basic validation
     // TODO: Implement actual Google Play API verification
-    const GOOGLE_PACKAGE_NAME = process.env.GOOGLE_PACKAGE_NAME || 'com.avalo.app';
+    const GOOGLE_PACKAGE_NAME = process.env.GOOGLE_PACKAGE_NAME || 'com.platform.app';
     
     if (packageName !== GOOGLE_PACKAGE_NAME) {
       throw new Error('Package name mismatch');
@@ -426,6 +428,20 @@ async function verifyAppStoreSandbox(
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

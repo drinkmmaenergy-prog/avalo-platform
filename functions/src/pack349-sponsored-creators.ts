@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 349 - Sponsored Creator System
- * Manages creator sponsorships with opt-in and 65/35 revenue split
+ * Manages earner sponsorships with opt-in and 65/35 revenue split
  */
 
 import { db, serverTimestamp } from './init';
@@ -10,7 +12,7 @@ import { admin, timestamp } from './runtime';
 
 export class SponsoredCreatorEngine {
   /**
-   * Create sponsored creator profile (creator must opt-in)
+   * Create sponsored earner profile (earner must opt-in)
    */
   static async createSponsorship(
     userId: string,
@@ -27,7 +29,7 @@ export class SponsoredCreatorEngine {
       minimumGuarantee?: number;
     }
   ): Promise<SponsoredCreatorProfile> {
-    // Check if creator already has active sponsorship
+    // Check if earner already has active sponsorship
     const existing = await db.collection('sponsoredCreators').doc(userId).get();
 
     if (existing.exists && existing.data()?.isActive) {
@@ -114,7 +116,7 @@ export class SponsoredCreatorEngine {
 
   /**
    * Record sponsorship earnings from ad interaction
-   * Called when a sponsored creator's ad generates revenue
+   * Called when a sponsored earner's ad generates revenue
    */
   static async recordEarnings(
     userId: string,
@@ -134,13 +136,13 @@ export class SponsoredCreatorEngine {
     }
 
     const sponsorshipData = sponsorship.data() as SponsoredCreatorProfile;
-    const creatorShare = amount * sponsorshipData.commissionRate;
-    const avaloShare = amount * AD_CONSTANTS.AVALO_COMMISSION_RATE;
+    const earner = amount * sponsorshipData.commissionRate;
+    const platform = amount * AD_CONSTANTS.AVALO_COMMISSION_RATE;
 
-    // Update creator earnings
+    // Update earner earnings
     await sponsorshipRef.update({
-      'earnings.total': (sponsorshipData.earnings.total || 0) + creatorShare,
-      'earnings.pending': (sponsorshipData.earnings.pending || 0) + creatorShare,
+      'earnings.total': (sponsorshipData.earnings.total || 0) + earner,
+      'earnings.pending': (sponsorshipData.earnings.pending || 0) + earner,
       updatedAt: serverTimestamp(),
     });
 
@@ -151,7 +153,7 @@ export class SponsoredCreatorEngine {
       campaignId: metadata.campaignId,
       adId: metadata.adId,
       placementId: metadata.placementId,
-      amount: creatorShare,
+      amount: earner,
       source,
       commissionRate: sponsorshipData.commissionRate,
       timestamp: serverTimestamp(),
@@ -159,7 +161,7 @@ export class SponsoredCreatorEngine {
   }
 
   /**
-   * Payout earnings to creator
+   * Payout earnings to earner
    */
   static async payoutEarnings(
     userId: string,
@@ -190,7 +192,7 @@ export class SponsoredCreatorEngine {
       updatedAt: serverTimestamp(),
     });
 
-    // Add to creator wallet (assuming token-based system)
+    // Add to earner wallet (assuming token-based system)
     const userRef = db.collection('users').doc(userId);
     const user = await userRef.get();
 
@@ -215,7 +217,7 @@ export class SponsoredCreatorEngine {
   }
 
   /**
-   * Get creator sponsorship analytics
+   * Get earner sponsorship analytics
    */
   static async getCreatorAnalytics(userId: string): Promise<any> {
     const sponsorshipRef = db.collection('sponsoredCreators').doc(userId);
@@ -266,7 +268,7 @@ export class SponsoredCreatorEngine {
   }
 
   /**
-   * Check if creator is eligible for sponsorship
+   * Check if earner is eligible for sponsorship
    */
   static async isEligibleForSponsorship(userId: string): Promise<boolean> {
     const user = await db.collection('users').doc(userId).get();
@@ -286,7 +288,7 @@ export class SponsoredCreatorEngine {
   }
 
   /**
-   * Get all active sponsored creators
+   * Get all active sponsored earners
    */
   static async getActiveSponsoredCreators(): Promise<SponsoredCreatorProfile[]> {
     const snapshot = await db
@@ -299,7 +301,7 @@ export class SponsoredCreatorEngine {
 
   /**
    * Scheduled: Process minimum guarantees
-   * Run monthly to ensure creators get their minimum guarantee
+   * Run monthly to ensure earners get their minimum guarantee
    */
   static async processMinimumGuarantees(): Promise<void> {
     const sponsored = await db
@@ -337,6 +339,20 @@ export class SponsoredCreatorEngine {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

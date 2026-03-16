@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 202 - Ambassador & Early Access Program Functions
  * 
- * Professional creator ambassador program with strict anti-NSFW safeguards.
+ * Professional earner ambassador program with strict anti-NSFW safeguards.
  * No free tokens, no romantic recruitment, no sexualized marketing.
  */
 
@@ -428,8 +430,8 @@ export const logReferralRevenue = functions.https.onCall(async (request) => {
   }
 
   // Calculate commission
-  const platformShare = transactionAmount * COMMISSION_STRUCTURE.platformSplit;
-  const commissionAmount = platformShare * COMMISSION_STRUCTURE.rate;
+  const platform = transactionAmount * COMMISSION_STRUCTURE.platformSplit;
+  const commissionAmount = platform * COMMISSION_STRUCTURE.rate;
 
   // Create revenue log
   const revenueLog: Partial<AmbassadorRevenueLog> = {
@@ -439,7 +441,7 @@ export const logReferralRevenue = functions.https.onCall(async (request) => {
     transactionId,
     transactionType,
     transactionAmount,
-    platformShare,
+    platform,
     commissionRate: COMMISSION_STRUCTURE.rate,
     commissionAmount,
     transactionDate: admin.firestore.Timestamp.now() as any,
@@ -752,6 +754,22 @@ export const reportAmbassadorMisconduct = functions.https.onCall(async (request)
     message: 'Report submitted successfully. Our team will investigate.'
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

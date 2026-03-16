@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 /**
  * Creator League Types
  */
@@ -25,6 +27,23 @@ export interface LeagueReward {
   type: 'badge' | 'tokens' | 'feature_unlock';
   value: number | string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

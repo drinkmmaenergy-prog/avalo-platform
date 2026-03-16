@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 62 — Creator & User Analytics Hub
  *
@@ -114,7 +116,7 @@ function getChannelFromEventType(eventType: string): string {
 // ============================================================================
 
 /**
- * Aggregate creator earnings from token_earn_events
+ * Aggregate earner earnings from token_earn_events
  */
 async function aggregateCreatorEarnings(userId: string): Promise<CreatorAnalytics> {
   const now = Date.now();
@@ -211,7 +213,7 @@ async function aggregateCreatorEarnings(userId: string): Promise<CreatorAnalytic
   try {
     const fansSnapshot = await db
       .collection('user_fans')
-      .where('creatorUserId', '==', userId)
+      .where('earnerUserId', '==', userId)
       .where('createdAt', '>=', new Date(day30ago))
       .get();
     analytics.kpis30d.totalNewFans = fansSnapshot.size;
@@ -349,7 +351,7 @@ async function aggregatePromotionAnalytics(
   const campaign = campaignDoc.data()!;
   
   // Verify ownership
-  if (campaign.creatorUserId !== ownerUserId) {
+  if (campaign.earnerUserId !== ownerUserId) {
     return;
   }
 
@@ -378,11 +380,11 @@ async function aggregatePromotionAnalytics(
 // ============================================================================
 
 /**
- * Scheduled function to aggregate creator earnings analytics
- * Runs hourly to update analytics_creator_earnings collection
+ * Scheduled function to aggregate earner earnings analytics
+ * Runs hourly to update analytics_earner_earnings collection
  */
 export const aggregateCreatorEarningsAnalytics = onSchedule("every 1 hours", async (event) => {
-    console.log('Starting creator earnings analytics aggregation...');
+    console.log('Starting earner earnings analytics aggregation...');
 
     // Get all users with recent token earn events (last 90 days)
     const now = Date.now();
@@ -402,7 +404,7 @@ export const aggregateCreatorEarningsAnalytics = onSchedule("every 1 hours", asy
       }
     });
 
-    console.log(`Aggregating analytics for ${userIds.size} creators...`);
+    console.log(`Aggregating analytics for ${userIds.size} earners...`);
 
     // Batch write to analytics collection
     const batch = db.batch();
@@ -410,7 +412,7 @@ export const aggregateCreatorEarningsAnalytics = onSchedule("every 1 hours", asy
 
     for (const userId of Array.from(userIds)) {
       const analytics = await aggregateCreatorEarnings(userId);
-      const docRef = db.collection('analytics_creator_earnings').doc(userId);
+      const docRef = db.collection('analytics_earner_earnings').doc(userId);
       batch.set(docRef, analytics, { merge: true });
       
       count++;
@@ -494,9 +496,9 @@ export const aggregateUserSpendingAnalytics = onSchedule("every 1 hours", async 
 // ============================================================================
 
 /**
- * GET /analytics/creator?userId=xxx
- * Returns creator earnings analytics
- * Security: Only accessible by the creator themselves
+ * GET /analytics/earner?userId=xxx
+ * Returns earner earnings analytics
+ * Security: Only accessible by the earner themselves
  */
 export const getCreatorAnalytics = onRequest({}, async (req, res) => {
   // CORS
@@ -539,7 +541,7 @@ export const getCreatorAnalytics = onRequest({}, async (req, res) => {
     }
 
     // Check if precomputed analytics exist
-    const analyticsDoc = await db.collection('analytics_creator_earnings').doc(userId).get();
+    const analyticsDoc = await db.collection('analytics_earner_earnings').doc(userId).get();
     
     let analytics: CreatorAnalytics;
     
@@ -551,12 +553,12 @@ export const getCreatorAnalytics = onRequest({}, async (req, res) => {
       analytics = await aggregateCreatorEarnings(userId);
       
       // Save for future use
-      await db.collection('analytics_creator_earnings').doc(userId).set(analytics, { merge: true });
+      await db.collection('analytics_earner_earnings').doc(userId).set(analytics, { merge: true });
     }
 
     res.status(200).json(analytics);
   } catch (error) {
-    console.error('Error fetching creator analytics:', error);
+    console.error('Error fetching earner analytics:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -682,6 +684,21 @@ export const getPromotionAnalytics = onRequest({}, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

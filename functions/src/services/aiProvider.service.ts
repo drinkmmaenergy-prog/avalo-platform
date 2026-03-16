@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 279A — AI Provider Service
  * Unified adapter for OpenAI and Claude API calls
@@ -265,6 +267,22 @@ async function generateWithClaude(
 export default {
   generateAIReply,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

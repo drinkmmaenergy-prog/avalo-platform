@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 140 — Avalo Reputation System 2.0
  * Core reputation calculation and management engine
@@ -664,6 +666,20 @@ export function getReputationBadge(overallScore: number): {
   }
   return { level: 'Needs Improvement', color: '#EF4444', icon: '!' };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

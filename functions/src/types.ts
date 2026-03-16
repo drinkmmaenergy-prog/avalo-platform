@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * TypeScript Type Definitions for Avalo
  */
@@ -70,7 +72,7 @@ export interface UserWallet {
   balance: number;
   pending: number;
   earned: number;
-  settlementRate: number; // MONETIZATION_SPLITS.EVENT_TICKET.avalo USD per token
+  settlementRate: number; // MONETIZATION_SPLITS.EVENT_TICKET.platform USD per token
 }
 
 // =======================================================
@@ -133,7 +135,7 @@ export interface Transaction {
   amountTokens: number;
   split?: {
     platformTokens: number;
-    creatorTokens: number;
+    earnerTokens: number;
   };
   status: "pending" | "completed" | "refunded";
   metadata?: {
@@ -152,7 +154,7 @@ export interface Transaction {
 // =======================================================
 export interface CalendarBooking {
   bookingId: string;
-  creatorId: string;
+  earnerId: string;
   bookerId: string;
   slot: {
     start: Timestamp | FieldValue;
@@ -311,6 +313,22 @@ export interface ChatRoles {
   initiator: string;
   receiver: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

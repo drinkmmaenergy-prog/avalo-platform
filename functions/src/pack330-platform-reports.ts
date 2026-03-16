@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 330 — Platform Tax Report Generation
  * Cloud Functions for generating platform-level tax & revenue reports
@@ -106,7 +108,7 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
     totalGrossTokensSold += tx.amountTokens || 0;
   });
 
-  // Get all earnings (creator share) in the period
+  // Get all earnings (earner share) in the period
   const earningsQuery = await db
     .collection('walletTransactions')
     .where('type', '==', 'EARN')
@@ -114,8 +116,8 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
     .where('timestamp', '<=', endDate)
     .get();
 
-  // Track unique creators per region
-  const creatorsByRegion: Record<string, Set<string>> = {
+  // Track unique earners per region
+  const earnersByRegion: Record<string, Set<string>> = {
     PL: new Set(),
     EU: new Set(),
     US: new Set(),
@@ -131,22 +133,22 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
 
   earningsQuery.docs.forEach(doc => {
     const tx = doc.data();
-    const creatorId = tx.userId;
+    const earnerId = tx.userId;
     const tokens = tx.amountTokens || 0;
     
     totalTokensPaidOutToCreators += tokens;
   });
 
-  // Get creator regions from tax profiles and aggregate by region
+  // Get earner regions from tax profiles and aggregate by region
   for (const doc of earningsQuery.docs) {
     const tx = doc.data();
-    const creatorId = tx.userId;
+    const earnerId = tx.userId;
     const tokens = tx.amountTokens || 0;
 
     try {
       const profileDoc = await db
         .collection(TAX_CONFIG.COLLECTIONS.TAX_PROFILES)
-        .doc(creatorId)
+        .doc(earnerId)
         .get();
 
       let region: 'PL' | 'EU' | 'US' | 'ROW' = 'ROW';
@@ -156,11 +158,11 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
         region = getRegion(countryCode);
       }
 
-      creatorsByRegion[region].add(creatorId);
+      earnersByRegion[region].add(earnerId);
       tokensByRegion[region] += tokens;
     } catch (error) {
-      logger.warn(`Failed to get tax profile for creator ${creatorId}:`, error);
-      creatorsByRegion.ROW.add(creatorId);
+      logger.warn(`Failed to get tax profile for earner ${earnerId}:`, error);
+      earnersByRegion.ROW.add(earnerId);
       tokensByRegion.ROW += tokens;
     }
   }
@@ -179,10 +181,10 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
   });
 
   // Build region breakdown
-  for (const [region, creators] of Object.entries(creatorsByRegion)) {
-    if (creators.size > 0) {
+  for (const [region, earners] of Object.entries(earnersByRegion)) {
+    if (earners.size > 0) {
       regionBreakdown[region as keyof typeof regionBreakdown] = {
-        creators: creators.size,
+        earners: earners.size,
         tokens: tokensByRegion[region],
         payoutUSD: tokensByRegion[region] * TAX_CONFIG.TOKEN_PAYOUT_USD,
       };
@@ -418,6 +420,20 @@ export const pack330_generateYearlyPlatformReport = scheduler.onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 361 - Global Load Balancer
  * Region-based traffic routing with automatic failover
@@ -74,11 +76,11 @@ const REGION_CONFIG: Record<Region, RegionNode> = {
     activeUsers: 0,
     lastHealthCheck: Date.now(),
     endpoints: {
-      chat: "wss://eu-chat.avalo.app",
-      calls: "wss://eu-calls.avalo.app",
-      wallet: "https://eu-wallet.avalo.app",
-      ai: "https://eu-ai.avalo.app",
-      media: "https://eu-media.avalo.app",
+      chat: "wss://eu-chat.platform.app",
+      calls: "wss://eu-calls.platform.app",
+      wallet: "https://eu-wallet.platform.app",
+      ai: "https://eu-ai.platform.app",
+      media: "https://eu-media.platform.app",
     },
   },
   US: {
@@ -89,11 +91,11 @@ const REGION_CONFIG: Record<Region, RegionNode> = {
     activeUsers: 0,
     lastHealthCheck: Date.now(),
     endpoints: {
-      chat: "wss://us-chat.avalo.app",
-      calls: "wss://us-calls.avalo.app",
-      wallet: "https://us-wallet.avalo.app",
-      ai: "https://us-ai.avalo.app",
-      media: "https://us-media.avalo.app",
+      chat: "wss://us-chat.platform.app",
+      calls: "wss://us-calls.platform.app",
+      wallet: "https://us-wallet.platform.app",
+      ai: "https://us-ai.platform.app",
+      media: "https://us-media.platform.app",
     },
   },
   ASIA: {
@@ -104,11 +106,11 @@ const REGION_CONFIG: Record<Region, RegionNode> = {
     activeUsers: 0,
     lastHealthCheck: Date.now(),
     endpoints: {
-      chat: "wss://asia-chat.avalo.app",
-      calls: "wss://asia-calls.avalo.app",
-      wallet: "https://asia-wallet.avalo.app",
-      ai: "https://asia-ai.avalo.app",
-      media: "https://asia-media.avalo.app",
+      chat: "wss://asia-chat.platform.app",
+      calls: "wss://asia-calls.platform.app",
+      wallet: "https://asia-wallet.platform.app",
+      ai: "https://asia-ai.platform.app",
+      media: "https://asia-media.platform.app",
     },
   },
 };
@@ -591,6 +593,20 @@ export const initializeRegions = functions.https.onCall(async (request) => {
     return;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

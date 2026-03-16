@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 338a - Legal Compliance Engine
  * Cloud Function: Accept Legal Documents
@@ -120,6 +122,22 @@ export const pack338a_acceptLegal = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

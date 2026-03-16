@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 152 - Safety Middleware
  * Validates events against romantic/NSFW/attention-for-payment patterns
@@ -371,7 +373,7 @@ export class AmbassadorSafetyMiddleware {
     const allowedSources = [
       'event_hosted',
       'user_onboarded',
-      'creator_onboarded',
+      'earner_onboarded',
       'ticket_revenue'
     ];
     
@@ -407,6 +409,22 @@ export class AmbassadorSafetyMiddleware {
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

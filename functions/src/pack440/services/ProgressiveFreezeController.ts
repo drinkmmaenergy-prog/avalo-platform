@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Module: Progressive Freeze Controller
@@ -37,7 +39,7 @@ export interface ReleaseConditions {
 
 export interface PayoutFreeze {
   freezeId: string;
-  creatorId: string;
+  earnerId: string;
   payoutId?: string;
   freezeType: FreezeType;
   status: FreezeStatus;
@@ -85,15 +87,15 @@ export class ProgressiveFreezeController {
    * Evaluate if a payout should be frozen
    */
   async evaluateFreeze(
-    creatorId: string,
+    earnerId: string,
     payoutId: string,
     amount: number
   ): Promise<FreezeEvaluationResult | null> {
-    const integrity = await this.integrityService.getScore(creatorId);
+    const integrity = await this.integrityService.getScore(earnerId);
     
     if (!integrity) {
       // Calculate score if not exists
-      await this.integrityService.calculateScore(creatorId);
+      await this.integrityService.calculateScore(earnerId);
       return null; // Don't freeze on first evaluation
     }
     
@@ -216,7 +218,7 @@ export class ProgressiveFreezeController {
    * Create a freeze
    */
   async createFreeze(
-    creatorId: string,
+    earnerId: string,
     evaluation: FreezeEvaluationResult,
     payoutId?: string
   ): Promise<PayoutFreeze> {
@@ -229,7 +231,7 @@ export class ProgressiveFreezeController {
     
     const freeze: PayoutFreeze = {
       freezeId,
-      creatorId,
+      earnerId,
       payoutId,
       freezeType: evaluation.freezeType,
       status: 'ACTIVE',
@@ -358,7 +360,7 @@ export class ProgressiveFreezeController {
     // Create compliance escalation (ComplianceEscalationOrchestrator integration)
     await this.db.collection('compliance_escalations').doc(caseId).set({
       caseId,
-      creatorId: freeze.creatorId,
+      earnerId: freeze.earnerId,
       type: 'PAYOUT_FREEZE',
       severity: freeze.reason.severity,
       status: 'OPEN',
@@ -405,12 +407,12 @@ export class ProgressiveFreezeController {
   }
   
   /**
-   * Get all active freezes for a creator
+   * Get all active freezes for a earner
    */
-  async getCreatorFreezes(creatorId: string): Promise<PayoutFreeze[]> {
+  async getCreatorFreezes(earnerId: string): Promise<PayoutFreeze[]> {
     const snapshot = await this.db
       .collection('payout_freezes')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('status', '==', 'ACTIVE')
       .get();
     
@@ -494,13 +496,29 @@ export class ProgressiveFreezeController {
       type: 'PAYOUT_FREEZE',
       event,
       freezeId: freeze.freezeId,
-      creatorId: freeze.creatorId,
+      earnerId: freeze.earnerId,
       payoutId: freeze.payoutId,
       timestamp: Timestamp.now(),
       ...additionalData
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

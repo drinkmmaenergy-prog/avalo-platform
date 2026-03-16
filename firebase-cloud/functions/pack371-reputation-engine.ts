@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 371: APP STORE DEFENSE, REVIEWS, REPUTATION & TRUST ENGINE
  * 
@@ -951,4 +952,5 @@ export {
   detectReputationAttack as pack371_detectReputationAttack,
   updatePlatformTrustMetrics as pack371_updatePlatformTrustMetrics,
 };
+
 

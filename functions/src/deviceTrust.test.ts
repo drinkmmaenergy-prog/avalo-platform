@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Tests for Device Trust & Fingerprinting (Phase 21)
  * Focus on trust scoring, multi-account detection, and risk flags
@@ -456,6 +458,20 @@ describe("Device Trust & Fingerprinting", () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

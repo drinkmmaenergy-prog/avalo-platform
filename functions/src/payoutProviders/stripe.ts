@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Stripe Connect Payout Provider
  */ 
@@ -45,6 +47,22 @@ export class StripeProvider implements PayoutProvider {
     return false; // Stripe payouts cannot be cancelled once created
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

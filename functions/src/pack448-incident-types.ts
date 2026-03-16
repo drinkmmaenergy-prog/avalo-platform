@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 448: Incident Response, Crisis Management & Regulatory Playbooks
  * Type Definitions and Interfaces
@@ -518,6 +520,20 @@ export interface RegulatorNotificationEvent {
   incidentIds: string[];
   urgency: 'routine' | 'urgent' | 'critical';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

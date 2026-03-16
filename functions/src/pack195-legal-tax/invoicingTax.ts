@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 195: Invoicing & Tax Calculation Functions
  * Automatic invoice generation with global tax compliance
@@ -17,8 +19,8 @@ import {
 
 const TAX_RATES: Record<TaxRegion, { rate: number; type: TaxType }> = {
   US: { rate: 0, type: 'SALES_TAX' },
-  EU: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT' },
-  UK: { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT' },
+  EU: { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT' },
+  UK: { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT' },
   CA: { rate: 0.05, type: 'GST' },
   AU: { rate: 0.10, type: 'GST' },
   JP: { rate: 0.10, type: 'SALES_TAX' },
@@ -30,7 +32,7 @@ const TAX_RATES: Record<TaxRegion, { rate: number; type: TaxType }> = {
 };
 
 export async function generateInvoice(data: {
-  creatorId: string;
+  earnerId: string;
   customerId: string;
   items: InvoiceItem[];
   currency: string;
@@ -48,7 +50,7 @@ export async function generateInvoice(data: {
 
   const taxProfileSnap = await db
     .collection('tax_profiles')
-    .doc(data.creatorId)
+    .doc(data.earnerId)
     .get();
 
   if (!taxProfileSnap.exists) {
@@ -72,7 +74,7 @@ export async function generateInvoice(data: {
   const totalAmount = subtotal + taxAmount;
 
   const invoiceNumber = await generateInvoiceNumber(
-    data.creatorId,
+    data.earnerId,
     taxProfile.taxRegion
   );
 
@@ -81,7 +83,7 @@ export async function generateInvoice(data: {
 
   const invoice: Invoice = {
     id: invoiceId,
-    creatorId: data.creatorId,
+    earnerId: data.earnerId,
     customerId: data.customerId,
     invoiceNumber,
     status: 'pending',
@@ -103,7 +105,7 @@ export async function generateInvoice(data: {
       address: data.customerInfo.address,
       taxId: data.customerInfo.taxId,
     },
-    creatorInfo: {
+    earnerInfo: {
       legalName: taxProfile.legalName,
       displayName: taxProfile.businessName,
       email: taxProfile.userId,
@@ -123,7 +125,7 @@ export async function generateInvoice(data: {
 }
 
 async function generateInvoiceNumber(
-  creatorId: string,
+  earnerId: string,
   region: TaxRegion
 ): Promise<string> {
   const now = new Date();
@@ -132,7 +134,7 @@ async function generateInvoiceNumber(
 
   const countRef = db
     .collection('invoice_counters')
-    .doc(`${creatorId}-${year}-${month}`);
+    .doc(`${earnerId}-${year}-${month}`);
 
   const result = await db.runTransaction(async (transaction) => {
     const countDoc = await transaction.get(countRef);
@@ -189,13 +191,13 @@ export async function getInvoiceById(invoiceId: string): Promise<Invoice | null>
 }
 
 export async function getCreatorInvoices(data: {
-  creatorId: string;
+  earnerId: string;
   status?: InvoiceStatus;
   limit?: number;
 }): Promise<Invoice[]> {
   let query = db
     .collection('invoices')
-    .where('creatorId', '==', data.creatorId)
+    .where('earnerId', '==', data.earnerId)
     .orderBy('createdAt', 'desc');
 
   if (data.status) {
@@ -295,7 +297,7 @@ export async function generateTaxReport(data: {
 
   const invoicesSnap = await db
     .collection('invoices')
-    .where('creatorId', '==', data.userId)
+    .where('earnerId', '==', data.userId)
     .where('status', '==', 'paid')
     .where('paidAt', '>=', data.period.start)
     .where('paidAt', '<=', data.period.end)
@@ -316,7 +318,7 @@ export async function generateTaxReport(data: {
       (byRegion[invoice.taxRegion] || 0) + invoice.totalAmount;
   }
 
-  const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.avalo;
+  const platformFee = grossRevenue * MONETIZATION_SPLITS.CHAT.platform;
   const netRevenue = grossRevenue - platformFee;
 
   const report: TaxReport = {
@@ -357,7 +359,7 @@ export async function generateEarningsCertificate(data: {
 
   const invoicesSnap = await db
     .collection('invoices')
-    .where('creatorId', '==', data.userId)
+    .where('earnerId', '==', data.userId)
     .where('status', '==', 'paid')
     .where('paidAt', '>=', data.periodStart)
     .where('paidAt', '<=', data.periodEnd)
@@ -443,6 +445,23 @@ export async function calculateTax(data: {
     taxType: taxInfo.type,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

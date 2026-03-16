@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 54 - Moderation & Enforcement Engine
  * Core logic for enforcement state management, case creation, and moderation actions
@@ -287,7 +289,7 @@ export async function canAppearInDiscovery(userId: string): Promise<boolean> {
 }
 
 /**
- * Check if user can appear in creator marketplace
+ * Check if user can appear in earner marketplace
  */
 export async function canAppearInMarketplace(userId: string): Promise<boolean> {
   const state = await getEnforcementState(userId);
@@ -408,6 +410,20 @@ export async function getEffectiveRestrictions(userId: string): Promise<{
     reasons: state.reasons,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 145 - Ad Placement Engine
  * Handles ad placement in various surfaces without affecting organic content ranking
@@ -209,7 +211,7 @@ export class AdPlacementEngine {
 
   static async getBusinessSuiteAds(
     userId: string,
-    creatorId: string
+    earnerId: string
   ): Promise<AdPlacement[]> {
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
@@ -343,6 +345,20 @@ export class AdPlacementEngine {
     return hasActiveAdCampaigns.empty;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

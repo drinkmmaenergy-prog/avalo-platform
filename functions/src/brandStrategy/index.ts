@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { https, logger } from 'firebase-functions/v2';
 import { defineSecret } from 'firebase-functions/params';
 import {
@@ -17,7 +19,7 @@ import {
 const REGION = 'europe-west1';
 
 /**
- * Generate a brand strategy profile for a creator
+ * Generate a brand strategy profile for a earner
  */
 export const createStrategyProfile = https.onCall(
   {
@@ -33,7 +35,7 @@ export const createStrategyProfile = https.onCall(
     try {
       const data = request.data as GenerateStrategyProfileRequest;
 
-      if (data.creatorId !== uid) {
+      if (data.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot create strategy profile for another user'
@@ -42,7 +44,7 @@ export const createStrategyProfile = https.onCall(
 
       const profile = await generateStrategyProfile(data);
 
-      logger.info('Strategy profile created', { profileId: profile.id, creatorId: uid });
+      logger.info('Strategy profile created', { profileId: profile.id, earnerId: uid });
 
       return { success: true, profile };
     } catch (error: any) {
@@ -53,7 +55,7 @@ export const createStrategyProfile = https.onCall(
 );
 
 /**
- * Generate content calendar for a creator
+ * Generate content calendar for a earner
  */
 export const createContentCalendar = https.onCall(
   {
@@ -71,14 +73,14 @@ export const createContentCalendar = https.onCall(
 
       const plan = await generateContentCalendar(data);
 
-      if (plan.creatorId !== uid) {
+      if (plan.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot create calendar for another user'
         );
       }
 
-      logger.info('Content calendar created', { planId: plan.id, creatorId: uid });
+      logger.info('Content calendar created', { planId: plan.id, earnerId: uid });
 
       return { success: true, plan };
     } catch (error: any) {
@@ -89,7 +91,7 @@ export const createContentCalendar = https.onCall(
 );
 
 /**
- * Generate career roadmap for a creator
+ * Generate career roadmap for a earner
  */
 export const createCareerRoadmap = https.onCall(
   {
@@ -107,14 +109,14 @@ export const createCareerRoadmap = https.onCall(
 
       const roadmap = await generateRoadmap(data);
 
-      if (roadmap.creatorId !== uid) {
+      if (roadmap.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot create roadmap for another user'
         );
       }
 
-      logger.info('Career roadmap created', { roadmapId: roadmap.id, creatorId: uid });
+      logger.info('Career roadmap created', { roadmapId: roadmap.id, earnerId: uid });
 
       return { success: true, roadmap };
     } catch (error: any) {
@@ -146,7 +148,7 @@ export const updateStrategyAnalytics = https.onCall(
       logger.info('Strategy updated with analytics', {
         profileId: data.profileId,
         insightCount: insights.length,
-        creatorId: uid,
+        earnerId: uid,
       });
 
       return { success: true, insights };
@@ -174,7 +176,7 @@ export const recordStrategyInteraction = https.onCall(
     try {
       const data = request.data;
 
-      if (data.creatorId !== uid) {
+      if (data.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot log interaction for another user'
@@ -186,7 +188,7 @@ export const recordStrategyInteraction = https.onCall(
       logger.info('Strategy interaction logged', {
         profileId: data.profileId,
         type: data.interactionType,
-        creatorId: uid,
+        earnerId: uid,
       });
 
       return { success: true };
@@ -222,7 +224,7 @@ export const getStrategyProfile = https.onCall(
       }
 
       const profile = profileDoc.data();
-      if (profile?.creatorId !== uid) {
+      if (profile?.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot access another user\'s strategy profile'
@@ -262,7 +264,7 @@ export const getContentCalendar = https.onCall(
       }
 
       const plan = planDoc.data();
-      if (plan?.creatorId !== uid) {
+      if (plan?.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot access another user\'s content calendar'
@@ -302,7 +304,7 @@ export const getCareerRoadmap = https.onCall(
       }
 
       const roadmap = roadmapDoc.data();
-      if (roadmap?.creatorId !== uid) {
+      if (roadmap?.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot access another user\'s career roadmap'
@@ -338,7 +340,7 @@ export const getStrategyInsights = https.onCall(
       const insightsSnapshot = await db
         .collection('strategy_insights')
         .where('profileId', '==', profileId)
-        .where('creatorId', '==', uid)
+        .where('earnerId', '==', uid)
         .orderBy('createdAt', 'desc')
         .limit(limit)
         .get();
@@ -381,7 +383,7 @@ export const updateCalendarItemStatus = https.onCall(
       }
 
       const plan = planDoc.data();
-      if (plan?.creatorId !== uid) {
+      if (plan?.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot modify another user\'s content calendar'
@@ -402,7 +404,7 @@ export const updateCalendarItemStatus = https.onCall(
         updatedAt: new Date(),
       });
 
-      logger.info('Calendar item status updated', { planId, itemId, status, creatorId: uid });
+      logger.info('Calendar item status updated', { planId, itemId, status, earnerId: uid });
 
       return { success: true };
     } catch (error: any) {
@@ -437,7 +439,7 @@ export const updateMilestoneStatus = https.onCall(
       }
 
       const roadmap = roadmapDoc.data();
-      if (roadmap?.creatorId !== uid) {
+      if (roadmap?.earnerId !== uid) {
         throw new https.HttpsError(
           'permission-denied',
           'Cannot modify another user\'s career roadmap'
@@ -468,7 +470,7 @@ export const updateMilestoneStatus = https.onCall(
         updatedAt: new Date(),
       });
 
-      logger.info('Milestone status updated', { roadmapId, milestoneId, status, creatorId: uid });
+      logger.info('Milestone status updated', { roadmapId, milestoneId, status, earnerId: uid });
 
       return { success: true };
     } catch (error: any) {
@@ -477,6 +479,22 @@ export const updateMilestoneStatus = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

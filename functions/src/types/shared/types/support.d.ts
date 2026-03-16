@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface SupportTicket  {
     id: string;
     userId: string;
@@ -17,6 +19,23 @@ export interface SupportResponse  {
 }
 export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
 export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

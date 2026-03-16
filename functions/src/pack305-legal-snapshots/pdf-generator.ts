@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 305 — Legal & Audit Snapshot Export
  * PDF generation utilities
@@ -58,11 +60,11 @@ GMV (Gross Merchandise Value):
 - USD: ${sections.economics.gmvUSD.toFixed(2)}
 
 Avalo Fees:
-- Tokens: ${sections.economics.avaloFeesTokens}
-- USD: ${sections.economics.avaloFeesUSD.toFixed(2)}
+- Tokens: ${sections.economics.platformFeesTokens}
+- USD: ${sections.economics.platformFeesUSD.toFixed(2)}
 
 Creator Share:
-- Tokens: ${sections.economics.creatorShareTokens}
+- Tokens: ${sections.economics.earnerTokens}
 
 Payouts:
 - Number of Payouts: ${sections.economics.numberOfPayouts}
@@ -70,12 +72,12 @@ Payouts:
 
 4. CREATOR ACTIVITY
 ---------------------------------------------
-Number of Earning Creators: ${sections.creatorActivity.numberOfEarningCreators}
-Average Monthly Earnings: ${sections.creatorActivity.averageMonthlyEarnings.toFixed(2)} USD
+Number of Earning Creators: ${sections.earnerActivity.numberOfEarningCreators}
+Average Monthly Earnings: ${sections.earnerActivity.averageMonthlyEarnings.toFixed(2)} USD
 
 Earnings Distribution:
-${sections.creatorActivity.distributionBuckets.map(bucket =>
-  `- ${bucket.range}: ${bucket.count} creators`
+${sections.earnerActivity.distributionBuckets.map(bucket =>
+  `- ${bucket.range}: ${bucket.count} earners`
 ).join('\n') || 'No data available'}
 
 5. RISK & SAFETY STATISTICS
@@ -281,6 +283,22 @@ export function generatePDF(snapshot: any): string {
       throw new Error(`Unknown snapshot type: ${snapshot.type}`);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

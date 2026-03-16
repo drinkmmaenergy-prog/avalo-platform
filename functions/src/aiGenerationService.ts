@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 310 — AI Companions & Avatar Builder
  * AI Generation Service using OpenAI/Anthropic
@@ -274,7 +276,7 @@ export async function generateAIResponse(
   // Count words for billing
   const numWords = countWords(responseText);
   
-  // Calculate tokens (using Royal rate since this is creator earnings - 7 words per token)
+  // Calculate tokens (using Royal rate since this is earner earnings - 7 words per token)
   const wordsPerToken = avatar.ownerId ? 7 : 11; // Assume Royal for AI avatars
   const tokensCharged = Math.ceil(numWords / wordsPerToken);
 
@@ -328,6 +330,20 @@ export function validateAvatarConfig(
     errors
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

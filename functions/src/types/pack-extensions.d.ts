@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Type extensions for pack files
  * These declarations extend existing interfaces to add missing properties
@@ -128,16 +130,16 @@ declare module './pack416.types' {
 declare module './pack418.types' {
   interface TokenomicsContext {
     type?: string;
-    creatorShare?: number;
-    avaloShare?: number;
+    earner?: number;
+    platform?: number;
     payoutRateUSDPerToken?: number;
     transactionId?: string;
     [key: string]: any;
   }
   
   interface RevenueSplit {
-    creator?: number;
-    avalo?: number;
+    earner?: number;
+    platform?: number;
     [key: string]: any;
   }
   
@@ -176,6 +178,22 @@ declare global {
 }
 
 export {};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

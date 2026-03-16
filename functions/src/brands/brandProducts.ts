@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { admin, db, serverTimestamp } from '../init';
 import * as functions from 'firebase-functions';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -6,7 +8,7 @@ import { FieldValue, HttpsError, auth, increment, onCall, timestamp } from '../r
 interface BrandProduct {
   brand_id: string;
   collaboration_id?: string;
-  creator_id?: string;
+  earner_id?: string;
   name: string;
   description: string;
   category: string;
@@ -39,7 +41,7 @@ interface ProductPurchase {
   buyer_id: string;
   product_id: string;
   brand_id: string;
-  creator_id?: string;
+  earner_id?: string;
   collaboration_id?: string;
   price_tokens: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
@@ -153,7 +155,7 @@ export const publishProduct = functions.https.onCall(async (request) => {
     }
 
     const brandData = brandDoc.data();
-    let creator_id: string | undefined;
+    let earner_id: string | undefined;
 
     if (collaboration_id) {
       const collabDoc = await db.collection('brand_collaborations').doc(collaboration_id).get();
@@ -164,7 +166,7 @@ export const publishProduct = functions.https.onCall(async (request) => {
         );
       }
       const collabData = collabDoc.data();
-      creator_id = collabData?.creator_id;
+      earner_id = collabData?.earner_id;
 
       if (collabData?.brand_id !== brand_id) {
         throw new functions.https.HttpsError(
@@ -174,7 +176,7 @@ export const publishProduct = functions.https.onCall(async (request) => {
       }
     }
 
-    if (brandData?.owner_id !== request.auth.uid && creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && earner_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to publish products for this brand'
@@ -199,7 +201,7 @@ export const publishProduct = functions.https.onCall(async (request) => {
     };
 
     if (collaboration_id) product.collaboration_id = collaboration_id;
-    if (creator_id) product.creator_id = creator_id;
+    if (earner_id) product.earner_id = earner_id;
     if (images) product.images = images;
     if (inventory) product.inventory = inventory;
     if (shipping) product.shipping = shipping;
@@ -278,7 +280,7 @@ export const updateProductStatus = functions.https.onCall(async (request) => {
     const brandDoc = await db.collection('brand_profiles').doc(productData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== request.auth.uid && productData.creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && productData.earner_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to update this product'
@@ -379,7 +381,7 @@ export const purchaseProduct = functions.https.onCall(async (request) => {
       purchased_at: now
     };
 
-    if (productData.creator_id) purchase.creator_id = productData.creator_id;
+    if (productData.earner_id) purchase.earner_id = productData.earner_id;
     if (productData.collaboration_id) purchase.collaboration_id = productData.collaboration_id;
     if (shipping_address) purchase.shipping_address = shipping_address;
 
@@ -513,41 +515,41 @@ async function releaseBrandRoyalties(purchase_id: string) {
   const escrowData = escrowDoc.data();
   const totalTokens = escrowData.amount;
 
-  let creatorShare = 0;
+  let earner = 0;
   let brandShare = totalTokens;
 
-  if (purchaseData.creator_id && purchaseData.collaboration_id) {
+  if (purchaseData.earner_id && purchaseData.collaboration_id) {
     const collabDoc = await db.collection('brand_collaborations')
       .doc(purchaseData.collaboration_id)
       .get();
     const collabData = collabDoc.data();
     
     if (collabData?.terms?.revenue_split) {
-      const creatorPercent = collabData.terms.revenue_split.creator || 35;
-      creatorShare = Math.floor(totalTokens * (creatorPercent / 100));
-      brandShare = totalTokens - creatorShare;
+      const earnerPercent = collabData.terms.revenue_split.earner || 35;
+      earner = Math.floor(totalTokens * (earnerPercent / 100));
+      brandShare = totalTokens - earner;
     } else {
-      creatorShare = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.creator);
-      brandShare = totalTokens - creatorShare;
+      earner = Math.floor(totalTokens * MONETIZATION_SPLITS.CHAT.earner);
+      brandShare = totalTokens - earner;
     }
   }
 
   const batch = db.batch();
   const now = Timestamp.now();
 
-  if (creatorShare > 0 && purchaseData.creator_id) {
-    const creatorTokensRef = db.collection('user_tokens').doc(purchaseData.creator_id);
-    batch.update(creatorTokensRef, {
-      balance: admin.firestore.FieldValue.increment(creatorShare),
+  if (earner > 0 && purchaseData.earner_id) {
+    const earnerTokensRef = db.collection('user_tokens').doc(purchaseData.earner_id);
+    batch.update(earnerTokensRef, {
+      balance: admin.firestore.FieldValue.increment(earner),
       updated_at: now
     });
 
     const royaltyRef = db.collection('brand_royalties').doc();
     batch.set(royaltyRef, {
-      creator_id: purchaseData.creator_id,
+      earner_id: purchaseData.earner_id,
       purchase_id,
       product_id: purchaseData.product_id,
-      amount: creatorShare,
+      amount: earner,
       status: 'paid',
       created_at: now
     });
@@ -637,7 +639,7 @@ export const getProduct = functions.https.onCall(async (request) => {
       const brandDoc = await db.collection('brand_profiles').doc(productData.brand_id).get();
       const brandData = brandDoc.data();
 
-      if (brandData?.owner_id !== request.auth.uid && productData.creator_id !== request.auth.uid) {
+      if (brandData?.owner_id !== request.auth.uid && productData.earner_id !== request.auth.uid) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Product not accessible'
@@ -696,6 +698,24 @@ export const listBrandProducts = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

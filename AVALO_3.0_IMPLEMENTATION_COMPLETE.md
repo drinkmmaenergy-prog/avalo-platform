@@ -1299,7 +1299,7 @@ npx expo build:android
 #### 1. Test Trust Engine
 
 ```bash
-curl -X POST https://us-central1-[PROJECT].cloudfunctions.net/getTrustScoreV1 \
+curl -X POST https://europe-west1-[PROJECT].cloudfunctions.net/getTrustScoreV1 \
   -H "Authorization: Bearer [TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{"userId": "test_user_id"}'
@@ -1308,7 +1308,7 @@ curl -X POST https://us-central1-[PROJECT].cloudfunctions.net/getTrustScoreV1 \
 #### 2. Test AI Oversight
 
 ```bash
-curl -X POST https://us-central1-[PROJECT].cloudfunctions.net/analyzeContentV1 \
+curl -X POST https:/europe-west1-[PROJECT].cloudfunctions.net/analyzeContentV1 \
   -H "Authorization: Bearer [TOKEN]" \
   -H "Content-Type: application/json" \
   -d '{

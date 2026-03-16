@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 452 — Premium Burn Engine
  *
@@ -49,10 +51,10 @@ const WORDS_PER_TOKEN_ROYAL = 7;
 const BASE_BURN_PER_BUCKET = 1;
 
 /** Platform fee — 35% */
-const PLATFORM_FEE_RATE = MONETIZATION_SPLITS.CHAT.avalo;
+const PLATFORM_FEE_RATE = MONETIZATION_SPLITS.CHAT.platform;
 
 /** Earner share — 65% */
-const EARNER_SHARE_RATE = MONETIZATION_SPLITS.CHAT.creator;
+const EARNER_SHARE_RATE = MONETIZATION_SPLITS.CHAT.earner;
 
 // ============================================================================
 // PREMIUM BURN CALCULATION
@@ -326,8 +328,8 @@ export async function executePremiumBurn(
       // Pricing snapshot
       payoutPerToken: TOKEN_PAYOUT_USD,
       split: {
-        earnerShare: EARNER_SHARE_RATE,
-        platformShare: PLATFORM_FEE_RATE,
+        earner: EARNER_SHARE_RATE,
+        platform: PLATFORM_FEE_RATE,
       },
       createdAt: serverTimestamp(),
     });
@@ -343,7 +345,7 @@ export async function executePremiumBurn(
       metadata: {
         chatId,
         relatedId: chatId,
-        creatorId: earnerId,
+        earnerId: earnerId,
         pricingMode: burnResult.ledgerFields.pricingMode,
         premiumMultiplier: burnResult.ledgerFields.premiumMultiplier,
         offerId: burnResult.ledgerFields.offerId,
@@ -458,6 +460,22 @@ export async function getChatBurnParameters(chatId: string): Promise<{
     wordsPerToken,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

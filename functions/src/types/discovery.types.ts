@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 94 — Discovery & Ranking Engine v2 Types
  * Trust-/Region-/Earnings-Aware Feed & Search
@@ -72,10 +74,10 @@ export interface RankingWeights {
 export const DEFAULT_RANKING_WEIGHTS: RankingWeights = {
   w_profile: 0.15,
   w_active: 0.25,
-  w_engage: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  w_engage: MONETIZATION_SPLITS.EVENT_TICKET.platform,
   w_monet: 0.10,
-  w_match: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  w_risk: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  w_match: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  w_risk: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
 };
 
 // ============================================================================
@@ -244,6 +246,23 @@ export interface FeedGenerationDiagnostics {
   averageScore: number;
   generationTimeMs: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

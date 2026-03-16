@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Activity Tracker Bridge
  * Hooks into user activities to update retention metrics
@@ -306,6 +308,20 @@ export const getActivitySummary = functions.https.onCall(async (request) => {
 });
 
 console.log('✅ PACK 301B - Activity Tracker Bridge initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

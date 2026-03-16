@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 460 — AVALO Paid Visibility Engine (Boost System)
  * Canonical Boost Economy Spec v1
@@ -888,6 +890,20 @@ export async function validateCampaignLedger(campaignId: string): Promise<{
     ledgerEntryCount: ledgerEntries.length,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

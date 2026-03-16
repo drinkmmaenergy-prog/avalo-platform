@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 208 — Aesthetic Signals & Photo Attractiveness Scoring
  * AI-based photo quality and aesthetic scoring (NO nudity detection)
@@ -171,6 +173,22 @@ export function analyzePictureDiversity(profile: UserProfile): {
 }
 
 console.log('✅ PACK 208: Aesthetic Signals module loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

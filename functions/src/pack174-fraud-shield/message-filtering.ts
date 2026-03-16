@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Message Filtering
  * Filter messages for fraud, scams, and manipulation patterns
@@ -9,12 +11,12 @@ import { MessageFilterResult } from './types';
 import { auth, functions } from '../runtime';
 
 const FORBIDDEN_PATTERNS = [
-  /send.*tokens?.*outside.*avalo/i,
-  /send.*crypto.*outside.*avalo/i,
-  /send.*money.*outside.*avalo/i,
+  /send.*tokens?.*outside.*platform/i,
+  /send.*crypto.*outside.*platform/i,
+  /send.*money.*outside.*platform/i,
   /invest.*(?:in|this).*(?:coin|token|crypto)/i,
   /give.*(?:me|us).*your.*(?:card|iban|bank)/i,
-  /avalo.*staff.*(?:disable|suspend).*account.*unless.*pay/i,
+  /platform.*staff.*(?:disable|suspend).*account.*unless.*pay/i,
   /pay.*(?:me|or).*(?:i|will).*(?:leak|expose|share).*(?:photos?|videos?)/i,
   /(?:i|we).*(?:will|would).*love.*you.*if.*(?:keep|continue).*spending/i,
   /(?:i|i'm).*in.*love.*with.*you.*help.*(?:me|with).*money/i,
@@ -199,6 +201,22 @@ async function applyAutoRestriction(
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

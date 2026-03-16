@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Dashboard & Monthly Statements
  * Types and Interfaces
@@ -7,7 +9,7 @@
  * - Breakdown per source (chat, calls, calendar, events, etc.)
  * - Monthly statements (exportable as PDF/CSV)
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -20,7 +22,7 @@ import { admin, storage, timestamp } from '../runtime';
 
 /**
  * Monthly earnings aggregation per user
- * Collection: creatorEarningsMonthly/{docId}
+ * Collection: earnerEarningsMonthly/{docId}
  * docId format: ${userId}_${year}_${month} (e.g. UID_2025_01)
  */
 export interface CreatorEarningsMonthly {
@@ -43,7 +45,7 @@ export interface CreatorEarningsMonthly {
   // Net earnings calculations
   tokensNetEarned: number; // after refunds but BEFORE Avalo split
   tokensAvaloShare: number; // Avalo fee: 35% or 20% depending on feature
-  tokensCreatorShare: number; // creator: 65% or 80%
+  tokensCreatorShare: number; // earner: 65% or 80%
 
   // Payout tracking
   payoutTokensRequested: number;
@@ -131,7 +133,7 @@ export interface MonthlyStatement {
     month: number;
   };
   baseCurrency: string;
-  tokenPayoutRate: number; // e.g., 0.2 (1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD)
+  tokenPayoutRate: number; // e.g., 0.2 (1 token = MONETIZATION_SPLITS.EVENT_TICKET.platform USD)
 
   summary: MonthlyStatementSummary;
   bySource: EarningsSourceBreakdown[];
@@ -235,11 +237,11 @@ export interface StatementAuditLog {
  * These values are read-only and MUST NOT be changed
  */
 export const REVENUE_SPLITS = {
-  CHAT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALLS: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALENDAR: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  EVENTS: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  OTHER: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CHAT: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALLS: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALENDAR: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  EVENTS: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  OTHER: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
 } as const;
 
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
@@ -253,7 +255,7 @@ export const TOKEN_TOKEN_PAYOUT_USD = TOKEN_PAYOUT_USD;
  * Statement export file storage settings
  */
 export const STATEMENT_EXPORT_CONFIG = {
-  bucketName: 'avalo-statements',
+  bucketName: 'platform-statements',
   expirationHours: 24, // Download link expires after 24 hours
   maxFileSizeMB: 10,
 };
@@ -327,6 +329,23 @@ export function isValidYearMonth(year: number, month: number): boolean {
   const targetDate = new Date(year, month - 1, 1);
   return targetDate <= now;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

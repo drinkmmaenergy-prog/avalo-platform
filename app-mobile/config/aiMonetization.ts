@@ -216,7 +216,7 @@ export function calculateAIMessageCost(
     ? AI_WORD_BILLING.WORDS_PER_TOKEN_ROYAL 
     : AI_WORD_BILLING.WORDS_PER_TOKEN_STANDARD;
   
-  const wordBasedCost = Math.round(wordCount / wordsPerToken);
+  const wordBasedCost = Math.ceil(wordCount / wordsPerToken);
   const totalCost = basePricePerMessage + wordBasedCost;
   
   return totalCost;
@@ -287,7 +287,7 @@ export function getPricingRecommendation(pricePerMessage: number): string | null
  */
 export function calculateConversionRate(totalUsers: number, paidUsers: number): number {
   if (totalUsers === 0) return 0;
-  return Math.round((paidUsers / totalUsers) * 100);
+  return Math.ceil((paidUsers / totalUsers) * 100);
 }
 
 /**

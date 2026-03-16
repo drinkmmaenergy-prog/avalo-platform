@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 433 — Influencer Marketplace & Creator Deal Automation Engine
  * Part 2: Deal Engine (Smart Contract Logic)
@@ -36,7 +38,7 @@ export interface DealTerms {
   minPurchaseAmount?: number; // Minimum purchase to qualify
   
   // RevShare terms
-  revSharePercentage?: number; // 0-100, creator's share of revenue
+  revSharePercentage?: number; // 0-100, earner's share of revenue
   revShareDurationDays?: number; // How long to track revenue (0 = lifetime)
   
   // Geographic restrictions
@@ -55,7 +57,7 @@ export interface DealTerms {
 
 export interface Deal {
   id: string;
-  creatorId: string;
+  earnerId: string;
   dealType: DealType;
   status: DealStatus;
   terms: DealTerms;
@@ -86,7 +88,7 @@ export interface Deal {
 export interface DealContract {
   id: string;
   dealId: string;
-  creatorId: string;
+  earnerId: string;
   contractText: string;
   acceptedAt?: Timestamp;
   acceptedByCreator: boolean;
@@ -108,13 +110,13 @@ export const createDeal = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, dealType, terms } = request.data;
+    const { earnerId, dealType, terms } = request.data;
 
     // Validation
-    if (!creatorId || !dealType || !terms) {
+    if (!earnerId || !dealType || !terms) {
       throw new HttpsError(
         'invalid-argument',
-        'Missing required fields: creatorId, dealType, terms'
+        'Missing required fields: earnerId, dealType, terms'
       );
     }
 
@@ -126,25 +128,25 @@ export const createDeal = onCall(
     validateDealTerms(dealType, terms);
 
     try {
-      // Check if creator exists and is active
-      const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+      // Check if earner exists and is active
+      const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
       
-      if (!creatorDoc.exists) {
+      if (!earnerDoc.exists) {
         throw new HttpsError('not-found', 'Creator not found');
       }
 
-      const creator = creatorDoc.data();
-      if (creator?.status !== 'ACTIVE') {
+      const earner = earnerDoc.data();
+      if (earner?.status !== 'ACTIVE') {
         throw new HttpsError('failed-precondition', 'Creator must be active to create deals');
       }
 
       // Generate contract
       const contractId = generateId();
-      const contractText = generateContractText(dealType, terms, creator);
+      const contractText = generateContractText(dealType, terms, earner);
 
       // Create deal
       const deal: Omit<Deal, 'id'> = {
-        creatorId,
+        earnerId,
         dealType,
         status: 'DRAFT',
         terms,
@@ -165,12 +167,12 @@ export const createDeal = onCall(
         deal.expiresAt = terms.endDate;
       }
 
-      const dealRef = await db.collection('creator_deals').add(deal);
+      const dealRef = await db.collection('earner_deals').add(deal);
 
       // Create contract record
       const contract: Omit<DealContract, 'id'> = {
         dealId: dealRef.id,
-        creatorId,
+        earnerId,
         contractText,
         acceptedByCreator: false,
       };
@@ -178,7 +180,7 @@ export const createDeal = onCall(
       await db.collection('deal_contracts').doc(contractId).set(contract);
 
       logger.info(`Deal created: ${dealRef.id}`, {
-        creatorId,
+        earnerId,
         dealType,
         contractId,
       });
@@ -196,7 +198,7 @@ export const createDeal = onCall(
 );
 
 /**
- * Accept a deal contract (creator)
+ * Accept a deal contract (earner)
  */
 export const acceptDealContract = onCall(
   { region: 'europe-west1' },
@@ -221,21 +223,21 @@ export const acceptDealContract = onCall(
 
       const contract = contractDoc.data() as DealContract;
 
-      // Verify creator owns this contract
-      const creatorQuery = await db
-        .collection('creator_profiles')
+      // Verify earner owns this contract
+      const earnerQuery = await db
+        .collection('earner_profiles')
         .where('userId', '==', request.auth.uid)
         .limit(1)
         .get();
 
-      if (creatorQuery.empty) {
-        throw new HttpsError('permission-denied', 'User is not a registered creator');
+      if (earnerQuery.empty) {
+        throw new HttpsError('permission-denied', 'User is not a registered earner');
       }
 
-      const creatorId = creatorQuery.docs[0].id;
+      const earnerId = earnerQuery.docs[0].id;
 
-      if (contract.creatorId !== creatorId) {
-        throw new HttpsError('permission-denied', 'Cannot accept another creator\'s contract');
+      if (contract.earnerId !== earnerId) {
+        throw new HttpsError('permission-denied', 'Cannot accept another earner\'s contract');
       }
 
       if (contract.acceptedByCreator) {
@@ -251,22 +253,22 @@ export const acceptDealContract = onCall(
       });
 
       // Activate deal
-      const dealRef = db.collection('creator_deals').doc(contract.dealId);
+      const dealRef = db.collection('earner_deals').doc(contract.dealId);
       await dealRef.update({
         status: 'ACTIVE',
         activatedAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       });
 
-      // Update creator stats
-      await db.collection('creator_profiles').doc(creatorId).update({
+      // Update earner stats
+      await db.collection('earner_profiles').doc(earnerId).update({
         'stats.activeDeals': increment(1),
         updatedAt: Timestamp.now(),
       });
 
       logger.info(`Deal contract accepted: ${contractId}`, {
         dealId: contract.dealId,
-        creatorId,
+        earnerId,
       });
 
       console.log('Scheduled job result:', {
@@ -285,7 +287,7 @@ export const acceptDealContract = onCall(
 );
 
 /**
- * Get deals for a creator
+ * Get deals for a earner
  */
 export const getCreatorDeals = onCall(
   { region: 'europe-west1' },
@@ -294,12 +296,12 @@ export const getCreatorDeals = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, status } = request.data;
+    const { earnerId, status } = request.data;
 
     try {
       let query: FirebaseFirestore.Query = db
-        .collection('creator_deals')
-        .where('creatorId', '==', creatorId);
+        .collection('earner_deals')
+        .where('earnerId', '==', earnerId);
 
       if (status) {
         query = query.where('status', '==', status);
@@ -316,7 +318,7 @@ export const getCreatorDeals = onCall(
 
       return deals;
     } catch (error: any) {
-      logger.error('Error fetching creator deals', error);
+      logger.error('Error fetching earner deals', error);
       throw new HttpsError('internal', `Failed to fetch deals: ${error.message}`);
     }
   }
@@ -339,7 +341,7 @@ export const toggleDealStatus = onCall(
     }
 
     try {
-      const dealRef = db.collection('creator_deals').doc(dealId);
+      const dealRef = db.collection('earner_deals').doc(dealId);
       const dealDoc = await dealRef.get();
 
       if (!dealDoc.exists) {
@@ -348,21 +350,21 @@ export const toggleDealStatus = onCall(
 
       const deal = dealDoc.data() as Deal;
 
-      // Verify creator owns this deal
-      const creatorQuery = await db
-        .collection('creator_profiles')
+      // Verify earner owns this deal
+      const earnerQuery = await db
+        .collection('earner_profiles')
         .where('userId', '==', request.auth.uid)
         .limit(1)
         .get();
 
-      if (creatorQuery.empty) {
-        throw new HttpsError('permission-denied', 'User is not a registered creator');
+      if (earnerQuery.empty) {
+        throw new HttpsError('permission-denied', 'User is not a registered earner');
       }
 
-      const creatorId = creatorQuery.docs[0].id;
+      const earnerId = earnerQuery.docs[0].id;
 
-      if (deal.creatorId !== creatorId) {
-        throw new HttpsError('permission-denied', 'Cannot modify another creator\'s deal');
+      if (deal.earnerId !== earnerId) {
+        throw new HttpsError('permission-denied', 'Cannot modify another earner\'s deal');
       }
 
       // Toggle status
@@ -453,12 +455,12 @@ function validateDealTerms(dealType: DealType, terms: DealTerms): void {
 /**
  * Generate contract text based on deal terms
  */
-function generateContractText(dealType: DealType, terms: DealTerms, creator: any): string {
+function generateContractText(dealType: DealType, terms: DealTerms, earner: any): string {
   const sections: string[] = [];
 
   sections.push('AVALO CREATOR PARTNERSHIP AGREEMENT\n');
   sections.push(`Deal Type: ${dealType}\n`);
-  sections.push(`Creator: ${creator.displayName}\n`);
+  sections.push(`Creator: ${earner.displayName}\n`);
   sections.push(`Date: ${new Date().toISOString().split('T')[0]}\n\n`);
 
   sections.push('TERMS AND CONDITIONS:\n\n');
@@ -539,7 +541,7 @@ function generateContractText(dealType: DealType, terms: DealTerms, creator: any
   sections.push(`\n6. PAYMENT TERMS\n`);
   sections.push(`   - Payouts processed weekly\n`);
   sections.push(`   - Minimum payout threshold: 1000 tokens\n`);
-  sections.push(`   - Attribution locked to first creator only\n`);
+  sections.push(`   - Attribution locked to first earner only\n`);
 
   sections.push(`\n7. TERMINATION\n`);
   sections.push(`   - Either party may terminate with 7 days notice\n`);
@@ -569,7 +571,7 @@ export const expireDealsDaily = onSchedule(
 
       // Find active deals that have expired
       const expiredDeals = await db
-        .collection('creator_deals')
+        .collection('earner_deals')
         .where('status', '==', 'ACTIVE')
         .where('expiresAt', '<=', now)
         .get();
@@ -590,9 +592,9 @@ export const expireDealsDaily = onSchedule(
 
         const deal = doc.data() as Deal;
 
-        // Update creator stats
-        const creatorRef = db.collection('creator_profiles').doc(deal.creatorId);
-        batch.update(creatorRef, {
+        // Update earner stats
+        const earnerRef = db.collection('earner_profiles').doc(deal.earnerId);
+        batch.update(earnerRef, {
           'stats.activeDeals': increment(-1),
           updatedAt: now,
         });
@@ -626,7 +628,7 @@ export const updateDealStatsDaily = onSchedule(
       logger.info('Starting deal stats update');
 
       const activeDeals = await db
-        .collection('creator_deals')
+        .collection('earner_deals')
         .where('status', '==', 'ACTIVE')
         .get();
 
@@ -642,7 +644,7 @@ export const updateDealStatsDaily = onSchedule(
 
         // Aggregate stats from attributions
         const attributions = await db
-          .collection('creator_attributions')
+          .collection('earner_attributions')
           .where('dealId', '==', dealDoc.id)
           .get();
 
@@ -677,6 +679,20 @@ export const updateDealStatsDaily = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

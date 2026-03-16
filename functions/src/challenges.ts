@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 137: Avalo Global Community Challenges
  * Backend Firebase Functions for skill-based, fitness, lifestyle challenges
@@ -42,7 +44,7 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Create a new challenge
- * Verified creators only
+ * Verified earners only
  */
 export const createChallenge = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -62,11 +64,11 @@ export const createChallenge = functions.https.onCall(async (request) => {
 
       const userData = userDoc.data()!;
 
-      // Verify creator status
+      // Verify earner status
       if (!userData.isCreator || !userData.earnFromChat) {
         throw new functions.https.HttpsError(
           'permission-denied',
-          'Only verified creators can create challenges'
+          'Only verified earners can create challenges'
         );
       }
 
@@ -168,9 +170,9 @@ export const createChallenge = functions.https.onCall(async (request) => {
       // Create challenge document
       const challenge: Challenge = {
         challengeId,
-        creatorId: userId,
-        creatorName: userData.displayName || userData.username || 'Creator',
-        creatorAvatar: userData.profileImage || undefined,
+        earnerId: userId,
+        earnerName: userData.displayName || userData.username || 'Creator',
+        earnerAvatar: userData.profileImage || undefined,
         title: data.title.trim(),
         description: data.description.trim(),
         category: data.category,
@@ -197,7 +199,7 @@ export const createChallenge = functions.https.onCall(async (request) => {
         containsForbiddenContent: validation.containsForbiddenContent,
         totalRevenue: 0,
         platformFee: 0,
-        creatorEarnings: 0,
+        earnerEarnings: 0,
         createdAt: serverTimestamp() as Timestamp,
         updatedAt: serverTimestamp() as Timestamp,
         tags: data.tags || [],
@@ -259,7 +261,7 @@ export const joinChallenge = functions.https.onCall(async (request) => {
       }
 
       // Cannot join own challenge
-      if (challenge.creatorId === userId) {
+      if (challenge.earnerId === userId) {
         throw new functions.https.HttpsError('failed-precondition', 'Cannot join your own challenge');
       }
 
@@ -287,7 +289,7 @@ export const joinChallenge = functions.https.onCall(async (request) => {
       // Handle payment for paid challenges
       let transactionId: string | undefined;
       let platformFee = 0;
-      let creatorEarnings = 0;
+      let earnerEarnings = 0;
 
       if (challenge.isPaid && challenge.entryTokens > 0) {
         const userTokens = userData.tokenBalance || 0;
@@ -300,13 +302,13 @@ export const joinChallenge = functions.https.onCall(async (request) => {
         }
 
         // Calculate split
-        platformFee = Math.floor(challenge.entryTokens * MONETIZATION_SPLITS.CHAT.avalo);
-        creatorEarnings = challenge.entryTokens - platformFee;
+        platformFee = Math.floor(challenge.entryTokens * MONETIZATION_SPLITS.CHAT.platform);
+        earnerEarnings = challenge.entryTokens - platformFee;
 
         // Process payment in transaction
         await db.runTransaction(async (transaction) => {
           const userRef = db.collection('users').doc(userId);
-          const creatorRef = db.collection('users').doc(challenge.creatorId);
+          const earnerRef = db.collection('users').doc(challenge.earnerId);
           const challengeRef = db.collection('challenges').doc(challengeId);
 
           const userSnapshot = await transaction.get(userRef);
@@ -321,17 +323,17 @@ export const joinChallenge = functions.https.onCall(async (request) => {
             tokenBalance: increment(-challenge.entryTokens),
           });
 
-          // Add to creator
-          transaction.update(creatorRef, {
-            tokenBalance: increment(creatorEarnings),
-            lifetimeEarnings: increment(creatorEarnings),
+          // Add to earner
+          transaction.update(earnerRef, {
+            tokenBalance: increment(earnerEarnings),
+            lifetimeEarnings: increment(earnerEarnings),
           });
 
           // Update challenge revenue
           transaction.update(challengeRef, {
             totalRevenue: increment(challenge.entryTokens),
             platformFee: increment(platformFee),
-            creatorEarnings: increment(creatorEarnings),
+            earnerEarnings: increment(earnerEarnings),
             currentParticipants: increment(1),
           });
 
@@ -341,10 +343,10 @@ export const joinChallenge = functions.https.onCall(async (request) => {
             transactionId,
             type: 'CHALLENGE_ENTRY',
             fromUserId: userId,
-            toUserId: challenge.creatorId,
+            toUserId: challenge.earnerId,
             amount: challenge.entryTokens,
             platformFee,
-            creatorEarnings,
+            earnerEarnings,
             challengeId,
             createdAt: serverTimestamp(),
           };
@@ -377,10 +379,10 @@ export const joinChallenge = functions.https.onCall(async (request) => {
         userId,
         userName: userData.displayName || userData.username || 'User',
         userAvatar: userData.profileImage,
-        creatorId: challenge.creatorId,
+        earnerId: challenge.earnerId,
         paidTokens: challenge.isPaid ? challenge.entryTokens : 0,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         transactionId,
         tasksCompleted: 0,
         tasksRequired,
@@ -914,7 +916,7 @@ export const getChallengeProgress = functions.https.onCall(async (request) => {
 );
 
 /**
- * Cancel challenge (creator only)
+ * Cancel challenge (earner only)
  * Returns all paid entry fees to participants
  */
 export const cancelChallenge = functions.https.onCall(async (request) => {
@@ -935,9 +937,9 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
 
       const challenge = challengeDoc.data() as Challenge;
 
-      // Verify creator
-      if (challenge.creatorId !== userId) {
-        throw new functions.https.HttpsError('permission-denied', 'Only creator can cancel challenge');
+      // Verify earner
+      if (challenge.earnerId !== userId) {
+        throw new functions.https.HttpsError('permission-denied', 'Only earner can cancel challenge');
       }
 
       // Get all active participants
@@ -961,11 +963,11 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
             tokenBalance: increment(participant.paidTokens),
           });
 
-          // Deduct from creator
-          const creatorRef = db.collection('users').doc(challenge.creatorId);
-          batch.update(creatorRef, {
-            tokenBalance: increment(-participant.creatorEarnings),
-            lifetimeEarnings: increment(-participant.creatorEarnings),
+          // Deduct from earner
+          const earnerRef = db.collection('users').doc(challenge.earnerId);
+          batch.update(earnerRef, {
+            tokenBalance: increment(-participant.earnerEarnings),
+            lifetimeEarnings: increment(-participant.earnerEarnings),
           });
 
           refundedCount++;
@@ -982,7 +984,7 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
       batch.update(challengeDoc.ref, {
         status: ChallengeStatus.CANCELLED,
         isActive: false,
-        moderationNotes: `Cancelled by creator: ${reason}`,
+        moderationNotes: `Cancelled by earner: ${reason}`,
         updatedAt: serverTimestamp(),
       });
 
@@ -1001,6 +1003,22 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 246 - Global Consistency & Contract Enforcement Engine
  * Type definitions and contract rules
@@ -107,8 +109,8 @@ export interface ContractRule {
   minPrice?: number;
   maxPrice?: number;
   split?: {
-    avalo: number;
-    creator: number;
+    platform: number;
+    earner: number;
   };
   freeChatEligibility?: boolean;
   meetingRefundPolicy?: 'STANDARD' | 'CUSTOM';
@@ -183,8 +185,8 @@ export interface ValidationRequest {
 
     // Split validation
     proposedSplit?: {
-      avalo: number;
-      creator: number;
+      platform: number;
+      earner: number;
     };
   };
 }
@@ -278,6 +280,20 @@ export interface ContractEnforcementStats {
   averageResponseTimeMs: number;
   lastUpdated: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

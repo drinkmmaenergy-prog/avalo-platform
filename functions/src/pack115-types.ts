@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 115 — Public Reputation & Trust Score Display
  * Type Definitions
@@ -405,6 +407,20 @@ export function getReputationDisclaimer(): {
     ],
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

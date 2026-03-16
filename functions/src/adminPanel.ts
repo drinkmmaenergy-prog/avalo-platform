@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * ADMIN PANEL 3.0 - COMPLETE MANAGEMENT SYSTEM
@@ -45,7 +47,7 @@ export interface AdminDashboard {
     active30d: number;
     newToday: number;
     verified: number;
-    creators: number;
+    earners: number;
     royalClub: number;
   };
 
@@ -56,7 +58,7 @@ export interface AdminDashboard {
     month: number;
     year: number;
     platformFees: number;
-    creatorPayouts: number;
+    earnerPayouts: number;
   };
 
   // Content stats
@@ -144,8 +146,8 @@ export interface KYCReview {
 
 export interface WithdrawalReview {
   withdrawalId: string;
-  creatorId: string;
-  creatorName: string;
+  earnerId: string;
+  earnerName: string;
   amount: number;
   amountUSD: number;
   method: string;
@@ -209,7 +211,7 @@ export const getAdminDashboard = onCall(
     let active7d = 0;
     let active30d = 0;
     let verified = 0;
-    let creators = 0;
+    let earners = 0;
     let royalClub = 0;
 
     usersSnapshot.docs.forEach(doc => {
@@ -221,7 +223,7 @@ export const getAdminDashboard = onCall(
       if (lastActive > day30d) active30d++;
 
       if (user.verification?.status === "approved") verified++;
-      if (user.settings?.earnFromChat) creators++;
+      if (user.settings?.earnFromChat) earners++;
       if (user.royalClub?.member) royalClub++;
     });
 
@@ -233,7 +235,7 @@ export const getAdminDashboard = onCall(
         active30d,
         newToday: 0, // Would calculate from createdAt
         verified,
-        creators,
+        earners,
         royalClub,
       },
       revenue: {
@@ -242,7 +244,7 @@ export const getAdminDashboard = onCall(
         month: 0,
         year: 0,
         platformFees: 0,
-        creatorPayouts: 0,
+        earnerPayouts: 0,
       },
       content: {
         totalMessages: 0,
@@ -381,7 +383,7 @@ export const performModerationAction = onCall(
         });
       }
     } else if (targetType === "content" || targetType === "product") {
-      await db.collection(targetType === "product" ? "creatorProducts" : "feedPosts").doc(targetId).update({
+      await db.collection(targetType === "product" ? "earnerProducts" : "feedPosts").doc(targetId).update({
         status: action === "delete" ? "deleted" : "archived",
         moderatedBy: uid,
         moderatedAt: FieldValue.serverTimestamp(),
@@ -517,8 +519,8 @@ export const reviewWithdrawal = onCall(
         notes,
       });
 
-      // Return tokens to creator
-      await db.collection("users").doc(withdrawal.creatorId).update({
+      // Return tokens to earner
+      await db.collection("users").doc(withdrawal.earnerId).update({
         "wallet.earned": FieldValue.increment(withdrawal.amount),
         "wallet.pendingWithdrawal": FieldValue.increment(-withdrawal.amount),
       });
@@ -722,6 +724,20 @@ export const createFraudAlert = onCall(
 );
 
 logger.info("✅ Admin Panel 3.0 module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

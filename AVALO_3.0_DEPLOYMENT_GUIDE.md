@@ -370,7 +370,7 @@ curl https://api.avalo.app/health
 curl https://admin.avalo.app/health
 
 # Test critical endpoints
-curl -X POST https://us-central1-avalo-c8c46.cloudfunctions.net/getTrustScoreV1 \
+curl -X POST https://europe-west1-avalo-c8c46.cloudfunctions.net/getTrustScoreV1 \
   -H "Authorization: Bearer $TEST_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"userId": "test_user_id"}'
@@ -676,7 +676,7 @@ gsutil lifecycle set lifecycle.json gs://avalo-c8c46.appspot.com
 
 ```bash
 # Primary: europe-west3 (Frankfurt)
-# Secondary: us-central1 (Iowa)
+# Secondary: europe-west1 (Iowa)
 # Tertiary: asia-southeast1 (Singapore)
 
 # Configure multi-region Firestore

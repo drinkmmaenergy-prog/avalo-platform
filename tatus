@@ -1,0 +1,546 @@
+warning: in the working copy of 'app-web/src/app/admin/moderation/analytics/page.tsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/app-web/src/app/admin/moderation/analytics/page.tsx b/app-web/src/app/admin/moderation/analytics/page.tsx[m
+[1mindex b54dc86d..f7c87d62 100644[m
+[1m--- a/app-web/src/app/admin/moderation/analytics/page.tsx[m
+[1m+++ b/app-web/src/app/admin/moderation/analytics/page.tsx[m
+[36m@@ -1,538 +1,8 @@[m
+[31m-'use client';[m
+[31m-[m
+ export const dynamic = 'force-dynamic';[m
+ export const revalidate = 0;[m
+ [m
+[31m-import { useState, useEffect } from 'react';[m
+[31m-import { useRealtimeIncidents, useRealtimeAppeals } from '@/lib/moderation/realtime';[m
+[31m-import { generateAIInsights, AIInsights } from '@/lib/moderation/insights';[m
+[31m-import { BarChart, PieChart, LineChart, StatCard, AlertCard } from '../components/Charts';[m
+[31m-import { AlertTriangle, TrendingUp, Clock, Shield, Sparkles, Brain } from 'lucide-react';[m
+[32m+[m[32mimport AnalyticsClient from './AnalyticsClient';[m
+ [m
+ export default function AnalyticsPage() {[m
+[31m-  const [activeTab, setActiveTab] = useState<'overview' | 'ai'>('overview');[m
+[31m-  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);[m
+[31m-  const [insightsLoading, setInsightsLoading] = useState(false);[m
+[31m-  const [insightsError, setInsightsError] = useState<string | null>(null);[m
+[31m-[m
+[31m-  // Fetch real-time data[m
+[31m-  const { incidents, loading: incidentsLoading } = useRealtimeIncidents(200);[m
+[31m-  const { appeals, loading: appealsLoading } = useRealtimeAppeals(50);[m
+[31m-[m
+[31m-  // Calculate analytics data[m
+[31m-  const analyticsData = calculateAnalytics(incidents, appeals);[m
+[31m-[m
+[31m-  // Load AI insights on mount[m
+[31m-  useEffect(() => {[m
+[31m-    if (activeTab === 'ai' && !aiInsights && !insightsLoading) {[m
+[31m-      loadAIInsights();[m
+[31m-    }[m
+[31m-  }, [activeTab]);[m
+[31m-[m
+[31m-  const loadAIInsights = async () => {[m
+[31m-    setInsightsLoading(true);[m
+[31m-    setInsightsError(null);[m
+[31m-[m
+[31m-    try {[m
+[31m-      const insights = await generateAIInsights([m
+[31m-        incidents.slice(0, 200),[m
+[31m-        appeals.slice(0, 50),[m
+[31m-      );[m
+[31m-[m
+[31m-      if (insights) {[m
+[31m-        setAiInsights(insights);[m
+[31m-      } else {[m
+[31m-        setInsightsError('AI insights unavailable. OpenAI API key not configured.');[m
+[31m-      }[m
+[31m-    } catch (error: any) {[m
+[31m-      setInsightsError(error.message || 'Failed to generate insights');[m
+[31m-    } finally {[m
+[31m-      setInsightsLoading(false);[m
+[31m-    }[m
+[31m-  };[m
+[31m-[m
+[31m-  if (incidentsLoading || appealsLoading) {[m
+[31m-    return ([m
+[31m-      <div className="flex items-center justify-center h-screen">[m
+[31m-        <div className="text-center">[m
+[31m-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#40E0D0] mx-auto"></div>[m
+[31m-          <p className="text-white/70 mt-4">Loading analytics...</p>[m
+[31m-        </div>[m
+[31m-      </div>[m
+[31m-    );[m
+[31m-  }[m
+[31m-[m
+[31m-  return ([m
+[31m-    <div className="min-h-screen bg-[#0F0F0F] p-8">[m
+[31m-      {/* Header */}[m
+[31m-      <div className="mb-8">[m
+[31m-        <h1 className="text-3xl font-bold text-white mb-2">Analytics Dashboard</h1>[m
+[31m-        <p className="text-white/70">Comprehensive moderation insights and AI-powered analysis</p>[m
+[31m-      </div>[m
+[31m-[m
+[31m-      {/* Tabs */}[m
+[31m-      <div className="flex gap-4 mb-8 border-b border-white/10">[m
+[31m-        <button[m
+[31m-          onClick={() => setActiveTab('overview')}[m
+[31m-          className={`px-6 py-3 font-medium transition-all duration-200 ${[m
+[31m-            activeTab === 'overview'[m
+[31m-              ? 'text-[#D4AF37] border-b-2 border-[#D4AF37]'[m
+[31m-              : 'text-white/60 hover:text-white/80'[m
+[31m-          }`}[m
+[31m-        >[m
+[31m-          <div className="flex items-center gap-2">[m
+[31m-            <TrendingUp className="w-5 h-5" />[m
+[31m-            Overview[m
+[31m-          </div>[m
+[31m-        </button>[m
+[31m-        <button[m
+[31m-          onClick={() => setActiveTab('ai')}[m
+[31m-          className={`px-6 py-3 font-medium transition-all duration-200 ${[m
+[31m-            activeTab === 'ai'[m
+[31m-              ? 'text-[#D4AF37] border-b-2 border-[#D4AF37]'[m
+[31m-              : 'text-white/60 hover:text-white/80'[m
+[31m-          }`}[m
+[31m-        >[m
+[31m-          <div className="flex items-center gap-2">[m
+[31m-            <Brain className="w-5 h-5" />[m
+[31m-            AI Insights[m
+[31m-            <Sparkles className="w-4 h-4 text-[#D4AF37]" />[m
+[31m-          </div>[m
+[31m-        </button>[m
+[31m-      </div>[m
+[31m-[m
+[31m-      {/* Overview Tab */}[m
+[31m-      {activeTab === 'overview' && ([m
+[31m-        <div className="space-y-8">[m
+[31m-          {/* Alert Cards Row */}[m
+[31m-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">[m
+[31m-            <AlertCard[m
+[31m-              title="CSAM Alerts"[m
+[31m-              count={analyticsData.csamCount}[m
+[31m-              color="red"[m
+[31m-              icon={<Shield className="w-6 h-6" />}[m
+[31m-            />[m
+[31m-            <AlertCard[m
+[31m-              title="Extremism Alerts"[m
+[31m-              count={analyticsData.extremismCount}[m
+[31m-              color="amber"[m
+[31m-              icon={<AlertTriangle className="w-6 h-6" />}[m
+[31m-            />[m
+[31m-            <AlertCard[m
+[31m-              title="Hate Speech Alerts"[m
+[31m-              count={analyticsData.hateSpeechCount}[m
+[31m-              color="yellow"[m
+[31m-              icon={<AlertTriangle className="w-6 h-6" />}[m
+[31m-            />[m
+[31m-          </div>[m
+[31m-[m
+[31m-          {/* Charts Grid */}[m
+[31m-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">[m
+[31m-            {/* Violations by Category */}[m
+[31m-            <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-              <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-                Violations by Category (7 days)[m
+[31m-              </h3>[m
+[31m-              <BarChart data={analyticsData.categoryData} />[m
+[31m-            </div>[m
+[31m-[m
+[31m-            {/* Violations by Severity */}[m
+[31m-            <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-              <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-                Violations by Severity[m
+[31m-              </h3>[m
+[31m-              <PieChart data={analyticsData.severityData} />[m
+[31m-            </div>[m
+[31m-          </div>[m
+[31m-[m
+[31m-          {/* Top 10 Offenders */}[m
+[31m-          <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-            <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-              Top 10 Offenders (Last 30 Days)[m
+[31m-            </h3>[m
+[31m-            <div className="overflow-x-auto">[m
+[31m-              <table className="w-full">[m
+[31m-                <thead>[m
+[31m-                  <tr className="border-b border-white/10">[m
+[31m-                    <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Rank</th>[m
+[31m-                    <th className="text-left py-3 px-4 text-sm font-medium text-white/70">User ID</th>[m
+[31m-                    <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Violations</th>[m
+[31m-                    <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Severity</th>[m
+[31m-                    <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Status</th>[m
+[31m-                  </tr>[m
+[31m-                </thead>[m
+[31m-                <tbody>[m
+[31m-                  {analyticsData.topOffenders.map((offender, idx) => ([m
+[31m-                    <tr key={idx} className="border-b border-white/5 hover:bg-white/5">[m
+[31m-                      <td className="py-3 px-4 text-[#D4AF37] font-bold">{idx + 1}</td>[m
+[31m-                      <td className="py-3 px-4 text-white/80 font-mono text-sm">[m
+[31m-                        {offender.userId.slice(0, 12)}...[m
+[31m-                      </td>[m
+[31m-                      <td className="py-3 px-4 text-white font-bold">{offender.count}</td>[m
+[31m-                      <td className="py-3 px-4">[m
+[31m-                        <span[m
+[31m-                          className={`px-2 py-1 rounded text-xs font-bold ${[m
+[31m-                            offender.maxSeverity === 'CRITICAL'[m
+[31m-                              ? 'bg-red-500/20 text-red-400'[m
+[31m-                              : offender.maxSeverity === 'HIGH'[m
+[31m-                              ? 'bg-orange-500/20 text-orange-400'[m
+[31m-                              : 'bg-yellow-500/20 text-yellow-400'[m
+[31m-                          }`}[m
+[31m-                        >[m
+[31m-                          {offender.maxSeverity}[m
+[31m-                        </span>[m
+[31m-                      </td>[m
+[31m-                      <td className="py-3 px-4 text-white/60 text-sm">{offender.status}</td>[m
+[31m-                    </tr>[m
+[31m-                  ))}[m
+[31m-                </tbody>[m
+[31m-              </table>[m
+[31m-            </div>[m
+[31m-          </div>[m
+[31m-[m
+[31m-          {/* Appeals and Resolution Time */}[m
+[31m-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">[m
+[31m-            {/* New Appeals Chart */}[m
+[31m-            <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-              <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-                New Appeals (14 days)[m
+[31m-              </h3>[m
+[31m-              <LineChart data={analyticsData.appealsData} />[m
+[31m-            </div>[m
+[31m-[m
+[31m-            {/* Time-to-Resolution */}[m
+[31m-            <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-              <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-                Time-to-Resolution (Averages)[m
+[31m-              </h3>[m
+[31m-              <div className="grid grid-cols-1 gap-4">[m
+[31m-                <StatCard[m
+[31m-                  title="Average Resolution Time"[m
+[31m-                  value={analyticsData.avgResolutionTime}[m
+[31m-                  subtitle="Hours to close incident"[m
+[31m-                  icon={<Clock className="w-6 h-6" />}[m
+[31m-                  color="#40E0D0"[m
+[31m-                />[m
+[31m-                <StatCard[m
+[31m-                  title="Average Appeal Time"[m
+[31m-                  value={analyticsData.avgAppealTime}[m
+[31m-                  subtitle="Hours to process appeal"[m
+[31m-                  icon={<Clock className="w-6 h-6" />}[m
+[31m-                  color="#D4AF37"[m
+[31m-                />[m
+[31m-                <StatCard[m
+[31m-                  title="Pending Cases"[m
+[31m-                  value={analyticsData.pendingCases}[m
+[31m-                  subtitle="Awaiting review"[m
+[31m-                  icon={<AlertTriangle className="w-6 h-6" />}[m
+[31m-                  color="#FFA500"[m
+[31m-                />[m
+[31m-              </div>[m
+[31m-            </div>[m
+[31m-          </div>[m
+[31m-[m
+[31m-          {/* Moderator Productivity Metrics */}[m
+[31m-          <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-            <h3 className="text-xl font-bold text-white mb-6">[m
+[31m-              Moderator Productivity Metrics[m
+[31m-            </h3>[m
+[31m-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">[m
+[31m-              <StatCard[m
+[31m-                title="Cases Resolved"[m
+[31m-                value={analyticsData.casesResolved}[m
+[31m-                subtitle="Last 30 days"[m
+[31m-                color="#40E0D0"[m
+[31m-              />[m
+[31m-              <StatCard[m
+[31m-                title="Avg Resolution Time"[m
+[31m-                value={`${analyticsData.avgModeratorTime}h`}[m
+[31m-                subtitle="Per moderator"[m
+[31m-                color="#D4AF37"[m
+[31m-              />[m
+[31m-              <StatCard[m
+[31m-                title="Accepted Appeals"[m
+[31m-                value={`${analyticsData.appealAcceptanceRate}%`}[m
+[31m-                subtitle="Approval rate"[m
+[31m-                color="#4ADE80"[m
+[31m-              />[m
+[31m-              <StatCard[m
+[31m-                title="Actions by Type"[m
+[31m-                value={analyticsData.topActionType}[m
+[31m-                subtitle="Most common action"[m
+[31m-                color="#FF6B6B"[m
+[31m-              />[m
+[31m-            </div>[m
+[31m-          </div>[m
+[31m-        </div>[m
+[31m-      )}[m
+[31m-[m
+[31m-      {/* AI Insights Tab */}[m
+[31m-      {activeTab === 'ai' && ([m
+[31m-        <div className="space-y-8">[m
+[31m-          {insightsLoading && ([m
+[31m-            <div className="flex items-center justify-center py-12">[m
+[31m-              <div className="text-center">[m
+[31m-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#40E0D0] mx-auto"></div>[m
+[31m-                <p className="text-white/70 mt-4">Generating AI insights...</p>[m
+[31m-              </div>[m
+[31m-            </div>[m
+[31m-          )}[m
+[31m-[m
+[31m-          {insightsError && ([m
+[31m-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">[m
+[31m-              <div className="flex items-start gap-3">[m
+[31m-                <AlertTriangle className="w-6 h-6 text-red-400 flex-shrink-0 mt-1" />[m
+[31m-                <div>[m
+[31m-                  <h3 className="text-lg font-bold text-red-400 mb-2">Insights Unavailable</h3>[m
+[31m-                  <p className="text-white/80">{insightsError}</p>[m
+[31m-                  <p className="text-white/60 text-sm mt-2">[m
+[31m-                    To enable AI insights, set the OPENAI_API_KEY environment variable.[m
+[31m-                  </p>[m
+[31m-                </div>[m
+[31m-              </div>[m
+[31m-            </div>[m
+[31m-          )}[m
+[31m-[m
+[31m-          {aiInsights && !insightsLoading && ([m
+[31m-            <>[m
+[31m-              {/* Summary */}[m
+[31m-              <div className="bg-[#1A1A1A] rounded-xl p-6 border border-[#40E0D0]/30">[m
+[31m-                <div className="flex items-center gap-3 mb-4">[m
+[31m-                  <Brain className="w-6 h-6 text-[#40E0D0]" />[m
+[31m-                  <h3 className="text-xl font-bold text-white">Summary</h3>[m
+[31m-                </div>[m
+[31m-                <p className="text-white/80 leading-relaxed">{aiInsights.summary}</p>[m
+[31m-                <div className="mt-4 text-xs text-white/50">[m
+[31m-                  Generated: {aiInsights.generatedAt.toLocaleString()}[m
+[31m-                </div>[m
+[31m-              </div>[m
+[31m-[m
+[31m-              {/* Emerging Trends */}[m
+[31m-              <div className="bg-[#1A1A1A] rounded-xl p-6 border border-white/10">[m
+[31m-                <div className="flex items-center gap-3 mb-4">[m
+[31m-                  <TrendingUp className="w-6 h-6 text-[#D4AF37]" />[m
+[31m-                  <h3 className="text-xl font-bold text-white">Emerging Trends</h3>[m
+[31m-                </div>[m
+[31m-                <ul className="space-y-3">[m
+[31m-                  {aiInsights.emergingTrends.map((trend, idx) => ([m
+[31m-                    <li key={idx} className="flex items-start gap-3">[m
+[31m-                      <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2 flex-shrink-0" />[m
+[31m-                      <p className="text-white/80">{trend}</p>[m
+[31m-                    </li>[m
+[31m-                  ))}[m
+[31m-                </ul>[m
+[31m-              </div>[m
+[31m-[m
+[31m-              {/* Potential Risks */}[m
+[31m-              <div className="bg-[#1A1A1A] rounded-xl p-6 border border-red-500/30">[m
+[31m-                <div className="flex items-center gap-3 mb-4">[m
+[31m-                  <AlertTriangle className="w-6 h-6 text-red-400" />[m
+[31m-                  <h3 className="text-xl font-bold text-white">Potential Risks</h3>[m
+[31m-                </div>[m
+[31m-                <ul className="space-y-3">[m
+[31m-                  {aiInsights.potentialRisks.map((risk, idx) => ([m
+[31m-                    <li key={idx} className="flex items-start gap-3">[m
+[31m-                      <div className="w-2 h-2 rounded-full bg-red-400 mt-2 flex-shrink-0" />[m
+[31m-                      <p className="text-white/80">{risk}</p>[m
+[31m-                    </li>[m
+[31m-                  ))}[m
+[31m-                </ul>[m
+[31m-              </div>[m
+[31m-[m
+[31m-              {/* Moderator Recommendations */}[m
+[31m-              <div className="bg-[#1A1A1A] rounded-xl p-6 border border-[#40E0D0]/30">[m
+[31m-                <div className="flex items-center gap-3 mb-4">[m
+[31m-                  <Shield className="w-6 h-6 text-[#40E0D0]" />[m
+[31m-                  <h3 className="text-xl font-bold text-white">Moderator Recommendations</h3>[m
+[31m-                </div>[m
+[31m-                <ul className="space-y-3">[m
+[31m-                  {aiInsights.moderatorRecommendations.map((rec, idx) => ([m
+[31m-                    <li key={idx} className="flex items-start gap-3">[m
+[31m-                      <div className="w-6 h-6 rounded bg-[#40E0D0]/20 flex items-center justify-center flex-shrink-0">[m
+[31m-                        <span className="text-[#40E0D0] font-bold text-sm">{idx + 1}</span>[m
+[31m-                      </div>[m
+[31m-                      <p className="text-white/80">{rec}</p>[m
+[31m-                    </li>[m
+[31m-                  ))}[m
+[31m-                </ul>[m
+[31m-              </div>[m
+[31m-[m
+[31m-              {/* Possible False Positives */}[m
+[31m-              <div className="bg-[#1A1A1A] rounded-xl p-6 border border-yellow-500/30">[m
+[31m-                <div className="flex items-center gap-3 mb-4">[m
+[31m-                  <Sparkles className="w-6 h-6 text-yellow-400" />[m
+[31m-                  <h3 className="text-xl font-bold text-white">Possible False Positives</h3>[m
+[31m-                </div>[m
+[31m-                <ul className="space-y-3">[m
+[31m-                  {aiInsights.falsePositives.map((fp, idx) => ([m
+[31m-                    <li key={idx} className="flex items-start gap-3">[m
+[31m-                      <div className="w-2 h-2 rounded-full bg-yellow-400 mt-2 flex-shrink-0" />[m
+[31m-                      <p className="text-white/80">{fp}</p>[m
+[31m-                    </li>[m
+[31m-                  ))}[m
+[31m-                </ul>[m
+[31m-              </div>[m
+[31m-[m
+[31m-              {/* Refresh Button */}[m
+[31m-              <div className="flex justify-center">[m
+[31m-                <button[m
+[31m-                  onClick={loadAIInsights}[m
+[31m-                  disabled={insightsLoading}[m
+[31m-                  className="px-6 py-3 bg-[#40E0D0] text-[#0F0F0F] rounded-lg font-bold hover:bg-[#40E0D0]/90 transition-all duration-200 disabled:opacity-50"[m
+[31m-                >[m
+[31m-                  Refresh Insights[m
+[31m-                </button>[m
+[31m-              </div>[m
+[31m-            </>[m
+[31m-          )}[m
+[31m-        </div>[m
+[31m-      )}[m
+[31m-    </div>[m
+[31m-  );[m
+[31m-}[m
+[31m-[m
+[31m-/**[m
+[31m- * Calculate analytics from incidents and appeals[m
+[31m- */[m
+[31m-function calculateAnalytics(incidents: any[], appeals: any[]) {[m
+[31m-  // Get incidents from last 7 days[m
+[31m-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;[m
+[31m-  const recentIncidents = incidents.filter([m
+[31m-    (inc) => inc.timestamp?.toMillis() > sevenDaysAgo[m
+[31m-  );[m
+[31m-[m
+[31m-  // Category distribution[m
+[31m-  const categoryCount: Record<string, number> = {};[m
+[31m-  recentIncidents.forEach((inc) => {[m
+[31m-    const cat = inc.category || 'Unknown';[m
+[31m-    categoryCount[cat] = (categoryCount[cat] || 0) + 1;[m
+[31m-  });[m
+[31m-[m
+[31m-  const categoryData = Object.entries(categoryCount)[m
+[31m-    .map(([label, value]) => ({ label, value }))[m
+[31m-    .sort((a, b) => b.value - a.value)[m
+[31m-    .slice(0, 7);[m
+[31m-[m
+[31m-  // Severity distribution[m
+[31m-  const severityCount = {[m
+[31m-    CRITICAL: 0,[m
+[31m-    HIGH: 0,[m
+[31m-    MEDIUM: 0,[m
+[31m-    LOW: 0,[m
+[31m-  };[m
+[31m-  incidents.forEach((inc) => {[m
+[31m-    if (inc.severity in severityCount) {[m
+[31m-      severityCount[inc.severity as keyof typeof severityCount]++;[m
+[31m-    }[m
+[31m-  });[m
+[31m-[m
+[31m-  const severityData = [[m
+[31m-    { label: 'Critical', value: severityCount.CRITICAL, color: '#FF0000' },[m
+[31m-    { label: 'High', value: severityCount.HIGH, color: '#FFA500' },[m
+[31m-    { label: 'Medium', value: severityCount.MEDIUM, color: '#FFD700' },[m
+[31m-    { label: 'Low', value: severityCount.LOW, color: '#4ADE80' },[m
+[31m-  ];[m
+[31m-[m
+[31m-  // Top offenders (last 30 days)[m
+[31m-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;[m
+[31m-  const recentViolations = incidents.filter([m
+[31m-    (inc) => inc.timestamp?.toMillis() > thirtyDaysAgo[m
+[31m-  );[m
+[31m-[m
+[31m-  const userViolations: Record<string, { count: number; maxSeverity: string }> = {};[m
+[31m-  recentViolations.forEach((inc) => {[m
+[31m-    const userId = inc.userId || 'unknown';[m
+[31m-    if (!userViolations[userId]) {[m
+[31m-      userViolations[userId] = { count: 0, maxSeverity: 'LOW' };[m
+[31m-    }[m
+[31m-    userViolations[userId].count++;[m
+[31m-[m
+[31m-    const severityRank = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };[m
+[31m-    const currentRank = severityRank[userViolations[userId].maxSeverity as keyof typeof severityRank] || 0;[m
+[31m-    const newRank = severityRank[inc.severity as keyof typeof severityRank] || 0;[m
+[31m-    if (newRank > currentRank) {[m
+[31m-      userViolations[userId].maxSeverity = inc.severity;[m
+[31m-    }[m
+[31m-  });[m
+[31m-[m
+[31m-  const topOffenders = Object.entries(userViolations)[m
+[31m-    .map(([userId, data]) => ({[m
+[31m-      userId,[m
+[31m-      count: data.count,[m
+[31m-      maxSeverity: data.maxSeverity,[m
+[31m-      status: 'Active',[m
+[31m-    }))[m
+[31m-    .sort((a, b) => b.count - a.count)[m
+[31m-    .slice(0, 10);[m
+[31m-[m
+[31m-  // Appeals over 14 days[m
+[31m-  const fourteenDaysAgo = Date.now() - 14 * 24 * 60 * 60 * 1000;[m
+[31m-  const appealsByDay: Record<string, number> = {};[m
+[31m-[m
+[31m-  for (let i = 13; i >= 0; i--) {[m
+[31m-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);[m
+[31m-    const key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });[m
+[31m-    appealsByDay[key] = 0;[m
+[31m-  }[m
+[31m-[m
+[31m-  appeals.forEach((appeal) => {[m
+[31m-    const timestamp = appeal.timestamp?.toMillis();[m
+[31m-    if (timestamp && timestamp > fourteenDaysAgo) {[m
+[31m-      const date = new Date(timestamp);[m
+[31m-      const key = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });[m
+[31m-      if (key in appealsByDay) {[m
+[31m-        appealsByDay[key]++;[m
+[31m-      }[m
+[31m-    }[m
+[31m-  });[m
+[31m-[m
+[31m-  const appealsData = Object.entries(appealsByDay).map(([label, value]) => ({[m
+[31m-    label,[m
+[31m-    value,[m
+[31m-  }));[m
+[31m-[m
+[31m-  // Critical alerts[m
+[31m-  const csamCount = recentIncidents.filter((inc) =>[m
+[31m-    inc.category?.toLowerCase().includes('csam')[m
+[31m-  ).length;[m
+[31m-  const extremismCount = recentIncidents.filter((inc) =>[m
+[31m-    inc.category?.toLowerCase().includes('extremism')[m
+[31m-  ).length;[m
+[31m-  const hateSpeechCount = recentIncidents.filter((inc) =>[m
+[31m-    inc.category?.toLowerCase().includes('hate')[m
+[31m-  ).length;[m
+[31m-[m
+[31m-  // Time calculations (mock data for now)[m
+[31m-  const avgResolutionTime = '4.2h';[m
+[31m-  const avgAppealTime = '2.8h';[m
+[31m-  const pendingCases = incidents.filter((inc) => inc.status === 'pending').length;[m
+[31m-[m
+[31m-  // Moderator metrics (mock data)[m
+[31m-  const casesResolved = incidents.filter([m
+[31m-    (inc) => inc.status === 'resolved' && inc.timestamp?.toMillis() > thirtyDaysAgo[m
+[31m-  ).length;[m
+[31m-  const avgModeratorTime = 5.3;[m
+[31m-  const approvedAppeals = appeals.filter((a) => a.status === 'APPROVED').length;[m
+[31m-  const appealAcceptanceRate = appeals.length > 0 [m
+[31m-    ? Math.round((approvedAppeals / appeals.length) * 100) [m
+[31m-    : 0;[m
+[31m-  const topActionType = 'Warning';[m
+[31m-[m
+[31m-  return {[m
+[31m-    categoryData,[m
+[31m-    severityData,[m
+[31m-    topOffenders,[m
+[31m-    appealsData,[m
+[31m-    csamCount,[m
+[31m-    extremismCount,[m
+[31m-    hateSpeechCount,[m
+[31m-    avgResolutionTime,[m
+[31m-    avgAppealTime,[m
+[31m-    pendingCases,[m
+[31m-    casesResolved,[m
+[31m-    avgModeratorTime,[m
+[31m-    appealAcceptanceRate,[m
+[31m-    topActionType,[m
+[31m-  };[m
+[32m+[m[32m  return <AnalyticsClient />;[m
+ }[m
+[31m-[m

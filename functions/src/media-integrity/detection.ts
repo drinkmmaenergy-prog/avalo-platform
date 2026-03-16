@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import {
   MediaIntegrityViolationType,
@@ -91,7 +93,7 @@ export class MediaIntegrityDetection {
     if (metadataScore > 0.7) artifacts.push('Metadata inconsistencies');
 
     return {
-      isDeepfake: confidence > MONETIZATION_SPLITS.CHAT.creator,
+      isDeepfake: confidence > MONETIZATION_SPLITS.CHAT.earner,
       confidence,
       method: DetectionMethod.DEEPFAKE_DETECTION,
       artifacts
@@ -121,7 +123,7 @@ export class MediaIntegrityDetection {
     if (backgroundScore > 0.7) artifacts.push('Background audio inconsistencies');
 
     return {
-      isCloned: confidence > MONETIZATION_SPLITS.CHAT.creator,
+      isCloned: confidence > MONETIZATION_SPLITS.CHAT.earner,
       confidence,
       method: DetectionMethod.VOICE_CLONE_FINGERPRINTING,
       artifacts
@@ -151,7 +153,7 @@ export class MediaIntegrityDetection {
     if (edgeScore > 0.7) artifacts.push('AI generation edge artifacts');
 
     return {
-      isSynthetic: confidence > MONETIZATION_SPLITS.CHAT.creator,
+      isSynthetic: confidence > MONETIZATION_SPLITS.CHAT.earner,
       confidence,
       method: DetectionMethod.NUDITY_SYNTHESIS_DETECTION,
       artifacts
@@ -199,7 +201,7 @@ export class MediaIntegrityDetection {
     detectionResults: Record<DetectionMethod, number>
   ): MediaIntegrityViolationType[] {
     const violations: MediaIntegrityViolationType[] = [];
-    const threshold = MONETIZATION_SPLITS.CHAT.creator;
+    const threshold = MONETIZATION_SPLITS.CHAT.earner;
 
     if (detectionResults[DetectionMethod.DEEPFAKE_DETECTION] > threshold) {
       violations.push(MediaIntegrityViolationType.DEEPFAKE_FACE);
@@ -499,6 +501,23 @@ export class MediaIntegrityDetection {
 }
 
 export const mediaIntegrityDetection = new MediaIntegrityDetection();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

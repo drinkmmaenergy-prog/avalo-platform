@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 439 - App Store Trust, Ratings & Review Shield
  * StoreTrustScoreService - Calculates and monitors Store Trust Score
@@ -542,4 +543,5 @@ export class StoreTrustScoreService {
 }
 
 export const storeTrustScoreService = new StoreTrustScoreService();
+
 

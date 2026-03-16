@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — User Safety Preferences System
  * Personal boundaries and NSFW controls
@@ -237,33 +239,33 @@ export async function canUserViewNSFWByPreferences(
 }
 
 /**
- * Check if adult creator can DM user
+ * Check if adult earner can DM user
  */
 export async function canAdultCreatorDMUser(
-  creatorId: string,
+  earnerId: string,
   recipientId: string
 ): Promise<{ allowed: boolean; reason?: string }> {
   try {
     // Get recipient's preferences
     const recipientPrefs = await getUserSafetyPreferences(recipientId);
 
-    // Check if recipient allows adult creators to DM
+    // Check if recipient allows adult earners to DM
     if (!recipientPrefs.allowAdultCreatorsToDM) {
       return {
         allowed: false,
-        reason: 'User does not accept messages from adult creators',
+        reason: 'User does not accept messages from adult earners',
       };
     }
 
-    // Check if creator has NSFW content
-    const creatorProfile = await db.collection('creator_content_profiles').doc(creatorId).get();
-    const hasNSFWContent = creatorProfile.exists && 
-      (creatorProfile.data()?.nsfwContentRatio || 0) > 0;
+    // Check if earner has NSFW content
+    const earnerProfile = await db.collection('earner_content_profiles').doc(earnerId).get();
+    const hasNSFWContent = earnerProfile.exists && 
+      (earnerProfile.data()?.nsfwContentRatio || 0) > 0;
 
     if (hasNSFWContent && !recipientPrefs.allowAdultCreatorsToDM) {
       return {
         allowed: false,
-        reason: 'User does not accept messages from adult creators',
+        reason: 'User does not accept messages from adult earners',
       };
     }
 
@@ -428,6 +430,20 @@ export async function batchUpdateRegionLegality(
 
   return { updated, failed };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

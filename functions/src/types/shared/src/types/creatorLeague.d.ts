@@ -1,5 +1,7 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface CreatorLeagueEntry {
-    creatorId: string;
+    earnerId: string;
     tier: string;
     points: number;
     rank: number;
@@ -11,6 +13,23 @@ export interface LeagueTier {
     benefits: string[];
 }
 export type LeagueTierName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

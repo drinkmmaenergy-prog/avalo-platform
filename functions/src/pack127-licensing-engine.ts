@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 127 — IP Licensing Management Engine
  * 
- * Handles business licensing for creator IP
+ * Handles business licensing for earner IP
  * 
  * NON-NEGOTIABLE RULES:
  * - Non-transferable, platform-only licenses
@@ -562,6 +564,20 @@ export async function getPlatformLicensingStats(): Promise<{
   
   return stats;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

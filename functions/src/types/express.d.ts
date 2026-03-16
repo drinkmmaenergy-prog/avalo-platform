@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Express type extensions for Avalo
  * Extends Express Request to include user property added by auth middleware
@@ -20,6 +22,22 @@ declare global {
 }
 
 export {};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

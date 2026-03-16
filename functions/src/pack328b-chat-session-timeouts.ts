@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
  *
@@ -89,7 +91,7 @@ export function pack328b_calculateUnusedBucketRefund(
   const tokensToRefund = escrowBalance;
   
   // Platform fee was already retained at deposit (35%)
-  const platformFeeRetained = Math.round(depositAmount * MONETIZATION_SPLITS.CHAT.avalo);
+  const platformFeeRetained = Math.ceil(depositAmount * MONETIZATION_SPLITS.CHAT.platform);
   
   return {
     totalBucketsPurchased: bucketsImplied,
@@ -98,7 +100,7 @@ export function pack328b_calculateUnusedBucketRefund(
     wordsPerBucket,
     unusedBuckets: 0, // Not applicable in current model
     unusedWordsInCurrentBucket,
-    totalUnusedWords: Math.round(escrowBalance * wordsPerToken),
+    totalUnusedWords: Math.ceil(escrowBalance * wordsPerToken),
     tokensToRefund,
     platformFeeRetained,
   };
@@ -522,10 +524,27 @@ export async function pack328b_getChatTimeoutInfo(
     lastMessageAt: lastActivityAt.toISOString(),
     timeoutHours,
     expiresAt: expiresAt.toISOString(),
-    hoursRemaining: Math.round(hoursRemaining * 10) / 10, // 1 decimal
+    hoursRemaining: Math.ceil(hoursRemaining * 10) / 10, // 1 decimal
     isPaid,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

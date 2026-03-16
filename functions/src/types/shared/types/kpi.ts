@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Stub types for KPI
 export interface KpiEvent  {
   id?: string;
@@ -102,7 +104,7 @@ export interface KpiMetrics  {
 }
 
 export interface CreatorPerformanceMetrics  {
-  creatorId?: string;
+  earnerId?: string;
   earnings?: number;
   messageCount?: number;
   callMinutes?: number;
@@ -121,7 +123,7 @@ export interface CreatorPerformanceMetrics  {
 }
 
 export interface CreatorDailyMetricsDocument  {
-  creatorId?: string;
+  earnerId?: string;
   date?: string;
   metrics?: CreatorPerformanceMetrics;
   createdAt?: any;
@@ -242,6 +244,23 @@ export interface KpiEventContext  {
   ticketPrice?: number;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

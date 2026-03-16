@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 213: Premium Match Priority Engine Types
  * Match ranking based on Attraction × Reputation × Earnings × Activity × Interests
@@ -23,7 +25,7 @@ import { admin, timestamp } from '../runtime';
  * Total weights must = 1.0
  */
 export interface MatchPriorityWeights {
-  attraction: number;      // MONETIZATION_SPLITS.CHAT.avalo - like/wishlist history, swipes, dwell time
+  attraction: number;      // MONETIZATION_SPLITS.CHAT.platform - like/wishlist history, swipes, dwell time
   reputation: number;      // 0.25 - soft reputation from PACK 212
   earningsSynergy: number; // 0.25 - likelihood of paid engagement
   recentActivity: number;  // 0.10 - activity in last 7 days
@@ -31,7 +33,7 @@ export interface MatchPriorityWeights {
 }
 
 export const DEFAULT_MATCH_PRIORITY_WEIGHTS: MatchPriorityWeights = {
-  attraction: MONETIZATION_SPLITS.CHAT.avalo,
+  attraction: MONETIZATION_SPLITS.CHAT.platform,
   reputation: 0.25,
   earningsSynergy: 0.25,
   recentActivity: 0.10,
@@ -149,7 +151,7 @@ export type EarningsSynergyLevel =
   | 'MEDIUM'        // Friends-only × earn-on
   | 'MEDIUM_LOW'    // Two non-earning users
   | 'LOW'           // Two earning users (both wait to be paid)
-  | 'VERY_LOW';     // Low engagement payer × high-demand creator
+  | 'VERY_LOW';     // Low engagement payer × high-demand earner
 
 export interface EarningsSynergyScore {
   viewerId: string;
@@ -419,6 +421,23 @@ export interface PriorityWeightTest {
   avgEngagementRate?: number;
   avgConversionRate?: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

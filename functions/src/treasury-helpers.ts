@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 128 - Treasury Helper Functions
  * Shared utilities for treasury operations
@@ -22,7 +24,7 @@ export async function createLedgerEntry(
   tokenAmount: number,
   vault: VaultType,
   metadata: Record<string, any> = {},
-  creatorId?: string
+  earnerId?: string
 ): Promise<string> {
   const ledgerId = generateId();
   
@@ -30,7 +32,7 @@ export async function createLedgerEntry(
     ledgerId,
     eventType,
     userId,
-    creatorId,
+    earnerId,
     tokenAmount,
     vault,
     timestamp: serverTimestamp() as any,
@@ -87,8 +89,8 @@ export async function getTransactionLedgerEntries(
 export async function verifyTreasuryIntegrity(): Promise<{
   valid: boolean;
   userTotal: number;
-  creatorTotal: number;
-  avaloTotal: number;
+  earnerTotal: number;
+  platformTotal: number;
   grandTotal: number;
   issues: string[];
 }> {
@@ -101,18 +103,18 @@ export async function verifyTreasuryIntegrity(): Promise<{
     0
   );
 
-  // Sum all creator vaults
-  const creatorVaults = await db.collection('creator_vaults').get();
-  const creatorTotal = creatorVaults.docs.reduce(
+  // Sum all earner vaults
+  const earnerVaults = await db.collection('earner_vaults').get();
+  const earnerTotal = earnerVaults.docs.reduce(
     (sum, doc) => sum + (doc.data().availableTokens || 0) + (doc.data().lockedTokens || 0),
     0
   );
 
   // Get Avalo revenue
-  const avaloVault = await db.collection('avalo_revenue_vault').doc('platform').get();
-  const avaloTotal = avaloVault.exists ? (avaloVault.data()?.availableRevenue || 0) : 0;
+  const platformVault = await db.collection('platform_revenue_vault').doc('platform').get();
+  const platformTotal = platformVault.exists ? (platformVault.data()?.availableRevenue || 0) : 0;
 
-  const grandTotal = userTotal + creatorTotal + avaloTotal;
+  const grandTotal = userTotal + earnerTotal + platformTotal;
 
   // Check for negative balances
   userWallets.docs.forEach(doc => {
@@ -121,21 +123,35 @@ export async function verifyTreasuryIntegrity(): Promise<{
     }
   });
 
-  creatorVaults.docs.forEach(doc => {
+  earnerVaults.docs.forEach(doc => {
     if (doc.data().availableTokens < 0 || doc.data().lockedTokens < 0) {
-      issues.push(`Negative creator balance: ${doc.id}`);
+      issues.push(`Negative earner balance: ${doc.id}`);
     }
   });
 
   return {
     valid: issues.length === 0,
     userTotal,
-    creatorTotal,
-    avaloTotal,
+    earnerTotal,
+    platformTotal,
     grandTotal,
     issues,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

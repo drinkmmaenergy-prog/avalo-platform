@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 104 — Anti-Ring & Anti-Collusion Detection
  * Type Definitions
  * 
  * NON-NEGOTIABLE RULES:
  * - Token price per unit never changes
- * - Revenue split always 65% creator / 35% Avalo
+ * - Revenue split always 65% earner / 35% Avalo
  * - No punishment fees, appeal fees, or paid enforcement bypass
  * - Detection never reduces already-completed legitimate earnings
  * - Only restricts future abuse
@@ -330,6 +332,20 @@ export interface ClusterDetectionInput {
   analysisTimeWindowDays?: number;
   focusUserId?: string;  // Optionally focus analysis on specific user
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 339 — Type Definitions
  * Disaster Recovery & Legal Crisis Management
@@ -340,7 +342,7 @@ export const BACKUP_COLLECTIONS = {
   critical: [
     'walletTransactions',
     'payoutRequests',
-    'creatorBalances',
+    'earnerBalances',
     'userProfiles',
     'userComplianceStatus',
     'kycVerifications',
@@ -379,6 +381,20 @@ export interface AdminUser {
   email: string;
   createdAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

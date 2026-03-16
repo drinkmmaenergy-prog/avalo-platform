@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 311 — AI Companions Marketplace, Ranking & Owner Analytics
  * Cloud Functions for marketplace discovery and owner analytics
@@ -363,6 +365,20 @@ export const cronUpdateTopAvatarsHourly = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

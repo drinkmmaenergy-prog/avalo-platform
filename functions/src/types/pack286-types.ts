@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 286 — Calendar & Events Type Definitions
  * Normalized schemas for bookings and event tickets
@@ -44,7 +46,7 @@ export interface CalendarBooking {
   priceTokens: number;
 
   split: {
-    platformShareTokens: number; // 20% Avalo
+    platformTokens: number; // 20% Avalo
     hostShareTokens: number; // 80% Host
   };
 
@@ -53,7 +55,7 @@ export interface CalendarBooking {
     refundedTokensTotal: number;
     refundedToGuestTokens: number;
     refundedFromHostTokens: number;
-    avalosFeeRefunded: boolean;
+    platformsFeeRefunded: boolean;
   };
 
   checkIn: {
@@ -92,7 +94,7 @@ export interface EventTicket {
   priceTokens: number;
 
   split: {
-    platformShareTokens: number; // 20% Avalo
+    platformTokens: number; // 20% Avalo
     organizerShareTokens: number; // 80% Organizer
   };
 
@@ -101,7 +103,7 @@ export interface EventTicket {
     refundedTokensTotal: number;
     refundedToAttendeeTokens: number;
     refundedFromOrganizerTokens: number;
-    avalosFeeRefunded: boolean;
+    platformsFeeRefunded: boolean;
   };
 
   checkIn: {
@@ -172,6 +174,22 @@ export interface EventPayoutResult {
   organizerPaid?: number;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

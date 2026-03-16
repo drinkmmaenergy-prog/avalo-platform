@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * AI Voice Service
  * 
@@ -430,3 +431,4 @@ export default {
   requestVoiceReply,
   VOICE_PRICING,
 };
+

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 218: Calendar & Events Product Completion
  * Unified schedule for meetings + events, reminders, host tools, mobile + web parity
@@ -133,7 +135,7 @@ export const aggregateMeetingToSchedule = onDocumentCreated(
       id: `meeting_${bookingId}_booker`,
       type: 'meeting',
       role: 'guest',
-      title: `Meet with ${booking.creatorName || 'Unknown'}`,
+      title: `Meet with ${booking.earnerName || 'Unknown'}`,
       startTime: booking.startTime,
       endTime: booking.endTime || Timestamp.fromDate(
         new Date(booking.startTime.toDate().getTime() + 60 * 60 * 1000)
@@ -147,15 +149,15 @@ export const aggregateMeetingToSchedule = onDocumentCreated(
       hasPanicButton: true,
       paymentStatus: 'paid',
       userId: booking.bookerId,
-      participantIds: [booking.bookerId, booking.creatorId],
+      participantIds: [booking.bookerId, booking.earnerId],
       sourceId: bookingId,
       sourceCollection: 'calendarBookings',
       tokensAmount: booking.tokensAmount || 0,
       createdAt: booking.createdAt || serverTimestamp() as Timestamp,
     };
     
-    const creatorItem: AvaloScheduleItem = {
-      id: `meeting_${bookingId}_creator`,
+    const earnerItem: AvaloScheduleItem = {
+      id: `meeting_${bookingId}_earner`,
       type: 'meeting',
       role: 'host',
       title: `Meet with ${booking.bookerName || 'Unknown'}`,
@@ -171,8 +173,8 @@ export const aggregateMeetingToSchedule = onDocumentCreated(
       safetyModeEnabled: booking.safetyModeEnabled || false,
       hasPanicButton: true,
       paymentStatus: 'paid',
-      userId: booking.creatorId,
-      participantIds: [booking.bookerId, booking.creatorId],
+      userId: booking.earnerId,
+      participantIds: [booking.bookerId, booking.earnerId],
       sourceId: bookingId,
       sourceCollection: 'calendarBookings',
       tokensAmount: booking.tokensAmount || 0,
@@ -182,7 +184,7 @@ export const aggregateMeetingToSchedule = onDocumentCreated(
     // Save to schedule_items
     await Promise.all([
       db.collection('schedule_items').doc(bookerItem.id).set(bookerItem),
-      db.collection('schedule_items').doc(creatorItem.id).set(creatorItem),
+      db.collection('schedule_items').doc(earnerItem.id).set(earnerItem),
     ]);
     
     // Create reminders
@@ -280,17 +282,17 @@ async function createRemindersForMeeting(bookingId: string, booking: any) {
         scheduleItemId: `meeting_${bookingId}_booker`,
         type: 'meeting',
         triggerTime: Timestamp.fromDate(triggerTime),
-        message: `${timing.label}: Meeting with ${booking.creatorName || 'Unknown'}`,
+        message: `${timing.label}: Meeting with ${booking.earnerName || 'Unknown'}`,
         dismissed: false,
         sent: false,
         createdAt: serverTimestamp(),
       });
       
-      // Create reminder for creator
+      // Create reminder for earner
       reminders.push({
         reminderId: generateId(),
-        userId: booking.creatorId,
-        scheduleItemId: `meeting_${bookingId}_creator`,
+        userId: booking.earnerId,
+        scheduleItemId: `meeting_${bookingId}_earner`,
         type: 'meeting',
         triggerTime: Timestamp.fromDate(triggerTime),
         message: `${timing.label}: Meeting with ${booking.bookerName || 'Unknown'}`,
@@ -837,19 +839,19 @@ export const getMeetingSummary = onCall<{
   const booking = bookingDoc.data();
   
   // Verify user is participant
-  if (booking?.bookerId !== userId && booking?.creatorId !== userId) {
+  if (booking?.bookerId !== userId && booking?.earnerId !== userId) {
     throw new HttpsError('permission-denied', 'Not your meeting');
   }
   
-  const isEarner = booking?.creatorId === userId;
-  const partnerId = isEarner ? booking?.bookerId : booking?.creatorId;
+  const isEarner = booking?.earnerId === userId;
+  const partnerId = isEarner ? booking?.bookerId : booking?.earnerId;
   
   // Get partner profile
   const partnerDoc = await db.collection('users').doc(partnerId).get();
   const partner = partnerDoc.data();
   
   // Calculate earnings (65% to earner)
-  const earnerShare = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.creator);
+  const earner = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.earner);
   
   // Check if feedback already exists
   const feedbackSnapshot = await db.collection('meeting_feedback')
@@ -869,7 +871,7 @@ export const getMeetingSummary = onCall<{
         avatar: partner?.profilePicturUSDl,
       },
       tokensAmount: booking?.tokensAmount,
-      tokensEarned: isEarner ? earnerShare : 0,
+      tokensEarned: isEarner ? earner : 0,
       duration: booking?.duration || 60,
       status: booking?.status,
       hadPanic: booking?.status === 'PANIC_ENDED',
@@ -915,7 +917,7 @@ export const submitMeetingFeedback = onCall<{
   const booking = bookingDoc.data();
   
   // Verify user is earner (only earner can give feedback and issue refunds)
-  if (booking?.creatorId !== userId) {
+  if (booking?.earnerId !== userId) {
     throw new HttpsError('permission-denied', 'Only earner can submit feedback');
   }
   
@@ -939,8 +941,8 @@ export const submitMeetingFeedback = onCall<{
   
   // Process voluntary refund if requested
   if (voluntaryRefundPercentage > 0) {
-    const earnerShare = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.creator);
-    refundAmount = Math.floor(earnerShare * (voluntaryRefundPercentage / 100));
+    const earner = Math.floor((booking?.tokensAmount || 0) * MONETIZATION_SPLITS.CHAT.earner);
+    refundAmount = Math.floor(earner * (voluntaryRefundPercentage / 100));
     
     const refundId = generateId();
     
@@ -1389,6 +1391,22 @@ export const updateScheduleStatuses = onSchedule(
     console.log(`Updated ${upcomingSnapshot.size} items to active`);
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

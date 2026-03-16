@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 300 - Create Support Ticket
  * Cloud Function to create a new support ticket
@@ -224,6 +226,22 @@ export const createTicket = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

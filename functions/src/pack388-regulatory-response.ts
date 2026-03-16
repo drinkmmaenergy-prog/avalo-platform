@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 388 — Automated Regulatory Response Engine
  * 
@@ -591,6 +593,20 @@ export const pack388_getJurisdictionRequirements = functions.https.onCall(async 
     throw new functions.https.HttpsError('internal', 'Failed to get jurisdiction requirements');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

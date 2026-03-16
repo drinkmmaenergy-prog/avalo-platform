@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export interface AffiliateLink{
  referrerId:string
  referredUserId:string
@@ -5,6 +7,22 @@ export interface AffiliateLink{
 }
 
 export interface AffiliateReward{
- creatorId:string
+ earnerId:string
  tokens:number
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

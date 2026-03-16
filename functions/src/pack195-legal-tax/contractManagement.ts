@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 195: Contract Management Functions
  * Safe, professional contract generation and signing with anti-exploitation
@@ -15,9 +17,9 @@ import {
 } from './types';
 
 export async function generateContract(data: {
-  creatorId: string;
+  earnerId: string;
   type: ContractType;
-  creator: ContractParty;
+  earner: ContractParty;
   counterparty: ContractParty;
   terms: ContractTerms;
   templateId?: string;
@@ -42,8 +44,8 @@ export async function generateContract(data: {
     id: contractId,
     type: data.type,
     status: 'draft',
-    creatorId: data.creatorId,
-    creator: data.creator,
+    earnerId: data.earnerId,
+    earner: data.earner,
     counterparty: data.counterparty,
     terms: data.terms,
     createdAt: new Date(),
@@ -92,10 +94,10 @@ export async function runAntiExploitationChecks(data: {
   const scopeText = data.terms.scope.join(' ').toLowerCase();
 
   if (data.terms.paymentAmount && data.terms.paymentAmount > 0) {
-    const creatorShare = 100;
-    if (creatorShare < 50) {
+    const earner = 100;
+    if (earner < 50) {
       checks.excessiveSplit = true;
-      blockers.push('Revenue split gives creator less than 50%');
+      blockers.push('Revenue split gives earner less than 50%');
     }
   }
 
@@ -196,7 +198,7 @@ export async function signContract(data: {
     throw new Error(`Cannot sign contract in status: ${contract.status}`);
   }
 
-  const isCreator = contract.creatorId === data.userId;
+  const isCreator = contract.earnerId === data.userId;
   const isCounterparty = contract.counterparty.userId === data.userId;
 
   if (!isCreator && !isCounterparty) {
@@ -209,8 +211,8 @@ export async function signContract(data: {
   };
 
   if (isCreator) {
-    updateData['creator.signedAt'] = serverTimestamp();
-    updateData['creator.ipAddress'] = data.ipAddress;
+    updateData['earner.signedAt'] = serverTimestamp();
+    updateData['earner.ipAddress'] = data.ipAddress;
   } else {
     updateData['counterparty.signedAt'] = serverTimestamp();
     updateData['counterparty.ipAddress'] = data.ipAddress;
@@ -218,7 +220,7 @@ export async function signContract(data: {
 
   const bothSigned =
     (isCreator && contract.counterparty.signedAt) ||
-    (isCounterparty && contract.creator.signedAt);
+    (isCounterparty && contract.earner.signedAt);
 
   if (bothSigned) {
     updateData.status = 'active';
@@ -245,13 +247,13 @@ export async function getContractById(
 }
 
 export async function getCreatorContracts(data: {
-  creatorId: string;
+  earnerId: string;
   status?: ContractStatus;
   limit?: number;
 }): Promise<Contract[]> {
   let query = db
     .collection('contracts')
-    .where('creatorId', '==', data.creatorId)
+    .where('earnerId', '==', data.earnerId)
     .orderBy('createdAt', 'desc');
 
   if (data.status) {
@@ -281,7 +283,7 @@ export async function cancelContract(data: {
   const contract = contractSnap.data() as Contract;
 
   if (
-    contract.creatorId !== data.userId &&
+    contract.earnerId !== data.userId &&
     contract.counterparty.userId !== data.userId
   ) {
     throw new Error('User is not a party to this contract');
@@ -319,16 +321,16 @@ export async function raiseContractDispute(data: {
   const contract = contractSnap.data() as Contract;
 
   if (
-    contract.creatorId !== data.raisedBy &&
+    contract.earnerId !== data.raisedBy &&
     contract.counterparty.userId !== data.raisedBy
   ) {
     throw new Error('User is not a party to this contract');
   }
 
   const against =
-    contract.creatorId === data.raisedBy
+    contract.earnerId === data.raisedBy
       ? contract.counterparty.userId
-      : contract.creatorId;
+      : contract.earnerId;
 
   const disputeId = generateId();
 
@@ -374,8 +376,8 @@ export async function updateContractTerms(data: {
 
   const contract = contractSnap.data() as Contract;
 
-  if (contract.creatorId !== data.userId) {
-    throw new Error('Only the creator can update contract terms');
+  if (contract.earnerId !== data.userId) {
+    throw new Error('Only the earner can update contract terms');
   }
 
   if (contract.status !== 'draft') {
@@ -412,6 +414,22 @@ export async function updateContractTerms(data: {
 
   return { success: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

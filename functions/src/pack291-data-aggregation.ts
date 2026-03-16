@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 291 — AI Assist Data Aggregation
  * Collects and prepares data for AI analysis
@@ -11,7 +13,7 @@
  * - profileStats
  * - contentUploads
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -22,7 +24,7 @@ import {
   AggregatedBehaviorData,
   AI_ASSIST_CONSTANTS,
 } from './types/pack291-ai-assist.types';
-import { CREATOR_ANALYTICS_CONSTANTS } from './types/pack290-creator-analytics.types';
+import { CREATOR_ANALYTICS_CONSTANTS } from './types/pack290-earner-analytics.types';
 import { admin, functions } from './runtime';
 
 const db = getFirestore();
@@ -172,7 +174,7 @@ async function getActivityData(
 
   // Get event tickets
   const eventsQuery = db.collection('eventTickets')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', '==', 'VALIDATED')
     .where('createdAt', '>=', timestampRange.from)
     .where('createdAt', '<=', timestampRange.to);
@@ -582,6 +584,20 @@ export function getAnalysisDateRange(days: number = 30): { from: Date; to: Date 
 
   return { from, to };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 361 - Real-Time System Health Monitoring
  * Monitors chat, wallet, events, AI, video calls, and panic button
@@ -719,6 +721,20 @@ export const cleanupOldMetrics = onSchedule("0 3 * * *", async (event) => {
     
     console.log(`✅ Cleaned up ${oldMetrics.size} old metrics`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

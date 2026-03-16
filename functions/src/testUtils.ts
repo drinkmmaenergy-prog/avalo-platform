@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as admin from 'firebase-admin'
 import { Timestamp } from 'firebase-admin/firestore'
 
@@ -56,3 +58,17 @@ export function hoursAgo(h:number){
 export function daysAgo(d:number){
  return Timestamp.fromMillis(Date.now()-d*86400000)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

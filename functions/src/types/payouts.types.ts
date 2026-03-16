@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 83 — Creator Payout Requests & Compliance Layer
  * TypeScript type definitions for payout system
@@ -167,6 +169,22 @@ export function validatePayoutMethodDetails(
       return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

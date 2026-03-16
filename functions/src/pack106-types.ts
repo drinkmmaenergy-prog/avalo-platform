@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK106 — Currency / Pricing Types
  * USD Canonical Economy
@@ -135,6 +137,20 @@ status?: 'PENDING' | 'APPROVED' | 'REJECTED';
     volume: number;
   }>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

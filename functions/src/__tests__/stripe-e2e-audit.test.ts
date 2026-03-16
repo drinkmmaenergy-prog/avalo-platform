@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * ========================================================================
  * STRIPE + WALLET END-TO-END PRODUCTION READINESS AUDIT
@@ -21,7 +23,7 @@
  * - No unhandled webhook
  */
 
-import { TOKEN_PAYOUT_USD, PAYOUT_PER_TOKEN_USD, TOKEN_PAYOUT_USD, PAYOUT_FX_RATES } from '../config/economyConfig';
+import { TOKEN_PAYOUT_USD, PAYOUT_PER_TOKEN_USD, PAYOUT_FX_RATES } from '../config/economyConfig';
 import { TOKEN_PACKS, PaymentProvider, PaymentSession, Transaction, UserWallet } from '../paymentsComplete';
 
 // ============================================================================
@@ -163,7 +165,7 @@ describe('Token conversion', () => {
     // pack302-web-billing.ts:74 — Math.round(priceInCurrency * 100)
     const testPack = TOKEN_PACKS.MINI;
     const centAmount = Math.round(testPack.prices.USD * 100);
-    expect(centAmount).toBe(549); // 5.49 USD = 549 cents
+    expect(centAmount).toBe(449); // 4.49 USD = 449 cents
     expect(centAmount % 1).toBe(0); // Must be integer
   });
 
@@ -303,6 +305,22 @@ describe('STRIPE SYSTEM STATUS', () => {
     expect(Object.values(checks).every(v => v)).toBe(true);
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

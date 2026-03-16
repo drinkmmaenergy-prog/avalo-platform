@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 358 — Revenue Forecasting Engine
  * 
@@ -182,13 +184,13 @@ class RevenueForecastEngine {
       .get();
 
     if (!snapshot.exists) {
-      return { churnRate: 0.05, retentionRate: MONETIZATION_SPLITS.CHAT.creator }; // Defaults
+      return { churnRate: 0.05, retentionRate: MONETIZATION_SPLITS.CHAT.earner }; // Defaults
     }
 
     const data = snapshot.data()!;
     return {
       churnRate: data.monthlyChurnRate || 0.05,
-      retentionRate: data.day30RetentionRate || MONETIZATION_SPLITS.CHAT.creator,
+      retentionRate: data.day30RetentionRate || MONETIZATION_SPLITS.CHAT.earner,
     };
   }
 
@@ -570,6 +572,22 @@ export const getLatestForecast = onCall(
       throw new HttpsError('internal', 'Failed to fetch forecast');
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

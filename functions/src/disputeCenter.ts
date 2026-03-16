@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 86 - Dispute Center & Transaction Issue Reporting
  * 
@@ -60,7 +62,7 @@ async function validateTransactionParticipation(
           .get();
         if (!unlockDoc.exists) return false;
         const unlock = unlockDoc.data();
-        return unlock?.userId === reporterId || unlock?.creatorId === reporterId;
+        return unlock?.userId === reporterId || unlock?.earnerId === reporterId;
       }
 
       case 'PAID_MEDIA': {
@@ -70,7 +72,7 @@ async function validateTransactionParticipation(
           .get();
         if (!mediaDoc.exists) return false;
         const media = mediaDoc.data();
-        return media?.buyerId === reporterId || media?.creatorId === reporterId;
+        return media?.buyerId === reporterId || media?.earnerId === reporterId;
       }
 
       case 'CALL': {
@@ -445,6 +447,20 @@ export async function getUserReportStats(userId: string): Promise<{
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

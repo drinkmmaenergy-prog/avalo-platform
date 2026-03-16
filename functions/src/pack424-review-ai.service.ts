@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 424 — AI-Assisted Review Response System
  * Generates contextual reply suggestions for store reviews
@@ -180,28 +182,28 @@ export class ReviewAIService {
         formal: `Thank you for taking the time to rate Avalo. We appreciate your positive feedback.`,
       },
       apology: {
-        friendly: `We're really sorry to hear about your experience. This isn't the experience we want for our users. Please reach out to support@avalo.app so we can make this right!`,
-        professional: `We apologize for the disappointing experience. Please contact our support team at support@avalo.app so we can address your concerns.`,
-        empathetic: `We're truly sorry you had this experience. We take all feedback seriously and would love to help resolve any issues. Please email us at support@avalo.app.`,
-        formal: `We apologize for any inconvenience. Please contact support@avalo.app to discuss your concerns.`,
+        friendly: `We're really sorry to hear about your experience. This isn't the experience we want for our users. Please reach out to support@platform.app so we can make this right!`,
+        professional: `We apologize for the disappointing experience. Please contact our support team at support@platform.app so we can address your concerns.`,
+        empathetic: `We're truly sorry you had this experience. We take all feedback seriously and would love to help resolve any issues. Please email us at support@platform.app.`,
+        formal: `We apologize for any inconvenience. Please contact support@platform.app to discuss your concerns.`,
       },
       bug_acknowledgment: {
-        friendly: `Oh no! Thanks for letting us know about this bug. Our team is on it! 🛠️ Please email support@avalo.app with details so we can fix this ASAP.`,
-        professional: `Thank you for reporting this issue. Our development team has been notified and is working on a fix. Please contact support@avalo.app for updates.`,
+        friendly: `Oh no! Thanks for letting us know about this bug. Our team is on it! 🛠️ Please email support@platform.app with details so we can fix this ASAP.`,
+        professional: `Thank you for reporting this issue. Our development team has been notified and is working on a fix. Please contact support@platform.app for updates.`,
         empathetic: `We're really sorry you encountered this bug. We understand how frustrating technical issues can be. Our team is investigating and working on a fix.`,
-        formal: `Thank you for reporting this technical issue. Our team is investigating. Please contact support@avalo.app for assistance.`,
+        formal: `Thank you for reporting this technical issue. Our team is investigating. Please contact support@platform.app for assistance.`,
       },
       safety_reassurance: {
-        friendly: `Your safety is our #1 priority! We take these concerns very seriously. Please report any issues to safety@avalo.app immediately so we can investigate.`,
-        professional: `Thank you for bringing this to our attention. User safety is paramount to Avalo. Please contact safety@avalo.app to report specific incidents.`,
-        empathetic: `We're deeply concerned to hear this. Your safety and wellbeing matter to us. Please contact our safety team at safety@avalo.app immediately.`,
-        formal: `Safety concerns are treated with utmost priority. Please contact safety@avalo.app to report this matter.`,
+        friendly: `Your safety is our #1 priority! We take these concerns very seriously. Please report any issues to safety@platform.app immediately so we can investigate.`,
+        professional: `Thank you for bringing this to our attention. User safety is paramount to Avalo. Please contact safety@platform.app to report specific incidents.`,
+        empathetic: `We're deeply concerned to hear this. Your safety and wellbeing matter to us. Please contact our safety team at safety@platform.app immediately.`,
+        formal: `Safety concerns are treated with utmost priority. Please contact safety@platform.app to report this matter.`,
       },
       refund_guidance: {
-        friendly: `We'd love to help with your refund request! Please email billing@avalo.app with your account details and we'll sort this out for you.`,
-        professional: `For refund requests, please contact billing@avalo.app with your account information and order details.`,
-        empathetic: `We understand billing concerns can be frustrating. Please reach out to billing@avalo.app and we'll work to resolve this quickly.`,
-        formal: `Please contact billing@avalo.app regarding refund requests.`,
+        friendly: `We'd love to help with your refund request! Please email billing@platform.app with your account details and we'll sort this out for you.`,
+        professional: `For refund requests, please contact billing@platform.app with your account information and order details.`,
+        empathetic: `We understand billing concerns can be frustrating. Please reach out to billing@platform.app and we'll work to resolve this quickly.`,
+        formal: `Please contact billing@platform.app regarding refund requests.`,
       },
     };
 
@@ -319,6 +321,20 @@ export const autoGenerateSuggestionsForNegativeReviews = onDocumentCreated('stor
       }
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

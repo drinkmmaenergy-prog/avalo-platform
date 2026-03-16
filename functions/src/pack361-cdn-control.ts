@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 361 - CDN & Media Optimization
  * Cloudflare Images, Stream CDN, media caching
@@ -162,7 +164,7 @@ export const uploadImage = functions.https.onCall(async (request) => {
     }
     
     // Create CDN URLs (Cloudflare Images)
-    const cdnUrl = `https://cdn.avalo.app/${assetId}`;
+    const cdnUrl = `https://cdn.platform.app/${assetId}`;
     
     // Save asset metadata
     const asset: MediaAsset = {
@@ -270,7 +272,7 @@ export const uploadVideo = functions.https.onCall(async (request) => {
     const variants: AssetVariant[] = [
       {
         name: "1080p",
-        url: `https://stream.avalo.app/${assetId}/1080p.m3u8`,
+        url: `https://stream.platform.app/${assetId}/1080p.m3u8`,
         width: 1920,
         height: 1080,
         format: "hls",
@@ -278,7 +280,7 @@ export const uploadVideo = functions.https.onCall(async (request) => {
       },
       {
         name: "720p",
-        url: `https://stream.avalo.app/${assetId}/720p.m3u8`,
+        url: `https://stream.platform.app/${assetId}/720p.m3u8`,
         width: 1280,
         height: 720,
         format: "hls",
@@ -286,7 +288,7 @@ export const uploadVideo = functions.https.onCall(async (request) => {
       },
       {
         name: "480p",
-        url: `https://stream.avalo.app/${assetId}/480p.m3u8`,
+        url: `https://stream.platform.app/${assetId}/480p.m3u8`,
         width: 854,
         height: 480,
         format: "hls",
@@ -301,7 +303,7 @@ export const uploadVideo = functions.https.onCall(async (request) => {
       id: assetId,
       type: "video",
       originalUrl: data.videoUrl,
-      cdnUrl: `https://stream.avalo.app/${assetId}/manifest.m3u8`,
+      cdnUrl: `https://stream.platform.app/${assetId}/manifest.m3u8`,
       variants,
       size: 0,
       cached: true,
@@ -332,7 +334,7 @@ export const uploadVideo = functions.https.onCall(async (request) => {
  */
 async function generateVideoPreview(videoId: string): Promise<string> {
   // In production, extract first frame or generate animated preview
-  return `https://cdn.avalo.app/${videoId}/preview.jpg`;
+  return `https://cdn.platform.app/${videoId}/preview.jpg`;
 }
 
 // ============================================
@@ -440,7 +442,7 @@ export const cacheAiAvatar = functions.https.onCall(async (request) => {
       id: data.avatarId,
       type: "avatar",
       originalUrl: data.imageUrl,
-      cdnUrl: `https://cdn.avalo.app/avatars/${data.avatarId}`,
+      cdnUrl: `https://cdn.platform.app/avatars/${data.avatarId}`,
       variants: [],
       size: 0,
       cached: true,
@@ -452,7 +454,7 @@ export const cacheAiAvatar = functions.https.onCall(async (request) => {
     console.log(`✅ AI avatar ${data.avatarId} cached globally`);
     
     return {
-      cdnUrl: `https://cdn.avalo.app/avatars/${data.avatarId}`,
+      cdnUrl: `https://cdn.platform.app/avatars/${data.avatarId}`,
       cached: true,
       regions: CDN_REGIONS,
     };
@@ -722,6 +724,20 @@ export async function logCdnRequest(
     timestamp: Date.now(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

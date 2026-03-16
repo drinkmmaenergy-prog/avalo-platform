@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Smoke Check Endpoint — Minimal Gen2 Boot Verification
  *
@@ -71,6 +73,22 @@ export const smokeCheck = onRequest(
     res.status(allSecretsPresent ? 200 : 503).json(result);
   },
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

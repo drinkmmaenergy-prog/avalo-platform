@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 60 — Security & Account Protection Suite
  * Types for sessions, devices, 2FA, and security settings
@@ -130,6 +132,22 @@ export const DEFAULT_SECURITY_SETTINGS: Omit<SecuritySettings, 'userId' | 'creat
     require2faForSettingsChange: true,
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

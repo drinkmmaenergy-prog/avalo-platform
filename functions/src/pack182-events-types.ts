@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 182: Avalo Pro Event Host Suite
  * Type definitions for professional event hosting system
@@ -5,7 +7,7 @@
  * CRITICAL SAFETY RULES:
  * - Educational, lifestyle, career, fitness, or creative events ONLY
  * - Zero tolerance for romantic/NSFW/escort events
- * - Token-only payments (65% creator / 35% Avalo)
+ * - Token-only payments (65% earner / 35% Avalo)
  * - Location privacy until ticket purchase
  * - No algorithm boosts or visibility manipulation
  */
@@ -461,8 +463,8 @@ export const EVENT_CONFIG = {
   // Pricing
   minPriceTokens: 0,  // Free events allowed
   maxPriceTokens: 50000,
-  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo, // 35%
-  hostEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65%
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.platform, // 35%
+  hostEarningsPercentage: MONETIZATION_SPLITS.CHAT.earner, // 65%
   
   // Capacity
   minCapacity: 1,
@@ -639,6 +641,22 @@ export function calculateRevenueSplit(priceTokens: number): {
 }
 
 console.log('✅ PACK 182 Event Types loaded - Professional Event Hosting System');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

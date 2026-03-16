@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 94 — Discovery Profile Builder
  * Background jobs to build and maintain discovery_profiles collection
@@ -149,7 +151,7 @@ async function calculateMonetizationScore(userId: string): Promise<number> {
     // Premium content (30 points)
     const premiumStoriesSnapshot = await db
       .collection('premium_stories')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('status', '==', 'published')
       .limit(50)
       .get();
@@ -535,6 +537,20 @@ export async function degradeInactiveUserScores(
 }
 
 logger.info('✅ Discovery Profile Builder initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 139: Avalo Social Clubs & Private Communities
  * Backend Firebase Functions for topic-driven social clubs
@@ -47,7 +49,7 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 
 /**
  * Create a new club
- * Verified creators only
+ * Verified earners only
  */
 export const createClub = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -66,11 +68,11 @@ export const createClub = functions.https.onCall(async (request) => {
 
       const userData = userDoc.data()!;
 
-      // Verify creator status
+      // Verify earner status
       if (!userData.isCreator || !userData.earnFromChat) {
         throw new functions.https.HttpsError(
           'permission-denied',
-          'Only verified creators can create clubs'
+          'Only verified earners can create clubs'
         );
       }
 
@@ -349,7 +351,7 @@ export const joinClub = functions.https.onCall(async (request) => {
         }
 
         // Calculate split (65/35)
-        platformFee = Math.floor(club.entryTokens * MONETIZATION_SPLITS.CHAT.avalo);
+        platformFee = Math.floor(club.entryTokens * MONETIZATION_SPLITS.CHAT.platform);
         ownerEarnings = club.entryTokens - platformFee;
 
         // Process payment in transaction
@@ -1069,6 +1071,22 @@ export const getClubAnalytics = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

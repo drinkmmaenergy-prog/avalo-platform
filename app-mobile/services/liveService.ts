@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Live Service for Avalo Mobile App
  * PACK 33-5: VIP Live Streaming with Token Entry Fees
@@ -515,3 +516,4 @@ export default {
   formatEarnings,
   ENTRY_FEE_PRESETS,
 };
+

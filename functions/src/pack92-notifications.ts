@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 92 — Unified Notification & Messaging Engine
  * Backend Notification Engine
@@ -5,7 +7,7 @@
  * NON-NEGOTIABLE RULES:
  * - No free tokens, no bonuses, no discounts, no cashback
  * - Token price per unit remains fixed
- * - Revenue split: 65% creator / 35% Avalo (unchanged)
+ * - Revenue split: 65% earner / 35% Avalo (unchanged)
  * - Notifications may inform about earnings, but never guarantee future income
  * - Legal/trust/enforcement notifications must be clear, neutral, and compliant
  */
@@ -254,7 +256,7 @@ export async function sendEarningsNotification(params: {
     category: 'TRANSACTIONAL',
     title: `You earned ${params.amount} tokens`,
     body: `Someone ${params.source}. Check your wallet for details.`,
-    deepLink: 'avalo://wallet',
+    deepLink: 'platform://wallet',
     payload: {
       amount: params.amount,
       source: params.source,
@@ -301,7 +303,7 @@ export async function sendPayoutNotification(params: {
     category: 'TRANSACTIONAL',
     title,
     body,
-    deepLink: `avalo://payouts/${params.requestId}`,
+    deepLink: `platform://payouts/${params.requestId}`,
     payload: {
       status: params.status,
       requestId: params.requestId,
@@ -343,7 +345,7 @@ export async function sendKycNotification(params: {
     category: 'ACCOUNT',
     title,
     body,
-    deepLink: 'avalo://kyc',
+    deepLink: 'platform://kyc',
     payload: {
       status: params.status,
       documentId: params.documentId,
@@ -377,7 +379,7 @@ export async function sendDisputeNotification(params: {
     category: 'ACCOUNT',
     title,
     body,
-    deepLink: `avalo://disputes/${params.disputeId}`,
+    deepLink: `platform://disputes/${params.disputeId}`,
     payload: {
       disputeId: params.disputeId,
       role: params.role,
@@ -417,7 +419,7 @@ export async function sendEnforcementNotification(params: {
     category: 'ACCOUNT',
     title,
     body,
-    deepLink: 'avalo://support',
+    deepLink: 'platform://support',
     payload: {
       level: params.level,
     },
@@ -439,7 +441,7 @@ export async function sendLegalUpdateNotification(params: {
     category: 'LEGAL',
     title: 'Terms update required',
     body: `To continue using Avalo, you need to review and accept the updated ${params.documentType}`,
-    deepLink: 'avalo://legal',
+    deepLink: 'platform://legal',
     payload: {
       documentType: params.documentType,
       version: params.version,
@@ -486,7 +488,7 @@ export async function sendSafetyNotification(params: {
     category: 'SAFETY',
     title,
     body,
-    deepLink: params.timerId ? `avalo://safety/${params.timerId}` : 'avalo://safety',
+    deepLink: params.timerId ? `platform://safety/${params.timerId}` : 'platform://safety',
     payload: {
       safetyType: params.type,
       alertUserId: params.alertUserId,
@@ -621,6 +623,20 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
   await batch.commit();
   logger.info(`Marked all notifications as read for user ${userId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

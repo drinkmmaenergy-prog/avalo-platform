@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 305 — Legal & Audit Snapshot Export
  * TypeScript types and interfaces for legal snapshots
@@ -59,7 +61,7 @@ export interface InvestorOverviewSnapshot {
     productAndSafety: ProductAndSafetySection;
     userAndGrowth: UserAndGrowthSection;
     economics: EconomicsSection;
-    creatorActivity: CreatorActivitySection;
+    earnerActivity: CreatorActivitySection;
     riskAndSafety: RiskAndSafetyStatsSection;
     legalDocs: LegalDocsSection;
   };
@@ -90,9 +92,9 @@ export interface UserAndGrowthSection {
 export interface EconomicsSection {
   gmvTokens: number;
   gmvUSD: number;
-  avaloFeesTokens: number;
-  avaloFeesUSD: number;
-  creatorShareTokens: number;
+  platformFeesTokens: number;
+  platformFeesUSD: number;
+  earnerTokens: number;
   numberOfPayouts: number;
   totalPayoutFiat: number;
 }
@@ -345,6 +347,22 @@ export interface SnapshotAuditLog {
   errorMessage?: string;
   metadata?: Record<string, any>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

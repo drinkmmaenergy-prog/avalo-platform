@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 210: Panic Button + Trusted Contact + Live Safety Tracking
  * Type definitions for real-world safety system during meetings and events
@@ -499,6 +501,20 @@ export const DEFAULT_SAFETY_TRACKING_CONFIG: SafetyTrackingConfig = {
   locationVisibleToOtherParty: false,
   locationVisibleToTrustedContact: true,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

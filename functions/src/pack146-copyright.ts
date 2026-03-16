@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 146 — Copyright Takedown & Case Management
  * Instant takedown system with AI validation
@@ -643,6 +645,20 @@ export default {
   applyAntiPiracyPenalty,
   logPiracyAttempt,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

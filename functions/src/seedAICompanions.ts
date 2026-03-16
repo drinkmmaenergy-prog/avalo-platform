@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Seed 200 AI Companions
  * Distribution: 75% female, 25% male
@@ -145,7 +147,7 @@ function generateAICompanion(
   let tierAccess: ("Free" | "Plus" | "Intimate" | "Creator")[];
   let nsfwAvailable = false;
 
-  if (tierRoll < MONETIZATION_SPLITS.EVENT_TICKET.avalo) {
+  if (tierRoll < MONETIZATION_SPLITS.EVENT_TICKET.platform) {
     // Free tier - SFW only
     tierAccess = ["Free"];
     nsfwAvailable = false;
@@ -182,18 +184,18 @@ function generateAICompanion(
     tierAccess,
     nsfwAvailable,
     relationshipAvailable: true,
-    profileImage: `https://cdn.avalo.app/ai/${id}/main.jpg`,
+    profileImage: `https://cdn.platform.app/ai/${id}/main.jpg`,
     blurredGallery: [
-      `https://cdn.avalo.app/ai/${id}/1b.jpg`,
-      `https://cdn.avalo.app/ai/${id}/2b.jpg`,
-      `https://cdn.avalo.app/ai/${id}/3b.jpg`,
+      `https://cdn.platform.app/ai/${id}/1b.jpg`,
+      `https://cdn.platform.app/ai/${id}/2b.jpg`,
+      `https://cdn.platform.app/ai/${id}/3b.jpg`,
     ],
     unblurredGallery: [
-      `https://cdn.avalo.app/ai/${id}/1.jpg`,
-      `https://cdn.avalo.app/ai/${id}/2.jpg`,
-      `https://cdn.avalo.app/ai/${id}/3.jpg`,
+      `https://cdn.platform.app/ai/${id}/1.jpg`,
+      `https://cdn.platform.app/ai/${id}/2.jpg`,
+      `https://cdn.platform.app/ai/${id}/3.jpg`,
     ],
-    voiceSample: `https://cdn.avalo.app/ai/${id}/voice.mp3`,
+    voiceSample: `https://cdn.platform.app/ai/${id}/voice.mp3`,
     popularityScore: Math.floor(Math.random() * 100),
     description,
     systemPrompt,
@@ -315,6 +317,22 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

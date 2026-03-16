@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { timestamp } from '../runtime';
 
 export interface AiSeed {
@@ -134,7 +136,7 @@ export interface AiSeedOwnership {
 export interface AiSeedMarketplaceListing {
   id: string;
   seedId: string;
-  creatorId: string;
+  earnerId: string;
   title: string;
   description: string;
   category: string;
@@ -163,7 +165,7 @@ export interface AiSeedTransaction {
   sellerId: string;
   amount: number;
   platformFee: number;
-  creatorRevenue: number;
+  earnerRevenue: number;
   type: 'one_time' | 'subscription' | 'chapter_unlock';
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   createdAt: Date;
@@ -175,7 +177,7 @@ export interface AiSeedCoCreation {
   id: string;
   seedId: string;
   participants: string[];
-  creatorId: string;
+  earnerId: string;
   status: 'active' | 'completed' | 'abandoned';
   contributions: CoCreationContribution[];
   createdAt: Date;
@@ -277,8 +279,25 @@ export const ALLOWED_SEED_ARCHETYPES = [
   'interdimensional trader',
 ];
 
-export const PLATFORM_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
-export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+export const PLATFORM_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.platform;
+export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.CHAT.earner;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

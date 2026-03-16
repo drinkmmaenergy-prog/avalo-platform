@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 429 — Anti-Sabotage & Press-Crisis Mode
  * Automatically or manually activates defensive measures during crises
@@ -464,6 +466,20 @@ export async function getMaxRecoveryPromptsPerDay(): Promise<number> {
   
   return crisisMode.config.maxRecoveryPromptsPerDay;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

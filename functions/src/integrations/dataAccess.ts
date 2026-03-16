@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 150: Data Access & Logging Functions
  * Handle read-only data access and comprehensive audit logging
@@ -100,7 +102,7 @@ export const getIntegrationDataset = https.onCall(async (request) => {
 
     // Generate anonymized dataset
     const dataset = await generateAnonymizedDataset(
-      integration.creatorId,
+      integration.earnerId,
       partnerId,
       dataType,
       timeRange
@@ -146,7 +148,7 @@ export const getIntegrationDataset = https.onCall(async (request) => {
  * Generate anonymized dataset based on data type
  */
 async function generateAnonymizedDataset(
-  creatorId: string,
+  earnerId: string,
   partnerId: string,
   dataType: DataPermissionType,
   timeRange?: { start: Date; end: Date }
@@ -163,37 +165,37 @@ async function generateAnonymizedDataset(
 
   switch (dataType) {
     case DataPermissionType.EVENT_ATTENDANCE:
-      data = await getEventAttendanceData(creatorId, start, end);
+      data = await getEventAttendanceData(earnerId, start, end);
       recordCount = data.events?.length || 0;
       break;
 
     case DataPermissionType.CHALLENGE_PROGRESS:
-      data = await getChallengeProgressData(creatorId, start, end);
+      data = await getChallengeProgressData(earnerId, start, end);
       recordCount = data.challenges?.length || 0;
       break;
 
     case DataPermissionType.PRODUCT_SALES_AGGREGATE:
-      data = await getProductSalesData(creatorId, start, end);
+      data = await getProductSalesData(earnerId, start, end);
       recordCount = data.products?.length || 0;
       break;
 
     case DataPermissionType.CLUB_PARTICIPATION_COUNT:
-      data = await getClubParticipationData(creatorId, start, end);
+      data = await getClubParticipationData(earnerId, start, end);
       recordCount = data.clubs?.length || 0;
       break;
 
     case DataPermissionType.CRM_SEGMENTS_AGGREGATE:
-      data = await getCRMSegmentsData(creatorId, start, end);
+      data = await getCRMSegmentsData(earnerId, start, end);
       recordCount = data.segments?.length || 0;
       break;
 
     case DataPermissionType.TRAFFIC_ANALYTICS:
-      data = await getTrafficAnalyticsData(creatorId, start, end);
+      data = await getTrafficAnalyticsData(earnerId, start, end);
       recordCount = data.days?.length || 0;
       break;
 
     case DataPermissionType.REVENUE_SUMMARY:
-      data = await getRevenueSummaryData(creatorId, start, end);
+      data = await getRevenueSummaryData(earnerId, start, end);
       recordCount = 1;
       break;
 
@@ -203,7 +205,7 @@ async function generateAnonymizedDataset(
 
   return {
     datasetId,
-    creatorId,
+    earnerId,
     partnerId,
     dataType,
     timeRange: { start, end },
@@ -222,10 +224,10 @@ async function generateAnonymizedDataset(
 /**
  * Get event attendance data (anonymized)
  */
-async function getEventAttendanceData(creatorId: string, start: Date, end: Date) {
+async function getEventAttendanceData(earnerId: string, start: Date, end: Date) {
   const eventsSnapshot = await db
     .collection('events')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('date', '>=', start)
     .where('date', '<=', end)
     .get();
@@ -255,10 +257,10 @@ async function getEventAttendanceData(creatorId: string, start: Date, end: Date)
 /**
  * Get challenge progress data (anonymized)
  */
-async function getChallengeProgressData(creatorId: string, start: Date, end: Date) {
+async function getChallengeProgressData(earnerId: string, start: Date, end: Date) {
   const challengesSnapshot = await db
     .collection('challenges')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', start)
     .where('createdAt', '<=', end)
     .get();
@@ -294,10 +296,10 @@ async function getChallengeProgressData(creatorId: string, start: Date, end: Dat
 /**
  * Get product sales data (aggregate only)
  */
-async function getProductSalesData(creatorId: string, start: Date, end: Date) {
+async function getProductSalesData(earnerId: string, start: Date, end: Date) {
   const salesSnapshot = await db
     .collection('transactions')
-    .where('sellerId', '==', creatorId)
+    .where('sellerId', '==', earnerId)
     .where('type', '==', 'product_purchase')
     .where('createdAt', '>=', start)
     .where('createdAt', '<=', end)
@@ -336,10 +338,10 @@ async function getProductSalesData(creatorId: string, start: Date, end: Date) {
 /**
  * Get club participation counts (no member identities)
  */
-async function getClubParticipationData(creatorId: string, start: Date, end: Date) {
+async function getClubParticipationData(earnerId: string, start: Date, end: Date) {
   const clubsSnapshot = await db
     .collection('clubs')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   const clubs = await Promise.all(
@@ -365,7 +367,7 @@ async function getClubParticipationData(creatorId: string, start: Date, end: Dat
 /**
  * Get CRM segments (aggregate statistics only)
  */
-async function getCRMSegmentsData(creatorId: string, start: Date, end: Date) {
+async function getCRMSegmentsData(earnerId: string, start: Date, end: Date) {
   const segments = [
     { name: 'High Engagement', count: 0, avgSpend: 0 },
     { name: 'Medium Engagement', count: 0, avgSpend: 0 },
@@ -374,7 +376,7 @@ async function getCRMSegmentsData(creatorId: string, start: Date, end: Date) {
 
   const fansSnapshot = await db
     .collection('fan_profiles')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   fansSnapshot.docs.forEach(doc => {
@@ -403,10 +405,10 @@ async function getCRMSegmentsData(creatorId: string, start: Date, end: Date) {
 /**
  * Get traffic analytics
  */
-async function getTrafficAnalyticsData(creatorId: string, start: Date, end: Date) {
+async function getTrafficAnalyticsData(earnerId: string, start: Date, end: Date) {
   const analyticsSnapshot = await db
     .collection('analytics_daily')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .where('date', '>=', start)
     .where('date', '<=', end)
     .orderBy('date', 'asc')
@@ -437,10 +439,10 @@ async function getTrafficAnalyticsData(creatorId: string, start: Date, end: Date
 /**
  * Get revenue summary (aggregate only)
  */
-async function getRevenueSummaryData(creatorId: string, start: Date, end: Date) {
+async function getRevenueSummaryData(earnerId: string, start: Date, end: Date) {
   const transactionsSnapshot = await db
     .collection('transactions')
-    .where('sellerId', '==', creatorId)
+    .where('sellerId', '==', earnerId)
     .where('createdAt', '>=', start)
     .where('createdAt', '<=', end)
     .get();
@@ -579,7 +581,7 @@ async function logAccessAttempt(
     logId,
     partnerId,
     integrationId,
-    creatorId: context?.auth?.uid || 'unknown',
+    earnerId: context?.auth?.uid || 'unknown',
     endpoint: 'getIntegrationDataset',
     method: 'POST',
     requestedData: [dataType as DataPermissionType],
@@ -646,6 +648,22 @@ export const getAccessLogs = https.onCall(async (request) => {
     throw error;
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

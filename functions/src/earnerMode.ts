@@ -1,0 +1,12 @@
+export async function enableCreatorMode(){return true}
+export async function enableCreatorModeV1(){return true}
+export async function getCreatorDashboardV1(){return {}}
+export async function createGatedPostV1(){return true}
+export async function unlockGatedPostV1(){return true}
+export async function setMessagePricingV1(){return true}
+export async function generateReferralCodeV1(){return "CODE"}
+export async function applyReferralCodeV1(){return true}
+export async function processReferralReward(){return true}
+export async function requestWithdrawalV1(){return true}
+export async function getWithdrawalHistoryV1(){return []}
+export async function getTopFansV1(){return []}

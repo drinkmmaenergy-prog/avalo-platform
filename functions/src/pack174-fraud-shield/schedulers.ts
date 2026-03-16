@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Schedulers
  * Periodic fraud pattern scanning and cleanup tasks
@@ -333,10 +335,27 @@ async function detectImageImpersonation(userId: string): Promise<{
   }
 
   const matches = Math.floor(Math.random() * 10);
-  const confidence = matches > 5 ? 0.85 : matches > 2 ? MONETIZATION_SPLITS.CHAT.creator : 0.3;
+  const confidence = matches > 5 ? 0.85 : matches > 2 ? MONETIZATION_SPLITS.CHAT.earner : 0.3;
 
   return { matches, confidence };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

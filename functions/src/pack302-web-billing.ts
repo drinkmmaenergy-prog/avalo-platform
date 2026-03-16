@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 302 — Web Token & Subscription Checkout (Stripe)
  * Endpoints for web-based purchases via Stripe
@@ -97,8 +99,8 @@ export const createTokenCheckout = onRequest(
           userId,
           env: process.env.FIREBASE_CONFIG || 'production',
         },
-        success_url: `${req.headers.origin || 'https://avalo.app'}/wallet/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin || 'https://avalo.app'}/wallet`,
+        success_url: `${req.headers.origin || 'https://platform.app'}/wallet/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin || 'https://platform.app'}/wallet`,
       });
 
       const response: CreateTokenCheckoutResponse = {
@@ -416,8 +418,8 @@ export const createSubscriptionCheckout = onRequest(
             tier,
           },
         },
-        success_url: `${req.headers.origin || 'https://avalo.app'}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin || 'https://avalo.app'}/subscription`,
+        success_url: `${req.headers.origin || 'https://platform.app'}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin || 'https://platform.app'}/subscription`,
       });
 
       const response: CreateSubscriptionCheckoutResponse = {
@@ -436,6 +438,20 @@ export const createSubscriptionCheckout = onRequest(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

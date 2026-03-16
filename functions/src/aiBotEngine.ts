@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * AI Bot Engine
  * Phase 12: AI Companions 2.0 (Creator Bots)
@@ -60,13 +62,13 @@ const logger = {
  * Create a new AI bot
  */
 export async function createBot(
-  creatorId: string,
+  earnerId: string,
   request: CreateBotRequest
 ): Promise<CreateBotResponse> {
   
   // Validate bot limit
   const existingBotsQuery = await db.collection('aiBots')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('isActive', '==', true)
     .count()
     .get();
@@ -74,7 +76,7 @@ export async function createBot(
   if (existingBotsQuery.data().count >= MAX_BOTS_PER_CREATOR) {
     throw new HttpsError(
       'resource-exhausted',
-      `Maximum ${MAX_BOTS_PER_CREATOR} bots per creator`
+      `Maximum ${MAX_BOTS_PER_CREATOR} bots per earner`
     );
   }
   
@@ -109,7 +111,7 @@ export async function createBot(
   const botId = generateId();
   const botData: AIBot = {
     botId,
-    creatorId,
+    earnerId,
     name: request.name.trim(),
     gender: request.gender,
     age: request.age,
@@ -148,7 +150,7 @@ export async function createBot(
  * Update existing bot
  */
 export async function updateBot(
-  creatorId: string,
+  earnerId: string,
   request: UpdateBotRequest
 ): Promise<void> {
   
@@ -162,7 +164,7 @@ export async function updateBot(
   const bot = botSnap.data() as AIBot;
   
   // Verify ownership
-  if (bot.creatorId !== creatorId) {
+  if (bot.earnerId !== earnerId) {
     throw new HttpsError('permission-denied', 'Not authorized to update this bot');
   }
   
@@ -225,7 +227,7 @@ export async function updateBot(
  * Soft delete a bot (mark as inactive)
  */
 export async function deleteBot(
-  creatorId: string,
+  earnerId: string,
   request: DeleteBotRequest
 ): Promise<void> {
   
@@ -239,7 +241,7 @@ export async function deleteBot(
   const bot = botSnap.data() as AIBot;
   
   // Verify ownership
-  if (bot.creatorId !== creatorId) {
+  if (bot.earnerId !== earnerId) {
     throw new HttpsError('permission-denied', 'Not authorized to delete this bot');
   }
   
@@ -282,11 +284,11 @@ export async function getBotInfo(botId: string): Promise<AIBot | null> {
 }
 
 /**
- * Get all bots for a creator
+ * Get all bots for a earner
  */
-export async function getCreatorBots(creatorId: string): Promise<BotListItem[]> {
+export async function getCreatorBots(earnerId: string): Promise<BotListItem[]> {
   const botsSnap = await db.collection('aiBots')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('isActive', '==', true)
     .orderBy('createdAt', 'desc')
     .get();
@@ -306,17 +308,17 @@ export async function getCreatorBots(creatorId: string): Promise<BotListItem[]> 
 }
 
 /**
- * Get creator dashboard data
+ * Get earner dashboard data
  */
-export async function getCreatorBotDashboard(creatorId: string): Promise<CreatorBotDashboard> {
-  const bots = await getCreatorBots(creatorId);
+export async function getCreatorBotDashboard(earnerId: string): Promise<CreatorBotDashboard> {
+  const bots = await getCreatorBots(earnerId);
   
   const totalEarnings = bots.reduce((sum, bot) => sum + bot.stats.totalEarnings, 0);
   const totalMessages = bots.reduce((sum, bot) => sum + bot.stats.totalMessages, 0);
   const activeBots = bots.filter(bot => !bot.isPaused).length;
   
   return {
-    creatorId,
+    earnerId,
     totalBots: bots.length,
     activeBots,
     totalEarnings,
@@ -546,6 +548,20 @@ export default {
   generateAiResponse,
   updateBotStats,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

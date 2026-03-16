@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO CREATOR MODE & MONETIZATION
  * ========================================================================
  *
- * Complete creator monetization system
+ * Complete earner monetization system
  *
  * Features:
  * - Creator dashboard with analytics
@@ -24,13 +26,13 @@
  * - Referral bonuses
  *
  * @version 3.0.0
- * @module creatorMode
+ * @module earnerMode
  */
 
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, arrayUnion, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp, z } from './runtime';
-import { enforceCreatorAgreement } from './pack451-creator-agreement';
+import { enforceCreatorAgreement } from './pack451-earner-agreement';
 ;
 ;
 
@@ -42,10 +44,10 @@ const db = getFirestore();
 
 // Revenue splits
 const REVENUE_SPLITS = {
-  chatMessages: { creator: MONETIZATION_SPLITS.CHAT.creator, platform: MONETIZATION_SPLITS.CHAT.avalo },
-  gatedContent: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  tips: { creator: 0.90, platform: 0.10 },
-  subscriptions: { creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, platform: MONETIZATION_SPLITS.SUBSCRIPTION.avalo },
+  chatMessages: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  gatedContent: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  tips: { earner: 0.90, platform: 0.10 },
+  subscriptions: { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
 };
 
 // Creator minimums
@@ -114,7 +116,7 @@ export interface CreatorStats {
 
 export interface GatedPost {
   postId: string;
-  creatorId: string;
+  earnerId: string;
   unlockPrice: number;
   unlockedBy: string[]; // User IDs who unlocked
   unlockCount: number;
@@ -124,7 +126,7 @@ export interface GatedPost {
 
 export interface CreatorWithdrawal {
   id: string;
-  creatorId: string;
+  earnerId: string;
   amount: number; // tokens
   feeAmount: number;
   netAmount: number;
@@ -153,7 +155,7 @@ export interface Referral {
 // ============================================================================
 
 /**
- * Enable creator mode for user
+ * Enable earner mode for user
  */
 export const enableCreatorModeV1 = onCall(
   {
@@ -204,15 +206,15 @@ export const enableCreatorModeV1 = onCall(
         );
       }
 
-      // Enable creator mode
+      // Enable earner mode
       await userDoc.ref.update({
-        "roles.creator": true,
-        "creatorMode.enabled": true,
-        "creatorMode.enabledAt": FieldValue.serverTimestamp(),
+        "roles.earner": true,
+        "earnerMode.enabled": true,
+        "earnerMode.enabledAt": FieldValue.serverTimestamp(),
       });
 
-      // Initialize creator stats
-      await db.collection("creator_stats").doc(uid).set({
+      // Initialize earner stats
+      await db.collection("earner_stats").doc(uid).set({
         userId: uid,
         totalRevenue: 0,
         monthlyRevenue: 0,
@@ -252,8 +254,8 @@ export const enableCreatorModeV1 = onCall(
         message: "Creator mode activated!",
       };
     } catch (error: any) {
-      logger.error("Failed to enable creator mode:", error);
-      throw new HttpsError("internal", "Failed to enable creator mode");
+      logger.error("Failed to enable earner mode:", error);
+      throw new HttpsError("internal", "Failed to enable earner mode");
     }
   }
 );
@@ -263,7 +265,7 @@ export const enableCreatorModeV1 = onCall(
 // ============================================================================
 
 /**
- * Get creator dashboard analytics
+ * Get earner dashboard analytics
  */
 export const getCreatorDashboardV1 = onCall(
   {
@@ -280,14 +282,14 @@ export const getCreatorDashboardV1 = onCall(
     await enforceCreatorAgreement(uid);
 
     try {
-      // Verify creator status
+      // Verify earner status
       const userDoc = await db.collection("users").doc(uid).get();
-      if (!userDoc.data()?.roles?.creator) {
+      if (!userDoc.data()?.roles?.earner) {
         throw new HttpsError("failed-precondition", "Creator mode not enabled");
       }
 
-      // Get creator stats
-      const statsDoc = await db.collection("creator_stats").doc(uid).get();
+      // Get earner stats
+      const statsDoc = await db.collection("earner_stats").doc(uid).get();
       const stats = statsDoc.data() as CreatorStats;
 
       if (!stats) {
@@ -298,7 +300,7 @@ export const getCreatorDashboardV1 = onCall(
       const thirtyDaysAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const revenueSnapshot = await db
         .collection("transactions")
-        .where("creatorId", "==", uid)
+        .where("earnerId", "==", uid)
         .where("createdAt", ">=", thirtyDaysAgo)
         .orderBy("createdAt", "desc")
         .limit(100)
@@ -308,7 +310,7 @@ export const getCreatorDashboardV1 = onCall(
       revenueSnapshot.docs.forEach((doc) => {
         const data = doc.data();
         const date = new Date(data.createdAt?.toMillis()).toISOString().split("T")[0];
-        revenueByDay[date] = (revenueByDay[date] || 0) + (data.creatorShare || 0);
+        revenueByDay[date] = (revenueByDay[date] || 0) + (data.earner || 0);
       });
 
       // Get top posts
@@ -329,7 +331,7 @@ export const getCreatorDashboardV1 = onCall(
         })),
       };
     } catch (error: any) {
-      logger.error("Failed to get creator dashboard:", error);
+      logger.error("Failed to get earner dashboard:", error);
       throw new HttpsError("internal", "Failed to get dashboard");
     }
   }
@@ -373,9 +375,9 @@ export const createGatedPostV1 = onCall(
     const { content, mediaUrls, unlockPrice, isGated } = parsed;
 
     try {
-      // Verify creator status
+      // Verify earner status
       const userDoc = await db.collection("users").doc(uid).get();
-      if (!userDoc.data()?.roles?.creator) {
+      if (!userDoc.data()?.roles?.earner) {
         throw new HttpsError("failed-precondition", "Creator mode required");
       }
 
@@ -397,8 +399,8 @@ export const createGatedPostV1 = onCall(
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      // Update creator stats
-      await db.collection("creator_stats").doc(uid).update({
+      // Update earner stats
+      await db.collection("earner_stats").doc(uid).update({
         "contentStats.totalPosts": FieldValue.increment(1),
         "contentStats.gatedPosts": isGated ? FieldValue.increment(1) : FieldValue.increment(0),
       });
@@ -466,7 +468,7 @@ export const unlockGatedPostV1 = onCall(
       }
 
       const unlockPrice = post.unlockPrice || 10;
-      const creatorId = post.userId;
+      const earnerId = post.userId;
 
       // Check token balance
       const userDoc = await db.collection("users").doc(uid).get();
@@ -481,50 +483,50 @@ export const unlockGatedPostV1 = onCall(
 
       // Process unlock
       await db.runTransaction(async (transaction) => {
-        const creatorShare = Math.floor(unlockPrice * REVENUE_SPLITS.gatedContent.creator);
-        const platformFee = unlockPrice - creatorShare;
+        const earner = Math.floor(unlockPrice * REVENUE_SPLITS.gatedContent.earner);
+        const platformFee = unlockPrice - earner;
 
         // Deduct from user
         transaction.update(db.collection("users").doc(uid), {
           tokens: FieldValue.increment(-unlockPrice),
         });
 
-        // Credit creator
-        transaction.update(db.collection("users").doc(creatorId), {
-          tokens: FieldValue.increment(creatorShare),
+        // Credit earner
+        transaction.update(db.collection("users").doc(earnerId), {
+          tokens: FieldValue.increment(earner),
         });
 
         // Update post
         transaction.update(postDoc.ref, {
           unlockedBy: FieldValue.arrayUnion(uid),
           unlockCount: FieldValue.increment(1),
-          revenue: FieldValue.increment(creatorShare),
+          revenue: FieldValue.increment(earner),
         });
 
         // Record transaction
         transaction.set(db.collection("transactions").doc(), {
           type: "gated_content_unlock",
           userId: uid,
-          creatorId,
+          earnerId,
           amount: unlockPrice,
-          creatorShare,
+          earner,
           platformFee,
           metadata: { postId },
           createdAt: FieldValue.serverTimestamp(),
         });
 
-        // Update creator stats
-        transaction.update(db.collection("creator_stats").doc(creatorId), {
-          totalRevenue: FieldValue.increment(creatorShare),
-          todayRevenue: FieldValue.increment(creatorShare),
+        // Update earner stats
+        transaction.update(db.collection("earner_stats").doc(earnerId), {
+          totalRevenue: FieldValue.increment(earner),
+          todayRevenue: FieldValue.increment(earner),
           "contentStats.totalUnlocks": FieldValue.increment(1),
         });
 
         // Track fan
         transaction.set(
-          db.collection("creator_fans").doc(`${creatorId}_${uid}`),
+          db.collection("earner_fans").doc(`${earnerId}_${uid}`),
           {
-            creatorId,
+            earnerId,
             fanId: uid,
             totalSpent: FieldValue.increment(unlockPrice),
             lastPurchase: FieldValue.serverTimestamp(),
@@ -554,7 +556,7 @@ export const unlockGatedPostV1 = onCall(
 // ============================================================================
 
 /**
- * Set custom message pricing for creator
+ * Set custom message pricing for earner
  */
 export const setMessagePricingV1 = onCall(
   {
@@ -586,7 +588,7 @@ export const setMessagePricingV1 = onCall(
 
     try {
       await db.collection("users").doc(uid).update({
-        "creatorMode.messagePricing": {
+        "earnerMode.messagePricing": {
           wordsPerToken,
           customPricing,
           updatedAt: FieldValue.serverTimestamp(),
@@ -611,7 +613,7 @@ export const setMessagePricingV1 = onCall(
 // ============================================================================
 
 /**
- * Generate referral code for creator
+ * Generate referral code for earner
  */
 export const generateReferralCodeV1 = onCall(
   {
@@ -628,7 +630,7 @@ export const generateReferralCodeV1 = onCall(
       // Check if code already exists
       const existingCodeDoc = await db
         .collection("referral_codes")
-        .where("creatorId", "==", uid)
+        .where("earnerId", "==", uid)
         .limit(1)
         .get();
 
@@ -637,7 +639,7 @@ export const generateReferralCodeV1 = onCall(
         return {
           success: true,
           referralCode: code,
-          referralLink: `https://avalo.app/r/${code}`,
+          referralLink: `https://platform.app/r/${code}`,
         };
       }
 
@@ -646,7 +648,7 @@ export const generateReferralCodeV1 = onCall(
 
       await db.collection("referral_codes").doc(code).set({
         code,
-        creatorId: uid,
+        earnerId: uid,
         uses: 0,
         revenue: 0,
         createdAt: FieldValue.serverTimestamp(),
@@ -657,7 +659,7 @@ export const generateReferralCodeV1 = onCall(
       return {
         success: true,
         referralCode: code,
-        referralLink: `https://avalo.app/r/${code}`,
+        referralLink: `https://platform.app/r/${code}`,
       };
     } catch (error: any) {
       logger.error("Failed to generate referral code:", error);
@@ -695,7 +697,7 @@ export const applyReferralCodeV1 = onCall(
       }
 
       const codeData = codeDoc.data();
-      const referrerId = codeData?.creatorId;
+      const referrerId = codeData?.earnerId;
 
       // Can't refer yourself
       if (referrerId === uid) {
@@ -780,7 +782,7 @@ export async function processReferralReward(
       });
 
       // Update referral stats
-      transaction.update(db.collection("creator_stats").doc(referrerId), {
+      transaction.update(db.collection("earner_stats").doc(referrerId), {
         "referralStats.activeReferrals": FieldValue.increment(1),
         "referralStats.referralRevenue": FieldValue.increment(REFERRAL_REWARDS.referrer),
       });
@@ -859,10 +861,10 @@ export const requestWithdrawalV1 = onCall(
       const netAmount = amount - feeAmount;
 
       // Create withdrawal request
-      const withdrawalRef = db.collection("creator_withdrawals").doc();
+      const withdrawalRef = db.collection("earner_withdrawals").doc();
       const withdrawal: CreatorWithdrawal = {
         id: withdrawalRef.id,
-        creatorId: uid,
+        earnerId: uid,
         amount,
         feeAmount,
         netAmount,
@@ -876,7 +878,7 @@ export const requestWithdrawalV1 = onCall(
       // Deduct tokens immediately (lock them)
       await db.collection("users").doc(uid).update({
         tokens: FieldValue.increment(-amount),
-        "creatorMode.pendingWithdrawal": FieldValue.increment(amount),
+        "earnerMode.pendingWithdrawal": FieldValue.increment(amount),
       });
 
       logger.info(`Withdrawal requested by ${uid}: ${amount} tokens via ${method}`);
@@ -911,8 +913,8 @@ export const getWithdrawalHistoryV1 = onCall(
 
     try {
       const withdrawalsSnapshot = await db
-        .collection("creator_withdrawals")
-        .where("creatorId", "==", uid)
+        .collection("earner_withdrawals")
+        .where("earnerId", "==", uid)
         .orderBy("requestedAt", "desc")
         .limit(50)
         .get();
@@ -953,8 +955,8 @@ export const getTopFansV1 = onCall(
 
     try {
       const fansSnapshot = await db
-        .collection("creator_fans")
-        .where("creatorId", "==", uid)
+        .collection("earner_fans")
+        .where("earnerId", "==", uid)
         .orderBy("totalSpent", "desc")
         .limit(20)
         .get();
@@ -1003,6 +1005,22 @@ export default {
   getTopFansV1,
   processReferralReward,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

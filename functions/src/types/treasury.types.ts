@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 128 - Treasury & Payment Vault System
  * Type definitions for bank-grade treasury architecture
@@ -31,7 +33,7 @@ export type LedgerEventType =
   | 'EARN'                  // Creator earns tokens
   | 'COMMISSION'            // Avalo revenue
   | 'REFUND'                // Refund to user
-  | 'REFUND_CREATOR'        // Refund from creator vault
+  | 'REFUND_CREATOR'        // Refund from earner vault
   | 'REFUND_COMMISSION'     // Refund from Avalo vault
   | 'PAYOUT_LOCK'           // Tokens locked for payout
   | 'PAYOUT_RELEASE'        // Payout completed
@@ -79,7 +81,7 @@ export interface TreasuryLedgerEntry {
   ledgerId: string;                    // UUID
   eventType: LedgerEventType;          // Type of transaction
   userId: string;                      // User involved
-  creatorId?: string;                  // Creator involved (optional)
+  earnerId?: string;                  // Creator involved (optional)
   transactionId?: string;              // Reference to original transaction
   tokenAmount: number;                 // Tokens moved (positive or negative)
   vault: VaultType;                    // Which vault this affects
@@ -221,7 +223,7 @@ export interface RefundRecord {
   id: string;                          // UUID
   originalTransactionId: string;       // Reference to original spend
   userId: string;                      // User receiving refund
-  creatorId?: string;                  // Creator affected by refund
+  earnerId?: string;                  // Creator affected by refund
   tokenAmount: number;                 // Tokens refunded
   reason: string;                      // Why refunded
   status: RefundStatus;
@@ -277,7 +279,7 @@ export interface TreasuryAuditReport {
   };
   summary: {
     totalUserTokens: number;           // Sum of all user wallets
-    totalCreatorTokens: number;        // Sum of all creator vaults
+    totalCreatorTokens: number;        // Sum of all earner vaults
     totalAvaloRevenue: number;         // Platform commission
     hotWalletBalance: number;
     coldWalletBalance: number;
@@ -311,8 +313,8 @@ export interface TreasuryConfig {
   id: string;                          // Always 'config' (singleton)
   
   // Revenue split (immutable)
-  creatorSplitPercent: number;         // Always 65
-  avaloSplitPercent: number;           // Always 35
+  earnerSplitPercent: number;         // Always 65
+  platformSplitPercent: number;           // Always 35
   
   // Refund policy
   refundGraceWindowMinutes: number;    // Default: 5 minutes
@@ -345,7 +347,7 @@ export interface TreasuryConfig {
 
 export interface AllocateSpendRequest {
   userId: string;
-  creatorId: string;
+  earnerId: string;
   tokenAmount: number;
   transactionType: TransactionType;
   contentId?: string;
@@ -356,8 +358,8 @@ export interface AllocateSpendResponse {
   success: boolean;
   ledgerId: string;
   userBalance: number;
-  creatorEarnings: number;
-  avaloRevenue: number;
+  earnerEarnings: number;
+  platformRevenue: number;
   timestamp: Timestamp;
 }
 
@@ -428,8 +430,8 @@ export interface RebalanceWalletResponse {
 // ============================================================================
 
 export interface TokenFlowSplit {
-  creatorAmount: number;               // 65% of spend
-  avaloAmount: number;                 // 35% of spend
+  earnerAmount: number;               // 65% of spend
+  platformAmount: number;                 // 35% of spend
   total: number;
 }
 
@@ -444,8 +446,8 @@ export interface DoubleSpendCheck {
 // ============================================================================
 
 export const TREASURY_CONSTANTS = {
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator,                 // 65%
-  AVALO_SPLIT: MONETIZATION_SPLITS.CHAT.avalo,                   // 35%
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.earner,                 // 65%
+  AVALO_SPLIT: MONETIZATION_SPLITS.CHAT.platform,                   // 35%
   DEFAULT_REFUND_GRACE_MINUTES: 5,
   DEFAULT_HOT_WALLET_MAX: 1000000,     // 1M tokens
   DEFAULT_HOT_WALLET_TARGET: 500000,   // 500K tokens
@@ -492,6 +494,23 @@ export function isValidTransactionType(type: string): type is TransactionType {
     'OTHER',
   ].includes(type);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

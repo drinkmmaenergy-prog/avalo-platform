@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 291 — AI Service (Claude Sonnet 4.5 Integration)
- * Generates insights using Claude AI based on creator data
+ * Generates insights using Claude AI based on earner data
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -150,7 +152,7 @@ export async function generateDailySummary(
     response = cached;
     logger.info(`Using cached daily summary for user ${data.userId}`);
   } else {
-    const systemPrompt = `You are an AI assistant helping creators optimize their earnings on Avalo.
+    const systemPrompt = `You are an AI assistant helping earners optimize their earnings on Avalo.
 You provide concise, actionable insights based on performance data.
 
 SAFETY RULES (CRITICAL):
@@ -162,7 +164,7 @@ SAFETY RULES (CRITICAL):
 
 Your insights should be direct, data-driven, and immediately actionable.`;
 
-    const userPrompt = `Analyze this creator's performance for today and provide a brief summary (max 200 chars):
+    const userPrompt = `Analyze this earner's performance for today and provide a brief summary (max 200 chars):
 
 Earnings Today: ${data.earnings.total} tokens (${(data.earnings.total * TOKEN_PAYOUT_USD).toFixed(2)} USD)
 Trend: ${data.earnings.trend > 0 ? '+' : ''}${data.earnings.trend.toFixed(1)}%
@@ -252,7 +254,7 @@ export async function generateWeeklyOptimization(
   if (cached) {
     response = cached;
   } else {
-    const systemPrompt = `You are an AI optimization coach for creators on Avalo.
+    const systemPrompt = `You are an AI optimization coach for earners on Avalo.
 Provide 3-5 specific, actionable tips to improve earnings based on data patterns.
 
 SAFETY RULES:
@@ -263,7 +265,7 @@ SAFETY RULES:
 
 Format as JSON array of tips with category, tip, impact (HIGH/MEDIUM/LOW), and basedOn.`;
 
-    const userPrompt = `Analyze this creator's weekly performance and provide optimization tips:
+    const userPrompt = `Analyze this earner's weekly performance and provide optimization tips:
 
 Total Earnings: ${data.earnings.total} tokens
 Best Performing Feature: ${Object.entries(data.earnings.byFeature).sort(([,a],[,b]) => b-a)[0]?.[0] || 'None'}
@@ -476,7 +478,7 @@ export async function generatePricingRecommendations(
 ): Promise<PricingRecommendation[]> {
   const recommendations: PricingRecommendation[] = [];
 
-  // Only suggest if creator has good performance
+  // Only suggest if earner has good performance
   if (data.earnings.total > 0 && data.engagement.conversionRate > 3) {
     if (data.earnings.byFeature.CALL > 0) {
       recommendations.push({
@@ -568,6 +570,20 @@ export async function generateProfileHealth(
     weaknesses,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

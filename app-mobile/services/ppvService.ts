@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Pay-Per-View (PPV) Service
  * Phase 33-4: UI-only PPV media monetization for creators
@@ -375,3 +376,4 @@ export default {
   CREATOR_EARNINGS,
   VIP_DISCOUNT,
 };
+

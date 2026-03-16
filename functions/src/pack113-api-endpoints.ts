@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 113 — Full Ecosystem API Gateway
  * REST API Endpoints
@@ -136,7 +138,7 @@ async function apiGatewayMiddleware(params: {
 
 /**
  * GET /api/v1/me/profile
- * Read creator's public profile
+ * Read earner's public profile
  */
 export const getMyProfile = onRequest(
   { region: 'europe-west1', cors: true },
@@ -182,7 +184,7 @@ export const getMyProfile = onRequest(
         coverPhotoUrl: userData.coverPhotoUrl,
         socialLinks: userData.socialLinks || [],
         isVerified: userData.isVerified || false,
-        creatorMode: userData.creatorMode || false,
+        earnerMode: userData.earnerMode || false,
         joinedAt: userData.createdAt,
       };
 
@@ -211,7 +213,7 @@ export const getMyProfile = onRequest(
 
 /**
  * PATCH /api/v1/me/profile
- * Update creator's profile basics
+ * Update earner's profile basics
  */
 export const updateMyProfile = onRequest(
   { region: 'europe-west1', cors: true },
@@ -309,7 +311,7 @@ export const updateMyProfile = onRequest(
 
 /**
  * POST /api/v1/me/stories
- * Publish a story on behalf of creator
+ * Publish a story on behalf of earner
  */
 export const postStory = onRequest(
   { region: 'europe-west1', cors: true },
@@ -529,7 +531,7 @@ export const deletePost = onRequest(
 
 /**
  * GET /api/v1/me/analytics/overview
- * Get creator's aggregated analytics
+ * Get earner's aggregated analytics
  */
 export const getAnalyticsOverview = onRequest(
   { region: 'europe-west1', cors: true },
@@ -556,7 +558,7 @@ export const getAnalyticsOverview = onRequest(
 
       // Fetch analytics snapshot
       const snapshotDoc = await db
-        .collection('creator_analytics_snapshot')
+        .collection('earner_analytics_snapshot')
         .doc(auth.userId!)
         .get();
 
@@ -638,7 +640,7 @@ export const getAudienceDemographics = onRequest(
 
       // Fetch audience insights (aggregated only)
       const audienceDoc = await db
-        .collection('creator_audience_insights')
+        .collection('earner_audience_insights')
         .doc(auth.userId!)
         .get();
 
@@ -685,6 +687,20 @@ export const getAudienceDemographics = onRequest(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

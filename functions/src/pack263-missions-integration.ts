@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ============================================================================
  * PACK 263 — CREATOR MISSIONS INTEGRATION EXAMPLES
@@ -11,7 +13,7 @@
  */
 
 import { db } from './init';
-import { recordMissionProgressInternal } from './pack263-creator-missions';
+import { recordMissionProgressInternal } from './pack263-earner-missions';
 import { auth, functions, onCall, timestamp, onDocumentUpdated } from './runtime';
 
 // ============================================================================
@@ -24,7 +26,7 @@ import { auth, functions, onCall, timestamp, onDocumentUpdated } from './runtime
  * Call this from your chat billing function after tokens are deducted
  */
 export async function integrateWithChatMonetization(
-  creatorId: string,
+  earnerId: string,
   messageCount: number,
   tokensEarned: number,
   payerId: string
@@ -32,7 +34,7 @@ export async function integrateWithChatMonetization(
   try {
     // Track "reply to paid messages" mission
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'reply_messages',
       messageCount,
       {
@@ -44,7 +46,7 @@ export async function integrateWithChatMonetization(
 
     // Track "earn tokens" mission (weekly)
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'earn_tokens',
       tokensEarned,
       {
@@ -53,7 +55,7 @@ export async function integrateWithChatMonetization(
       }
     );
 
-    console.log(`✅ Chat mission progress recorded for creator ${creatorId}`);
+    console.log(`✅ Chat mission progress recorded for earner ${earnerId}`);
   } catch (error) {
     console.error('Error integrating chat with missions:', error);
     // Don't throw - mission tracking should not block chat functionality
@@ -64,12 +66,12 @@ export async function integrateWithChatMonetization(
  * Example: Track first paid chat initiated from Discover
  */
 export async function trackPaidChatFromDiscover(
-  creatorId: string,
+  earnerId: string,
   conversationId: string
 ): Promise<void> {
   try {
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'start_paid_chat',
       1,
       {
@@ -78,7 +80,7 @@ export async function trackPaidChatFromDiscover(
       }
     );
 
-    console.log(`✅ Paid chat from Discover tracked for ${creatorId}`);
+    console.log(`✅ Paid chat from Discover tracked for ${earnerId}`);
   } catch (error) {
     console.error('Error tracking paid chat from discover:', error);
   }
@@ -88,7 +90,7 @@ export async function trackPaidChatFromDiscover(
  * Example: Track dormant supporter reactivation
  */
 export async function trackDormantSupporterReactivation(
-  creatorId: string,
+  earnerId: string,
   supporterId: string,
   lastActivityDate: Date
 ): Promise<void> {
@@ -100,7 +102,7 @@ export async function trackDormantSupporterReactivation(
     // Only count if supporter was dormant for 7+ days
     if (daysSinceLastActivity >= 7) {
       await recordMissionProgressInternal(
-        creatorId,
+        earnerId,
         'reactivate_supporter',
         1,
         {
@@ -109,7 +111,7 @@ export async function trackDormantSupporterReactivation(
         }
       );
 
-      console.log(`✅ Dormant supporter reactivation tracked for ${creatorId}`);
+      console.log(`✅ Dormant supporter reactivation tracked for ${earnerId}`);
     }
   } catch (error) {
     console.error('Error tracking dormant supporter reactivation:', error);
@@ -126,7 +128,7 @@ export async function trackDormantSupporterReactivation(
  * Call this from your Live session end handler
  */
 export async function integrateWithLiveBroadcast(
-  creatorId: string,
+  earnerId: string,
   sessionData: {
     durationMinutes: number;
     averageViewers: number;
@@ -139,7 +141,7 @@ export async function integrateWithLiveBroadcast(
     // Track "host live" mission (requires minimum 2 viewers)
     if (sessionData.averageViewers >= 2) {
       await recordMissionProgressInternal(
-        creatorId,
+        earnerId,
         'host_live',
         sessionData.durationMinutes,
         {
@@ -153,7 +155,7 @@ export async function integrateWithLiveBroadcast(
     // Track tokens earned from gifts
     if (sessionData.tokensEarned > 0) {
       await recordMissionProgressInternal(
-        creatorId,
+        earnerId,
         'earn_tokens',
         sessionData.tokensEarned,
         {
@@ -163,7 +165,7 @@ export async function integrateWithLiveBroadcast(
       );
     }
 
-    console.log(`✅ Live broadcast mission progress recorded for ${creatorId}`);
+    console.log(`✅ Live broadcast mission progress recorded for ${earnerId}`);
   } catch (error) {
     console.error('Error integrating live broadcast with missions:', error);
   }
@@ -173,14 +175,14 @@ export async function integrateWithLiveBroadcast(
  * Example: Track PPV Live ticket sales
  */
 export async function trackPPVTicketSale(
-  creatorId: string,
+  earnerId: string,
   buyerId: string,
   ticketPrice: number,
   liveId: string
 ): Promise<void> {
   try {
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'sell_ppv_tickets',
       1,
       {
@@ -190,7 +192,7 @@ export async function trackPPVTicketSale(
       }
     );
 
-    console.log(`✅ PPV ticket sale tracked for ${creatorId}`);
+    console.log(`✅ PPV ticket sale tracked for ${earnerId}`);
   } catch (error) {
     console.error('Error tracking PPV ticket sale:', error);
   }
@@ -206,7 +208,7 @@ export async function trackPPVTicketSale(
  * IMPORTANT: Only count tickets with verified check-ins (min 5) to prevent exploitation
  */
 export async function integrateWithEvents(
-  creatorId: string,
+  earnerId: string,
   eventId: string,
   buyerId: string,
   ticketPrice: number
@@ -219,7 +221,7 @@ export async function integrateWithEvents(
     // Only count if event has legitimate attendance
     if (checkinCount >= 5) {
       await recordMissionProgressInternal(
-        creatorId,
+        earnerId,
         'sell_event_tickets',
         1,
         {
@@ -230,7 +232,7 @@ export async function integrateWithEvents(
         }
       );
 
-      console.log(`✅ Event ticket sale tracked for ${creatorId}`);
+      console.log(`✅ Event ticket sale tracked for ${earnerId}`);
     }
   } catch (error) {
     console.error('Error integrating events with missions:', error);
@@ -245,14 +247,14 @@ export async function integrateWithEvents(
  * Example: Record mission progress when Fan Club subscription is purchased
  */
 export async function integrateWithFanClub(
-  creatorId: string,
+  earnerId: string,
   subscriberId: string,
   subscriptionTier: string,
   subscriptionPrice: number
 ): Promise<void> {
   try {
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'fan_club_subs',
       1,
       {
@@ -262,7 +264,7 @@ export async function integrateWithFanClub(
       }
     );
 
-    console.log(`✅ Fan Club subscription tracked for ${creatorId}`);
+    console.log(`✅ Fan Club subscription tracked for ${earnerId}`);
   } catch (error) {
     console.error('Error integrating fan club with missions:', error);
   }
@@ -276,13 +278,13 @@ export async function integrateWithFanClub(
  * Example: Record mission progress when story is posted
  */
 export async function trackStoryPost(
-  creatorId: string,
+  earnerId: string,
   storyId: string,
   mediaType: 'photo' | 'video'
 ): Promise<void> {
   try {
     await recordMissionProgressInternal(
-      creatorId,
+      earnerId,
       'post_story',
       1,
       {
@@ -292,7 +294,7 @@ export async function trackStoryPost(
       }
     );
 
-    console.log(`✅ Story post tracked for ${creatorId}`);
+    console.log(`✅ Story post tracked for ${earnerId}`);
   } catch (error) {
     console.error('Error tracking story post:', error);
   }
@@ -305,17 +307,17 @@ export async function trackStoryPost(
 /**
  * Example: Track chat reply speed ranking
  * 
- * Call this from a scheduled function that calculates creator reply speeds
+ * Call this from a scheduled function that calculates earner reply speeds
  */
 export async function trackChatReplySpeed(
-  creatorId: string,
+  earnerId: string,
   percentileRanking: number // e.g., 5 for top 5%
 ): Promise<void> {
   try {
     // Only track if in top 10%
     if (percentileRanking <= 10) {
       await recordMissionProgressInternal(
-        creatorId,
+        earnerId,
         'chat_reply_speed',
         percentileRanking,
         {
@@ -324,7 +326,7 @@ export async function trackChatReplySpeed(
         }
       );
 
-      console.log(`✅ Chat reply speed ranking tracked for ${creatorId}`);
+      console.log(`✅ Chat reply speed ranking tracked for ${earnerId}`);
     }
   } catch (error) {
     console.error('Error tracking chat reply speed:', error);
@@ -336,11 +338,11 @@ export async function trackChatReplySpeed(
 // ============================================================================
 
 /**
- * Check if creator has missions system enabled
+ * Check if earner has missions system enabled
  */
-export async function isCreatorMissionsEnabled(creatorId: string): Promise<boolean> {
+export async function isCreatorMissionsEnabled(earnerId: string): Promise<boolean> {
   try {
-    const missionDoc = await db.collection('creatorMissions').doc(creatorId).get();
+    const missionDoc = await db.collection('earnerMissions').doc(earnerId).get();
     return missionDoc.exists;
   } catch (error) {
     console.error('Error checking missions enabled:', error);
@@ -349,16 +351,16 @@ export async function isCreatorMissionsEnabled(creatorId: string): Promise<boole
 }
 
 /**
- * Get creator's active missions for a specific activity type
+ * Get earner's active missions for a specific activity type
  */
 export async function getActiveMissionsForActivity(
-  creatorId: string,
+  earnerId: string,
   activityType: string
 ): Promise<any[]> {
   try {
     const missionsSnapshot = await db
-      .collection('creatorMissions')
-      .doc(creatorId)
+      .collection('earnerMissions')
+      .doc(earnerId)
       .collection('activeMissions')
       .where('status', '==', 'active')
       .where('objective.type', '==', activityType)
@@ -390,7 +392,7 @@ export async function getActiveMissionsForActivity(
  *   // After tokens are deducted and chat is recorded:
  *   if (isCreatorMode) {
  *     await integrateWithChatMonetization(
- *       creatorId,
+ *       earnerId,
  *       1, // message count
  *       tokensDeducted,
  *       payerId
@@ -437,7 +439,7 @@ export async function getActiveMissionsForActivity(
  *   
  *   // After subscription is confirmed:
  *   await integrateWithFanClub(
- *     creatorId,
+ *     earnerId,
  *     subscriberId,
  *     subscriptionTier,
  *     subscriptionPrice
@@ -450,6 +452,20 @@ export async function getActiveMissionsForActivity(
 
 // Note: All functions are already exported with 'export' keyword above
 // No additional export block needed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 97 — Creator Analytics & Earnings Insights (Compliance-Safe, Non-Promotional)
  * Extension to PACK 82 with additional analytics capabilities
@@ -5,9 +7,9 @@
  * Business Rules (NON-NEGOTIABLE):
  * - No free tokens, no discounts, no promo codes, no cashback, no bonuses
  * - Token price per unit MUST NOT be changed
- * - Revenue split: 65% creator / 35% Avalo (fixed)
+ * - Revenue split: 65% earner / 35% Avalo (fixed)
  * - Analytics must be historical and descriptive, not investment/earnings promises
- * - Numbers must match authoritative sources (earnings_ledger, creator_balances)
+ * - Numbers must match authoritative sources (earnings_ledger, earner_balances)
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
@@ -15,7 +17,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, increment } from './init';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logger } from 'firebase-functions/v2';
-import { EarningSourceType } from './creatorEarnings';
+import { EarningSourceType } from './earnerEarnings';
 import { admin, auth, functions, onSchedule } from './runtime';
 
 // ============================================================================
@@ -24,7 +26,7 @@ import { admin, auth, functions, onSchedule } from './runtime';
 
 export interface ContentAnalyticsDaily {
   id: string; // ${contentType}_${contentId}_${YYYYMMDD}
-  userId: string; // creator/owner
+  userId: string; // earner/owner
   contentType: 'PREMIUM_STORY' | 'PAID_MEDIA' | 'GIFT' | 'PAID_CALL' | 'AI_COMPANION';
   contentId: string;
   date: string; // YYYY-MM-DD
@@ -157,7 +159,7 @@ export async function rebuildContentAnalyticsForDay(date: Date): Promise<void> {
     const entry = doc.data();
     const contentType = entry.sourceType;
     const contentId = entry.sourceId;
-    const userId = entry.creatorId;
+    const userId = entry.earnerId;
     const tokens = entry.netTokensCreator;
 
     // Only track content types (not OTHER)
@@ -220,7 +222,7 @@ export async function rebuildContentAnalyticsForDay(date: Date): Promise<void> {
  */
 export const dailyContentAnalyticsJob = onSchedule(
   {
-    schedule: '0 4 * * *', // Daily at 4 AM UTC (after creator analytics)
+    schedule: '0 4 * * *', // Daily at 4 AM UTC (after earner analytics)
     timeZone: 'UTC',
     memory: '512MiB' as const,
     timeoutSeconds: 540,
@@ -249,7 +251,7 @@ export const dailyContentAnalyticsJob = onSchedule(
 // ============================================================================
 
 /**
- * Get creator earnings summary
+ * Get earner earnings summary
  * Returns high-level aggregates with current balance and breakdowns
  */
 export const getCreatorEarningsSummary = onCall(
@@ -268,7 +270,7 @@ export const getCreatorEarningsSummary = onCall(
 
     try {
       // Get current balance
-      const balanceDoc = await db.collection('creator_balances').doc(userId).get();
+      const balanceDoc = await db.collection('earner_balances').doc(userId).get();
       const balance = balanceDoc.exists ? balanceDoc.data() : {
         availableTokens: 0,
         lifetimeEarned: 0,
@@ -280,7 +282,7 @@ export const getCreatorEarningsSummary = onCall(
 
       const last30DaysQuery = await db
         .collection('earnings_ledger')
-        .where('creatorId', '==', userId)
+        .where('earnerId', '==', userId)
         .where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo))
         .get();
 
@@ -301,7 +303,7 @@ export const getCreatorEarningsSummary = onCall(
       // Calculate lifetime breakdown by source
       const lifetimeQuery = await db
         .collection('earnings_ledger')
-        .where('creatorId', '==', userId)
+        .where('earnerId', '==', userId)
         .get();
 
       const lifetimeBreakdown = {
@@ -361,7 +363,7 @@ export const getCreatorEarningsSummary = onCall(
 );
 
 /**
- * Get creator earnings timeseries
+ * Get earner earnings timeseries
  * Returns daily data points for charting
  */
 export const getCreatorEarningsTimeseries = onCall(
@@ -386,8 +388,8 @@ export const getCreatorEarningsTimeseries = onCall(
     try {
       // Query daily analytics
       const dailyQuery = await db
-        .collection('creator_analytics_daily')
-        .where('creatorId', '==', userId)
+        .collection('earner_analytics_daily')
+        .where('earnerId', '==', userId)
         .where('date', '>=', formatDateYMD(startDate))
         .where('date', '<=', formatDateYMD(toDate))
         .orderBy('date', 'asc')
@@ -535,6 +537,20 @@ export const getTopPerformingContent = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

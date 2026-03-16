@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 198 — Event Management Functions
  * Professional livestream conference operations
@@ -141,8 +143,8 @@ export const createEvent = https.onCall(async (request) => {
     averageWatchTime: 0,
     
     totalRevenue: 0,
-    creatorShare: 0,
-    platformShare: 0,
+    earner: 0,
+    platform: 0,
   };
 
   await eventRef.set(event);
@@ -727,7 +729,7 @@ export const generateEventCertificate = https.onCall(async (request) => {
       certificatUSDl: 'placeholder-certificate-url',
       certificateCode,
       verified: true,
-      verificationUrl: `https://avalo.app/verify/${certificateCode}`,
+      verificationUrl: `https://platform.app/verify/${certificateCode}`,
       attendancePercentage,
       completedActivities: [],
       issuedAt: admin.firestore.Timestamp.now(),
@@ -859,13 +861,29 @@ export const completeEventTicketPayment = https.onCall(async (request) => {
     const revenue = validateRevenueShare(event.totalRevenue + ticket.price);
 
     await eventRef.update({
-      creatorShare: revenue.creatorShare,
-      platformShare: revenue.platformShare,
+      earner: revenue.earner,
+      platform: revenue.platform,
     });
 
     return { success: true, accessGranted: true };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

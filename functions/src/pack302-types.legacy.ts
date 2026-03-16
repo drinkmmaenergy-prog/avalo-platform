@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 302 — Unified Token & Subscription Checkout
  * Types and Interfaces
@@ -260,6 +262,20 @@ export const CALL_DISCOUNT_ROYAL = 0.5; // 50% off
 // Base call rates (tokens per minute) - before discounts
 export const VOICE_CALL_BASE_RATE = 10;
 export const VIDEO_CALL_BASE_RATE = 20;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

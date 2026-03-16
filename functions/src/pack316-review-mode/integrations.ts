@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 316 - Review Mode Integration Examples
  * 
@@ -223,7 +225,7 @@ export async function integratedSendChatMessage(
  */
 export async function integratedCreateBooking(
   request: CallableRequest<{
-    creatorId: string;
+    earnerId: string;
     timeSlot: string;
     durationMinutes: number;
   }>
@@ -233,12 +235,12 @@ export async function integratedCreateBooking(
   }
 
   const userId = request.auth.uid;
-  const { creatorId, timeSlot, durationMinutes } = request.data;
+  const { earnerId, timeSlot, durationMinutes } = request.data;
 
   try {
     // Calculate cost
-    const creatorDoc = await db.collection("users").doc(creatorId).get();
-    const ratePerHour = creatorDoc.data()?.rates?.calendar || 0;
+    const earnerDoc = await db.collection("users").doc(earnerId).get();
+    const ratePerHour = earnerDoc.data()?.rates?.calendar || 0;
     const tokenCost = Math.ceil((ratePerHour / 60) * durationMinutes);
 
     // Get context
@@ -271,7 +273,7 @@ export async function integratedCreateBooking(
     // Create booking (same for both modes)
     const bookingId = await createBooking({
       userId,
-      creatorId,
+      earnerId,
       timeSlot,
       durationMinutes,
       tokenCost,
@@ -555,7 +557,7 @@ async function sendMessage(
 
 async function createBooking(data: {
   userId: string;
-  creatorId: string;
+  earnerId: string;
   timeSlot: string;
   durationMinutes: number;
   tokenCost: number;
@@ -597,6 +599,22 @@ async function getRegularDiscoveryProfiles(
 
   return snapshot.docs.map((doc) => doc.id);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

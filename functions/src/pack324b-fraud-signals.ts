@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324B — Fraud Signal Emission
  * 
@@ -344,7 +346,7 @@ export async function checkFakeBookings(
 // ============================================================================
 
 /**
- * Check for self-refunds pattern (many bookings canceled by creator)
+ * Check for self-refunds pattern (many bookings canceled by earner)
  * Called when calendar booking is canceled by host
  */
 export async function checkSelfRefunds(
@@ -352,7 +354,7 @@ export async function checkSelfRefunds(
   bookingId: string
 ): Promise<void> {
   try {
-    // Count recent cancellations by this creator
+    // Count recent cancellations by this earner
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - DETECTION_THRESHOLDS.SELF_CANCEL_WINDOW_DAYS);
     
@@ -599,6 +601,20 @@ export async function cleanupOldFraudSignals(): Promise<number> {
     return 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

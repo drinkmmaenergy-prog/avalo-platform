@@ -1,13 +1,15 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 258 — BUYER / SUPPORTER ANALYTICS
  * Keep High-Value Payers Loyal & Spending
  * 
  * Features:
- * - Private supporter analytics (lifetime/monthly spend, top creators)
- * - Top Fan Progression (L1-L6) per creator
- * - Emotional notifications (creator viewed, online, new content)
+ * - Private supporter analytics (lifetime/monthly spend, top earners)
+ * - Top Fan Progression (L1-L6) per earner
+ * - Emotional notifications (earner viewed, online, new content)
  * - Algorithmic benefits (inbox/feed prioritization)
- * - Retention loops (no spending triggers, trending creators)
+ * - Retention loops (no spending triggers, trending earners)
  * - Safety: no public leaderboards, no entitlement, no pressure
  */
 
@@ -25,10 +27,10 @@ export interface SupporterAnalytics {
   userId: string;
   lifetimeSpent: number;           // Total tokens spent all-time
   monthlySpent: number;            // Tokens spent this month
-  topCreatorId: string | null;     // ID of most supported creator
-  topCreatorSpent: number;         // Tokens spent on top creator
-  creatorsDiscovered: number;      // Count of unique creators interacted with
-  profileViewsReceived: number;    // Profile views from creators
+  topCreatorId: string | null;     // ID of most supported earner
+  topCreatorSpent: number;         // Tokens spent on top earner
+  earnersDiscovered: number;      // Count of unique earners interacted with
+  profileViewsReceived: number;    // Profile views from earners
   matchesFromPaidChats: number;    // Matches resulting from paid chats
   lastSpentAt: FirebaseFirestore.Timestamp | null;
   createdAt: FirebaseFirestore.Timestamp;
@@ -37,9 +39,9 @@ export interface SupporterAnalytics {
 
 export interface FanLevelData {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   level: FanLevel;                 // 1=Interested, 2=Supporter, 3=Big Fan, 4=Top Fan, 5=VIP, 6=Elite VIP
-  totalSpent: number;              // Total spent on this creator
+  totalSpent: number;              // Total spent on this earner
   lastInteractionAt: FirebaseFirestore.Timestamp;
   levelUnlockedAt: FirebaseFirestore.Timestamp;
   createdAt: FirebaseFirestore.Timestamp;
@@ -49,7 +51,7 @@ export interface FanLevelData {
 export interface SupporterNotification {
   id: string;
   userId: string;                  // Supporter receiving the notification
-  creatorId: string;               // Creator the notification is about
+  earnerId: string;               // Creator the notification is about
   type: NotificationType;
   message: string;
   deepLink: string;               // Link to chat/media/boost
@@ -59,18 +61,18 @@ export interface SupporterNotification {
 }
 
 export type NotificationType =
-  | 'creator_viewed_profile'
-  | 'creator_online'
-  | 'creator_new_story'
-  | 'creator_new_media'
+  | 'earner_viewed_profile'
+  | 'earner_online'
+  | 'earner_new_story'
+  | 'earner_new_media'
   | 'top_fan_achieved'
   | 'unlocked_more_content'
-  | 'creator_trending';
+  | 'earner_trending';
 
 export interface RetentionTrigger {
   userId: string;
-  creatorId: string;
-  triggerType: 'no_spending_7days' | 'creator_trending' | 'dropped_top_fan';
+  earnerId: string;
+  triggerType: 'no_spending_7days' | 'earner_trending' | 'dropped_top_fan';
   lastSent: FirebaseFirestore.Timestamp;
   cooldownHours: number;
 }
@@ -79,7 +81,7 @@ export interface RetentionTrigger {
 // CONSTANTS
 // ============================================================================
 
-// Fan level thresholds (tokens spent on a specific creator)
+// Fan level thresholds (tokens spent on a specific earner)
 const FAN_LEVEL_THRESHOLDS: Record<FanLevel, number> = {
   1: 0,       // Interested - any interaction
   2: 50,      // Supporter - 50+ tokens
@@ -110,19 +112,19 @@ const INBOX_PRIORITY_BOOST: Record<FanLevel, number> = {
 
 // Notification cooldowns (hours)
 const NOTIFICATION_COOLDOWNS = {
-  creator_viewed_profile: 12,
-  creator_online: 8,
-  creator_new_story: 24,
-  creator_new_media: 24,
+  earner_viewed_profile: 12,
+  earner_online: 8,
+  earner_new_story: 24,
+  earner_new_media: 24,
   top_fan_achieved: 0,  // Always send
   unlocked_more_content: 48,
-  creator_trending: 48,
+  earner_trending: 48,
 };
 
 // Retention trigger cooldowns (hours)
 const RETENTION_COOLDOWNS = {
   no_spending_7days: 168,        // 7 days
-  creator_trending: 48,          // 2 days
+  earner_trending: 48,          // 2 days
   dropped_top_fan: 24,           // 1 day
 };
 
@@ -135,7 +137,7 @@ const RETENTION_COOLDOWNS = {
  */
 export async function trackTokenSpending(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   tokensSpent: number,
   context: {
     source: 'chat' | 'media' | 'gift' | 'boost' | 'call' | 'meeting';
@@ -155,9 +157,9 @@ export async function trackTokenSpending(
       userId: supporterId,
       lifetimeSpent: tokensSpent,
       monthlySpent: tokensSpent,
-      topCreatorId: creatorId,
+      topCreatorId: earnerId,
       topCreatorSpent: tokensSpent,
-      creatorsDiscovered: 1,
+      earnersDiscovered: 1,
       profileViewsReceived: 0,
       matchesFromPaidChats: 0,
       lastSpentAt: now,
@@ -174,24 +176,24 @@ export async function trackTokenSpending(
       updatedAt: now as any,
     };
 
-    // Update top creator if necessary
-    const currentTopCreatorSpent = data.topCreatorId === creatorId 
+    // Update top earner if necessary
+    const currentTopCreatorSpent = data.topCreatorId === earnerId 
       ? (data.topCreatorSpent || 0) + tokensSpent
       : data.topCreatorSpent || 0;
 
-    if (data.topCreatorId === creatorId || !data.topCreatorId) {
-      updates.topCreatorId = creatorId;
+    if (data.topCreatorId === earnerId || !data.topCreatorId) {
+      updates.topCreatorId = earnerId;
       updates.topCreatorSpent = currentTopCreatorSpent;
     } else if (tokensSpent > data.topCreatorSpent) {
-      updates.topCreatorId = creatorId;
+      updates.topCreatorId = earnerId;
       updates.topCreatorSpent = tokensSpent;
     }
 
     batch.update(analyticsRef, updates);
   }
 
-  // 2. Update or create fan level for this creator
-  const fanLevelRef = db.collection('fanLevels').doc(`${supporterId}_${creatorId}`);
+  // 2. Update or create fan level for this earner
+  const fanLevelRef = db.collection('fanLevels').doc(`${supporterId}_${earnerId}`);
   const fanLevelDoc = await fanLevelRef.get();
 
   if (!fanLevelDoc.exists) {
@@ -199,7 +201,7 @@ export async function trackTokenSpending(
     const initialLevel = calculateFanLevel(tokensSpent);
     batch.set(fanLevelRef, {
       supporterId,
-      creatorId,
+      earnerId,
       level: initialLevel,
       totalSpent: tokensSpent,
       lastInteractionAt: now,
@@ -210,7 +212,7 @@ export async function trackTokenSpending(
 
     // Send notification for level achievement
     if (initialLevel >= 2) {
-      await sendFanLevelNotification(supporterId, creatorId, initialLevel);
+      await sendFanLevelNotification(supporterId, earnerId, initialLevel);
     }
   } else {
     // Update existing fan level
@@ -229,7 +231,7 @@ export async function trackTokenSpending(
 
     // Send notification if level increased
     if (levelIncreased) {
-      await sendFanLevelNotification(supporterId, creatorId, newLevel);
+      await sendFanLevelNotification(supporterId, earnerId, newLevel);
     }
   }
 
@@ -237,16 +239,16 @@ export async function trackTokenSpending(
   const historyRef = db.collection('supporterSpendingHistory').doc();
   batch.set(historyRef, {
     supporterId,
-    creatorId,
+    earnerId,
     tokensSpent,
     source: context.source,
     metadata: context.metadata || {},
     timestamp: now,
   });
 
-  // 4. Update creator supporter stats
-  const creatorStatsRef = db.collection('creatorSupporterStats').doc(creatorId);
-  batch.set(creatorStatsRef, {
+  // 4. Update earner supporter stats
+  const earnerStatsRef = db.collection('earnerSupporterStats').doc(earnerId);
+  batch.set(earnerStatsRef, {
     totalRevenue: increment(tokensSpent),
     uniqueSupporters: increment(0), // Will be calculated separately
     updatedAt: now,
@@ -291,19 +293,19 @@ export function getInboxPriorityBoost(level: FanLevel): number {
  */
 export async function sendEmotionalNotification(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   type: NotificationType,
   customMessage?: string
 ): Promise<boolean> {
   // Check cooldown
-  const canSend = await checkNotificationCooldown(supporterId, creatorId, type);
+  const canSend = await checkNotificationCooldown(supporterId, earnerId, type);
   if (!canSend) {
     return false;
   }
 
   // Get fan level for personalization
   const fanLevelDoc = await db.collection('fanLevels')
-    .doc(`${supporterId}_${creatorId}`)
+    .doc(`${supporterId}_${earnerId}`)
     .get();
   
   const fanLevel = fanLevelDoc.exists 
@@ -313,7 +315,7 @@ export async function sendEmotionalNotification(
   // Generate message and deep link
   const { message, deepLink } = generateNotificationContent(
     type,
-    creatorId,
+    earnerId,
     fanLevel,
     customMessage
   );
@@ -323,7 +325,7 @@ export async function sendEmotionalNotification(
   await notificationRef.set({
     id: notificationRef.id,
     userId: supporterId,
-    creatorId,
+    earnerId,
     type,
     message,
     deepLink,
@@ -339,7 +341,7 @@ export async function sendEmotionalNotification(
  */
 async function checkNotificationCooldown(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   type: NotificationType
 ): Promise<boolean> {
   const cooldownHours = NOTIFICATION_COOLDOWNS[type];
@@ -350,7 +352,7 @@ async function checkNotificationCooldown(
 
   const recentNotifications = await db.collection('supporterNotifications')
     .where('userId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('type', '==', type)
     .where('createdAt', '>', cutoffTime)
     .limit(1)
@@ -364,28 +366,28 @@ async function checkNotificationCooldown(
  */
 function generateNotificationContent(
   type: NotificationType,
-  creatorId: string,
+  earnerId: string,
   fanLevel: FanLevel,
   customMessage?: string
 ): { message: string; deepLink: string } {
   const levelName = getFanLevelName(fanLevel);
 
   const templates = {
-    creator_viewed_profile: {
+    earner_viewed_profile: {
       message: customMessage || 'She viewed your profile again.',
-      deepLink: `/chat/${creatorId}`,
+      deepLink: `/chat/${earnerId}`,
     },
-    creator_online: {
+    earner_online: {
       message: customMessage || 'She is online now.',
-      deepLink: `/chat/${creatorId}`,
+      deepLink: `/chat/${earnerId}`,
     },
-    creator_new_story: {
+    earner_new_story: {
       message: customMessage || 'She just posted a new story.',
-      deepLink: `/profile/${creatorId}/stories`,
+      deepLink: `/profile/${earnerId}/stories`,
     },
-    creator_new_media: {
+    earner_new_media: {
       message: customMessage || 'She posted new content.',
-      deepLink: `/profile/${creatorId}/media`,
+      deepLink: `/profile/${earnerId}/media`,
     },
     top_fan_achieved: {
       message: customMessage || `You're now a ${levelName} — she is likely to notice you more.`,
@@ -393,11 +395,11 @@ function generateNotificationContent(
     },
     unlocked_more_content: {
       message: customMessage || `You've unlocked more of her content than most users.`,
-      deepLink: `/profile/${creatorId}`,
+      deepLink: `/profile/${earnerId}`,
     },
-    creator_trending: {
+    earner_trending: {
       message: customMessage || `She's trending — now is a good time to talk to her.`,
-      deepLink: `/chat/${creatorId}`,
+      deepLink: `/chat/${earnerId}`,
     },
   };
 
@@ -409,14 +411,14 @@ function generateNotificationContent(
  */
 async function sendFanLevelNotification(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   level: FanLevel
 ): Promise<void> {
   await sendEmotionalNotification(
     supporterId,
-    creatorId,
+    earnerId,
     'top_fan_achieved',
-    `You're now a ${getFanLevelName(level)} for this creator — she is likely to notice you more.`
+    `You're now a ${getFanLevelName(level)} for this earner — she is likely to notice you more.`
   );
 }
 
@@ -486,7 +488,7 @@ export async function processRetentionTriggers(): Promise<number> {
  */
 async function checkRetentionCooldown(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   triggerType: RetentionTrigger['triggerType']
 ): Promise<boolean> {
   const cooldownHours = RETENTION_COOLDOWNS[triggerType];
@@ -495,7 +497,7 @@ async function checkRetentionCooldown(
 
   const recentTriggers = await db.collection('retentionTriggers')
     .where('userId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('triggerType', '==', triggerType)
     .where('lastSent', '>', cutoffTime)
     .limit(1)
@@ -509,13 +511,13 @@ async function checkRetentionCooldown(
  */
 async function recordRetentionTrigger(
   supporterId: string,
-  creatorId: string,
+  earnerId: string,
   triggerType: RetentionTrigger['triggerType']
 ): Promise<void> {
   const triggerRef = db.collection('retentionTriggers').doc();
   await triggerRef.set({
     userId: supporterId,
-    creatorId,
+    earnerId,
     triggerType,
     lastSent: serverTimestamp(),
     cooldownHours: RETENTION_COOLDOWNS[triggerType],
@@ -537,27 +539,27 @@ export async function getSupporterAnalytics(
 }
 
 /**
- * Get fan level for a supporter with a specific creator
+ * Get fan level for a supporter with a specific earner
  */
 export async function getFanLevel(
   supporterId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<FanLevelData | null> {
   const doc = await db.collection('fanLevels')
-    .doc(`${supporterId}_${creatorId}`)
+    .doc(`${supporterId}_${earnerId}`)
     .get();
   return doc.exists ? (doc.data() as FanLevelData) : null;
 }
 
 /**
- * Get top supporters for a creator (for creator analytics)
+ * Get top supporters for a earner (for earner analytics)
  */
 export async function getTopSupporters(
-  creatorId: string,
+  earnerId: string,
   limit: number = 10
 ): Promise<FanLevelData[]> {
   const snapshot = await db.collection('fanLevels')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('totalSpent', 'desc')
     .limit(limit)
     .get();
@@ -615,13 +617,27 @@ export function validatePrivacy(data: any): boolean {
 }
 
 /**
- * Mask supporter identity for creator view
+ * Mask supporter identity for earner view
  */
 export function maskSupporterIdentity(supporterId: string): string {
   // Return only a hashed/masked version for display
   const hash = supporterId.substring(0, 8);
   return `Supporter_${hash}`;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 418 — Safety & Compliance Regression Guardrails
  * 
@@ -140,7 +142,7 @@ export async function assertTokenomicsInvariant(
 ): Promise<boolean> {
   const expectedSplit = getRevenueSplit(ctx.type);
   const isValidSplit = validateSplit(
-    { creator: ctx.creatorShare, avalo: ctx.avaloShare },
+    { earner: ctx.earner, platform: ctx.platform },
     expectedSplit
   );
   
@@ -153,13 +155,13 @@ export async function assertTokenomicsInvariant(
       userId: ctx.userId,
       monetizationType: ctx.type,
       expected: {
-        creatorShare: expectedSplit.creator,
-        avaloShare: expectedSplit.avalo,
+        earner: expectedSplit.earner,
+        platform: expectedSplit.platform,
         payoutRate: TOKEN_TOKEN_PAYOUT_USD,
       },
       actual: {
-        creatorShare: ctx.creatorShare,
-        avaloShare: ctx.avaloShare,
+        earner: ctx.earner,
+        platform: ctx.platform,
         payoutRate: ctx.payoutRateUSDPerToken,
       },
     };
@@ -173,7 +175,7 @@ export async function assertTokenomicsInvariant(
     if (hardFail) {
       throw new ComplianceViolationError(
         'TOKENOMICS_VIOLATION',
-        `Tokenomics violation detected for ${ctx.type}. Expected split ${expectedSplit.creator}/${expectedSplit.avalo}, got ${ctx.creatorShare}/${ctx.avaloShare}`,
+        `Tokenomics violation detected for ${ctx.type}. Expected split ${expectedSplit.earner}/${expectedSplit.platform}, got ${ctx.earner}/${ctx.platform}`,
         violation
       );
     }
@@ -474,6 +476,21 @@ export async function guardPayoutRequest(
   // Validate user verification (earners must be verified)
   await assertAgeAndVerification(userCtx);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

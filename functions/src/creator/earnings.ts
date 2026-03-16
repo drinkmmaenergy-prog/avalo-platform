@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db } from '../init';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -41,7 +43,7 @@ export interface CreatorEarningsEvent {
 }
 
 // ============================================================================
-// ENDPOINT: GET /creator/earnings/summary
+// ENDPOINT: GET /earner/earnings/summary
 // ============================================================================
 
 export const getCreatorEarningsSummary = functions.https.onCall(async (request) => {
@@ -60,7 +62,7 @@ export const getCreatorEarningsSummary = functions.https.onCall(async (request) 
   
   try {
     // Get earnings summary
-    const earningsDoc = await db.collection('creator_earnings').doc(userId).get();
+    const earningsDoc = await db.collection('earner_earnings').doc(userId).get();
     
     if (!earningsDoc.exists) {
       // Return zero earnings if document doesn't exist
@@ -106,13 +108,13 @@ export const getCreatorEarningsSummary = functions.https.onCall(async (request) 
     
     return response;
   } catch (error) {
-    console.error('Error fetching creator earnings summary:', error);
+    console.error('Error fetching earner earnings summary:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch earnings summary');
   }
 });
 
 // ============================================================================
-// ENDPOINT: GET /creator/earnings/activity
+// ENDPOINT: GET /earner/earnings/activity
 // ============================================================================
 
 export const getCreatorEarningsActivity = functions.https.onCall(async (request) => {
@@ -171,7 +173,7 @@ export const getCreatorEarningsActivity = functions.https.onCall(async (request)
       nextCursor,
     };
   } catch (error) {
-    console.error('Error fetching creator earnings activity:', error);
+    console.error('Error fetching earner earnings activity:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch earnings activity');
   }
 });
@@ -181,7 +183,7 @@ export const getCreatorEarningsActivity = functions.https.onCall(async (request)
 // ============================================================================
 
 export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event) => {
-    console.log('Starting creator earnings aggregation...');
+    console.log('Starting earner earnings aggregation...');
     
     try {
       const now = new Date();
@@ -189,7 +191,7 @@ export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event
       const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
       
       // Get all unique earner user IDs
-      const earnersSnapshot = await db.collection('creator_profiles')
+      const earnersSnapshot = await db.collection('earner_profiles')
         .where('earnsFromChat', '==', true)
         .get();
       
@@ -198,7 +200,7 @@ export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event
         earnerIds.push(doc.id);
       });
       
-      console.log(`Aggregating earnings for ${earnerIds.length} creators...`);
+      console.log(`Aggregating earnings for ${earnerIds.length} earners...`);
       
       // Process in batches
       const batchSize = 10;
@@ -287,8 +289,8 @@ export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event
               aggregates.totalTokensEarned90d += event.tokensEarned;
             });
             
-            // Update creator_earnings document
-            await db.collection('creator_earnings').doc(userId).set({
+            // Update earner_earnings document
+            await db.collection('earner_earnings').doc(userId).set({
               userId,
               ...aggregates,
               lastUpdatedAt: FieldValue.serverTimestamp(),
@@ -308,7 +310,7 @@ export const aggregateCreatorEarnings = onSchedule("every 1 hours", async (event
       
       console.log('Creator earnings aggregation completed');
     } catch (error) {
-      console.error('Error in creator earnings aggregation:', error);
+      console.error('Error in earner earnings aggregation:', error);
     }
   });
 
@@ -335,6 +337,22 @@ export async function recordTokenEarnEvent(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

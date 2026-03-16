@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 236 — Second Chance Mode
  * Emotional message templates for cold match revival
@@ -338,6 +340,22 @@ export class SecondChanceTemplateSelector {
 export const selectSecondChanceTemplate = SecondChanceTemplateSelector.selectTemplate;
 export const getSecondChanceActionDescription = SecondChanceTemplateSelector.getActionDescription;
 export const getSecondChanceActionPricing = SecondChanceTemplateSelector.getActionPricing;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

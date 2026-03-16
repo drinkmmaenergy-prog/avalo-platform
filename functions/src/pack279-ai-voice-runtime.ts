@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 279B — AI Voice Session Runtime + Minute Billing
  * Real-time AI companion voice sessions with per-minute token billing
@@ -380,7 +382,7 @@ async function processTickBilling(sessionId: string): Promise<TickBillingRespons
   let earnerUserId: string | undefined = undefined;
   
   if (!session.isAvaloAI && session.ownerUserId) {
-    // User-owned AI: creator earns 65%
+    // User-owned AI: earner earns 65%
     earnerUserId = session.ownerUserId;
   }
   // For Avalo AI: earnerUserId stays undefined (100% Avalo)
@@ -395,7 +397,7 @@ async function processTickBilling(sessionId: string): Promise<TickBillingRespons
       amountTokens: tokensToCharge,
       source: 'CALL', // Use CALL source for voice sessions
       relatedId: sessionId,
-      creatorId: earnerUserId,
+      earnerId: earnerUserId,
       metadata: {
         sessionId,
         companionId: session.companionId,
@@ -572,6 +574,21 @@ export default {
   pack279_aiVoiceTickBilling,
   pack279_aiVoiceEndSession,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

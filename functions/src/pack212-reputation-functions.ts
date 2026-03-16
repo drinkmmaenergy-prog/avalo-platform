@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 212: Soft Reputation Engine - Cloud Functions
  * HTTP-callable functions for reputation management
@@ -206,7 +208,7 @@ export const pack212_submitMeetingFeedback = functions.https.onCall(async (reque
       }
 
       // Check if user was part of the booking
-      if (booking.bookerId !== request.auth.uid && booking.creatorId !== request.auth.uid) {
+      if (booking.bookerId !== request.auth.uid && booking.earnerId !== request.auth.uid) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'Not a participant in this booking'
@@ -600,6 +602,20 @@ export const pack212_onUserCreate = onDocumentCreated('users/{userId}', async (e
       console.error(`Error initializing reputation for user ${userId}:`, error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

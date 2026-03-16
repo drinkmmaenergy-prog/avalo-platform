@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 127 — IP Protection Endpoints
  * 
  * Cloud Functions exposing IP protection services
  * 
  * NON-NEGOTIABLE RULES:
- * - All creators protected equally
+ * - All earners protected equally
  * - No monetization/ranking effects
  * - False claims penalize claimant
  */
@@ -564,6 +566,20 @@ export const pack127_sendExpiryReminders = onSchedule({
   const remindersSent = await sendExpiryReminders();
   console.log(`[Pack 127] Sent ${remindersSent} license expiry reminders`);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

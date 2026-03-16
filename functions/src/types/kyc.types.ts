@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 84 — KYC & Identity Verification Types
  * Type definitions for KYC and identity verification
@@ -145,6 +147,22 @@ export const KYC_ERROR_CODES = {
   UNAUTHORIZED: "UNAUTHORIZED",
   USER_NOT_FOUND: "USER_NOT_FOUND",
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

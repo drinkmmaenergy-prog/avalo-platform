@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 195: Legal & Tax Command Center Cloud Functions
  * HTTP endpoints and scheduled jobs
@@ -40,9 +42,9 @@ export const generateContractFunction = functions.https.onCall(async (request) =
 
     try {
       const result = await generateContract({
-        creatorId: request.auth.uid,
+        earnerId: request.auth.uid,
         type: data.type,
-        creator: data.creator,
+        earner: data.earner,
         counterparty: data.counterparty,
         terms: data.terms,
         templateId: data.templateId,
@@ -95,7 +97,7 @@ export const getContractFunction = functions.https.onCall(async (request) => {
       }
 
       if (
-        contract.creatorId !== request.auth.uid &&
+        contract.earnerId !== request.auth.uid &&
         contract.counterparty.userId !== request.auth.uid
       ) {
         throw new Error('Unauthorized access to contract');
@@ -119,7 +121,7 @@ export const getCreatorContractsFunction = functions.https.onCall(async (request
 
     try {
       const contracts = await getCreatorContracts({
-        creatorId: request.auth.uid,
+        earnerId: request.auth.uid,
         status: data.status,
         limit: data.limit || 50,
       });
@@ -235,7 +237,7 @@ export const generateInvoiceFunction = functions.https.onCall(async (request) =>
 
     try {
       const result = await generateInvoice({
-        creatorId: request.auth.uid,
+        earnerId: request.auth.uid,
         customerId: data.customerId,
         items: data.items,
         currency: data.currency || 'USD',
@@ -290,7 +292,7 @@ export const getInvoiceFunction = functions.https.onCall(async (request) => {
       }
 
       if (
-        invoice.creatorId !== request.auth.uid &&
+        invoice.earnerId !== request.auth.uid &&
         invoice.customerId !== request.auth.uid
       ) {
         throw new Error('Unauthorized access to invoice');
@@ -314,7 +316,7 @@ export const getCreatorInvoicesFunction = functions.https.onCall(async (request)
 
     try {
       const invoices = await getCreatorInvoices({
-        creatorId: request.auth.uid,
+        earnerId: request.auth.uid,
         status: data.status,
         limit: data.limit || 50,
       });
@@ -471,7 +473,7 @@ export const monthlyTaxReportsScheduled = onSchedule({ schedule: "0 1 1 * *", ti
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    const creatorsSnap = await db
+    const earnersSnap = await db
       .collection('tax_profiles')
       .where('taxSettings.collectTax', '==', true)
       .get();
@@ -479,7 +481,7 @@ export const monthlyTaxReportsScheduled = onSchedule({ schedule: "0 1 1 * *", ti
     const batch = db.batch();
     let count = 0;
 
-    for (const doc of creatorsSnap.docs) {
+    for (const doc of earnersSnap.docs) {
       const profile = doc.data();
 
       try {
@@ -511,14 +513,14 @@ export const quarterlyTaxReportsScheduled = onSchedule({ schedule: "0 2 1 1,4,7,
     const quarterStart = new Date(now.getFullYear(), quarter * 3 - 3, 1);
     const quarterEnd = new Date(now.getFullYear(), quarter * 3, 0);
 
-    const creatorsSnap = await db
+    const earnersSnap = await db
       .collection('tax_profiles')
       .where('taxSettings.collectTax', '==', true)
       .get();
 
     let count = 0;
 
-    for (const doc of creatorsSnap.docs) {
+    for (const doc of earnersSnap.docs) {
       const profile = doc.data();
 
       try {
@@ -562,7 +564,7 @@ export const contractExpirationRemindersScheduled = onSchedule({ schedule: "0 9 
 
       const notificationRef = db.collection('notifications').doc();
       batch.set(notificationRef, {
-        userId: contract.creatorId,
+        userId: contract.earnerId,
         type: 'contract_expiring',
         title: 'Contract Expiring Soon',
         message: `Your contract with ${contract.counterparty.displayName || contract.counterparty.legalName} expires in 30 days`,
@@ -603,7 +605,7 @@ export const overdueInvoiceRemindersScheduled = onSchedule({ schedule: "0 10 * *
 
       const notificationRef = db.collection('notifications').doc();
       batch.set(notificationRef, {
-        userId: invoice.creatorId,
+        userId: invoice.earnerId,
         type: 'invoice_overdue',
         title: 'Invoice Overdue',
         message: `Invoice ${invoice.invoiceNumber} is now overdue`,
@@ -621,6 +623,22 @@ export const overdueInvoiceRemindersScheduled = onSchedule({ schedule: "0 10 * *
     console.log(`Marked ${invoicesSnap.size} invoices as overdue`);
     return;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

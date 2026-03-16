@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 141 - Avalo Personal AI Companion 2.0
  * Type Definitions
@@ -427,6 +429,22 @@ export const WELLNESS_TRIGGER_PHRASES = [
 ] as const;
 
 // All types are already exported via their interface/type declarations above
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

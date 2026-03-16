@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 376: App Store Defense, Reviews, Reputation & Trust Engine
  * 
@@ -74,7 +76,7 @@ interface ReviewRequest {
 
 interface TrustSignal {
   userId: string;
-  signalType: 'verified_user' | 'id_verified' | 'safe_meetings' | 'panic_button' | 'verified_creator';
+  signalType: 'verified_user' | 'id_verified' | 'safe_meetings' | 'panic_button' | 'verified_earner';
   level: 'bronze' | 'silver' | 'gold' | 'platinum';
   issuedAt: Timestamp;
   expiresAt?: Timestamp;
@@ -737,11 +739,11 @@ export const pack376_generateTrustSignals = onSchedule("every 12 hours", async (
         });
       }
 
-      // Verified creator
-      if (userData.creatorVerified) {
+      // Verified earner
+      if (userData.earnerVerified) {
         signals.push({
           userId,
-          signalType: 'verified_creator',
+          signalType: 'verified_earner',
           level: 'platinum',
           issuedAt: Timestamp.now()
         });
@@ -813,6 +815,20 @@ async function notifyTrustTeam(alert: any): Promise<void> {
 
   await batch.commit();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 151 - Sponsorship Marketplace Cloud Functions
- * Ethical brand-creator collaboration system
+ * Ethical brand-earner collaboration system
  */
 
 import { db, admin, increment } from '../init';
@@ -66,7 +68,7 @@ export const createSponsorship = functions.https.onCall(async (request) => {
     compensation: {
       ...data.compensation,
       splitRatio: data.compensation.useTokens 
-        ? { creator: 65, platform: 35 }
+        ? { earner: 65, platform: 35 }
         : undefined
     },
     maxCreators: data.maxCreators,
@@ -102,7 +104,7 @@ export const applyToSponsorship = functions.https.onCall(async (request) => {
 
   const userId = request.auth.uid;
 
-  if (data.creatorId !== userId) {
+  if (data.earnerId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Can only apply as yourself');
   }
 
@@ -118,12 +120,12 @@ export const applyToSponsorship = functions.https.onCall(async (request) => {
   }
 
   if (offer.currentCreators >= offer.maxCreators) {
-    throw new functions.https.HttpsError('failed-precondition', 'Sponsorship has reached max creators');
+    throw new functions.https.HttpsError('failed-precondition', 'Sponsorship has reached max earners');
   }
 
   const existingApplication = await db.collection('sponsorship_applications')
     .where('offerId', '==', data.offerId)
-    .where('creatorId', '==', data.creatorId)
+    .where('earnerId', '==', data.earnerId)
     .where('status', '==', 'pending')
     .limit(1)
     .get();
@@ -132,22 +134,22 @@ export const applyToSponsorship = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('already-exists', 'Application already submitted');
   }
 
-  const creatorDoc = await db.collection('users').doc(data.creatorId).get();
-  const creatorData = creatorDoc.data()!;
+  const earnerDoc = await db.collection('users').doc(data.earnerId).get();
+  const earnerData = earnerDoc.data()!;
 
   const applicationId = db.collection('sponsorship_applications').doc().id;
 
   const application: SponsorshipApplication = {
     id: applicationId,
     offerId: data.offerId,
-    creatorId: data.creatorId,
+    earnerId: data.earnerId,
     brandId: offer.brandId,
     status: 'pending',
     portfolio: {
       recentWork: data.portfolioItems,
-      followerCount: creatorData.followers?.count || 0,
-      engagementRate: creatorData.stats?.engagementRate || 0,
-      categories: creatorData.profile?.categories || []
+      followerCount: earnerData.followers?.count || 0,
+      engagementRate: earnerData.stats?.engagementRate || 0,
+      categories: earnerData.profile?.categories || []
     },
     message: data.message,
     metadata: {
@@ -157,7 +159,7 @@ export const applyToSponsorship = functions.https.onCall(async (request) => {
 
   await db.collection('sponsorship_applications').doc(applicationId).set(application);
 
-  await db.collection('users').doc(data.creatorId).update({
+  await db.collection('users').doc(data.earnerId).update({
     'stats.sponsorshipApplications': increment(1)
   });
 
@@ -201,7 +203,7 @@ export const approveSponsorshipCreator = functions.https.onCall(async (request) 
   }
 
   if (offer.currentCreators >= offer.maxCreators) {
-    throw new functions.https.HttpsError('failed-precondition', 'Sponsorship has reached max creators');
+    throw new functions.https.HttpsError('failed-precondition', 'Sponsorship has reached max earners');
   }
 
   const contractId = db.collection('sponsorship_contracts').doc().id;
@@ -217,7 +219,7 @@ export const approveSponsorshipCreator = functions.https.onCall(async (request) 
     id: contractId,
     offerId: application.offerId,
     brandId: application.brandId,
-    creatorId: application.creatorId,
+    earnerId: application.earnerId,
     status: 'in_progress',
     deliverables,
     compensation: offer.compensation,
@@ -242,7 +244,7 @@ export const approveSponsorshipCreator = functions.https.onCall(async (request) 
       amount: offer.compensation.amount,
       currency: offer.compensation.currency,
       brandId: offer.brandId,
-      creatorId: application.creatorId,
+      earnerId: application.earnerId,
       status: 'held',
       createdAt: new Date()
     };
@@ -283,8 +285,8 @@ export const submitDeliverable = functions.https.onCall(async (request) => {
 
   const contract = contractDoc.data() as SponsorshipContract;
 
-  if (contract.creatorId !== userId) {
-    throw new functions.https.HttpsError('permission-denied', 'Only creator can submit deliverables');
+  if (contract.earnerId !== userId) {
+    throw new functions.https.HttpsError('permission-denied', 'Only earner can submit deliverables');
   }
 
   const contentDoc = await db.collection('posts').doc(data.content.contentId).get();
@@ -313,7 +315,7 @@ export const submitDeliverable = functions.https.onCall(async (request) => {
     id: deliverableId,
     contractId: data.contractId,
     offerId: contract.offerId,
-    creatorId: contract.creatorId,
+    earnerId: contract.earnerId,
     brandId: contract.brandId,
     type: data.content.contentType as any,
     description: `Deliverable for contract ${data.contractId}`,
@@ -427,17 +429,17 @@ async function releaseEscrowForContract(contractId: string): Promise<void> {
     
     if (escrowDoc.exists) {
       const escrowData = escrowDoc.data()!;
-      const creatorAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.creator;
-      const platformAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.avalo;
+      const earnerAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.earner;
+      const platformAmount = escrowData.amount * MONETIZATION_SPLITS.CHAT.platform;
 
-      await db.collection('users').doc(contract.creatorId).update({
-        'wallet.tokenBalance': admin.firestore.FieldValue.increment(creatorAmount)
+      await db.collection('users').doc(contract.earnerId).update({
+        'wallet.tokenBalance': admin.firestore.FieldValue.increment(earnerAmount)
       });
 
       await db.collection('token_escrow').doc(contract.compensation.escrowId).update({
         status: 'released',
         releasedAt: new Date(),
-        creatorAmount,
+        earnerAmount,
         platformAmount
       });
     }
@@ -515,11 +517,11 @@ export const rateSponsorship = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('permission-denied', 'Not the brand for this contract');
   }
 
-  if (data.reviewerType === 'creator' && contract.creatorId !== userId) {
-    throw new functions.https.HttpsError('permission-denied', 'Not the creator for this contract');
+  if (data.reviewerType === 'earner' && contract.earnerId !== userId) {
+    throw new functions.https.HttpsError('permission-denied', 'Not the earner for this contract');
   }
 
-  const revieweeId = data.reviewerType === 'brand' ? contract.creatorId : contract.brandId;
+  const revieweeId = data.reviewerType === 'brand' ? contract.earnerId : contract.brandId;
 
   const existingReview = await db.collection('sponsorship_reviews')
     .where('contractId', '==', data.contractId)
@@ -582,7 +584,7 @@ export const getSponsorshipAnalytics = functions.https.onCall(async (request) =>
 
   const contract = contractDoc.data() as SponsorshipContract;
 
-  if (contract.brandId !== userId && contract.creatorId !== userId) {
+  if (contract.brandId !== userId && contract.earnerId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Not authorized to view analytics');
   }
 
@@ -613,7 +615,7 @@ export const getSponsorshipAnalytics = functions.https.onCall(async (request) =>
   const analytics: SponsorshipAnalytics = {
     contractId: data.contractId,
     offerId: contract.offerId,
-    creatorId: contract.creatorId,
+    earnerId: contract.earnerId,
     period: {
       start: contract.metadata.startedAt || contract.metadata.createdAt,
       end: contract.metadata.completedAt || new Date()
@@ -691,6 +693,23 @@ export const moderateSponsorship = functions.https.onCall(async (request) => {
 
   return { success: true };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

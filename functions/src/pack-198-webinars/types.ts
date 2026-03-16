@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 198 — Avalo Webinars & Global Skill Summits
  * Professional Livestream Conferences with Real-Time Translation
@@ -110,10 +112,10 @@ export interface Event {
   peakConcurrentViewers: number;
   averageWatchTime: number;
   
-  // Revenue (65% creator / 35% Avalo)
+  // Revenue (65% earner / 35% Avalo)
   totalRevenue: number;
-  creatorShare: number;
-  platformShare: number;
+  earner: number;
+  platform: number;
 }
 
 export interface EventTicket {
@@ -531,6 +533,22 @@ export interface GenerateCertificateInput {
   eventId: string;
   userId: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Synthetic Test Data Generator
  *
@@ -275,7 +277,7 @@ async function generateTransactions(userIds: string[]): Promise<string[]> {
 async function generateAISubscriptions(userIds: string[]): Promise<string[]> {
   const subIds: string[] = [];
 
-  const tiers = ["free", "plus", "intimate", "creator", "plus"];
+  const tiers = ["free", "plus", "intimate", "earner", "plus"];
 
   for (let i = 0; i < 5; i++) {
     const subId = `test_sub_${i + 1}`;
@@ -305,7 +307,7 @@ async function generateCalendarBookings(userIds: string[]): Promise<string[]> {
 
   for (let i = 0; i < 5; i++) {
     const bookingId = `test_booking_${i + 1}`;
-    const creatorId = userIds[i];
+    const earnerId = userIds[i];
     const bookerId = userIds[i + 10];
 
     // Last booking is Royal female @ 3000 tokens
@@ -314,7 +316,7 @@ async function generateCalendarBookings(userIds: string[]): Promise<string[]> {
 
     await db.collection("calendarBookings").doc(bookingId).set({
       bookingId,
-      creatorId,
+      earnerId,
       bookerId,
       amount,
       escrow: Math.floor(amount * 0.8),
@@ -382,6 +384,22 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

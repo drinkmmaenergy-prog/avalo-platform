@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 170 — Avalo Universal Search 3.0
  * API endpoints for universal search functionality
@@ -190,7 +192,7 @@ export async function deleteSearchHistoryEntry(req: Request, res: Response): Pro
 }
 
 /**
- * Index an item for search (admin/creator only)
+ * Index an item for search (admin/earner only)
  * POST /api/search/index
  */
 export async function indexItem(req: Request, res: Response): Promise<void> {
@@ -208,9 +210,9 @@ export async function indexItem(req: Request, res: Response): Promise<void> {
       description,
       tags,
       language,
-      creatorId,
-      creatorName,
-      creatorVerified,
+      earnerId,
+      earnerName,
+      earnerVerified,
       region,
       country,
       format,
@@ -239,9 +241,9 @@ export async function indexItem(req: Request, res: Response): Promise<void> {
       description,
       tags: tags || [],
       language,
-      creatorId,
-      creatorName,
-      creatorVerified: creatorVerified || false,
+      earnerId,
+      earnerName,
+      earnerVerified: earnerVerified || false,
       region,
       country,
       format,
@@ -267,7 +269,7 @@ export async function indexItem(req: Request, res: Response): Promise<void> {
 }
 
 /**
- * Remove item from search index (admin/creator only)
+ * Remove item from search index (admin/earner only)
  * DELETE /api/search/index/:itemId
  */
 export async function removeFromIndex(req: Request, res: Response): Promise<void> {
@@ -310,6 +312,22 @@ export async function getSearchCategories(req: Request, res: Response): Promise<
     res.status(500).json({ error: 'Failed to get categories', message: error.message });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

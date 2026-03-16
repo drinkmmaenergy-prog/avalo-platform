@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — API Gateway Integration for Agency Access
  * Extends PACK 113 API Gateway with agency-specific scopes and endpoints
@@ -42,21 +44,21 @@ export const AGENCY_SCOPE_DEFINITIONS = {
   AGENCY_ANALYTICS_READ: {
     scope: 'AGENCY_ANALYTICS_READ' as AgencyAPIScope,
     name: 'Read Agency Analytics',
-    description: 'Read aggregated analytics for linked creators',
+    description: 'Read aggregated analytics for linked earners',
     category: 'ANALYTICS',
     riskLevel: 'LOW',
   },
   CREATOR_LIST_READ: {
     scope: 'CREATOR_LIST_READ' as AgencyAPIScope,
     name: 'Read Creator List',
-    description: 'Read list of creators linked to agency',
+    description: 'Read list of earners linked to agency',
     category: 'ANALYTICS',
     riskLevel: 'LOW',
   },
   EARNINGS_READ_AGGREGATED: {
     scope: 'EARNINGS_READ_AGGREGATED' as AgencyAPIScope,
     name: 'Read Aggregated Earnings',
-    description: 'Read aggregated earnings data for linked creators',
+    description: 'Read aggregated earnings data for linked earners',
     category: 'ANALYTICS',
     riskLevel: 'MEDIUM',
   },
@@ -80,7 +82,7 @@ async function validateAgencyScope(
   const tokenData = tokenValidation.tokenData!;
 
   // Check if user owns this agency
-  const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+  const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
   
   if (!agencyDoc.exists) {
     return { valid: false, error: 'Agency not found' };
@@ -200,8 +202,8 @@ export const apiAgencyDashboard = onRequest(
 );
 
 /**
- * API Endpoint: Get linked creators list
- * GET /api/v1/agency/:agencyId/creators
+ * API Endpoint: Get linked earners list
+ * GET /api/v1/agency/:agencyId/earners
  */
 export const apiAgencyCreators = onRequest(
   { region: 'europe-west1', cors: true },
@@ -246,7 +248,7 @@ export const apiAgencyCreators = onRequest(
       const rateLimitCheck = await checkAPIRateLimit({
         appId: 'agency_api',
         userId: scopeValidation.userId!,
-        endpoint: '/api/v1/agency/creators',
+        endpoint: '/api/v1/agency/earners',
         method: 'GET',
       });
 
@@ -257,9 +259,9 @@ export const apiAgencyCreators = onRequest(
         return;
       }
 
-      // Get creators
+      // Get earners
       // Create proper context for callable function
-      const creatorsData = await (getAgencyLinkedCreators as any)({
+      const earnersData = await (getAgencyLinkedCreators as any)({
         data: { agencyId },
         auth: { uid: scopeValidation.userId!, token: {} as any },
         rawRequest: req as any,
@@ -273,17 +275,17 @@ export const apiAgencyCreators = onRequest(
         userId: scopeValidation.userId!,
         tokenId: 'agency_token',
         method: 'GET',
-        endpoint: '/api/v1/agency/creators',
+        endpoint: '/api/v1/agency/earners',
         scopeUsed: 'ANALYTICS_READ',
         statusCode: 200,
         responseTime,
       });
 
-      res.status(200).json(createSuccessResponse(creatorsData, requestId));
+      res.status(200).json(createSuccessResponse(earnersData, requestId));
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       
-      logger.error('Error in agency creators API', error);
+      logger.error('Error in agency earners API', error);
 
       res.status(500).json(
         createErrorResponse('INTERNAL_ERROR', error.message, requestId)
@@ -293,8 +295,8 @@ export const apiAgencyCreators = onRequest(
 );
 
 /**
- * API Endpoint: Get creator analytics
- * GET /api/v1/agency/:agencyId/creator/:creatorId/analytics
+ * API Endpoint: Get earner analytics
+ * GET /api/v1/agency/:agencyId/earner/:earnerId/analytics
  */
 export const apiAgencyCreatorAnalytics = onRequest(
   { region: 'europe-west1', cors: true },
@@ -313,9 +315,9 @@ export const apiAgencyCreatorAnalytics = onRequest(
 
       const token = authHeader.substring(7);
       const agencyId = asString(req.params.agencyId) || asString(req.query.agencyId);
-      const creatorId = req.params.creatorId || (asString(req.query.creatorId));
+      const earnerId = req.params.earnerId || (asString(req.query.earnerId));
 
-      if (!agencyId || !creatorId) {
+      if (!agencyId || !earnerId) {
         res.status(400).json(
           createErrorResponse('INVALID_REQUEST', 'Agency ID and Creator ID required', requestId)
         );
@@ -340,7 +342,7 @@ export const apiAgencyCreatorAnalytics = onRequest(
       const rateLimitCheck = await checkAPIRateLimit({
         appId: 'agency_api',
         userId: scopeValidation.userId!,
-        endpoint: '/api/v1/agency/creator/analytics',
+        endpoint: '/api/v1/agency/earner/analytics',
         method: 'GET',
       });
 
@@ -354,7 +356,7 @@ export const apiAgencyCreatorAnalytics = onRequest(
       // Get analytics
       // Create proper context for callable function
       const analyticsData = await (getCreatorAnalyticsForAgency as any)({
-        data: { agencyId, creatorUserId: creatorId },
+        data: { agencyId, earnerUserId: earnerId },
         auth: { uid: scopeValidation.userId!, token: {} as any },
         rawRequest: req as any,
       });
@@ -367,7 +369,7 @@ export const apiAgencyCreatorAnalytics = onRequest(
         userId: scopeValidation.userId!,
         tokenId: 'agency_token',
         method: 'GET',
-        endpoint: '/api/v1/agency/creator/analytics',
+        endpoint: '/api/v1/agency/earner/analytics',
         scopeUsed: 'ANALYTICS_READ',
         statusCode: 200,
         responseTime,
@@ -377,7 +379,7 @@ export const apiAgencyCreatorAnalytics = onRequest(
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       
-      logger.error('Error in creator analytics API', error);
+      logger.error('Error in earner analytics API', error);
 
       res.status(500).json(
         createErrorResponse('INTERNAL_ERROR', error.message, requestId)
@@ -487,7 +489,7 @@ export const apiAgencyEarningsTimeline = onRequest(
 /**
  * Register webhook for agency events
  * Agencies can subscribe to events like:
- * - New creator linked
+ * - New earner linked
  * - Creator removed
  * - Earnings threshold reached
  */
@@ -556,6 +558,20 @@ export async function triggerAgencyWebhook(params: {
     })
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

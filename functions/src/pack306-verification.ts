@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 306 — Mandatory Identity Verification
  * Cloud Functions for identity, age, and photo verification
@@ -80,7 +82,7 @@ const CONFIG = {
   MAX_ATTEMPTS_PER_DAY: 3,
   MAX_TOTAL_ATTEMPTS: 7,
   TEMP_BAN_HOURS: 48,
-  SELFIE_BUCKET: 'avalo-verify',
+  SELFIE_BUCKET: 'platform-verify',
   SELFIE_RETENTION_DAYS: 90,
   EMBEDDING_RETENTION_YEARS: 2,
   LOG_RETENTION_YEARS: 5,
@@ -825,6 +827,20 @@ export const cleanupOldVerificationData = onSchedule("every 24 hours", async (ev
     console.log(`Deleted ${deletedCount} old verification files`);
     // Scheduler functions must return void
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 123 - Team Accounts: Accept Team Invite
  * 
@@ -169,6 +171,22 @@ export const acceptTeamInvite = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

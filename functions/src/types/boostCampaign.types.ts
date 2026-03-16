@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * AVALO Paid Visibility Engine — Canonical Boost Economy Spec v1
  * Type definitions for boost_campaigns and boost_impressions collections.
@@ -252,10 +254,10 @@ export const BOOST_CAMPAIGN_CONSTANTS = {
   MAX_ACTIVE_CAMPAIGNS_PER_USER: 3,
 
   /** Maximum percentage of sponsored items in feed */
-  MAX_SPONSORED_FEED_DENSITY: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  MAX_SPONSORED_FEED_DENSITY: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
 
   /** Maximum percentage of feed items from one region's campaigns */
-  MAX_REGION_DOMINANCE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  MAX_REGION_DOMINANCE: MONETIZATION_SPLITS.EVENT_TICKET.platform,
 
   /** Minimum cost per impression in tokens */
   MIN_COST_PER_IMPRESSION: 1,
@@ -276,6 +278,23 @@ export const BOOST_CAMPAIGN_CONSTANTS = {
   COLLECTION_USER_WALLETS: 'user_token_wallets',
   COLLECTION_AVALO_VAULT: 'treasury_vaults',
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

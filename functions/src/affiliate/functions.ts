@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 131: Affiliate System Cloud Functions
  * Core affiliate management functions
@@ -156,7 +158,7 @@ export async function generateAffiliateLink(
     );
   }
 
-  const referralUrl = `https://avalo.app/?ref=${profile.affiliateCode}`;
+  const referralUrl = `https://platform.app/?ref=${profile.affiliateCode}`;
 
   return {
     referralUrl,
@@ -618,6 +620,22 @@ export async function getAffiliateComplianceStatus(
     canReceivePayouts: profile.status === 'active' && profile.agreementSigned && profile.identityVerified && taxInfoComplete && payoutMethodConfigured,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 430 — AGE-GATE ENFORCEMENT (18+ ONLY)
  * 
@@ -462,6 +464,20 @@ export async function checkAgeGateAdultContent(userId: string): Promise<boolean>
 // ─────────────────────────────────────────────────────────────────
 
 export default AgeGateEnforcer;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

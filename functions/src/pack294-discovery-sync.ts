@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 294 - Search & Discovery Filters
  * Profile Search Index Sync Functions
@@ -225,6 +227,20 @@ function calculateActivityScore(userData: any): number {
   
   return Math.min(score, 100);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

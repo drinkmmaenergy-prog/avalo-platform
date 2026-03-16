@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 153 — Real-Time Safety Monitoring
  * 
@@ -283,7 +285,7 @@ function calculateEscalationLevel(violationCount: number): 0 | 1 | 2 | 3 {
  */
 export async function startLivestreamModeration(params: {
   streamId: string;
-  creatorId: string;
+  earnerId: string;
   moderatorIds?: string[];
 }): Promise<string> {
   const sessionId = generateId();
@@ -291,7 +293,7 @@ export async function startLivestreamModeration(params: {
   const session: Partial<LivestreamModerationSession> = {
     sessionId,
     streamId: params.streamId,
-    creatorId: params.creatorId,
+    earnerId: params.earnerId,
     active: true,
     autoModeration: true,
     humanModeratorPresent: false,
@@ -657,6 +659,20 @@ export const realtimeMonitoring = {
   detectCoordinatedHarassment,
   detectSpamFlooding,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

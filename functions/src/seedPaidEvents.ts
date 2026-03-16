@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 
 admin.initializeApp();
@@ -29,6 +31,20 @@ seed().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

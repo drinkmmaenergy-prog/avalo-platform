@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 289 — Payout Providers Integration
  * 
@@ -9,7 +11,7 @@
  * NOTE: This is a stub implementation. Replace with actual API integrations
  * when API keys and accounts are configured.
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -461,6 +463,20 @@ export {
   WISE_CONFIG,
   BANK_TRANSFER_CONFIG,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

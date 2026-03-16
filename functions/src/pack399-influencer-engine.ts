@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 399 — Influencer Wave Engine
  * 
- * Manages influencer acquisition, creator monetization funnel, and regional growth playbooks
+ * Manages influencer acquisition, earner monetization funnel, and regional growth playbooks
  * 
  * Dependencies:
  * - PACK 301/301B: Retention & Segmentation
@@ -341,7 +343,7 @@ const getInfluencerMetrics = (influencerId: string, date: string) =>
   db.collection('influencer_metrics').doc(`${influencerId}_${date}`);
 
 const getCreatorFunnel = (funnelId: string) =>
-  db.collection('creator_funnels').doc(funnelId);
+  db.collection('earner_funnels').doc(funnelId);
 
 const getRegionalPlaybookDoc = (playbookId: string) =>
   db.collection('regional_playbooks').doc(playbookId);
@@ -399,7 +401,7 @@ export const createInfluencerProfile = functions.https.onCall(async (request) =>
     platformVerified: false,
     
     referralCode,
-    customReferralLink: `https://avalo.app/r/${referralCode}`,
+    customReferralLink: `https://platform.app/r/${referralCode}`,
     
     totalInstalls: 0,
     verifiedProfiles: 0,
@@ -511,7 +513,7 @@ export const trackInfluencerInstall = functions.https.onCall(async (request) => 
   const fraudScore = await checkFraudScore(request.auth.uid, influencer.influencerId);
 
   // Create funnel entry
-  const funnelId = db.collection('creator_funnels').doc().id;
+  const funnelId = db.collection('earner_funnels').doc().id;
   const funnel: CreatorFunnel = {
     funnelId,
     influencerId: influencer.influencerId,
@@ -599,7 +601,7 @@ export const trackInfluencerCommission = onDocumentCreated('transactions/{transa
     const userId = transaction.userId;
 
     // Find funnel for this user
-    const funnelSnapshot = await db.collection('creator_funnels')
+    const funnelSnapshot = await db.collection('earner_funnels')
       .where('userId', '==', userId)
       .limit(1)
       .get();
@@ -697,7 +699,7 @@ export const trackInfluencerCommission = onDocumentCreated('transactions/{transa
 export const detectInfluencerFraud = onSchedule("every 1 hours", async (event) => {
     console.log('Running influencer fraud detection...');
 
-    const funnelsSnapshot = await db.collection('creator_funnels')
+    const funnelsSnapshot = await db.collection('earner_funnels')
       .where('fraudChecked', '==', false)
       .limit(100)
       .get();
@@ -1032,6 +1034,20 @@ export {
   getInfluencerPayout,
   getInfluencerCommission,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

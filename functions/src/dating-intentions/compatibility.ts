@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 187 — Dating Intention & Chemistry Declaration System
  * Compatibility Calculation Engine
@@ -179,10 +181,10 @@ export interface MatchWeightFactors {
 export function calculateWeightedMatchScore(factors: MatchWeightFactors): number {
   // Weights for each factor
   const weights = {
-    intentionCompatibility: MONETIZATION_SPLITS.CHAT.avalo,  // 35% - highest weight
+    intentionCompatibility: MONETIZATION_SPLITS.CHAT.platform,  // 35% - highest weight
     profileCompleteness: 0.15,     // 15%
-    activityLevel: MONETIZATION_SPLITS.EVENT_TICKET.avalo,           // 20%
-    mutualInterests: MONETIZATION_SPLITS.EVENT_TICKET.avalo,         // 20%
+    activityLevel: MONETIZATION_SPLITS.EVENT_TICKET.platform,           // 20%
+    mutualInterests: MONETIZATION_SPLITS.EVENT_TICKET.platform,         // 20%
     locationProximity: 0.10,       // 10%
   };
 
@@ -283,6 +285,24 @@ export function getIcebreakerSuggestions(
 
   return suggestions;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

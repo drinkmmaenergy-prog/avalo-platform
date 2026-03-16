@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 383 - Payout Provider Abstraction Layer
  * Unified interface for multiple payout providers
@@ -59,6 +61,22 @@ export { WiseProvider } from './wise';
 export { SEPAProvider } from './sepa';
 export { ACHProvider } from './ach';
 export { LocalProvider } from './local';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

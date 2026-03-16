@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from "../runtime";
@@ -429,11 +431,11 @@ export const trackClick = functions.https.onCall(async (request) => {
 });
 
 /**
- * Update creator daily stats
+ * Update earner daily stats
  */
 async function updateCreatorDailyStats(authorId: string, action: string) {
   const today = new Date().toISOString().split('T')[0];
-  const statsRef = db.collection('creatorDailyStats').doc(`${authorId}_${today}`);
+  const statsRef = db.collection('earnerDailyStats').doc(`${authorId}_${today}`);
 
   const increment = admin.firestore.FieldValue.increment(1);
   const updates: any = {
@@ -506,6 +508,22 @@ export const getUserLikes = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get user likes');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

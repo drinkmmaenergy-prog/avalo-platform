@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 58 — Calendar Reservations & Escrowed Meetings
  *
@@ -63,7 +65,7 @@ export interface DateOverride {
 }
 
 export interface CreatorAvailability {
-  creatorUserId: string;
+  earnerUserId: string;
   timezone: string; // IANA timezone
   weeklySlots: {
     [weekday: string]: WeeklySlot; // "MON", "TUE", etc.
@@ -81,7 +83,7 @@ export interface CreatorAvailability {
 
 export interface Reservation {
   reservationId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   clientUserId: string;
   startTimeUtc: admin.firestore.Timestamp;
   endTimeUtc: admin.firestore.Timestamp;
@@ -90,9 +92,9 @@ export interface Reservation {
   currencyHint?: string | null;
   status: ReservationStatus;
   clientConfirmed: boolean;
-  creatorConfirmed: boolean;
+  earnerConfirmed: boolean;
   clientConfirmationAt?: admin.firestore.Timestamp;
-  creatorConfirmationAt?: admin.firestore.Timestamp;
+  earnerConfirmationAt?: admin.firestore.Timestamp;
   chatConversationId?: string | null;
   disputeId?: string | null;
   escrowId?: string | null;
@@ -103,7 +105,7 @@ export interface Reservation {
 export interface ReservationEscrow {
   escrowId: string;
   reservationId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   clientUserId: string;
   tokensLocked: number;
   tokensPlatformShare: number;
@@ -117,8 +119,8 @@ export interface ReservationEscrow {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.platform;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner;
 const CANCELLATION_CUTOFF_HOURS = 24;
 const CONFIRMATION_WINDOW_HOURS = 24;
 const PENDING_PAYMENT_TIMEOUT_MINUTES = 15;
@@ -184,10 +186,10 @@ async function validateUserEligibility(userId: string): Promise<{ valid: boolean
     }
   }
 
-  // Check if creator can earn (for creator side)
-  const creatorDoc = await db.collection('creator_earnings').doc(userId).get();
-  const creatorData = creatorDoc.data();
-  if (creatorData && creatorData.earningStatus !== 'NORMAL') {
+  // Check if earner can earn (for earner side)
+  const earnerDoc = await db.collection('earner_earnings').doc(userId).get();
+  const earnerData = earnerDoc.data();
+  if (earnerData && earnerData.earningStatus !== 'NORMAL') {
     return { valid: false, reason: 'Creator earnings restricted' };
   }
 
@@ -286,14 +288,14 @@ function generateTimeSlots(
  * Check if a time slot conflicts with existing reservations
  */
 async function checkSlotAvailability(
-  creatorUserId: string,
+  earnerUserId: string,
   startTimeUtc: Date,
   endTimeUtc: Date
 ): Promise<boolean> {
   const reservationsRef = db.collection('reservations');
   
   const conflicts = await reservationsRef
-    .where('creatorUserId', '==', creatorUserId)
+    .where('earnerUserId', '==', earnerUserId)
     .where('status', 'in', ['PENDING_PAYMENT', 'CONFIRMED'])
     .get();
 
@@ -316,7 +318,7 @@ async function checkSlotAvailability(
  */
 async function lockTokensInEscrow(
   clientUserId: string,
-  creatorUserId: string,
+  earnerUserId: string,
   reservationId: string,
   tokensLocked: number
 ): Promise<string> {
@@ -344,7 +346,7 @@ async function lockTokensInEscrow(
   const escrowData: ReservationEscrow = {
     escrowId,
     reservationId,
-    creatorUserId,
+    earnerUserId,
     clientUserId,
     tokensLocked,
     tokensPlatformShare,
@@ -389,7 +391,7 @@ async function lockTokensInEscrow(
 }
 
 /**
- * Release escrow to creator (mark as earning)
+ * Release escrow to earner (mark as earning)
  */
 async function releaseEscrowToCreator(escrowId: string, reservationId: string): Promise<void> {
   const escrowRef = db.collection('reservation_escrow').doc(escrowId);
@@ -415,7 +417,7 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
   const earnEventId = db.collection('token_earn_events').doc().id;
   await db.collection('token_earn_events').doc(earnEventId).set({
     eventId: earnEventId,
-    userId: escrow.creatorUserId,
+    userId: escrow.earnerUserId,
     sourceUserId: escrow.clientUserId,
     channel: 'RESERVATION_MEETING',
     tokensEarned: escrow.tokensCreatorShare,
@@ -423,8 +425,8 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
     createdAt: Timestamp.now()
   });
 
-  // Update creator earnings
-  const earningsRef = db.collection('creator_earnings').doc(escrow.creatorUserId);
+  // Update earner earnings
+  const earningsRef = db.collection('earner_earnings').doc(escrow.earnerUserId);
   const earningsDoc = await earningsRef.get();
 
   if (earningsDoc.exists) {
@@ -439,7 +441,7 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
   } else {
     // Initialize earnings if not exist
     await earningsRef.set({
-      userId: escrow.creatorUserId,
+      userId: escrow.earnerUserId,
       totalTokensEarned: escrow.tokensCreatorShare,
       withdrawableTokens: escrow.tokensCreatorShare,
       withdrawnTokens: 0,
@@ -455,9 +457,9 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
     });
   }
 
-  // Send notification to creator
+  // Send notification to earner
   await sendNotification({
-    userId: escrow.creatorUserId,
+    userId: escrow.earnerUserId,
     type: 'RESERVATION_COMPLETED',
     title: 'Meeting Completed',
     body: `You earned ${escrow.tokensCreatorShare} tokens from a meeting`,
@@ -469,7 +471,7 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
   try {
     const date30dAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentReservationsSnapshot = await db.collection('reservations')
-      .where('creatorUserId', '==', escrow.creatorUserId)
+      .where('earnerUserId', '==', escrow.earnerUserId)
       .where('status', '==', 'COMPLETED')
       .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(date30dAgo))
       .get();
@@ -479,7 +481,7 @@ async function releaseEscrowToCreator(escrowId: string, reservationId: string): 
     // Check for very high reservation volume (threshold: 20 completed in 30 days)
     if (completedCount >= 20) {
       await createAmlEvent({
-        userId: escrow.creatorUserId,
+        userId: escrow.earnerUserId,
         kind: 'HIGH_RESERVATION_VOLUME',
         severity: 'INFO',
         description: `High reservation volume: ${completedCount} completed meetings in 30 days`,
@@ -552,20 +554,20 @@ async function refundEscrowToClient(escrowId: string, reservationId: string): Pr
 
 /**
  * GET /reservations/availability
- * Fetch creator availability and available slots
+ * Fetch earner availability and available slots
  */
 export const getAvailability = functions.https.onCall(async (request) => {
   const data = request.data;
-  const { creatorUserId, from, to } = data;
+  const { earnerUserId, from, to } = data;
 
-  if (!creatorUserId || !from || !to) {
+  if (!earnerUserId || !from || !to) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
   // Get availability template
   const availabilityDoc = await db
     .collection('reservation_availability')
-    .doc(creatorUserId)
+    .doc(earnerUserId)
     .get();
 
   if (!availabilityDoc.exists) {
@@ -589,7 +591,7 @@ export const getAvailability = functions.https.onCall(async (request) => {
   for (const slot of allSlots) {
     if (slot.startTimeUtc > now) {
       const isAvailable = await checkSlotAvailability(
-        creatorUserId,
+        earnerUserId,
         slot.startTimeUtc,
         slot.endTimeUtc
       );
@@ -604,7 +606,7 @@ export const getAvailability = functions.https.onCall(async (request) => {
 
   return {
     availability: {
-      creatorUserId: availability.creatorUserId,
+      earnerUserId: availability.earnerUserId,
       timezone: availability.timezone,
       defaultPriceTokens: availability.defaultPriceTokens,
       meetingMode: availability.meetingMode,
@@ -617,7 +619,7 @@ export const getAvailability = functions.https.onCall(async (request) => {
 
 /**
  * POST /reservations/availability/set
- * Set or update creator availability
+ * Set or update earner availability
  */
 export const setAvailability = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -640,7 +642,7 @@ export const setAvailability = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
-  // Validate creator eligibility
+  // Validate earner eligibility
   const eligibility = await validateUserEligibility(userId);
   if (!eligibility.valid) {
     throw new functions.https.HttpsError('permission-denied', eligibility.reason || 'Not eligible');
@@ -654,7 +656,7 @@ export const setAvailability = functions.https.onCall(async (request) => {
   // Create or update availability
   const availabilityRef = db.collection('reservation_availability').doc(userId);
   const availabilityData: Partial<CreatorAvailability> = {
-    creatorUserId: userId,
+    earnerUserId: userId,
     timezone,
     weeklySlots: weeklySlots || {},
     overrides: overrides || {},
@@ -692,14 +694,14 @@ export const createReservation = functions.https.onCall(async (request) => {
   }
 
   const clientUserId = request.auth.uid;
-  const { creatorUserId, startTimeUtc, endTimeUtc, meetingMode } = data;
+  const { earnerUserId, startTimeUtc, endTimeUtc, meetingMode } = data;
 
-  if (!creatorUserId || !startTimeUtc || !endTimeUtc) {
+  if (!earnerUserId || !startTimeUtc || !endTimeUtc) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
   // Cannot book meeting with self
-  if (clientUserId === creatorUserId) {
+  if (clientUserId === earnerUserId) {
     throw new functions.https.HttpsError('invalid-argument', 'Cannot book meeting with yourself');
   }
 
@@ -709,21 +711,21 @@ export const createReservation = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('permission-denied', `Client: ${clientEligibility.reason}`);
   }
 
-  const creatorEligibility = await validateUserEligibility(creatorUserId);
-  if (!creatorEligibility.valid) {
-    throw new functions.https.HttpsError('permission-denied', `Creator: ${creatorEligibility.reason}`);
+  const earnerEligibility = await validateUserEligibility(earnerUserId);
+  if (!earnerEligibility.valid) {
+    throw new functions.https.HttpsError('permission-denied', `Creator: ${earnerEligibility.reason}`);
   }
 
   // Check blocklist
-  const isBlocked = await checkBlocklist(clientUserId, creatorUserId);
+  const isBlocked = await checkBlocklist(clientUserId, earnerUserId);
   if (isBlocked) {
     throw new functions.https.HttpsError('permission-denied', 'Users have blocked each other');
   }
 
-  // Get creator availability
+  // Get earner availability
   const availabilityDoc = await db
     .collection('reservation_availability')
-    .doc(creatorUserId)
+    .doc(earnerUserId)
     .get();
 
   if (!availabilityDoc.exists) {
@@ -736,7 +738,7 @@ export const createReservation = functions.https.onCall(async (request) => {
   // Check slot availability
   const startTime = new Date(startTimeUtc);
   const endTime = new Date(endTimeUtc);
-  const isAvailable = await checkSlotAvailability(creatorUserId, startTime, endTime);
+  const isAvailable = await checkSlotAvailability(earnerUserId, startTime, endTime);
 
   if (!isAvailable) {
     throw new functions.https.HttpsError('failed-precondition', 'Time slot is not available');
@@ -752,7 +754,7 @@ export const createReservation = functions.https.onCall(async (request) => {
   const reservationId = db.collection('reservations').doc().id;
   const reservationData: Reservation = {
     reservationId,
-    creatorUserId,
+    earnerUserId,
     clientUserId,
     startTimeUtc: Timestamp.fromDate(startTime),
     endTimeUtc: Timestamp.fromDate(endTime),
@@ -760,7 +762,7 @@ export const createReservation = functions.https.onCall(async (request) => {
     priceTokens,
     status: 'PENDING_PAYMENT',
     clientConfirmed: false,
-    creatorConfirmed: false,
+    earnerConfirmed: false,
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now()
   };
@@ -769,7 +771,7 @@ export const createReservation = functions.https.onCall(async (request) => {
 
   // Lock tokens in escrow
   try {
-    const escrowId = await lockTokensInEscrow(clientUserId, creatorUserId, reservationId, priceTokens);
+    const escrowId = await lockTokensInEscrow(clientUserId, earnerUserId, reservationId, priceTokens);
 
     // Update reservation to CONFIRMED
     await db.collection('reservations').doc(reservationId).update({
@@ -787,7 +789,7 @@ export const createReservation = functions.https.onCall(async (request) => {
     let chatConversationId: string | null = null;
     for (const doc of existingChat.docs) {
       const chatData = doc.data();
-      if (chatData.participants.includes(creatorUserId)) {
+      if (chatData.participants.includes(earnerUserId)) {
         chatConversationId = doc.id;
         break;
       }
@@ -801,7 +803,7 @@ export const createReservation = functions.https.onCall(async (request) => {
 
     // Send notifications
     await sendNotification({
-      userId: creatorUserId,
+      userId: earnerUserId,
       type: 'RESERVATION_CREATED',
       title: 'New Meeting Booked',
       body: `You have a new meeting booked for ${startTime.toLocaleString()}`,
@@ -863,7 +865,7 @@ export const cancelReservation = functions.https.onCall(async (request) => {
   const reservation = reservationDoc.data() as Reservation;
 
   // Check user is involved
-  if (reservation.clientUserId !== userId && reservation.creatorUserId !== userId) {
+  if (reservation.clientUserId !== userId && reservation.earnerUserId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Not your reservation');
   }
 
@@ -886,12 +888,12 @@ export const cancelReservation = functions.https.onCall(async (request) => {
     refundToClient = true;
   } else {
     // Late cancellation
-    if (userId === reservation.creatorUserId) {
+    if (userId === reservation.earnerUserId) {
       // Creator cancels late - refund to client
       newStatus = 'NO_SHOW_CREATOR';
       refundToClient = true;
     } else {
-      // Client cancels late - release to creator
+      // Client cancels late - release to earner
       newStatus = 'NO_SHOW_CLIENT';
       releaseToCreator = true;
     }
@@ -913,7 +915,7 @@ export const cancelReservation = functions.https.onCall(async (request) => {
   }
 
   // Send notifications
-  const otherUserId = userId === reservation.clientUserId ? reservation.creatorUserId : reservation.clientUserId;
+  const otherUserId = userId === reservation.clientUserId ? reservation.earnerUserId : reservation.clientUserId;
   await sendNotification({
     userId: otherUserId,
     type: 'RESERVATION_CANCELLED',
@@ -963,7 +965,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
   const reservation = reservationDoc.data() as Reservation;
 
   // Check user is involved
-  if (reservation.clientUserId !== userId && reservation.creatorUserId !== userId) {
+  if (reservation.clientUserId !== userId && reservation.earnerUserId !== userId) {
     throw new functions.https.HttpsError('permission-denied', 'Not your reservation');
   }
 
@@ -986,7 +988,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
   }
 
   const isClient = userId === reservation.clientUserId;
-  const isCreator = userId === reservation.creatorUserId;
+  const isCreator = userId === reservation.earnerUserId;
 
   // Update confirmation flags
   const updates: any = {
@@ -998,8 +1000,8 @@ export const confirmReservation = functions.https.onCall(async (request) => {
       updates.clientConfirmed = true;
       updates.clientConfirmationAt = Timestamp.now();
     } else if (isCreator) {
-      updates.creatorConfirmed = true;
-      updates.creatorConfirmationAt = Timestamp.now();
+      updates.earnerConfirmed = true;
+      updates.earnerConfirmationAt = Timestamp.now();
     }
 
     await reservationRef.update(updates);
@@ -1008,8 +1010,8 @@ export const confirmReservation = functions.https.onCall(async (request) => {
     const updatedReservation = await reservationRef.get();
     const updatedData = updatedReservation.data() as Reservation;
 
-    if (updatedData.clientConfirmed && updatedData.creatorConfirmed) {
-      // Both confirmed - mark as COMPLETED and release to creator
+    if (updatedData.clientConfirmed && updatedData.earnerConfirmed) {
+      // Both confirmed - mark as COMPLETED and release to earner
       await reservationRef.update({
         status: 'COMPLETED',
         updatedAt: Timestamp.now()
@@ -1030,7 +1032,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
       try {
         const date30dAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const noShowSnapshot = await db.collection('reservations')
-          .where('creatorUserId', '==', reservation.creatorUserId)
+          .where('earnerUserId', '==', reservation.earnerUserId)
           .where('status', 'in', ['NO_SHOW_CREATOR', 'NO_SHOW_CLIENT'])
           .where('createdAt', '>=', admin.firestore.Timestamp.fromDate(date30dAgo))
           .get();
@@ -1043,7 +1045,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
         
         if (noShowCount >= highNoShowThreshold) {
           await createAmlEvent({
-            userId: reservation.creatorUserId,
+            userId: reservation.earnerUserId,
             kind: 'OTHER',
             severity: 'WARN',
             description: `No-show pattern detected: ${noShowCount} no-shows in 30 days`,
@@ -1065,11 +1067,11 @@ export const confirmReservation = functions.https.onCall(async (request) => {
   } else {
     // NO_SHOW_OTHER
     // Check if other party has confirmed differently
-    if (isClient && reservation.creatorConfirmed) {
-      // Conflict: client says creator no-show, but creator confirmed
+    if (isClient && reservation.earnerConfirmed) {
+      // Conflict: client says earner no-show, but earner confirmed
       updates.status = 'IN_DISPUTE';
     } else if (isCreator && reservation.clientConfirmed) {
-      // Conflict: creator says client no-show, but client confirmed
+      // Conflict: earner says client no-show, but client confirmed
       updates.status = 'IN_DISPUTE';
     } else {
       // No conflict yet - mark appropriate no-show status
@@ -1079,8 +1081,8 @@ export const confirmReservation = functions.https.onCall(async (request) => {
         updates.clientConfirmationAt = Timestamp.now();
       } else {
         updates.status = 'NO_SHOW_CLIENT';
-        updates.creatorConfirmed = false;
-        updates.creatorConfirmationAt = Timestamp.now();
+        updates.earnerConfirmed = false;
+        updates.earnerConfirmationAt = Timestamp.now();
       }
     }
 
@@ -1094,7 +1096,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
       if (reservation.escrowId) {
         const disputeParams: CreateDisputeParams = {
           userId: userId,
-          targetUserId: isClient ? reservation.creatorUserId : reservation.clientUserId,
+          targetUserId: isClient ? reservation.earnerUserId : reservation.clientUserId,
           type: 'RESERVATION',
           title: 'Meeting outcome dispute',
           description: 'Conflicting meeting outcome',
@@ -1121,7 +1123,7 @@ export const confirmReservation = functions.https.onCall(async (request) => {
           // Refund to client
           await refundEscrowToClient(reservation.escrowId, reservationId);
         } else if (finalData.status === 'NO_SHOW_CLIENT') {
-          // Release to creator
+          // Release to earner
           await releaseEscrowToCreator(reservation.escrowId, reservationId);
         }
       }
@@ -1149,12 +1151,12 @@ export const listReservations = functions.https.onCall(async (request) => {
   const userId = request.auth.uid;
   const { role, from, to } = data;
 
-  if (!role || !['creator', 'client'].includes(role)) {
+  if (!role || !['earner', 'client'].includes(role)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid role');
   }
 
   const reservationsRef = db.collection('reservations');
-  const field = role === 'creator' ? 'creatorUserId' : 'clientUserId';
+  const field = role === 'earner' ? 'earnerUserId' : 'clientUserId';
 
   let query: any = reservationsRef.where(field, '==', userId);
 
@@ -1175,7 +1177,7 @@ export const listReservations = functions.https.onCall(async (request) => {
     const data = doc.data() as Reservation;
     return {
       reservationId: data.reservationId,
-      creatorUserId: data.creatorUserId,
+      earnerUserId: data.earnerUserId,
       clientUserId: data.clientUserId,
       startTimeUtc: data.startTimeUtc.toDate().toISOString(),
       endTimeUtc: data.endTimeUtc.toDate().toISOString(),
@@ -1183,7 +1185,7 @@ export const listReservations = functions.https.onCall(async (request) => {
       priceTokens: data.priceTokens,
       status: data.status,
       clientConfirmed: data.clientConfirmed,
-      creatorConfirmed: data.creatorConfirmed,
+      earnerConfirmed: data.earnerConfirmed,
       escrowId: data.escrowId,
       disputeId: data.disputeId
     };
@@ -1254,7 +1256,7 @@ export const autoTimeoutReservations = onSchedule("0 * * * *", async (event) => 
       const reservation = doc.data() as Reservation;
 
       // If neither side confirmed, mark as dispute and lock escrow
-      if (!reservation.clientConfirmed && !reservation.creatorConfirmed) {
+      if (!reservation.clientConfirmed && !reservation.earnerConfirmed) {
         await doc.ref.update({
           status: 'IN_DISPUTE',
           updatedAt: now
@@ -1264,7 +1266,7 @@ export const autoTimeoutReservations = onSchedule("0 * * * *", async (event) => 
         if (reservation.escrowId) {
           const disputeParams: CreateDisputeParams = {
             userId: reservation.clientUserId,
-            targetUserId: reservation.creatorUserId,
+            targetUserId: reservation.earnerUserId,
             type: 'RESERVATION',
             title: 'Meeting outcome timeout',
             description: 'Neither party confirmed meeting outcome within 24 hours',
@@ -1310,7 +1312,7 @@ export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
 
       // Send 24h reminder to both parties
       await sendNotification({
-        userId: reservation.creatorUserId,
+        userId: reservation.earnerUserId,
         type: 'RESERVATION_REMINDER',
         title: 'Meeting Tomorrow',
         body: `You have a meeting tomorrow at ${startTime.toLocaleString()}`,
@@ -1342,7 +1344,7 @@ export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
 
       // Send 1h reminder to both parties
       await sendNotification({
-        userId: reservation.creatorUserId,
+        userId: reservation.earnerUserId,
         type: 'RESERVATION_REMINDER',
         title: 'Meeting in 1 Hour',
         body: `Your meeting starts in 1 hour at ${startTime.toLocaleString()}`,
@@ -1363,6 +1365,22 @@ export const sendMeetingReminders = onSchedule("0 * * * *", async (event) => {
     console.log(`Sent reminders for ${upcomingReservations24h.size + upcomingReservations1h.size} meetings`);
     return;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

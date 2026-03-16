@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { arrayUnion, increment, logger, onSchedule, onDocumentCreated } from '../runtime';
 
 interface CreatorMetrics {
-  creatorId: string;
+  earnerId: string;
   date: string;
   exposureScore: number; // 0-100
   engagementScore: number; // 0-100
@@ -43,7 +45,7 @@ interface CreatorMetrics {
   };
 }
 
-// Track creator exposure (profile views, discovery appearances)
+// Track earner exposure (profile views, discovery appearances)
 export const trackCreatorExposure = onDocumentCreated('profile_views/{viewId}', async (event) => {
   const snap = event.data;
   if (!snap) return;
@@ -52,8 +54,8 @@ export const trackCreatorExposure = onDocumentCreated('profile_views/{viewId}', 
     const today = new Date().toISOString().split('T')[0];
 
     try {
-      // Update creator daily metrics
-      await db.collection('creator_metrics').doc(view.profile_user_id).collection('daily').doc(today).set({
+      // Update earner daily metrics
+      await db.collection('earner_metrics').doc(view.profile_user_id).collection('daily').doc(today).set({
         date: today,
         profile_views: FieldValue.increment(1),
         unique_viewers: FieldValue.arrayUnion(view.viewer_id),
@@ -61,7 +63,7 @@ export const trackCreatorExposure = onDocumentCreated('profile_views/{viewId}', 
       }, { merge: true });
 
       // Track exposure event
-      await db.collection('creator_metrics').doc(view.profile_user_id).collection('events').add({
+      await db.collection('earner_metrics').doc(view.profile_user_id).collection('events').add({
         event_type: 'profile_view',
         viewer_id: view.viewer_id,
         source: view.source || 'discovery',
@@ -69,11 +71,11 @@ export const trackCreatorExposure = onDocumentCreated('profile_views/{viewId}', 
       });
 
     } catch (error) {
-      console.error('Error tracking creator exposure:', error);
+      console.error('Error tracking earner exposure:', error);
     }
   });
 
-// Track creator engagement (swipes, matches, interactions)
+// Track earner engagement (swipes, matches, interactions)
 export const trackCreatorEngagement = onDocumentCreated('matches/{matchId}', async (event) => {
   const snap = event.data;
   if (!snap) return;
@@ -82,17 +84,17 @@ export const trackCreatorEngagement = onDocumentCreated('matches/{matchId}', asy
     const today = new Date().toISOString().split('T')[0];
 
     try {
-      // Track for both users if they're creators
+      // Track for both users if they're earners
       for (const userId of match.user_ids) {
         const userDoc = await db.collection('users').doc(userId).get();
-        if (userDoc.exists && userDoc.data()?.is_creator) {
-          await db.collection('creator_metrics').doc(userId).collection('daily').doc(today).set({
+        if (userDoc.exists && userDoc.data()?.is_earner) {
+          await db.collection('earner_metrics').doc(userId).collection('daily').doc(today).set({
             date: today,
             matches_created: FieldValue.increment(1),
             timestamp: timestamp
           }, { merge: true });
 
-          await db.collection('creator_metrics').doc(userId).collection('events').add({
+          await db.collection('earner_metrics').doc(userId).collection('events').add({
             event_type: 'match_created',
             match_id: event.params.matchId,
             timestamp: timestamp
@@ -101,7 +103,7 @@ export const trackCreatorEngagement = onDocumentCreated('matches/{matchId}', asy
       }
 
     } catch (error) {
-      console.error('Error tracking creator engagement:', error);
+      console.error('Error tracking earner engagement:', error);
     }
   });
 
@@ -119,29 +121,29 @@ export const trackCreatorChatEarnings = onDocumentCreated('chats/{chatId}/paymen
       if (!chatDoc.exists) return;
 
       const chat = chatDoc.data()!;
-      const creatorId = chat.creator_id;
+      const earnerId = chat.earner_id;
 
-      // Calculate creator's share (assuming 70/30 split)
-      const creatorEarnings = (payment.tokens || 0) * MONETIZATION_SPLITS.CHAT.creator;
+      // Calculate earner's share (assuming 70/30 split)
+      const earnerEarnings = (payment.tokens || 0) * MONETIZATION_SPLITS.CHAT.earner;
 
-      // Update creator daily metrics
-      await db.collection('creator_metrics').doc(creatorId).collection('daily').doc(today).set({
+      // Update earner daily metrics
+      await db.collection('earner_metrics').doc(earnerId).collection('daily').doc(today).set({
         date: today,
-        chat_earnings: FieldValue.increment(creatorEarnings),
+        chat_earnings: FieldValue.increment(earnerEarnings),
         chat_sessions: FieldValue.increment(payment.is_first_payment ? 1 : 0),
         timestamp: timestamp
       }, { merge: true });
 
       // Track earning event
-      await db.collection('creator_metrics').doc(creatorId).collection('events').add({
+      await db.collection('earner_metrics').doc(earnerId).collection('events').add({
         event_type: 'chat_earnings',
         chat_id: event.params.chatId,
-        tokens: creatorEarnings,
+        tokens: earnerEarnings,
         timestamp: timestamp
       });
 
     } catch (error) {
-      console.error('Error tracking creator chat earnings:', error);
+      console.error('Error tracking earner chat earnings:', error);
     }
   });
 
@@ -154,42 +156,42 @@ export const trackCreatorCalendarEarnings = onDocumentCreated('calendar_events/{
     const today = new Date().toISOString().split('T')[0];
 
     try {
-      const creatorId = eventData.creator_id;
-      // Calculate creator's share
-      const creatorEarnings = (eventData.tokens || 0) * 0.8; // 80% to creator for calendar
+      const earnerId = eventData.earner_id;
+      // Calculate earner's share
+      const earnerEarnings = (eventData.tokens || 0) * 0.8; // 80% to earner for calendar
 
-      // Update creator daily metrics
-      await db.collection('creator_metrics').doc(creatorId).collection('daily').doc(today).set({
+      // Update earner daily metrics
+      await db.collection('earner_metrics').doc(earnerId).collection('daily').doc(today).set({
         date: today,
-        calendar_earnings: FieldValue.increment(creatorEarnings),
+        calendar_earnings: FieldValue.increment(earnerEarnings),
         calendar_bookings: FieldValue.increment(1),
         timestamp: timestamp
       }, { merge: true });
 
       // Track earning event
-      await db.collection('creator_metrics').doc(creatorId).collection('events').add({
+      await db.collection('earner_metrics').doc(earnerId).collection('events').add({
         event_type: 'calendar_earnings',
         event_id: event.params.eventId,
-        tokens: creatorEarnings,
+        tokens: earnerEarnings,
         timestamp: timestamp
       });
 
       // Track repeat customers
       const previousBookings = await db.collection('calendar_events')
-        .where('creator_id', '==', creatorId)
+        .where('earner_id', '==', earnerId)
         .where('user_id', '==', eventData.user_id)
         .where('status', '==', 'completed')
         .count()
         .get();
 
       if (previousBookings.data().count > 0) {
-        await db.collection('creator_metrics').doc(creatorId).collection('daily').doc(today).set({
+        await db.collection('earner_metrics').doc(earnerId).collection('daily').doc(today).set({
           repeat_customers: FieldValue.increment(1)
         }, { merge: true });
       }
 
     } catch (error) {
-      console.error('Error tracking creator calendar earnings:', error);
+      console.error('Error tracking earner calendar earnings:', error);
     }
   });
 
@@ -299,31 +301,31 @@ function calculateChatPriceEligibility(
   return { eligible, currentPrice, suggestedPrice, reason };
 }
 
-// Daily creator metrics aggregation
+// Daily earner metrics aggregation
 export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZone: "UTC" }, async (event) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const dateStr = yesterday.toISOString().split('T')[0];
 
     try {
-      console.log(`Aggregating creator metrics for ${dateStr}`);
+      console.log(`Aggregating earner metrics for ${dateStr}`);
 
-      // Get all creators
-      const creatorsSnapshot = await db.collection('users')
-        .where('is_creator', '==', true)
+      // Get all earners
+      const earnersSnapshot = await db.collection('users')
+        .where('is_earner', '==', true)
         .get();
 
       const batch = db.batch();
       let count = 0;
-      const rankings: { creatorId: string; score: number; earnings: number }[] = [];
+      const rankings: { earnerId: string; score: number; earnings: number }[] = [];
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const creatorId = creatorDoc.id;
-        const creatorData = creatorDoc.data();
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const earnerId = earnerDoc.id;
+        const earnerData = earnerDoc.data();
 
         // Get daily metrics
-        const dailyDoc = await db.collection('creator_metrics')
-          .doc(creatorId)
+        const dailyDoc = await db.collection('earner_metrics')
+          .doc(earnerId)
           .collection('daily')
           .doc(dateStr)
           .get();
@@ -335,8 +337,8 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         prevDate.setDate(prevDate.getDate() - 1);
         const prevDateStr = prevDate.toISOString().split('T')[0];
         
-        const prevDailyDoc = await db.collection('creator_metrics')
-          .doc(creatorId)
+        const prevDailyDoc = await db.collection('earner_metrics')
+          .doc(earnerId)
           .collection('daily')
           .doc(prevDateStr)
           .get();
@@ -354,10 +356,10 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         const calendarBookings = daily.calendar_bookings || 0;
         const repeatCustomers = daily.repeat_customers || 0;
 
-        // Get additional metrics from creator profile
-        const responseRate = creatorData.response_rate || 0;
-        const responseTime = creatorData.avg_response_time || 0;
-        const rating = creatorData.rating || 0;
+        // Get additional metrics from earner profile
+        const responseRate = earnerData.response_rate || 0;
+        const responseTime = earnerData.avg_response_time || 0;
+        const rating = earnerData.rating || 0;
         const swipesReceived = daily.swipes_received || 0;
         const avgChatDuration = daily.avg_chat_duration || 0;
 
@@ -403,7 +405,7 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         };
 
         // Chat price eligibility
-        const currentChatPrice = creatorData.chat_price || 10;
+        const currentChatPrice = earnerData.chat_price || 10;
         const demand = chatSessions + calendarBookings;
         const chatPriceEligibility = calculateChatPriceEligibility(
           currentChatPrice,
@@ -415,11 +417,11 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
 
         // Store for ranking calculation
         const overallScore = (exposureScore + engagementScore) / 2;
-        rankings.push({ creatorId, score: overallScore, earnings: totalEarnings });
+        rankings.push({ earnerId, score: overallScore, earnings: totalEarnings });
 
         // Create metrics object
         const metrics: Partial<CreatorMetrics> = {
-          creatorId,
+          earnerId,
           date: dateStr,
           exposureScore,
           engagementScore,
@@ -444,8 +446,8 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         };
 
         // Save metrics
-        const metricsRef = db.collection('creator_metrics')
-          .doc(creatorId)
+        const metricsRef = db.collection('earner_metrics')
+          .doc(earnerId)
           .collection('daily')
           .doc(dateStr);
         
@@ -454,7 +456,7 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         count++;
         if (count % 500 === 0) {
           await batch.commit();
-          console.log(`Processed ${count} creator metrics`);
+          console.log(`Processed ${count} earner metrics`);
         }
       }
 
@@ -468,8 +470,8 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
       const rankBatch = db.batch();
       rankings.forEach((ranking, index) => {
         const rank = index + 1;
-        const metricsRef = db.collection('creator_metrics')
-          .doc(ranking.creatorId)
+        const metricsRef = db.collection('earner_metrics')
+          .doc(ranking.earnerId)
           .collection('daily')
           .doc(dateStr);
         
@@ -487,32 +489,32 @@ export const aggregateCreatorMetrics = onSchedule({ schedule: "0 4 * * *", timeZ
         await batch.commit();
       }
 
-      console.log(`Creator metrics aggregation complete: ${count} creators`);
+      console.log(`Creator metrics aggregation complete: ${count} earners`);
 
     } catch (error) {
-      console.error('Error aggregating creator metrics:', error);
+      console.error('Error aggregating earner metrics:', error);
       throw error;
     }
   });
 
 // Calculate weekly/monthly trends
 export const calculateCreatorTrends = onSchedule({ schedule: "0 5 * * 1", timeZone: "UTC" }, async (event) => {
-    console.log('Calculating creator trends...');
+    console.log('Calculating earner trends...');
 
     try {
-      const creatorsSnapshot = await db.collection('users')
-        .where('is_creator', '==', true)
+      const earnersSnapshot = await db.collection('users')
+        .where('is_earner', '==', true)
         .get();
 
-      for (const creatorDoc of creatorsSnapshot.docs) {
-        const creatorId = creatorDoc.id;
+      for (const earnerDoc of earnersSnapshot.docs) {
+        const earnerId = earnerDoc.id;
 
         // Get last 7 days of metrics
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-        const metricsSnapshot = await db.collection('creator_metrics')
-          .doc(creatorId)
+        const metricsSnapshot = await db.collection('earner_metrics')
+          .doc(earnerId)
           .collection('daily')
           .where('date', '>=', sevenDaysAgo.toISOString().split('T')[0])
           .get();
@@ -534,7 +536,7 @@ export const calculateCreatorTrends = onSchedule({ schedule: "0 5 * * 1", timeZo
           const avgExposure = totalExposure / count;
           const avgEngagement = totalEngagement / count;
 
-          await db.collection('creator_metrics').doc(creatorId).set({
+          await db.collection('earner_metrics').doc(earnerId).set({
             trends_7d: {
               avg_exposure_score: avgExposure,
               avg_engagement_score: avgEngagement,
@@ -548,10 +550,28 @@ export const calculateCreatorTrends = onSchedule({ schedule: "0 5 * * 1", timeZo
       console.log('Creator trends calculation complete');
 
     } catch (error) {
-      console.error('Error calculating creator trends:', error);
+      console.error('Error calculating earner trends:', error);
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

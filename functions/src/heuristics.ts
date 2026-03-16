@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Fraud Detection HUSDistics (Phase 8)
  *
@@ -302,6 +304,20 @@ export function calculateTrustScore(data: {
   // Clamp to 0-100
   return Math.max(0, Math.min(100, score));
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

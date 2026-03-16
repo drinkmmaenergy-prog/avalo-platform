@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 151 - Sponsorship Safety Guards
  * Automatic detection and blocking of NSFW, romantic, and manipulative content
@@ -317,6 +319,22 @@ export function createSafetyCheck(
     checkedAt: new Date()
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

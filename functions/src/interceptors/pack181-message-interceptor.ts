@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import {
   detectFanEntitlement,
@@ -13,7 +15,7 @@ const db = getFirestore();
 
 export async function interceptMessage(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   messageContent: string,
   chatId: string
 ): Promise<{
@@ -22,18 +24,18 @@ export async function interceptMessage(
   actionTaken?: string;
 }> {
   try {
-    const restrictionCheck = await checkActiveRestriction(fanId, creatorId);
+    const restrictionCheck = await checkActiveRestriction(fanId, earnerId);
     if (restrictionCheck.restricted) {
       const restriction = restrictionCheck.restriction!;
       return {
         allowed: false,
-        reason: `You are currently restricted from messaging this creator. Restriction type: ${restriction.restrictionType}. Reason: ${restriction.reason}`,
+        reason: `You are currently restricted from messaging this earner. Restriction type: ${restriction.restrictionType}. Reason: ${restriction.reason}`,
         actionTaken: 'blocked_by_restriction'
       };
     }
 
     const boundaryCheck = await enforceCreatorBoundaryTools(
-      creatorId,
+      earnerId,
       messageContent,
       fanId
     );
@@ -41,7 +43,7 @@ export async function interceptMessage(
     if (boundaryCheck.blocked) {
       return {
         allowed: false,
-        reason: boundaryCheck.reason || 'Message blocked by creator boundaries',
+        reason: boundaryCheck.reason || 'Message blocked by earner boundaries',
         actionTaken: 'blocked_by_boundary'
       };
     }
@@ -64,9 +66,9 @@ export async function interceptMessage(
     });
 
     const previousViolationsSnapshot = await db
-      .collection('creator_independence_cases')
+      .collection('earner_independence_cases')
       .where('fanId', '==', fanId)
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .orderBy('timestamp', 'desc')
       .limit(5)
       .get();
@@ -82,7 +84,7 @@ export async function interceptMessage(
 
     const context: BoundaryViolationContext = {
       fanId,
-      creatorId,
+      earnerId,
       messageContent,
       chatHistory,
       previousViolations
@@ -98,7 +100,7 @@ export async function interceptMessage(
           recommendedAction.type === 'freeze') {
         await applyCreatorIndependenceMeasures(
           fanId,
-          creatorId,
+          earnerId,
           recommendedAction,
           detectionResult
         );
@@ -113,7 +115,7 @@ export async function interceptMessage(
       if (recommendedAction.type === 'block' || recommendedAction.type === 'cooldown') {
         await applyCreatorIndependenceMeasures(
           fanId,
-          creatorId,
+          earnerId,
           recommendedAction,
           detectionResult
         );
@@ -128,7 +130,7 @@ export async function interceptMessage(
       if (recommendedAction.type === 'warning') {
         await applyCreatorIndependenceMeasures(
           fanId,
-          creatorId,
+          earnerId,
           recommendedAction,
           detectionResult
         );
@@ -154,7 +156,7 @@ export async function interceptMessage(
 
 export async function checkMessageBeforeSend(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   messageContent: string
 ): Promise<{
   canSend: boolean;
@@ -162,7 +164,7 @@ export async function checkMessageBeforeSend(
   blockMessage?: string;
 }> {
   try {
-    const restrictionCheck = await checkActiveRestriction(fanId, creatorId);
+    const restrictionCheck = await checkActiveRestriction(fanId, earnerId);
     if (restrictionCheck.restricted) {
       const restriction = restrictionCheck.restriction!;
       const endTimeStr = restriction.endTime 
@@ -171,12 +173,12 @@ export async function checkMessageBeforeSend(
       
       return {
         canSend: false,
-        blockMessage: `You are currently restricted from messaging this creator until ${endTimeStr}. Reason: ${restriction.reason}`
+        blockMessage: `You are currently restricted from messaging this earner until ${endTimeStr}. Reason: ${restriction.reason}`
       };
     }
 
     const boundaryCheck = await enforceCreatorBoundaryTools(
-      creatorId,
+      earnerId,
       messageContent,
       fanId
     );
@@ -184,7 +186,7 @@ export async function checkMessageBeforeSend(
     if (boundaryCheck.blocked) {
       return {
         canSend: false,
-        blockMessage: 'This message contains content that violates the creator\'s boundaries. Please revise your message.'
+        blockMessage: 'This message contains content that violates the earner\'s boundaries. Please revise your message.'
       };
     }
 
@@ -200,15 +202,15 @@ export async function checkMessageBeforeSend(
 }
 
 export async function displayBoundaryBanner(
-  creatorId: string
+  earnerId: string
 ): Promise<{
   showBanner: boolean;
   bannerText?: string;
 }> {
   try {
     const settingsDoc = await db
-      .collection('creator_boundary_settings')
-      .doc(creatorId)
+      .collection('earner_boundary_settings')
+      .doc(earnerId)
       .get();
 
     if (!settingsDoc.exists) {
@@ -236,14 +238,14 @@ export async function displayBoundaryBanner(
 
 export async function monitorFanBehaviorRealtime(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   action: 'message' | 'purchase' | 'interaction'
 ): Promise<void> {
   try {
     const recentEventsSnapshot = await db
       .collection('fan_entitlement_events')
       .where('fanId', '==', fanId)
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('timestamp', '>=', Timestamp.fromMillis(Date.now() - 3600000))
       .get();
 
@@ -253,13 +255,29 @@ export async function monitorFanBehaviorRealtime(
       );
 
       if (highSeverityEvents.length >= 2) {
-        console.warn(`High-risk fan behavior detected: Fan ${fanId} to Creator ${creatorId}`);
+        console.warn(`High-risk fan behavior detected: Fan ${fanId} to Creator ${earnerId}`);
       }
     }
   } catch (error) {
     console.error('Error monitoring fan behavior:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

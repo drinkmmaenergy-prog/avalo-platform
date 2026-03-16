@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 395 - Global Tax Engine
  * Handles VAT, GST, and sales tax calculations for digital goods
@@ -12,16 +14,16 @@ const db = admin.firestore();
 // VAT/Tax rates by country (should be updated from external provider)
 export const VAT_RATES: Record<string, { rate: number; type: string; country: string }> = {
   // EU Countries
-  'AT': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'Austria' },
+  'AT': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'Austria' },
   'BE': { rate: 0.21, type: 'VAT', country: 'Belgium' },
-  'BG': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'Bulgaria' },
+  'BG': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'Bulgaria' },
   'HR': { rate: 0.25, type: 'VAT', country: 'Croatia' },
   'CY': { rate: 0.19, type: 'VAT', country: 'Cyprus' },
   'CZ': { rate: 0.21, type: 'VAT', country: 'Czech Republic' },
   'DK': { rate: 0.25, type: 'VAT', country: 'Denmark' },
-  'EE': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'Estonia' },
+  'EE': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'Estonia' },
   'FI': { rate: 0.24, type: 'VAT', country: 'Finland' },
-  'FR': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'France' },
+  'FR': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'France' },
   'DE': { rate: 0.19, type: 'VAT', country: 'Germany' },
   'GR': { rate: 0.24, type: 'VAT', country: 'Greece' },
   'HU': { rate: 0.27, type: 'VAT', country: 'Hungary' },
@@ -35,13 +37,13 @@ export const VAT_RATES: Record<string, { rate: number; type: string; country: st
   'PL': { rate: 0.23, type: 'VAT', country: 'Poland' },
   'PT': { rate: 0.23, type: 'VAT', country: 'Portugal' },
   'RO': { rate: 0.19, type: 'VAT', country: 'Romania' },
-  'SK': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'Slovakia' },
+  'SK': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'Slovakia' },
   'SI': { rate: 0.22, type: 'VAT', country: 'Slovenia' },
   'ES': { rate: 0.21, type: 'VAT', country: 'Spain' },
   'SE': { rate: 0.25, type: 'VAT', country: 'Sweden' },
   
   // UK
-  'GB': { rate: MONETIZATION_SPLITS.EVENT_TICKET.avalo, type: 'VAT', country: 'United Kingdom' },
+  'GB': { rate: MONETIZATION_SPLITS.EVENT_TICKET.platform, type: 'VAT', country: 'United Kingdom' },
   
   // Other USDopean
   'NO': { rate: 0.25, type: 'VAT', country: 'Norway' },
@@ -381,6 +383,22 @@ export const validateVATNumber = functions.https.onCall(async (request) => {
  * Export tax calculation function for use in other modules
  */
 export { calculateTax as calculateTransactionTax };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

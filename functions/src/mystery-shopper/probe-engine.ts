@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 156: Mystery Shopper Probe Engine
  * Automated decoy account probing system
@@ -369,7 +371,7 @@ function generateDecoyName(decoyType: DecoyUserType): string {
   const namePatterns: Record<DecoyUserType, string[]> = {
     new_user: ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey'],
     high_spender: ['Marcus', 'Victoria', 'Sebastian', 'Isabella', 'Alexander'],
-    beginner_creator: ['Emma', 'Liam', 'Sophia', 'Noah', 'Olivia'],
+    beginner_earner: ['Emma', 'Liam', 'Sophia', 'Noah', 'Olivia'],
     event_attendee: ['James', 'Emily', 'Michael', 'Sarah', 'David'],
     digital_product_customer: ['Chris', 'Sam', 'Pat', 'Jamie', 'Drew']
   };
@@ -386,7 +388,7 @@ function generateDecoyBio(decoyType: DecoyUserType): string {
   const bioPatterns: Record<DecoyUserType, string> = {
     new_user: 'New to this platform! Excited to explore and connect.',
     high_spender: 'Looking for quality content and meaningful connections.',
-    beginner_creator: 'Just starting my creator journey. Learning as I go!',
+    beginner_earner: 'Just starting my earner journey. Learning as I go!',
     event_attendee: 'Love attending events and meeting new people.',
     digital_product_customer: 'Always interested in learning new skills.'
   };
@@ -425,6 +427,22 @@ export async function getProbeStatistics(
     detectionRate
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

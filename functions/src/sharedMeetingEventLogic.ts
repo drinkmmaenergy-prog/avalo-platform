@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 254: Shared Meeting & Event Logic
  * 
@@ -175,15 +177,15 @@ export async function validateIdentity(
 export async function processRefund(
   context: RefundContext,
   transaction: FirebaseFirestore.Transaction
-): Promise<{ refundAmount: number; avaloFeeRefunded: boolean }> {
+): Promise<{ refundAmount: number; platformFeeRefunded: boolean }> {
   let refundAmount = context.escrowAmount;
-  let avaloFeeRefunded = false;
+  let platformFeeRefunded = false;
 
   // Determine if Avalo fee should be refunded (only for confirmed fraud)
   if (context.refundReason === 'IDENTITY_MISMATCH') {
     // Fraud case - full refund including Avalo fee (PACK 248 rule)
     refundAmount = context.totalAmount;
-    avaloFeeRefunded = true;
+    platformFeeRefunded = true;
   }
 
   // Refund payer
@@ -194,9 +196,9 @@ export async function processRefund(
   });
 
   // If Avalo fee refunded, deduct from Avalo wallet
-  if (avaloFeeRefunded) {
-    const avaloWalletRef = db.collection('system').doc('avalo_wallet');
-    transaction.update(avaloWalletRef, {
+  if (platformFeeRefunded) {
+    const platformWalletRef = db.collection('system').doc('platform_wallet');
+    transaction.update(platformWalletRef, {
       balance: FieldValue.increment(-context.platformFee),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -226,15 +228,15 @@ export async function processRefund(
     timestamp: FieldValue.serverTimestamp(),
     metadata: {
       refundReason: context.refundReason,
-      avaloFeeRefunded,
+      platformFeeRefunded,
     },
   });
 
   logger.info(
-    `Refund processed: ${context.contextType} ${context.contextId}, Amount: ${refundAmount}, Fee refunded: ${avaloFeeRefunded}`
+    `Refund processed: ${context.contextType} ${context.contextId}, Amount: ${refundAmount}, Fee refunded: ${platformFeeRefunded}`
   );
 
-  return { refundAmount, avaloFeeRefunded };
+  return { refundAmount, platformFeeRefunded };
 }
 
 // ============================================================================
@@ -441,6 +443,20 @@ export async function getValidationStats(
     verifiedUsers,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

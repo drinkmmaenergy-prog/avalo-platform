@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ✅ PACK 366 — Ad Campaign Synchronization
  * Manages advertising campaigns and auto-syncs with country launch stages
@@ -465,6 +467,20 @@ export class AdSyncService {
     console.log(`[PACK 366] Campaign resumed: ${campaignId}`);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

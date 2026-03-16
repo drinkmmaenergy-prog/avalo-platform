@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 13 - Referral Engine
  * Manages referral codes, tracking, and rewards
@@ -458,7 +460,7 @@ async function grantReferralReward(
       senderUid: 'referral_system',
       receiverUid: referrerId,
       tokensAmount,
-      avaloFee: 0,
+      platformFee: 0,
       transactionType: 'referral_reward',
       referralEventType: eventType,
       referredUserId,
@@ -471,7 +473,7 @@ async function grantReferralReward(
       const { recordRankingAction } = await import('./rankingEngine');
       await recordRankingAction({
         type: 'tip', // Count referral rewards as tips for ranking
-        creatorId: referrerId,
+        earnerId: referrerId,
         payerId: 'referral_system',
         tokensAmount,
         points: tokensAmount, // 1 point per token for tips
@@ -554,6 +556,20 @@ export async function getReferralDetails(userId: string): Promise<ReferralStats>
 export {
   REFERRAL_REWARDS,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

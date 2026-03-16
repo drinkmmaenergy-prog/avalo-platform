@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 345 — Launch-Ready System Audit & Missing Gaps Scan
  * Cloud Functions for automated and manual audits
@@ -667,8 +669,8 @@ async function checkRevenueSplits(): Promise<{
       const splitDoc = await db.doc(`revenue_splits/${feature}`).get();
       if (splitDoc.exists) {
         const data = splitDoc.data() as RevenueSplitConfig;
-        const matches = data.creatorShare === expectedSplit.creatorShare &&
-                       data.platformShare === expectedSplit.platformShare;
+        const matches = data.earner === expectedSplit.earner &&
+                       data.platform === expectedSplit.platform;
         results[feature] = matches;
       } else {
         results[feature] = false;
@@ -1089,6 +1091,21 @@ export const pack345_forceLaunch = functions.https.onCall(async (request) => {
     return;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

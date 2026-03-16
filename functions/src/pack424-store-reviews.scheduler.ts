@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 424 — Store Review Scheduler
  * Automatically polls store reviews every 30 minutes
@@ -11,7 +13,7 @@ import { HttpsError, admin, auth, logger, onCall, onRequest, timestamp, onSchedu
 function getAppConfig() {
   return {
     android: {
-      packageName: process.env.AVALO_ANDROID_PACKAGE || 'com.avalo.app',
+      packageName: process.env.AVALO_ANDROID_PACKAGE || 'com.platform.app',
     },
     ios: {
       appId: process.env.AVALO_IOS_APP_ID || '123456789',
@@ -243,6 +245,20 @@ export const dailyReviewMetrics = onSchedule({ schedule: "0 3 * * *", timeZone: 
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

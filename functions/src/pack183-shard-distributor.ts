@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 183 — Shard Distributor
  * Smart load distribution across modules
@@ -35,7 +37,7 @@ const SHARD_CONFIGURATIONS: Record<string, ShardConfig> = {
   },
   FEED: {
     module: 'FEED',
-    shardKey: 'region_creator',
+    shardKey: 'region_earner',
     shardCount: 24,
     strategy: 'REGION',
   },
@@ -102,8 +104,8 @@ export function assignShard(
     case 'REGION':
       if (metadata?.region) {
         const regionHash = hashString(metadata.region);
-        const creatorHash = hashString(entityId);
-        return (regionHash + creatorHash) % config.shardCount;
+        const earnerHash = hashString(entityId);
+        return (regionHash + earnerHash) % config.shardCount;
       }
       return hashString(entityId) % config.shardCount;
     
@@ -129,8 +131,8 @@ export function getAiShard(language: string, persona: string): number {
 /**
  * Get shard assignment for feed content
  */
-export function getFeedShard(creatorId: string, region: string): number {
-  return assignShard('FEED', creatorId, { region });
+export function getFeedShard(earnerId: string, region: string): number {
+  return assignShard('FEED', earnerId, { region });
 }
 
 /**
@@ -285,6 +287,19 @@ export async function updateShardLoad(
 export function getAllShardConfigs(): Record<string, ShardConfig> {
   return { ...SHARD_CONFIGURATIONS };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

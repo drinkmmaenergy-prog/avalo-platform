@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 214 - Return Trigger Engine
  * Core logic for smart re-engagement without spam
@@ -242,7 +244,7 @@ async function getUserType(userId: string): Promise<UserType> {
       return "ROYAL_MALE";
     }
 
-    if (userData?.isInfluencer || userData?.creatorMode) {
+    if (userData?.isInfluencer || userData?.earnerMode) {
       return "INFLUENCER_EARNER";
     }
 
@@ -448,6 +450,20 @@ export async function setPanicMode(
     .doc(userId)
     .update(updates);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

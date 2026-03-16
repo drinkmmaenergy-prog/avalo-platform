@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 134 — Safety Avoidance Filter
  * 
@@ -5,7 +7,7 @@
  * Prevents exploitation and unsafe recommendations
  * 
  * Anti-Exploitation Rules:
- * - No suggesting high-risk creators to vulnerable users
+ * - No suggesting high-risk earners to vulnerable users
  * - No NSFW to minors or restricted regions
  * - No intense personalities to lonely users
  * - Trauma-aware filtering
@@ -29,21 +31,21 @@ import { functions } from './runtime';
  * Integrates with PACK 126 Safety Framework
  * 
  * @param userId - User receiving recommendation
- * @param creatorId - Content creator
+ * @param earnerId - Content earner
  * @param contentId - Content ID
  * @returns Whether content is safe to show
  */
 export async function checkSafetyFilters(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   contentId: string
 ): Promise<boolean> {
   // 1. Get safety context for user
   const context = await getSafetyFilterContext(userId);
   
-  // 2. Check if creator is blocked
-  if (context.blockedCreators.includes(creatorId)) {
-    logger.info('[Pack134] Filtered: Creator blocked', { userId, creatorId });
+  // 2. Check if earner is blocked
+  if (context.blockedCreators.includes(earnerId)) {
+    logger.info('[Pack134] Filtered: Creator blocked', { userId, earnerId });
     return false;
   }
   
@@ -59,11 +61,11 @@ export async function checkSafetyFilters(
   }
   
   // 4. Check for exploitation risks
-  const exploitationCheck = await checkExploitationRisk(userId, creatorId, context);
+  const exploitationCheck = await checkExploitationRisk(userId, earnerId, context);
   if (!exploitationCheck.allowed) {
     logger.warn('[Pack134] Filtered: Exploitation risk detected', {
       userId,
-      creatorId,
+      earnerId,
       concerns: exploitationCheck.concerns,
     });
     return false;
@@ -80,11 +82,11 @@ export async function checkSafetyFilters(
   }
   
   // 6. Check user consent status (PACK 126 integration)
-  const consentValid = await checkConsentStatus(userId, creatorId);
+  const consentValid = await checkConsentStatus(userId, earnerId);
   if (!consentValid) {
     logger.info('[Pack134] Filtered: No active consent', {
       userId,
-      creatorId,
+      earnerId,
     });
     return false;
   }
@@ -112,7 +114,7 @@ async function getSafetyFilterContext(userId: string): Promise<SafetyFilterConte
   const safetyPrefsDoc = await db.collection('user_safety_preferences').doc(userId).get();
   const safetyPrefs = safetyPrefsDoc.data();
   
-  // Get blocked creators
+  // Get blocked earners
   const blockedSnapshot = await db.collection('user_blocks')
     .where('userId', '==', userId)
     .get();
@@ -185,24 +187,24 @@ async function getContentRating(contentId: string): Promise<string> {
 
 /**
  * Check for exploitation risks
- * Prevents suggesting risky creators to vulnerable users
+ * Prevents suggesting risky earners to vulnerable users
  */
 async function checkExploitationRisk(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   context: SafetyFilterContext
 ): Promise<ExploitationCheckResult> {
   const concerns: ExploitationConcern[] = [];
   
-  // Get creator's trust profile (PACK 85 integration)
-  const trustDoc = await db.collection('user_trust_profile').doc(creatorId).get();
+  // Get earner's trust profile (PACK 85 integration)
+  const trustDoc = await db.collection('user_trust_profile').doc(earnerId).get();
   const trustData = trustDoc.data();
   
   // Get user's vulnerability indicators
   const vulnerabilityDoc = await db.collection('user_vulnerability_indicators').doc(userId).get();
   const vulnerabilityData = vulnerabilityDoc.data();
   
-  // Check 1: High-risk creator to vulnerable user
+  // Check 1: High-risk earner to vulnerable user
   if (trustData?.riskScore && trustData.riskScore > 70) {
     if (vulnerabilityData?.isVulnerable) {
       concerns.push('HIGH_RISK_TO_VULNERABLE');
@@ -211,18 +213,18 @@ async function checkExploitationRisk(
   
   // Check 2: NSFW content to minor
   if (context.userAge && context.userAge < 18) {
-    const creatorProfile = await db.collection('users').doc(creatorId).get();
-    const creatorData = creatorProfile.data();
+    const earnerProfile = await db.collection('users').doc(earnerId).get();
+    const earnerData = earnerProfile.data();
     
-    if (creatorData?.nsfwAffinity === 'STRONG') {
+    if (earnerData?.nsfwAffinity === 'STRONG') {
       concerns.push('NSFW_TO_MINOR');
     }
   }
   
   // Check 3: Intense personality to lonely user
   if (vulnerabilityData?.lonelinessIndicator && vulnerabilityData.lonelinessIndicator > 0.7) {
-    const creatorBehavior = await db.collection('creator_behavior_profile').doc(creatorId).get();
-    const behaviorData = creatorBehavior.data();
+    const earnerBehavior = await db.collection('earner_behavior_profile').doc(earnerId).get();
+    const behaviorData = earnerBehavior.data();
     
     if (behaviorData?.interactionIntensity === 'HIGH') {
       concerns.push('INTENSE_PERSONALITY_TO_LONELY');
@@ -231,7 +233,7 @@ async function checkExploitationRisk(
   
   // Check 4: Trauma triggers (if trauma-aware mode enabled)
   if (context.traumaAwareMode) {
-    const traumaCheck = await checkTraumaTriggers(userId, creatorId);
+    const traumaCheck = await checkTraumaTriggers(userId, earnerId);
     if (traumaCheck) {
       concerns.push('TRAUMA_TRIGGER');
     }
@@ -256,7 +258,7 @@ async function checkExploitationRisk(
  */
 async function checkTraumaTriggers(
   userId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<boolean> {
   // Get user's trauma indicators
   const traumaDoc = await db.collection('user_trauma_indicators').doc(userId).get();
@@ -266,23 +268,23 @@ async function checkTraumaTriggers(
     return false; // No known triggers
   }
   
-  // Get creator's content themes
-  const creatorDoc = await db.collection('creator_content_themes').doc(creatorId).get();
-  const creatorData = creatorDoc.data();
+  // Get earner's content themes
+  const earnerDoc = await db.collection('earner_content_themes').doc(earnerId).get();
+  const earnerData = earnerDoc.data();
   
-  if (!creatorData || !creatorData.themes) {
+  if (!earnerData || !earnerData.themes) {
     return false; // No theme data
   }
   
   // Check for overlap
   const triggers = new Set(traumaData.triggers);
-  const themes = creatorData.themes;
+  const themes = earnerData.themes;
   
   for (const theme of themes) {
     if (triggers.has(theme)) {
       logger.warn('[Pack134] Trauma trigger detected', {
         userId,
-        creatorId,
+        earnerId,
         trigger: theme,
       });
       return true;
@@ -336,12 +338,12 @@ async function checkRegionalRestrictions(
  */
 async function checkConsentStatus(
   userId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<boolean> {
-  // Check if user has revoked consent with creator
+  // Check if user has revoked consent with earner
   const consentDoc = await db.collection('user_consent_records')
     .where('userId', '==', userId)
-    .where('counterpartId', '==', creatorId)
+    .where('counterpartId', '==', earnerId)
     .limit(1)
     .get();
   
@@ -364,15 +366,15 @@ async function checkConsentStatus(
 // ============================================================================
 
 /**
- * Check if creator has active harassment shields against them
+ * Check if earner has active harassment shields against them
  * 
- * @param creatorId - Creator to check
- * @returns Whether creator has harassment issues
+ * @param earnerId - Creator to check
+ * @returns Whether earner has harassment issues
  */
-export async function hasHarassmentIssues(creatorId: string): Promise<boolean> {
+export async function hasHarassmentIssues(earnerId: string): Promise<boolean> {
   // Check harassment shields (PACK 126 integration)
   const shieldsSnapshot = await db.collection('harassment_shields')
-    .where('counterpartId', '==', creatorId)
+    .where('counterpartId', '==', earnerId)
     .where('level', 'in', ['HIGH', 'CRITICAL'])
     .limit(1)
     .get();
@@ -429,9 +431,9 @@ export async function checkContentSensitivity(
  */
 export async function batchFilterForSafety(
   userId: string,
-  contentItems: Array<{ contentId: string; creatorId: string }>
-): Promise<Array<{ contentId: string; creatorId: string }>> {
-  const safeItems: Array<{ contentId: string; creatorId: string }> = [];
+  contentItems: Array<{ contentId: string; earnerId: string }>
+): Promise<Array<{ contentId: string; earnerId: string }>> {
+  const safeItems: Array<{ contentId: string; earnerId: string }> = [];
   
   // Process in batches to avoid overwhelming Firestore
   const batchSize = 10;
@@ -439,7 +441,7 @@ export async function batchFilterForSafety(
     const batch = contentItems.slice(i, i + batchSize);
     
     const batchResults = await Promise.all(
-      batch.map(item => checkSafetyFilters(userId, item.creatorId, item.contentId))
+      batch.map(item => checkSafetyFilters(userId, item.earnerId, item.contentId))
     );
     
     batch.forEach((item, index) => {
@@ -458,6 +460,20 @@ export async function batchFilterForSafety(
   
   return safeItems;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * CREATOR SHOP - COMPLETE IMPLEMENTATION
  * ========================================================================
- * Full creator economy system for selling digital products
+ * Full earner economy system for selling digital products
  *
  * Features:
  * - Digital products (photos, videos, audio, packages, AI-generated content)
@@ -58,9 +60,9 @@ export enum ContentRating {
 
 export interface CreatorProduct {
   productId: string;
-  creatorId: string;
-  creatorName: string;
-  creatorAvatar?: string;
+  earnerId: string;
+  earnerName: string;
+  earnerAvatar?: string;
   type: ProductType;
   title: string;
   description: string;
@@ -85,7 +87,7 @@ export interface CreatorProduct {
   viewCount: number;
   purchaseCount: number;
   likeCount: number;
-  revenue: number; // creator earnings only
+  revenue: number; // earner earnings only
 
   // Settings
   maxPurchases?: number; // stock limit
@@ -129,13 +131,13 @@ export interface ProductPurchase {
   buyerId: string;
   buyerName: string;
 
-  creatorId: string;
-  creatorName: string;
+  earnerId: string;
+  earnerName: string;
 
   // Pricing
   price: number;
   platformFee: number; // 35%
-  creatorEarnings: number; // 65%
+  earnerEarnings: number; // 65%
 
   // Access
   accessUrls: string[]; // signed URLs
@@ -155,7 +157,7 @@ export interface ProductPurchase {
 }
 
 export interface CreatorStats {
-  creatorId: string;
+  earnerId: string;
 
   // Product stats
   totalProducts: number;
@@ -199,7 +201,7 @@ export interface CreatorStats {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform; // 35%
 const MIN_PRODUCT_PRICE = 10;
 const MAX_PRODUCT_PRICE = 50000;
 const DEFAULT_DOWNLOAD_LIMIT = 3;
@@ -226,12 +228,12 @@ function generatePurchaseId(): string {
 }
 
 /**
- * Calculate platform fee and creator earnings
+ * Calculate platform fee and earner earnings
  */
-function calculateRevenueSplit(price: number): { platformFee: number; creatorEarnings: number } {
+function calculateRevenueSplit(price: number): { platformFee: number; earnerEarnings: number } {
   const platformFee = Math.floor(price * PLATFORM_FEE_PERCENTAGE);
-  const creatorEarnings = price - platformFee;
-  return { platformFee, creatorEarnings };
+  const earnerEarnings = price - platformFee;
+  return { platformFee, earnerEarnings };
 }
 
 /**
@@ -250,7 +252,7 @@ function validatePrice(price: number): void {
 }
 
 /**
- * Check if user is verified creator
+ * Check if user is verified earner
  */
 async function isVerifiedCreator(userId: string): Promise<boolean> {
   const userDoc = await db.collection("users").doc(userId).get();
@@ -289,7 +291,7 @@ async function generateSignedUrls(storagePaths: string[], expirySeconds: number 
 // ============================================================================
 
 /**
- * Create new creator product
+ * Create new earner product
  */
 export const createCreatorProduct = onCall(
   { region: "europe-west1" },
@@ -299,9 +301,9 @@ export const createCreatorProduct = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    // Verify creator status
+    // Verify earner status
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError("permission-denied", "User must be a verified creator");
+      throw new HttpsError("permission-denied", "User must be a verified earner");
     }
 
     const {
@@ -331,7 +333,7 @@ export const createCreatorProduct = onCall(
       throw new HttpsError("invalid-argument", "Description must be 10-1000 characters");
     }
 
-    // Get creator info
+    // Get earner info
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
@@ -339,9 +341,9 @@ export const createCreatorProduct = onCall(
 
     const product: CreatorProduct = {
       productId,
-      creatorId: uid,
-      creatorName: userData?.profile?.name || "Unknown Creator",
-      creatorAvatar: userData?.profile?.photos?.[0] || undefined,
+      earnerId: uid,
+      earnerName: userData?.profile?.name || "Unknown Creator",
+      earnerAvatar: userData?.profile?.photos?.[0] || undefined,
       type,
       title,
       description,
@@ -369,7 +371,7 @@ export const createCreatorProduct = onCall(
     };
 
     // Save to Firestore
-    await db.collection("creatorProducts").doc(productId).set(product);
+    await db.collection("earnerProducts").doc(productId).set(product);
 
     logger.info(`Product created: ${productId} by ${uid}`);
 
@@ -403,13 +405,13 @@ export const uploadProductMedia = onCall(
     }
 
     // Verify product ownership
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
 
     const product = productDoc.data() as CreatorProduct;
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
@@ -423,7 +425,7 @@ export const uploadProductMedia = onCall(
       }
 
       const fileId = crypto.randomBytes(16).toString("hex");
-      const storagePath = `creator-products/${uid}/${productId}/${fileId}_${file.filename}`;
+      const storagePath = `earner-products/${uid}/${productId}/${fileId}_${file.filename}`;
 
       const bucket = storage.bucket();
       const fileRef = bucket.file(storagePath);
@@ -481,13 +483,13 @@ export const publishCreatorProduct = onCall(
     }
 
     // Verify product ownership
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
 
     const product = productDoc.data() as CreatorProduct;
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
@@ -510,7 +512,7 @@ export const publishCreatorProduct = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Update creator stats
+    // Update earner stats
     await updateCreatorProductStats(uid, { activeProducts: 1 });
 
     logger.info(`Product published: ${productId}`);
@@ -541,7 +543,7 @@ export const purchaseCreatorProduct = onCall(
 
     return await db.runTransaction(async (tx) => {
       // Get product
-      const productRef = db.collection("creatorProducts").doc(productId);
+      const productRef = db.collection("earnerProducts").doc(productId);
       const productDoc = await tx.get(productRef);
 
       if (!productDoc.exists) {
@@ -555,7 +557,7 @@ export const purchaseCreatorProduct = onCall(
         throw new HttpsError("failed-precondition", "Product is not available");
       }
 
-      if (product.creatorId === uid) {
+      if (product.earnerId === uid) {
         throw new HttpsError("failed-precondition", "Cannot purchase your own product");
       }
 
@@ -592,7 +594,7 @@ export const purchaseCreatorProduct = onCall(
       }
 
       // Calculate revenue split
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(product.price);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(product.price);
 
       // Create purchase
       const purchaseId = generatePurchaseId();
@@ -607,11 +609,11 @@ export const purchaseCreatorProduct = onCall(
         productType: product.type,
         buyerId: uid,
         buyerName: buyer?.profile?.name || "Unknown",
-        creatorId: product.creatorId,
-        creatorName: product.creatorName,
+        earnerId: product.earnerId,
+        earnerName: product.earnerName,
         price: product.price,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         accessUrls: [],
         expiresAt,
         downloadCount: 0,
@@ -627,17 +629,17 @@ export const purchaseCreatorProduct = onCall(
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      const creatorRef = db.collection("users").doc(product.creatorId);
-      tx.update(creatorRef, {
-        "wallet.earned": FieldValue.increment(creatorEarnings),
-        "wallet.balance": FieldValue.increment(creatorEarnings),
+      const earnerRef = db.collection("users").doc(product.earnerId);
+      tx.update(earnerRef, {
+        "wallet.earned": FieldValue.increment(earnerEarnings),
+        "wallet.balance": FieldValue.increment(earnerEarnings),
         updatedAt: FieldValue.serverTimestamp(),
       });
 
       // Update product stats
       tx.update(productRef, {
         purchaseCount: FieldValue.increment(1),
-        revenue: FieldValue.increment(creatorEarnings),
+        revenue: FieldValue.increment(earnerEarnings),
         remainingStock: product.isUnlimited ? null : FieldValue.increment(-1),
         updatedAt: FieldValue.serverTimestamp(),
       });
@@ -656,18 +658,18 @@ export const purchaseCreatorProduct = onCall(
         metadata: {
           productId,
           productTitle: product.title,
-          creatorId: product.creatorId,
+          earnerId: product.earnerId,
           purchaseId,
         },
         createdAt: FieldValue.serverTimestamp(),
       });
 
-      const creatorTxRef = db.collection("transactions").doc(`tx_creator_${purchaseId}`);
-      tx.set(creatorTxRef, {
-        txId: `tx_creator_${purchaseId}`,
+      const earnerTxRef = db.collection("transactions").doc(`tx_earner_${purchaseId}`);
+      tx.set(earnerTxRef, {
+        txId: `tx_earner_${purchaseId}`,
         type: "product_sale",
-        uid: product.creatorId,
-        amount: creatorEarnings,
+        uid: product.earnerId,
+        amount: earnerEarnings,
         metadata: {
           productId,
           productTitle: product.title,
@@ -733,7 +735,7 @@ export const getProductAccessUrls = onCall(
     }
 
     // Get product
-    const productDoc = await db.collection("creatorProducts").doc(purchase.productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(purchase.productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
@@ -763,7 +765,7 @@ export const getProductAccessUrls = onCall(
 );
 
 /**
- * Get creator products
+ * Get earner products
  */
 export const getCreatorProducts = onCall(
   { region: "europe-west1" },
@@ -774,17 +776,17 @@ export const getCreatorProducts = onCall(
     }
 
     const {
-      creatorId,
+      earnerId,
       type,
       status,
       limit = 20,
       offset = 0,
     } = request.data;
 
-    let query = db.collection("creatorProducts").orderBy("createdAt", "desc");
+    let query = db.collection("earnerProducts").orderBy("createdAt", "desc");
 
-    if (creatorId) {
-      query = query.where("creatorId", "==", creatorId) as any;
+    if (earnerId) {
+      query = query.where("earnerId", "==", earnerId) as any;
     }
 
     if (type) {
@@ -795,7 +797,7 @@ export const getCreatorProducts = onCall(
       query = query.where("status", "==", status) as any;
     } else {
       // Only show active products by default for non-owners
-      if (!creatorId || creatorId !== uid) {
+      if (!earnerId || earnerId !== uid) {
         query = query.where("status", "==", ProductStatus.ACTIVE) as any;
       }
     }
@@ -805,7 +807,7 @@ export const getCreatorProducts = onCall(
     const products = snapshot.docs.map((doc) => ({
       ...doc.data(),
       // Don't expose full media paths to non-owners
-      mediaFiles: doc.data().creatorId === uid ? doc.data().mediaFiles : [],
+      mediaFiles: doc.data().earnerId === uid ? doc.data().mediaFiles : [],
     }));
 
     logger.info(`Retrieved ${products.length} products`);
@@ -852,7 +854,7 @@ export const getMyPurchases = onCall(
 );
 
 /**
- * Get creator statistics
+ * Get earner statistics
  */
 export const getCreatorStats = onCall(
   { region: "europe-west1" },
@@ -862,10 +864,10 @@ export const getCreatorStats = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { creatorId = uid } = request.data;
+    const { earnerId = uid } = request.data;
 
     // Only allow viewing own stats or if admin
-    if (creatorId !== uid) {
+    if (earnerId !== uid) {
       const userDoc = await db.collection("users").doc(uid).get();
       const isAdmin = userDoc.data()?.roles?.admin === true;
       if (!isAdmin) {
@@ -874,16 +876,16 @@ export const getCreatorStats = onCall(
     }
 
     // Get cached stats
-    const statsDoc = await db.collection("creatorStats").doc(creatorId).get();
+    const statsDoc = await db.collection("earnerStats").doc(earnerId).get();
 
     if (!statsDoc.exists) {
       // Generate fresh stats
-      return await generateCreatorStats(creatorId);
+      return await generateCreatorStats(earnerId);
     }
 
     const stats = statsDoc.data();
 
-    logger.info(`Retrieved stats for creator ${creatorId}`);
+    logger.info(`Retrieved stats for earner ${earnerId}`);
 
     return {
       success: true,
@@ -910,13 +912,13 @@ export const updateCreatorProduct = onCall(
     }
 
     // Verify product ownership
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
 
     const product = productDoc.data() as CreatorProduct;
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
@@ -969,13 +971,13 @@ export const toggleProductStatus = onCall(
     }
 
     // Verify product ownership
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
 
     const product = productDoc.data() as CreatorProduct;
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
@@ -1011,13 +1013,13 @@ export const archiveCreatorProduct = onCall(
     }
 
     // Verify product ownership
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
     }
 
     const product = productDoc.data() as CreatorProduct;
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
@@ -1026,7 +1028,7 @@ export const archiveCreatorProduct = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Update creator stats
+    // Update earner stats
     await updateCreatorProductStats(uid, { activeProducts: -1 });
 
     logger.info(`Product archived: ${productId}`);
@@ -1043,12 +1045,12 @@ export const archiveCreatorProduct = onCall(
 // ============================================================================
 
 /**
- * Generate creator statistics
+ * Generate earner statistics
  */
-async function generateCreatorStats(creatorId: string): Promise<any> {
+async function generateCreatorStats(earnerId: string): Promise<any> {
   const productsSnapshot = await db
-    .collection("creatorProducts")
-    .where("creatorId", "==", creatorId)
+    .collection("earnerProducts")
+    .where("earnerId", "==", earnerId)
     .get();
 
   const products = productsSnapshot.docs.map((doc) => doc.data() as CreatorProduct);
@@ -1059,7 +1061,7 @@ async function generateCreatorStats(creatorId: string): Promise<any> {
   const monthAgo = now - 30 * 24 * 3600 * 1000;
 
   const stats: CreatorStats = {
-    creatorId,
+    earnerId,
     totalProducts: products.length,
     activeProducts: products.filter((p) => p.status === ProductStatus.ACTIVE).length,
     draftProducts: products.filter((p) => p.status === ProductStatus.DRAFT).length,
@@ -1089,7 +1091,7 @@ async function generateCreatorStats(creatorId: string): Promise<any> {
   // Calculate time-based metrics from purchases
   const purchasesSnapshot = await db
     .collection("productPurchases")
-    .where("creatorId", "==", creatorId)
+    .where("earnerId", "==", earnerId)
     .get();
 
   for (const doc of purchasesSnapshot.docs) {
@@ -1097,15 +1099,15 @@ async function generateCreatorStats(creatorId: string): Promise<any> {
     const purchaseTime = purchase.purchasedAt.toMillis();
 
     if (purchaseTime > dayAgo) {
-      stats.dailyRevenue += purchase.creatorEarnings;
+      stats.dailyRevenue += purchase.earnerEarnings;
       stats.dailySales += 1;
     }
     if (purchaseTime > weekAgo) {
-      stats.weeklyRevenue += purchase.creatorEarnings;
+      stats.weeklyRevenue += purchase.earnerEarnings;
       stats.weeklySales += 1;
     }
     if (purchaseTime > monthAgo) {
-      stats.monthlyRevenue += purchase.creatorEarnings;
+      stats.monthlyRevenue += purchase.earnerEarnings;
       stats.monthlySales += 1;
     }
   }
@@ -1113,23 +1115,23 @@ async function generateCreatorStats(creatorId: string): Promise<any> {
   stats.conversionRate = stats.totalViews > 0 ? stats.totalSales / stats.totalViews : 0;
 
   // Save stats
-  await db.collection("creatorStats").doc(creatorId).set(stats);
+  await db.collection("earnerStats").doc(earnerId).set(stats);
 
   return { success: true, stats };
 }
 
 /**
- * Update creator product stats
+ * Update earner product stats
  */
 async function updateCreatorProductStats(
-  creatorId: string,
+  earnerId: string,
   updates: Partial<{ activeProducts: number; draftProducts: number }>
 ): Promise<void> {
-  const statsRef = db.collection("creatorStats").doc(creatorId);
+  const statsRef = db.collection("earnerStats").doc(earnerId);
   const statsDoc = await statsRef.get();
 
   if (!statsDoc.exists) {
-    await generateCreatorStats(creatorId);
+    await generateCreatorStats(earnerId);
     return;
   }
 
@@ -1149,6 +1151,22 @@ async function updateCreatorProductStats(
 }
 
 logger.info("✅ Creator Shop module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

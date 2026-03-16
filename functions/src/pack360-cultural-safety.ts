@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 360 - Cultural Content Safety Layer
  * Auto enforcement per country with content filtering and compliance
@@ -693,6 +695,20 @@ export const onContentCreated = onDocumentCreated('user-content/{contentId}', as
       console.error('Error auto-moderating content:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

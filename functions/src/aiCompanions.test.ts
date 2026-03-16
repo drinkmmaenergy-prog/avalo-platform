@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Tests for AI Companions Module - Focus on Limit Reset Logic
  */
@@ -273,6 +275,20 @@ describe("AI Companions - Daily Limit Reset Logic", () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

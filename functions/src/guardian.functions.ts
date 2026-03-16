@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 180: Guardian Cloud Functions
  * Real-time conversation monitoring and intervention functions
@@ -363,6 +365,20 @@ export const getGuardianSettings = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get settings');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

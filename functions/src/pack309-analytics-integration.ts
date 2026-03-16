@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 309 — Analytics Integration for Swipe Events
  * 
@@ -92,6 +94,20 @@ export async function logDiscoveryAnalyticsEvent(
 }
 
 console.log('✅ PACK 309 — Analytics Integration initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

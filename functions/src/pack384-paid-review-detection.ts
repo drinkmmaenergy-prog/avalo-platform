@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 384 — Paid Review & Fake Boost Detection
  * Detects review farms, VPN clusters, device emulation, and bot patterns
@@ -505,6 +507,20 @@ export const generateAuthenticityReport = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('internal', 'Failed to generate report');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

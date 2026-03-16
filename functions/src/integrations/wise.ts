@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 56 — Wise Integration
  * 
@@ -94,7 +96,7 @@ export async function createWiseRecipient(
       profile: params.userId,
       accountHolderName: params.accountHolderName,
       details: {
-        email: params.email || `${params.userId}@avalo.app`,
+        email: params.email || `${params.userId}@platform.app`,
       },
     };
 
@@ -282,6 +284,22 @@ export async function getWiseTransferStatus(
 export function getWiseProfileId(): string {
 return process.env.WISE_PROFILE_ID || "";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

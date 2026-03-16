@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 238 — Chat Motivation Engine
  * AI-driven conversation boosters that increase chemistry → paid chat duration → paid calls/meetings
@@ -320,6 +322,22 @@ export interface BoosterSelectionResult {
   confidence: number;               // 0-1
   alternativeOptions?: Booster[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

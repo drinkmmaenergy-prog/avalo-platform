@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface LegalDocument {
     id: string;
     type: 'TOS' | 'PRIVACY' | 'COMMUNITY' | 'COOKIE';
@@ -13,6 +15,23 @@ export interface UserConsent {
 }
 export declare const LEGAL_DOCUMENTS: Record<string, LegalDocument>;
 export declare const getCurrentLegalVersion: (type: string) => string;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

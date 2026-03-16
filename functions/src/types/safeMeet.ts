@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Safe-Meet Type Definitions
  * Phase 25: Safety feature for offline meetings
@@ -196,6 +198,22 @@ export interface TrustedContactResponse {
   contact?: TrustedContact;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

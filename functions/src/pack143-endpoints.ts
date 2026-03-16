@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 143 - CRM API Endpoints
  * HTTP callable functions for CRM Business Suite
@@ -133,7 +135,7 @@ export const updateSegment = onCall(async (request) => {
     const segmentRef = db.collection('crm_segments').doc(segmentId);
     const segment = await segmentRef.get();
 
-    if (!segment.exists || segment.data()?.creatorId !== uid) {
+    if (!segment.exists || segment.data()?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Access denied');
     }
 
@@ -168,14 +170,14 @@ export const getSegmentContacts = onCall(async (request) => {
   try {
     const segment = await db.collection('crm_segments').doc(segmentId).get();
 
-    if (!segment.exists || segment.data()?.creatorId !== uid) {
+    if (!segment.exists || segment.data()?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Access denied');
     }
 
     const filters = segment.data()?.filters || {};
     let query: any = db
       .collection('crm_contacts')
-      .where('creatorId', '==', uid)
+      .where('earnerId', '==', uid)
       .limit(limit)
       .offset(offset);
 
@@ -236,7 +238,7 @@ export const updateFunnel = onCall(async (request) => {
     const funnelRef = db.collection('crm_funnels').doc(funnelId);
     const funnel = await funnelRef.get();
 
-    if (!funnel.exists || funnel.data()?.creatorId !== uid) {
+    if (!funnel.exists || funnel.data()?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Access denied');
     }
 
@@ -268,7 +270,7 @@ export const triggerFunnelForUser = onCall(async (request) => {
   try {
     const funnel = await db.collection('crm_funnels').doc(funnelId).get();
 
-    if (!funnel.exists || funnel.data()?.creatorId !== uid) {
+    if (!funnel.exists || funnel.data()?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Access denied');
     }
 
@@ -320,7 +322,7 @@ export const sendBroadcast = onCall(async (request) => {
   try {
     const broadcast = await db.collection('crm_broadcasts').doc(broadcastId).get();
 
-    if (!broadcast.exists || broadcast.data()?.creatorId !== uid) {
+    if (!broadcast.exists || broadcast.data()?.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Access denied');
     }
 
@@ -337,14 +339,14 @@ export const optOutFromBroadcasts = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const { creatorId } = request.data;
+  const { earnerId } = request.data;
 
-  if (!creatorId) {
-    throw new HttpsError('invalid-argument', 'Missing creator ID');
+  if (!earnerId) {
+    throw new HttpsError('invalid-argument', 'Missing earner ID');
   }
 
   try {
-    await CRMEngine.optOutBroadcasts(creatorId, uid);
+    await CRMEngine.optOutBroadcasts(earnerId, uid);
     return { success: true };
   } catch (error: any) {
     throw new HttpsError('internal', error.message);
@@ -378,7 +380,7 @@ export const getMyContacts = onCall(async (request) => {
   try {
     let query: any = db
       .collection('crm_contacts')
-      .where('creatorId', '==', uid)
+      .where('earnerId', '==', uid)
       .orderBy('lastInteractionAt', 'desc')
       .limit(limit)
       .offset(offset);
@@ -408,7 +410,7 @@ export const getMySegments = onCall(async (request) => {
   try {
     const snapshot = await db
       .collection('crm_segments')
-      .where('creatorId', '==', uid)
+      .where('earnerId', '==', uid)
       .orderBy('createdAt', 'desc')
       .get();
 
@@ -432,7 +434,7 @@ export const getMyFunnels = onCall(async (request) => {
   try {
     const snapshot = await db
       .collection('crm_funnels')
-      .where('creatorId', '==', uid)
+      .where('earnerId', '==', uid)
       .orderBy('createdAt', 'desc')
       .get();
 
@@ -456,7 +458,7 @@ export const getMyBroadcasts = onCall(async (request) => {
   try {
     const snapshot = await db
       .collection('crm_broadcasts')
-      .where('creatorId', '==', uid)
+      .where('earnerId', '==', uid)
       .orderBy('createdAt', 'desc')
       .limit(50)
       .get();
@@ -471,6 +473,20 @@ export const getMyBroadcasts = onCall(async (request) => {
     throw new HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

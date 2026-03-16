@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import {
   ExtortionType,
@@ -223,7 +225,7 @@ export class ExtortionDetector {
         if (category.requiresFinancial) {
           const hasFinancialContext = this.hasFinancialContext(content, context);
           if (hasFinancialContext) {
-            maxConfidence = Math.max(maxConfidence, MONETIZATION_SPLITS.EVENT_TICKET.creator);
+            maxConfidence = Math.max(maxConfidence, MONETIZATION_SPLITS.EVENT_TICKET.earner);
           } else {
             maxConfidence = Math.max(maxConfidence, 0.60);
           }
@@ -290,7 +292,7 @@ export class ExtortionDetector {
     if (hasThreatWord && hasPersonalRef) {
       detected = true;
       patterns.push('contextual_threat');
-      confidence = MONETIZATION_SPLITS.SUBSCRIPTION.creator;
+      confidence = MONETIZATION_SPLITS.SUBSCRIPTION.earner;
 
       if (this.hasFinancialContext(content, context)) {
         confidence = 0.85;
@@ -483,6 +485,23 @@ export class ExtortionDetector {
 }
 
 export const extortionDetector = new ExtortionDetector();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

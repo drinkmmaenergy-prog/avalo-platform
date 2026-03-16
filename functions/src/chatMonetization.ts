@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /* LEGACY BILLING ENGINE LOCKED */
 /*
 LEGACY BILLING ENGINE
@@ -21,7 +23,7 @@ Do not modify billing logic here.
  * ALL new code MUST use canonical-chat-engine.ts instead.
  *
  * Legacy paths in this file:
- * - processMessageBilling → use processMessage from canonical-chat-engine.ts
+ * - shimProcessMessageBilling → use processMessage from canonical-chat-engine.ts
  * - determineChatRoles → use determineRoles from canonical-chat-engine.ts
  * - FREE_A/FREE_B modes → REMOVED (use FREE_ACTIVE/AWAITING_DEPOSIT/PAID_ACTIVE)
  * - pack242 pricing imports → REMOVED (deposit = max(100, earnerConfig))
@@ -110,7 +112,7 @@ export interface MessageBillingResult {
   tokensCost: number;
   shouldBill: boolean;
   earnerReceives: number;
-  avaloReceives: number;
+  platformReceives: number;
 }
 
 // ============================================================================
@@ -389,7 +391,7 @@ export function calculateMessageBilling(
       tokensCost: 0,
       shouldBill: false,
       earnerReceives: 0,
-      avaloReceives: 0
+      platformReceives: 0
     };
   }
   
@@ -397,14 +399,14 @@ export function calculateMessageBilling(
   const wordCount = countBillableWords(messageText);
   
   // Calculate tokens
-  const tokensCost = Math.round(wordCount / roles.wordsPerToken);
+  const tokensCost = Math.ceil(wordCount / roles.wordsPerToken);
   
   if (tokensCost === 0) {
     return {
       tokensCost: 0,
       shouldBill: false,
       earnerReceives: 0,
-      avaloReceives: 0
+      platformReceives: 0
     };
   }
   
@@ -414,7 +416,7 @@ export function calculateMessageBilling(
       tokensCost,
       shouldBill: roles.mode === 'PAID',
       earnerReceives: 0,
-      avaloReceives: roles.mode === 'PAID' ? tokensCost : 0
+      platformReceives: roles.mode === 'PAID' ? tokensCost : 0
     };
   }
   
@@ -423,7 +425,7 @@ export function calculateMessageBilling(
     tokensCost,
     shouldBill: true,
     earnerReceives: tokensCost,
-    avaloReceives: 0 // Platform fee already taken at deposit
+    platformReceives: 0 // Platform fee already taken at deposit
   };
 }
 
@@ -1009,6 +1011,21 @@ export async function getUserContext(userId: string): Promise<ChatParticipantCon
     accountAgeDays
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

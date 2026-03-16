@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 379 — Global ASO, Reviews, Reputation & Store Defense Engine
  * 
@@ -949,7 +951,7 @@ async function calculateTrustScore(userId: string): Promise<any> {
   const weights = {
     supportHistory: 0.15,
     fraudHistory: 0.25,
-    paymentBehavior: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    paymentBehavior: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     reportBehavior: 0.15,
     verificationDepth: 0.15,
     accountAge: 0.10
@@ -1744,6 +1746,22 @@ async function getASOPerformance(since: Date): Promise<any> {
   
   return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

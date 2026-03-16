@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 76 - Real-Time Location Sharing (Geoshare)
  * Temporary, consent-based, paid location sharing between users
@@ -49,7 +51,7 @@ export interface GeoshareSession {
   status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
   durationMinutes: number; // Paid duration
   paidAmount: number;      // Total tokens paid
-  avaloFee: number;        // Platform fee (35%)
+  platformFee: number;        // Platform fee (35%)
   createdAt: FirebaseFirestore.Timestamp;
   expiresAt: FirebaseFirestore.Timestamp;
   lastUpdateAt: FirebaseFirestore.Timestamp;
@@ -71,7 +73,7 @@ export interface GeosharePaymentIntent {
   partnerId: string;
   durationMinutes: number;
   totalTokens: number;
-  avaloFee: number;
+  platformFee: number;
 }
 
 // ==========================================
@@ -83,16 +85,16 @@ export interface GeosharePaymentIntent {
  */
 function calculateGeosharePricing(durationMinutes: number): {
   totalTokens: number;
-  avaloFee: number;
+  platformFee: number;
   netAmount: number;
 } {
   const totalTokens = durationMinutes * GEOSHARE_CONFIG.PRICE_PER_MINUTE;
-  const avaloFee = Math.round(totalTokens * (GEOSHARE_CONFIG.AVALO_FEE_PERCENT / 100));
-  const netAmount = totalTokens - avaloFee;
+  const platformFee = Math.round(totalTokens * (GEOSHARE_CONFIG.AVALO_FEE_PERCENT / 100));
+  const netAmount = totalTokens - platformFee;
 
   console.log('Scheduled job result:', {
     totalTokens,
-    avaloFee,
+    platformFee,
     netAmount,
   });
 
@@ -307,7 +309,7 @@ export const startGeoshareSession = onCall(
 
       // Record platform fee
       const sessionId = generateId();
-      await recordPlatformFee(sessionId, pricing.avaloFee, userId);
+      await recordPlatformFee(sessionId, pricing.platformFee, userId);
 
       // Create session
       const now = new Date();
@@ -320,7 +322,7 @@ export const startGeoshareSession = onCall(
         status: 'ACTIVE',
         durationMinutes,
         paidAmount: pricing.totalTokens,
-        avaloFee: pricing.avaloFee,
+        platformFee: pricing.platformFee,
         createdAt: serverTimestamp() as any,
         expiresAt: serverTimestamp() as any, // Will be overwritten with calculated time
         lastUpdateAt: serverTimestamp() as any,
@@ -658,6 +660,20 @@ export const deleteOldGeoshareSessions = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

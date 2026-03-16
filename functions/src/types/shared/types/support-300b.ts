@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 // Stub types for support-300b
 export interface SupportArticle  {
   id: string;
@@ -300,6 +302,23 @@ export interface RiskIntegrationPayload  {
   metadata?: Record<string, any>;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

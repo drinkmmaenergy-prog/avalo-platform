@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 105 — Finance Alerts & Notifications
  * 
- * Alert system for internal staff (not visible to creators)
+ * Alert system for internal staff (not visible to earners)
  * 
  * Alert Types:
  * - Failed reconciliation
@@ -538,6 +540,20 @@ export async function checkKycBacklog(): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

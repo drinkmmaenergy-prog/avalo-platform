@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 201 — Global Compliance Audit Engine
  * Main compliance audit and validation functions
@@ -264,7 +266,7 @@ async function auditPlatformPositioning(): Promise<CategoryResult> {
     checkName: 'Professional Branding',
     status: await checkProfessionalBranding() ? 'PASS' : 'WARNING',
     severity: 'HIGH',
-    message: 'Platform maintains professional social/creator branding',
+    message: 'Platform maintains professional social/earner branding',
     autoFixAvailable: false,
   });
 
@@ -802,7 +804,7 @@ async function checkTransparentPricing(): Promise<boolean> {
 async function checkClearRevenueSplits(): Promise<boolean> {
   const configDoc = await db.collection('platform_config').doc('revenue_split').get();
   const split = configDoc.data();
-  return split?.creator === 65 && split?.platform === 35 && split?.disclosed === true;
+  return split?.earner === 65 && split?.platform === 35 && split?.disclosed === true;
 }
 
 // Psychological Safety Checks
@@ -1018,6 +1020,21 @@ function generateRecommendations(violations: ComplianceViolation[]): string[] {
   
   return recommendations;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

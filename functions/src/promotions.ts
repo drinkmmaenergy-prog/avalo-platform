@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 61: Promotion APIs
  * Campaign management, fetching, and event logging
@@ -128,7 +130,7 @@ export const getMyCampaigns = onRequest({}, async (req, res) => {
       return;
     }
 
-    // Query campaigns owned by this creator
+    // Query campaigns owned by this earner
     const campaignsSnap = await db.collection('promotion_campaigns')
       .where('ownerType', '==', 'CREATOR')
       .where('ownerUserId', '==', userId)
@@ -779,6 +781,20 @@ export const logPromotionClick = onRequest({}, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

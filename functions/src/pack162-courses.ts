@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 162: Avalo Creator Publishing Suite 3.0
  * 
@@ -51,7 +53,7 @@ export type PurchaseType = 'FULL_COURSE' | 'SINGLE_EPISODE';
 
 interface Course {
   courseId: string;
-  creatorId: string;
+  earnerId: string;
   title: string;
   description: string;
   format: CourseFormat;
@@ -93,7 +95,7 @@ interface Course {
 interface CourseEpisode {
   episodeId: string;
   courseId: string;
-  creatorId: string;
+  earnerId: string;
   
   title: string;
   description: string;
@@ -122,13 +124,13 @@ interface CoursePurchase {
   purchaseId: string;
   userId: string;
   courseId: string;
-  creatorId: string;
+  earnerId: string;
   
   purchaseType: PurchaseType;
   episodeId?: string;
   
   priceTokens: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
   platformFee: number;
   
   transactionId: string;
@@ -192,7 +194,7 @@ interface CourseReview {
 
 interface CourseBundle {
   bundleId: string;
-  creatorId: string;
+  earnerId: string;
   
   title: string;
   description: string;
@@ -213,7 +215,7 @@ interface CourseCertificate {
   certificateId: string;
   userId: string;
   courseId: string;
-  creatorId: string;
+  earnerId: string;
   
   userName: string;
   courseName: string;
@@ -229,7 +231,7 @@ interface CourseQuiz {
   quizId: string;
   courseId: string;
   episodeId: string;
-  creatorId: string;
+  earnerId: string;
   
   title: string;
   passingScore: number;
@@ -401,7 +403,7 @@ export const createCourse = onCall(
     const courseId = generateId();
     const course: Course = {
       courseId,
-      creatorId: uid,
+      earnerId: uid,
       title,
       description,
       format,
@@ -457,7 +459,7 @@ export const publishCourse = onCall(
     }
 
     const course = courseDoc.data() as Course;
-    if (course.creatorId !== uid) {
+    if (course.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Not your course');
     }
 
@@ -512,7 +514,7 @@ export const publishEpisode = onCall(
     }
 
     const course = courseDoc.data() as Course;
-    if (course.creatorId !== uid) {
+    if (course.earnerId !== uid) {
       throw new HttpsError('permission-denied', 'Not your course');
     }
 
@@ -529,7 +531,7 @@ export const publishEpisode = onCall(
     const episode: CourseEpisode = {
       episodeId,
       courseId,
-      creatorId: uid,
+      earnerId: uid,
       title,
       description,
       orderIndex,
@@ -589,7 +591,7 @@ export const purchaseCourse = onCall(
       throw new HttpsError('failed-precondition', 'Course is not published');
     }
 
-    if (course.creatorId === uid) {
+    if (course.earnerId === uid) {
       throw new HttpsError('failed-precondition', 'Cannot purchase your own course');
     }
 
@@ -615,8 +617,8 @@ export const purchaseCourse = onCall(
       priceTokens = course.priceTokens;
     }
 
-    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
-    const creatorEarnings = priceTokens - platformFee;
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.platform);
+    const earnerEarnings = priceTokens - platformFee;
 
     const userWalletRef = db.collection('users').doc(uid).collection('wallet').doc('current');
     const userWallet = await userWalletRef.get();
@@ -633,11 +635,11 @@ export const purchaseCourse = onCall(
       purchaseId,
       userId: uid,
       courseId,
-      creatorId: course.creatorId,
+      earnerId: course.earnerId,
       purchaseType,
       episodeId,
       priceTokens,
-      creatorEarnings,
+      earnerEarnings,
       platformFee,
       transactionId,
       status: 'ACTIVE',
@@ -649,12 +651,12 @@ export const purchaseCourse = onCall(
         balance: increment(-priceTokens),
       });
 
-      const creatorWalletRef = db.collection('users')
-        .doc(course.creatorId)
+      const earnerWalletRef = db.collection('users')
+        .doc(course.earnerId)
         .collection('wallet')
         .doc('current');
-      transaction.update(creatorWalletRef, {
-        balance: increment(creatorEarnings),
+      transaction.update(earnerWalletRef, {
+        balance: increment(earnerEarnings),
       });
 
       transaction.set(
@@ -671,10 +673,10 @@ export const purchaseCourse = onCall(
         transactionId,
         type: 'course_purchase',
         userId: uid,
-        creatorId: course.creatorId,
+        earnerId: course.earnerId,
         courseId,
         amount: priceTokens,
-        creatorEarnings,
+        earnerEarnings,
         platformFee,
         createdAt: serverTimestamp(),
       });
@@ -719,7 +721,7 @@ export const purchaseEpisode = onCall(
       throw new HttpsError('invalid-argument', 'Episode ID required');
     }
 
-    if (course.creatorId === uid) {
+    if (course.earnerId === uid) {
       throw new HttpsError('failed-precondition', 'Cannot purchase your own content');
     }
 
@@ -733,8 +735,8 @@ export const purchaseEpisode = onCall(
     }
 
     const priceTokens = course.episodePriceTokens || 0;
-    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
-    const creatorEarnings = priceTokens - platformFee;
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.platform);
+    const earnerEarnings = priceTokens - platformFee;
 
     const userWalletRef = db.collection('users').doc(uid).collection('wallet').doc('current');
     const userWallet = await userWalletRef.get();
@@ -751,11 +753,11 @@ export const purchaseEpisode = onCall(
       purchaseId,
       userId: uid,
       courseId,
-      creatorId: course.creatorId,
+      earnerId: course.earnerId,
       purchaseType: 'SINGLE_EPISODE',
       episodeId,
       priceTokens,
-      creatorEarnings,
+      earnerEarnings,
       platformFee,
       transactionId,
       status: 'ACTIVE',
@@ -767,12 +769,12 @@ export const purchaseEpisode = onCall(
         balance: increment(-priceTokens),
       });
 
-      const creatorWalletRef = db.collection('users')
-        .doc(course.creatorId)
+      const earnerWalletRef = db.collection('users')
+        .doc(course.earnerId)
         .collection('wallet')
         .doc('current');
-      transaction.update(creatorWalletRef, {
-        balance: increment(creatorEarnings),
+      transaction.update(earnerWalletRef, {
+        balance: increment(earnerEarnings),
       });
 
       transaction.set(
@@ -788,11 +790,11 @@ export const purchaseEpisode = onCall(
         transactionId,
         type: 'episode_purchase',
         userId: uid,
-        creatorId: course.creatorId,
+        earnerId: course.earnerId,
         courseId,
         episodeId,
         amount: priceTokens,
-        creatorEarnings,
+        earnerEarnings,
         platformFee,
         createdAt: serverTimestamp(),
       });
@@ -966,12 +968,12 @@ async function generateCertificate(
     certificateId,
     userId,
     courseId,
-    creatorId: course.creatorId,
+    earnerId: course.earnerId,
     userName,
     courseName: course.title,
     completionDate: Timestamp.now(),
     issuedAt: Timestamp.now(),
-    certificatUSDl: `https://avalo.app/certificates/${certificateId}`,
+    certificatUSDl: `https://platform.app/certificates/${certificateId}`,
     verificationCode,
   };
 
@@ -1041,7 +1043,7 @@ export const createCourseBundle = onCall(
         throw new HttpsError('not-found', `Course ${courseId} not found`);
       }
       const course = courseDoc.data() as Course;
-      if (course.creatorId !== uid) {
+      if (course.earnerId !== uid) {
         throw new HttpsError('permission-denied', 'Can only bundle your own courses');
       }
       originalPrice += course.priceTokens;
@@ -1052,7 +1054,7 @@ export const createCourseBundle = onCall(
     const bundleId = generateId();
     const bundle: CourseBundle = {
       bundleId,
-      creatorId: uid,
+      earnerId: uid,
       title,
       description,
       courseIds,
@@ -1128,6 +1130,22 @@ export const pack162_reviewCourse = reviewCourse;
 export const pack162_issueCertificate = issueCertificate;
 export const pack162_createCourseBundle = createCourseBundle;
 export const pack162_onCourseProgressUpdate = onCourseProgressUpdate;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

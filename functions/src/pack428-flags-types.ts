@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 428 — Feature Flags, Kill-Switch & Experimentation Layer
  * 
@@ -20,7 +22,7 @@ export type UserSegment =
   | 'ACTIVE'     // Users with activity in last 30 days
   | 'VIP'        // VIP subscription tier
   | 'ROYAL'      // Royal Club members
-  | 'CREATOR';   // Users with creator profiles
+  | 'CREATOR';   // Users with earner profiles
 
 /**
  * Platform Types
@@ -405,6 +407,21 @@ export interface AutoDisableEvent {
   /** Audit log entry ID */
   auditLogId: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

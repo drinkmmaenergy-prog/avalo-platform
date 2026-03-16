@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ===========================
@@ -406,3 +407,4 @@ export function getAllowedTokenPrices(): number[] {
 export function getAllowedDurations(): number[] {
   return [...DURATION_OPTIONS_HOURS];
 }
+

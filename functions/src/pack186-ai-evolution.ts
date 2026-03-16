@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 186 - AI Evolution Engine
  * 
@@ -633,6 +635,20 @@ export async function getCharacterGrowthMetrics(
   
   return snapshot.docs.map(doc => doc.data());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 48 — Server-Side AI Chat Companions (Subscription + Token Billing)
  * Revenue: 100% Avalo
@@ -625,6 +627,20 @@ export const getMessages = onCall(
 );
 
 console.log('✅ PACK 48 — AI Companion functions initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 89: Legal & Policy Center - Cloud Functions
  * 
@@ -493,6 +495,20 @@ export async function validateLegalAcceptance(
 
 // Export validation helper for use in other modules
 export { checkLegalRequirements };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

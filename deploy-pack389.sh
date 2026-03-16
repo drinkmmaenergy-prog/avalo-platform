@@ -13,7 +13,7 @@ echo ""
 
 # Configuration
 PROJECT_ID=${FIREBASE_PROJECT_ID:-"avalo-prod"}
-REGION=${FIREBASE_REGION:-"us-central1"}
+REGION=${FIREBASE_REGION:-"europe-west1"}
 
 echo "📋 Configuration:"
 echo "  Project ID: $PROJECT_ID"

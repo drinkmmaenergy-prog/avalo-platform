@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 107 — VIP Memberships, Royal Club & Prestige Identity Types
  * 
@@ -405,7 +407,7 @@ export interface MembershipCancellation {
 // ============================================================================
 
 /**
- * Membership analytics extension to creator_analytics_snapshot
+ * Membership analytics extension to earner_analytics_snapshot
  * Read-only, for display purposes only
  */
 export interface MembershipAnalyticsData {
@@ -681,6 +683,20 @@ export interface MembershipListItem {
   lifetimeValue?: number;
   activeDays?: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

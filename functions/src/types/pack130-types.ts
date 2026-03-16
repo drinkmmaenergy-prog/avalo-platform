@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 130 — Long-Term Patrol AI
  * Persistent Behavior Memory · Ban-Evasion Hunter · Self-Learning Safety
@@ -303,7 +305,7 @@ export interface FrozenConversation {
 export interface ContentFingerprint {
   fingerprintId: string;
   originalContentId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   
   // Fingerprint data
   perceptualHash: string;
@@ -318,7 +320,7 @@ export interface ContentFingerprint {
   
   // Timestamps
   createdAt: Timestamp;
-  expiresAt: Timestamp;  // Fingerprints expire after creator deletes content
+  expiresAt: Timestamp;  // Fingerprints expire after earner deletes content
 }
 
 export interface PiracyMatch {
@@ -483,6 +485,22 @@ export interface NotifyModerationTeamInput {
   category: PatrolCase['category'];
   urgencyScore: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

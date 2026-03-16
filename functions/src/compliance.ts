@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO 3.0 — PHASE 42: AUTOMATED COMPLIANCE LAYER
@@ -424,7 +426,7 @@ async function permanentlyDeleteUserData(userId: string): Promise<void> {
 
   // Pseudonymize user document (keep for referential integrity)
   await db.collection("users").doc(userId).update({
-    email: `deleted_${userId}@deleted.avalo.app`,
+    email: `deleted_${userId}@deleted.platform.app`,
     displayName: "Deleted User",
     photoURL: null,
     bio: "[DELETED]",
@@ -990,6 +992,20 @@ export const updateConsentV1 = onCall(
     return;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

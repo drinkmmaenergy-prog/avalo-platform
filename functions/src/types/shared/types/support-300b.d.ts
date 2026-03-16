@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface SupportArticle  {
     id: string;
     title: string;
@@ -12,6 +14,23 @@ export interface FAQEntry  {
     category: string;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

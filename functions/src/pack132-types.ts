@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 132 — Avalo Global Analytics Cloud
  * Type Definitions
@@ -50,7 +52,7 @@ export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDA
 // ============================================================================
 
 export interface CreatorMetrics {
-  creatorId: string;
+  earnerId: string;
   period: AnalyticsPeriod;
   
   // Audience Metrics (Aggregated Only)
@@ -178,7 +180,7 @@ export interface PlatformMetrics {
   // Category Performance
   categoryStats: Array<{
     category: string;
-    creators: number;
+    earners: number;
     posts: number;
     revenue: number;
     growth: number;
@@ -209,7 +211,7 @@ export interface PlatformMetrics {
 
 export interface PredictiveInsight {
   id: string;
-  targetId: string; // creatorId or brandId
+  targetId: string; // earnerId or brandId
   targetType: 'CREATOR' | 'BRAND';
   insightType: 'BEST_TIME' | 'CONTENT_TYPE' | 'PRICING' | 'CATEGORY_TREND' | 'GROWTH_OPPORTUNITY';
   
@@ -235,7 +237,7 @@ export interface PredictiveInsight {
 }
 
 export interface ContentHeatmap {
-  creatorId: string;
+  earnerId: string;
   period: AnalyticsPeriod;
   
   // Best Publishing Times (Aggregated Stats)
@@ -290,7 +292,7 @@ export interface CategoryTrend {
 // ============================================================================
 
 export interface AnalyticsCreatorMaterialized {
-  creatorId: string;
+  earnerId: string;
   
   // Pre-computed metrics for all periods
   metrics: Record<AnalyticsPeriod, CreatorMetrics>;
@@ -383,7 +385,7 @@ export enum AnalyticsErrorCode {
 // ============================================================================
 
 export interface GetCreatorAnalyticsRequest {
-  creatorId: string;
+  earnerId: string;
   period?: AnalyticsPeriod;
   includeHeatmaps?: boolean;
   includeInsights?: boolean;
@@ -428,6 +430,20 @@ export interface GetPlatformAnalyticsResponse {
   }>;
   privacy: PrivacyValidationResult;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

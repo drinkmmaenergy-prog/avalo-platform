@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Secret Manager Integration
  * Provides secure access to secrets stored in Google Cloud Secret Manager
@@ -12,7 +14,7 @@ import { logger } from './runtime';
 const secretManagerClient = new SecretManagerServiceClient();
 
 // Get project ID from environment or Firebase config
-const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'avalo-c8c46';
+const PROJECT_ID = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'platform-c8c46';
 
 // Cache configuration
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -192,6 +194,20 @@ export default {
   getSendGridApiKey,
   getSecretWithFallback,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

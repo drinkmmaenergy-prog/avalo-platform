@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 168 — Avalo Anti-Farming & Wealth-Protection Engine
  * Core Detection and Protection Functions
@@ -240,7 +242,7 @@ export async function detectSpendHarvesting(
 
   if (contextAnalysis.pressureLanguage > 0.5) {
     patterns.push("pressure_tactics_detected");
-    riskScore += MONETIZATION_SPLITS.CHAT.avalo;
+    riskScore += MONETIZATION_SPLITS.CHAT.platform;
   }
 
   riskScore = Math.min(1.0, riskScore);
@@ -430,7 +432,7 @@ export async function freezeFarmedEarnings(
   let affectedCount = 0;
 
   for (const userId of userIds) {
-    const earningsRef = db.collection("creator_earnings").doc(userId);
+    const earningsRef = db.collection("earner_earnings").doc(userId);
     const earnings = await earningsRef.get();
 
     if (earnings.exists) {
@@ -530,7 +532,7 @@ export async function calculateFarmingRiskScore(userId: string): Promise<Farming
     .get();
   
   if (!clustersSnapshot.empty) {
-    const weight = MONETIZATION_SPLITS.CHAT.avalo;
+    const weight = MONETIZATION_SPLITS.CHAT.platform;
     factors.push({
       factor: "multi_account_clustering",
       weight,
@@ -597,7 +599,7 @@ export async function getEarningThreshold(userId: string): Promise<EarningThresh
   const earnings = profile.exists ? (profile.data() as WealthProtectionProfile).last30DaysEarned : 0;
 
   if (earnings >= TOP_CREATOR_THRESHOLD) {
-    return { level: "top_creator", monthlyEarnings: earnings, protectionTriggered: true };
+    return { level: "top_earner", monthlyEarnings: earnings, protectionTriggered: true };
   } else if (earnings >= VERY_HIGH_EARNER_THRESHOLD) {
     return { level: "very_high", monthlyEarnings: earnings, protectionTriggered: true };
   } else if (earnings >= HIGH_EARNER_THRESHOLD) {
@@ -661,6 +663,22 @@ export async function resolveFarmingCase(
     resolvedBy
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

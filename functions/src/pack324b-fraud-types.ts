@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324B — Real-Time Fraud Detection & Abuse Signals
  * TypeScript Types and Interfaces
@@ -32,7 +34,7 @@ export type FraudSignalType =
   | 'MULTI_SESSION_SPAM'        // AI/chat sends to many sessions in parallel
   | 'COPY_PASTE_BEHAVIOR'       // Same reply pasted to 3+ chats
   | 'FAKE_BOOKINGS'             // Event tickets refunded often
-  | 'SELF_REFUNDS'              // Many bookings canceled by creator
+  | 'SELF_REFUNDS'              // Many bookings canceled by earner
   | 'PAYOUT_ABUSE'              // Unusual payout attempts
   | 'IDENTITY_MISMATCH'         // Repeated profile fraud reports
   | 'PANIC_RATE_SPIKE';         // Excess panic triggers
@@ -422,6 +424,20 @@ export const RISK_LEVEL_COLORS: Record<RiskLevel, string> = {
   HIGH: '#ef4444',     // red
   CRITICAL: '#7f1d1d', // dark red
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

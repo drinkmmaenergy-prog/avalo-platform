@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 201 — Geo-Blocking Automation System
  * Automatic content and feature blocking based on regional policies
@@ -415,7 +417,7 @@ export async function syncGeoblockingWithRegionalPolicies(
 
     // Payout restrictions
     if (!policy.payoutAvailability) {
-      blockedFeatures.push('creator_payouts', 'earnings_withdrawal');
+      blockedFeatures.push('earner_payouts', 'earnings_withdrawal');
     }
 
     // Ad restrictions
@@ -587,6 +589,20 @@ export async function getGeoblockingStatistics(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

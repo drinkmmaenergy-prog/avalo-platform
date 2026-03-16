@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 291 — AI Assist for Creators (Cloud Functions)
- * API endpoints for AI-powered creator insights
+ * API endpoints for AI-powered earner insights
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -51,14 +53,14 @@ const db = getFirestore();
 // ============================================================================
 
 /**
- * Get daily AI insights for creator
+ * Get daily AI insights for earner
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_insights_daily')({ date: '2025-12-09' });
+ * const result = await httpsCallable(functions, 'earner_ai_insights_daily')({ date: '2025-12-09' });
  * ```
  */
-export const creator_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise<GetDailyInsightsResponse>>(
+export const earner_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise<GetDailyInsightsResponse>>(
   { 
     region: 'us-central1',
     memory: '512MiB',
@@ -129,10 +131,10 @@ export const creator_ai_insights_daily = onCall<GetDailyInsightsRequest, Promise
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_insights_weekly')({ weekStart: '2025-12-02' });
+ * const result = await httpsCallable(functions, 'earner_ai_insights_weekly')({ weekStart: '2025-12-02' });
  * ```
  */
-export const creator_ai_insights_weekly = onCall<GetWeeklyOptimizationRequest, Promise<GetWeeklyOptimizationResponse>>(
+export const earner_ai_insights_weekly = onCall<GetWeeklyOptimizationRequest, Promise<GetWeeklyOptimizationResponse>>(
   {
     region: 'us-central1',
     memory: '512MiB',
@@ -201,10 +203,10 @@ export const creator_ai_insights_weekly = onCall<GetWeeklyOptimizationRequest, P
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_recommendations_content')({});
+ * const result = await httpsCallable(functions, 'earner_ai_recommendations_content')({});
  * ```
  */
-export const creator_ai_recommendations_content = onCall<GetContentRecommendationsRequest, Promise<GetContentRecommendationsResponse>>(
+export const earner_ai_recommendations_content = onCall<GetContentRecommendationsRequest, Promise<GetContentRecommendationsResponse>>(
   {
     region: 'us-central1',
     memory: '256MiB',
@@ -261,10 +263,10 @@ export const creator_ai_recommendations_content = onCall<GetContentRecommendatio
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_recommendations_chat')({ timeRangeDays: 30 });
+ * const result = await httpsCallable(functions, 'earner_ai_recommendations_chat')({ timeRangeDays: 30 });
  * ```
  */
-export const creator_ai_recommendations_chat = onCall<GetChatOptimizationRequest, Promise<GetChatOptimizationResponse>>(
+export const earner_ai_recommendations_chat = onCall<GetChatOptimizationRequest, Promise<GetChatOptimizationResponse>>(
   {
     region: 'us-central1',
     memory: '256MiB',
@@ -330,10 +332,10 @@ export const creator_ai_recommendations_chat = onCall<GetChatOptimizationRequest
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_recommendations_calendar')({});
+ * const result = await httpsCallable(functions, 'earner_ai_recommendations_calendar')({});
  * ```
  */
-export const creator_ai_recommendations_calendar = onCall<GetCalendarOptimizationRequest, Promise<GetCalendarOptimizationResponse>>(
+export const earner_ai_recommendations_calendar = onCall<GetCalendarOptimizationRequest, Promise<GetCalendarOptimizationResponse>>(
   {
     region: 'us-central1',
     memory: '256MiB',
@@ -390,10 +392,10 @@ export const creator_ai_recommendations_calendar = onCall<GetCalendarOptimizatio
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_recommendations_events')({});
+ * const result = await httpsCallable(functions, 'earner_ai_recommendations_events')({});
  * ```
  */
-export const creator_ai_recommendations_events = onCall<GetEventOptimizationRequest, Promise<GetEventOptimizationResponse>>(
+export const earner_ai_recommendations_events = onCall<GetEventOptimizationRequest, Promise<GetEventOptimizationResponse>>(
   {
     region: 'us-central1',
     memory: '256MiB',
@@ -450,10 +452,10 @@ export const creator_ai_recommendations_events = onCall<GetEventOptimizationRequ
  * 
  * Usage:
  * ```typescript
- * const result = await httpsCallable(functions, 'creator_ai_profile_health')({});
+ * const result = await httpsCallable(functions, 'earner_ai_profile_health')({});
  * ```
  */
-export const creator_ai_profile_health = onCall<GetProfileHealthRequest, Promise<GetProfileHealthResponse>>(
+export const earner_ai_profile_health = onCall<GetProfileHealthRequest, Promise<GetProfileHealthResponse>>(
   {
     region: 'us-central1',
     memory: '256MiB',
@@ -503,10 +505,10 @@ export const creator_ai_profile_health = onCall<GetProfileHealthRequest, Promise
 // ============================================================================
 
 /**
- * Daily job to pre-cache insights for active creators
+ * Daily job to pre-cache insights for active earners
  * Runs at 3 AM UTC daily
  */
-export const creator_ai_daily_precache = onSchedule(
+export const earner_ai_daily_precache = onSchedule(
   {
     schedule: '0 3 * * *',
     timeZone: 'UTC',
@@ -518,11 +520,11 @@ export const creator_ai_daily_precache = onSchedule(
     logger.info('Starting daily AI insights pre-cache job');
 
     try {
-      // Get active creators (earned in last 30 days)
+      // Get active earners (earned in last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const statsQuery = db.collection('creatorDailyStats')
+      const statsQuery = db.collection('earnerDailyStats')
         .where('createdAt', '>=', thirtyDaysAgo)
         .where('tokensEarnedTotal', '>', 0);
 
@@ -533,12 +535,12 @@ export const creator_ai_daily_precache = onSchedule(
         activeCreators.add(doc.data().userId);
       });
 
-      logger.info(`Found ${activeCreators.size} active creators to pre-cache`);
+      logger.info(`Found ${activeCreators.size} active earners to pre-cache`);
 
       let cached = 0;
       let errors = 0;
 
-      // Pre-cache daily and weekly insights for each creator
+      // Pre-cache daily and weekly insights for each earner
       for (const userId of Array.from(activeCreators)) {
         try {
           // Check if they have sufficient data
@@ -577,7 +579,7 @@ export const creator_ai_daily_precache = onSchedule(
  * Weekly cleanup of expired cache entries
  * Runs every Sunday at 4 AM UTC
  */
-export const creator_ai_cache_cleanup = onSchedule(
+export const earner_ai_cache_cleanup = onSchedule(
   {
     schedule: '0 4 * * 0',
     timeZone: 'UTC',
@@ -619,6 +621,20 @@ export const creator_ai_cache_cleanup = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

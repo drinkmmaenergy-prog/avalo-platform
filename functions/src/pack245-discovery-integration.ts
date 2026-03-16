@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 245: Audience Classification & VIP Segmenting
  * Discovery & Matching Algorithm Integration
@@ -20,7 +22,7 @@ import type {
 // ========================================================================
 
 /**
- * Calculate match score between viewer and creator based on segments
+ * Calculate match score between viewer and earner based on segments
  */
 function calculateSegmentMatchScore(
   segment: AudienceSegment | null,
@@ -77,7 +79,7 @@ function calculateSegmentMatchScore(
 }
 
 /**
- * Get recommended creators for a viewer based on their segments
+ * Get recommended earners for a viewer based on their segments
  */
 export async function getSegmentBasedRecommendations(params: {
   viewerId: string;
@@ -85,7 +87,7 @@ export async function getSegmentBasedRecommendations(params: {
   filters?: SegmentFilter;
   excludeIds?: string[];
 }): Promise<{
-  creatorId: string;
+  earnerId: string;
   score: number;
   reasons: string[];
 }[]> {
@@ -100,7 +102,7 @@ export async function getSegmentBasedRecommendations(params: {
   const viewerSegments = new Map<string, AudienceSegment>();
   viewerSegmentsSnap.forEach(doc => {
     const segment = doc.data() as AudienceSegment;
-    viewerSegments.set(segment.creatorId, segment);
+    viewerSegments.set(segment.earnerId, segment);
   });
   
   // Get viewer's budget classification
@@ -119,55 +121,55 @@ export async function getSegmentBasedRecommendations(params: {
   const viewerIntent = intentCacheDoc.exists ?
     intentCacheDoc.data()!.primaryIntent as IntentType : 'chat';
   
-  // Find creators that match viewer's profile
-  let creatorsQuery = db.collection('users')
+  // Find earners that match viewer's profile
+  let earnersQuery = db.collection('users')
     .where('modes.earnFromChat', '==', true)
     .limit(100); // Get larger pool to filter
   
-  const creatorsSnap = await creatorsQuery.get();
+  const earnersSnap = await earnersQuery.get();
   
   const recommendations: {
-    creatorId: string;
+    earnerId: string;
     score: number;
     reasons: string[];
   }[] = [];
   
-  for (const creatorDoc of creatorsSnap.docs) {
-    const creatorId = creatorDoc.id;
+  for (const earnerDoc of earnersSnap.docs) {
+    const earnerId = earnerDoc.id;
     
     // Skip excluded IDs
-    if (excludeIds.includes(creatorId)) continue;
+    if (excludeIds.includes(earnerId)) continue;
     
-    // Skip if viewer already has segment with this creator
-    const existingSegment = viewerSegments.get(creatorId);
+    // Skip if viewer already has segment with this earner
+    const existingSegment = viewerSegments.get(earnerId);
     
     let score = 50;
     const reasons: string[] = [];
     
-    // Get creator's typical audience segments
-    const creatorAnalyticsDoc = await db
-      .collection('creator_audience_analytics')
-      .doc(creatorId)
+    // Get earner's typical audience segments
+    const earnerAnalyticsDoc = await db
+      .collection('earner_audience_analytics')
+      .doc(earnerId)
       .get();
     
-    if (creatorAnalyticsDoc.exists) {
-      const analytics = creatorAnalyticsDoc.data()!;
+    if (earnerAnalyticsDoc.exists) {
+      const analytics = earnerAnalyticsDoc.data()!;
       
-      // Match viewer budget with creator's top segments
+      // Match viewer budget with earner's top segments
       if (viewerBudget === 'high') {
-        // High budget viewers see premium creators
+        // High budget viewers see premium earners
         score += 15;
-        reasons.push('Premium creator match');
+        reasons.push('Premium earner match');
       }
       
-      // Match viewer intent with creator's monetization focus
+      // Match viewer intent with earner's monetization focus
       const intentDist = analytics.intentDistribution as any;
       if (viewerIntent === 'chat' && intentDist.chatFocused > 40) {
         score += 10;
-        reasons.push('Chat-focused creator');
+        reasons.push('Chat-focused earner');
       } else if (viewerIntent === 'call' && intentDist.callFocused > 30) {
         score += 10;
-        reasons.push('Call-friendly creator');
+        reasons.push('Call-friendly earner');
       } else if (viewerIntent === 'meeting' && intentDist.meetingFocused > 20) {
         score += 15;
         reasons.push('Available for meetings');
@@ -176,7 +178,7 @@ export async function getSegmentBasedRecommendations(params: {
         reasons.push('Event organizer');
       }
       
-      // Check if creator has similar successful audience
+      // Check if earner has similar successful audience
       const topSegment = analytics.mostValuableSegment;
       if (topSegment && topSegment.budget === viewerBudget) {
         score += 10;
@@ -195,7 +197,7 @@ export async function getSegmentBasedRecommendations(params: {
         reasons.push('Shared interests');
       }
       if (existingSegment.proximity === 'local') {
-        reasons.push('Local creator');
+        reasons.push('Local earner');
       }
     }
     
@@ -219,7 +221,7 @@ export async function getSegmentBasedRecommendations(params: {
     }
     
     recommendations.push({
-      creatorId,
+      earnerId,
       score,
       reasons: reasons.length > 0 ? reasons : ['Recommended for you']
     });
@@ -231,15 +233,15 @@ export async function getSegmentBasedRecommendations(params: {
 }
 
 /**
- * Boost creator visibility based on segment performance
+ * Boost earner visibility based on segment performance
  */
 export async function getCreatorVisibilityBoost(
-  creatorId: string,
+  earnerId: string,
   forAudience: 'all' | 'highBudget' | 'local' | 'meetingFocused'
 ): Promise<number> {
   const analyticsDoc = await db
-    .collection('creator_audience_analytics')
-    .doc(creatorId)
+    .collection('earner_audience_analytics')
+    .doc(earnerId)
     .get();
   
   if (!analyticsDoc.exists) return 1.0; // No boost
@@ -248,21 +250,21 @@ export async function getCreatorVisibilityBoost(
   let boost = 1.0;
   
   if (forAudience === 'highBudget') {
-    // Boost for creators popular with high-budget audience
+    // Boost for earners popular with high-budget audience
     if (analytics.budgetDistribution.highBudget > 30) {
       boost = 1.3;
     } else if (analytics.budgetDistribution.highBudget > 20) {
       boost = 1.15;
     }
   } else if (forAudience === 'local') {
-    // Boost for creators with local appeal
+    // Boost for earners with local appeal
     if (analytics.proximityDistribution.local > 40) {
       boost = 1.25;
     } else if (analytics.proximityDistribution.local > 25) {
       boost = 1.1;
     }
   } else if (forAudience === 'meetingFocused') {
-    // Boost for creators with open calendars
+    // Boost for earners with open calendars
     if (analytics.intentDistribution.meetingFocused > 25) {
       boost = 1.4;
     } else if (analytics.intentDistribution.meetingFocused > 15) {
@@ -281,7 +283,7 @@ export async function filterDiscoveryFeed(params: {
   candidates: string[]; // Creator IDs
   context: 'swipe' | 'search' | 'featured';
 }): Promise<{
-  creatorId: string;
+  earnerId: string;
   priority: 'high' | 'medium' | 'low';
   suggestedAction: string;
 }[]> {
@@ -297,16 +299,16 @@ export async function filterDiscoveryFeed(params: {
   const viewerIntent = intentDoc.exists ? intentDoc.data()!.primaryIntent as IntentType : 'chat';
   
   const results: {
-    creatorId: string;
+    earnerId: string;
     priority: 'high' | 'medium' | 'low';
     suggestedAction: string;
   }[] = [];
   
-  for (const creatorId of candidates) {
+  for (const earnerId of candidates) {
     // Check if segment exists
     const segmentDoc = await db
       .collection('audience_segments')
-      .doc(`${viewerId}_${creatorId}`)
+      .doc(`${viewerId}_${earnerId}`)
       .get();
     
     let priority: 'high' | 'medium' | 'low' = 'medium';
@@ -339,16 +341,16 @@ export async function filterDiscoveryFeed(params: {
         priority = priority === 'low' ? 'medium' : 'high';
       }
     } else {
-      // No existing segment - use creator analytics
+      // No existing segment - use earner analytics
       const analyticsDoc = await db
-        .collection('creator_audience_analytics')
-        .doc(creatorId)
+        .collection('earner_audience_analytics')
+        .doc(earnerId)
         .get();
       
       if (analyticsDoc.exists) {
         const analytics = analyticsDoc.data()!;
         
-        // Check if creator typically attracts similar viewers
+        // Check if earner typically attracts similar viewers
         if (viewerBudget === 'high' && analytics.budgetDistribution.highBudget > 30) {
           priority = 'high';
         }
@@ -363,7 +365,7 @@ export async function filterDiscoveryFeed(params: {
     }
     
     results.push({
-      creatorId,
+      earnerId,
       priority,
       suggestedAction
     });
@@ -381,7 +383,7 @@ export async function filterDiscoveryFeed(params: {
  */
 export async function getOptimalEngagementSuggestion(
   viewerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<{
   suggestedType: 'chat' | 'call' | 'meeting' | 'event';
   confidence: number;
@@ -389,7 +391,7 @@ export async function getOptimalEngagementSuggestion(
 }> {
   const segmentDoc = await db
     .collection('audience_segments')
-    .doc(`${viewerId}_${creatorId}`)
+    .doc(`${viewerId}_${earnerId}`)
     .get();
   
   if (!segmentDoc.exists) {
@@ -452,11 +454,11 @@ export async function reorderDiscoveryQueue(
   const viewerBudget = budgetDoc.exists ? budgetDoc.data()!.budgetTier as BudgetTier : 'mid';
   const viewerIntent = intentDoc.exists ? intentDoc.data()!.primaryIntent as IntentType : 'chat';
   
-  // Score each creator
-  for (const creatorId of queuedCreatorIds) {
+  // Score each earner
+  for (const earnerId of queuedCreatorIds) {
     const segmentDoc = await db
       .collection('audience_segments')
-      .doc(`${viewerId}_${creatorId}`)
+      .doc(`${viewerId}_${earnerId}`)
       .get();
     
     let score = 50;
@@ -468,15 +470,15 @@ export async function reorderDiscoveryQueue(
         preferMeetings: viewerIntent === 'meeting'
       });
     } else {
-      // Get creator analytics for new matching
+      // Get earner analytics for new matching
       const boost = await getCreatorVisibilityBoost(
-        creatorId,
+        earnerId,
         viewerBudget === 'high' ? 'highBudget' : 'all'
       );
       score *= boost;
     }
     
-    scores.set(creatorId, score);
+    scores.set(earnerId, score);
   }
   
   // Sort by score
@@ -499,6 +501,20 @@ export const DiscoveryIntegration = {
   reorderDiscoveryQueue,
   calculateSegmentMatchScore
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

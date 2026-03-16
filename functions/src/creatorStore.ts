@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 24 - Creator Ecosystem & Marketplace
  *
@@ -7,7 +9,7 @@
  * - Token-based purchases
  * - Stripe Connect for fiat payouts
  *
- * Feature flag: creator_store
+ * Feature flag: earner_store
  * Region: europe-west1
  * No changes to existing chat/calendar pricing
  */
@@ -52,7 +54,7 @@ export enum ProductStatus {
  */
 interface CreatorProduct {
   productId: string;
-  creatorId: string;
+  earnerId: string;
   type: ProductType;
   status: ProductStatus;
 
@@ -92,12 +94,12 @@ interface ProductPurchase {
   purchaseId: string;
   productId: string;
   buyerId: string;
-  creatorId: string;
+  earnerId: string;
 
   // Payment
   amount: number; // Tokens paid
   platformFee: number; // 20% platform fee
-  creatorEarnings: number; // 80% to creator
+  earnerEarnings: number; // 80% to earner
 
   // Status
   status: "pending" | "completed" | "refunded" | "failed";
@@ -116,7 +118,7 @@ interface ProductPurchase {
 }
 
 /**
- * Create creator product
+ * Create earner product
  */
 export const createCreatorProductV1 = onCall(
   { region: "europe-west1" },
@@ -127,17 +129,17 @@ export const createCreatorProductV1 = onCall(
     }
 
     // Check feature flag
-    const storeEnabled = await getFeatureFlag(uid, "creator_store", false);
+    const storeEnabled = await getFeatureFlag(uid, "earner_store", false);
     if (!storeEnabled) {
       throw new HttpsError("failed-precondition", "Creator store not enabled");
     }
 
-    // Check if user is creator
+    // Check if user is earner
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
-    if (!userData?.role || userData.role !== "creator") {
-      throw new HttpsError("permission-denied", "Only creators can create products");
+    if (!userData?.role || userData.role !== "earner") {
+      throw new HttpsError("permission-denied", "Only earners can create products");
     }
 
     // Validate input
@@ -164,7 +166,7 @@ export const createCreatorProductV1 = onCall(
 
       const product: CreatorProduct = {
         productId,
-        creatorId: uid,
+        earnerId: uid,
         type,
         status: ProductStatus.DRAFT,
         title,
@@ -187,7 +189,7 @@ export const createCreatorProductV1 = onCall(
         // Allow up to 10 photos
         const photoUrls: string[] = [];
         for (let i = 0; i < 10; i++) {
-          const path = `creator-products/${uid}/${productId}/photo_${i}.jpg`;
+          const path = `earner-products/${uid}/${productId}/photo_${i}.jpg`;
           const [signedUrl] = await storage
             .bucket()
             .file(path)
@@ -201,7 +203,7 @@ export const createCreatorProductV1 = onCall(
         }
         uploadUrls.photos = photoUrls as any;
       } else if (type === ProductType.VIDEO) {
-        const path = `creator-products/${uid}/${productId}/video.mp4`;
+        const path = `earner-products/${uid}/${productId}/video.mp4`;
         const [signedUrl] = await storage
           .bucket()
           .file(path)
@@ -215,7 +217,7 @@ export const createCreatorProductV1 = onCall(
       }
 
       // Thumbnail upload URL
-      const thumbnailPath = `creator-products/${uid}/${productId}/thumbnail.jpg`;
+      const thumbnailPath = `earner-products/${uid}/${productId}/thumbnail.jpg`;
       const [thumbnailUrl] = await storage
         .bucket()
         .file(thumbnailPath)
@@ -227,7 +229,7 @@ export const createCreatorProductV1 = onCall(
         });
       uploadUrls.thumbnail = thumbnailUrl;
 
-      await db.collection("creatorProducts").doc(productId).set(product);
+      await db.collection("earnerProducts").doc(productId).set(product);
 
       logger.info(`Creator product created: ${productId} by ${uid}`);
 
@@ -261,7 +263,7 @@ export const publishCreatorProductV1 = onCall(
       throw new HttpsError("invalid-argument", "productId required");
     }
 
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
 
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
@@ -269,12 +271,12 @@ export const publishCreatorProductV1 = onCall(
 
     const product = productDoc.data() as CreatorProduct;
 
-    if (product.creatorId !== uid) {
+    if (product.earnerId !== uid) {
       throw new HttpsError("permission-denied", "Not your product");
     }
 
     // Verify content uploaded (check GCS)
-    const contentPath = `creator-products/${uid}/${productId}/`;
+    const contentPath = `earner-products/${uid}/${productId}/`;
     const [files] = await storage.bucket().getFiles({ prefix: contentPath });
 
     if (files.length === 0) {
@@ -294,18 +296,18 @@ export const publishCreatorProductV1 = onCall(
 );
 
 /**
- * Get creator products (public listing)
+ * Get earner products (public listing)
  */
 export const getCreatorProductsV1 = onCall({ region: "europe-west1" }, async (request) => {
-  const { creatorId, limit = 20, offset = 0 } = request.data;
+  const { earnerId, limit = 20, offset = 0 } = request.data;
 
-  if (!creatorId) {
-    throw new HttpsError("invalid-argument", "creatorId required");
+  if (!earnerId) {
+    throw new HttpsError("invalid-argument", "earnerId required");
   }
 
   const productsSnapshot = await db
-    .collection("creatorProducts")
-    .where("creatorId", "==", creatorId)
+    .collection("earnerProducts")
+    .where("earnerId", "==", earnerId)
     .where("status", "==", ProductStatus.ACTIVE)
     .orderBy("publishedAt", "desc")
     .limit(limit + offset)
@@ -335,7 +337,7 @@ export const getCreatorProductsV1 = onCall({ region: "europe-west1" }, async (re
 });
 
 /**
- * Purchase creator product
+ * Purchase earner product
  */
 export const purchaseCreatorProductV1 = onCall(
   { region: "europe-west1", timeoutSeconds: 60 },
@@ -353,7 +355,7 @@ export const purchaseCreatorProductV1 = onCall(
 
     try {
       // Get product
-      const productDoc = await db.collection("creatorProducts").doc(productId).get();
+      const productDoc = await db.collection("earnerProducts").doc(productId).get();
 
       if (!productDoc.exists) {
         throw new HttpsError("not-found", "Product not found");
@@ -386,9 +388,9 @@ export const purchaseCreatorProductV1 = onCall(
         throw new HttpsError("failed-precondition", "Insufficient tokens");
       }
 
-      // Calculate revenue split (20/80 for creator products)
+      // Calculate revenue split (20/80 for earner products)
       const platformFee = Math.floor(product.price * 0.2); // 20%
-      const creatorEarnings = product.price - platformFee; // 80%
+      const earnerEarnings = product.price - platformFee; // 80%
 
       const purchaseId = `purchase_${Date.now()}_${Math.random()
         .toString(36)
@@ -401,9 +403,9 @@ export const purchaseCreatorProductV1 = onCall(
           tokens: FieldValue.increment(-product.price),
         });
 
-        // Credit creator
-        transaction.update(db.collection("users").doc(product.creatorId), {
-          tokens: FieldValue.increment(creatorEarnings),
+        // Credit earner
+        transaction.update(db.collection("users").doc(product.earnerId), {
+          tokens: FieldValue.increment(earnerEarnings),
         });
 
         // Create transaction records
@@ -412,14 +414,14 @@ export const purchaseCreatorProductV1 = onCall(
           type: "product_purchase",
           amount: -product.price,
           productId,
-          creatorId: product.creatorId,
+          earnerId: product.earnerId,
           createdAt: Timestamp.now(),
         });
 
         transaction.create(db.collection("transactions").doc(), {
-          userId: product.creatorId,
+          userId: product.earnerId,
           type: "product_sale",
-          amount: creatorEarnings,
+          amount: earnerEarnings,
           productId,
           buyerId: uid,
           createdAt: Timestamp.now(),
@@ -440,10 +442,10 @@ export const purchaseCreatorProductV1 = onCall(
         purchaseId,
         productId,
         buyerId: uid,
-        creatorId: product.creatorId,
+        earnerId: product.earnerId,
         amount: product.price,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         status: "completed",
         contentUrls,
         expiresAt: Timestamp.fromMillis(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -491,7 +493,7 @@ export const getMyPurchasesV1 = onCall({ region: "europe-west1" }, async (reques
       const purchase = doc.data() as ProductPurchase;
 
       // Get product details
-      const productDoc = await db.collection("creatorProducts").doc(purchase.productId).get();
+      const productDoc = await db.collection("earnerProducts").doc(purchase.productId).get();
       const product = productDoc.data() as CreatorProduct;
 
       // Check if content URLs expired, regenerate if needed
@@ -529,7 +531,7 @@ async function generateContentUrls(
   product: CreatorProduct,
   buyerId: string
 ): Promise<string[]> {
-  const contentPath = `creator-products/${product.creatorId}/${product.productId}/`;
+  const contentPath = `earner-products/${product.earnerId}/${product.productId}/`;
   const [files] = await storage.bucket().getFiles({ prefix: contentPath });
 
   // Filter out thumbnail
@@ -550,7 +552,7 @@ async function generateContentUrls(
 }
 
 /**
- * Deactivate product (admin or creator)
+ * Deactivate product (admin or earner)
  */
 export const deactivateProductV1 = onCall(
   { region: "europe-west1" },
@@ -566,7 +568,7 @@ export const deactivateProductV1 = onCall(
       throw new HttpsError("invalid-argument", "productId required");
     }
 
-    const productDoc = await db.collection("creatorProducts").doc(productId).get();
+    const productDoc = await db.collection("earnerProducts").doc(productId).get();
 
     if (!productDoc.exists) {
       throw new HttpsError("not-found", "Product not found");
@@ -574,12 +576,12 @@ export const deactivateProductV1 = onCall(
 
     const product = productDoc.data() as CreatorProduct;
 
-    // Check permission (creator or admin)
+    // Check permission (earner or admin)
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
     const isAdmin = userData?.role && ["admin", "moderator"].includes(userData.role);
 
-    if (product.creatorId !== uid && !isAdmin) {
+    if (product.earnerId !== uid && !isAdmin) {
       throw new HttpsError("permission-denied", "Unauthorized");
     }
 
@@ -605,10 +607,10 @@ export const getCreatorAnalyticsV1 = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    // Get all creator products
+    // Get all earner products
     const productsSnapshot = await db
-      .collection("creatorProducts")
-      .where("creatorId", "==", uid)
+      .collection("earnerProducts")
+      .where("earnerId", "==", uid)
       .get();
 
     let totalRevenue = 0;
@@ -626,7 +628,7 @@ export const getCreatorAnalyticsV1 = onCall(
     const thirtyDaysAgo = Timestamp.fromMillis(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentPurchasesSnapshot = await db
       .collection("productPurchases")
-      .where("creatorId", "==", uid)
+      .where("earnerId", "==", uid)
       .where("purchasedAt", ">=", thirtyDaysAgo)
       .get();
 
@@ -641,6 +643,20 @@ export const getCreatorAnalyticsV1 = onCall(
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

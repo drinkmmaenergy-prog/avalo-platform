@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 278 — Subscription Perks Service
  * 
@@ -362,6 +364,20 @@ export async function recordDiscoveryView(
     viewedAt: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

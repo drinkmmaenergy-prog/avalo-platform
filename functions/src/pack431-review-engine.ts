@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 431: Review & Rating Optimization Engine
  * 
@@ -339,19 +341,19 @@ export class ReviewAutoReplyEngine {
       "3_IT": "Grazie per il tuo feedback. Vorremmo saperne di più sulla tua esperienza. Contatta il supporto.",
       "3_FR": "Merci pour votre retour. Nous aimerions en savoir plus sur votre expérience. Contactez le support.",
       
-      "2_EN": "We're sorry you had a negative experience. Please contact support@avalo.app so we can help.",
-      "2_PL": "Przykro nam, że masz negatywne doświadczenia. Skontaktuj się: support@avalo.app",
-      "2_DE": "Es tut uns leid, dass Sie eine negative Erfahrung hatten. Kontaktieren Sie: support@avalo.app",
-      "2_ES": "Lamentamos tu experiencia negativa. Contacta: support@avalo.app y te ayudaremos.",
-      "2_IT": "Ci dispiace per l'esperienza negativa. Contatta: support@avalo.app per assistenza.",
-      "2_FR": "Nous sommes désolés pour votre expérience négative. Contactez: support@avalo.app",
+      "2_EN": "We're sorry you had a negative experience. Please contact support@platform.app so we can help.",
+      "2_PL": "Przykro nam, że masz negatywne doświadczenia. Skontaktuj się: support@platform.app",
+      "2_DE": "Es tut uns leid, dass Sie eine negative Erfahrung hatten. Kontaktieren Sie: support@platform.app",
+      "2_ES": "Lamentamos tu experiencia negativa. Contacta: support@platform.app y te ayudaremos.",
+      "2_IT": "Ci dispiace per l'esperienza negativa. Contatta: support@platform.app per assistenza.",
+      "2_FR": "Nous sommes désolés pour votre expérience négative. Contactez: support@platform.app",
       
-      "1_EN": "We're very sorry to hear this. Please reach out to support@avalo.app immediately so we can resolve this.",
-      "1_PL": "Bardzo nam przykro. Prosimy o pilny kontakt: support@avalo.app, abyśmy mogli to rozwiązać.",
-      "1_DE": "Es tut uns sehr leid. Bitte kontaktieren Sie sofort: support@avalo.app zur Lösung.",
-      "1_ES": "Lo sentimos mucho. Por favor contacta inmediatamente: support@avalo.app para resolverlo.",
-      "1_IT": "Ci dispiace molto. Contatta immediatamente: support@avalo.app per risolvere.",
-      "1_FR": "Nous sommes vraiment désolés. Contactez immédiatement: support@avalo.app pour résoudre cela."
+      "1_EN": "We're very sorry to hear this. Please reach out to support@platform.app immediately so we can resolve this.",
+      "1_PL": "Bardzo nam przykro. Prosimy o pilny kontakt: support@platform.app, abyśmy mogli to rozwiązać.",
+      "1_DE": "Es tut uns sehr leid. Bitte kontaktieren Sie sofort: support@platform.app zur Lösung.",
+      "1_ES": "Lo sentimos mucho. Por favor contacta inmediatamente: support@platform.app para resolverlo.",
+      "1_IT": "Ci dispiace molto. Contatta immediatamente: support@platform.app per risolvere.",
+      "1_FR": "Nous sommes vraiment désolés. Contactez immédiatement: support@platform.app pour résoudre cela."
     };
     
     const key = `${rating}_${language.toUpperCase()}`;
@@ -565,6 +567,20 @@ export const createReviewAutoReplyEngine = (db: FirebaseFirestore.Firestore) => 
 export const createReviewAnalyticsEngine = (db: FirebaseFirestore.Firestore) => {
   return new ReviewAnalyticsEngine(db);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 275 - Events Engine
  * Cloud Functions for ticket management, QR codes, refunds, and safety
@@ -40,7 +42,7 @@ const AVALO_SHARE_PERCENT = 20;
 const ORGANIZER_SHARE_PERCENT = 80;
 const CHECK_IN_THRESHOLD_PERCENT = 70;
 const PAYOUT_FREEZE_HOURS = 72;
-const QR_CODE_SECRET = process.env.QR_CODE_SECRET || 'avalo-events-secret-key';
+const QR_CODE_SECRET = process.env.QR_CODE_SECRET || 'platform-events-secret-key';
 
 // ============================================================================
 // TICKET PURCHASE WITH 80/20 SPLIT
@@ -103,8 +105,8 @@ export async function purchaseEventTicket(
       }
 
       // 7. Calculate split
-      const avaloShareTokens = Math.floor(event.priceTokens * AVALO_SHARE_PERCENT / 100);
-      const organizerShareTokens = event.priceTokens - avaloShareTokens;
+      const platformTokens = Math.floor(event.priceTokens * AVALO_SHARE_PERCENT / 100);
+      const organizerShareTokens = event.priceTokens - platformTokens;
 
       // 8. Deduct tokens from participant
       transaction.update(userWalletRef, {
@@ -113,9 +115,9 @@ export async function purchaseEventTicket(
       });
 
       // 9. Credit Avalo immediately (20%)
-      const avaloWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
-      transaction.set(avaloWalletRef, {
-        tokens: FieldValue.increment(avaloShareTokens),
+      const platformWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
+      transaction.set(platformWalletRef, {
+        tokens: FieldValue.increment(platformTokens),
         updatedAt: FieldValue.serverTimestamp()
       }, { merge: true });
 
@@ -134,7 +136,7 @@ export async function purchaseEventTicket(
         payment: {
           totalTokensPaid: event.priceTokens,
           organizerShareTokens,
-          avaloShareTokens,
+          platformTokens,
           refundedUserTokens: 0,
           refundedAvaloTokens: 0
         },
@@ -166,7 +168,7 @@ export async function purchaseEventTicket(
         eventId,
         ticketId,
         amount: event.priceTokens,
-        avaloShare: avaloShareTokens,
+        platform: platformTokens,
         organizerShare: organizerShareTokens,
         status: 'COMPLETED',
         timestamp: FieldValue.serverTimestamp()
@@ -296,9 +298,9 @@ export async function organizerCancelEvent(
         });
 
         // Deduct from Avalo (return 20% fee)
-        const avaloWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
-        batch.update(avaloWalletRef, {
-          tokens: FieldValue.increment(-ticket.payment.avaloShareTokens),
+        const platformWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
+        batch.update(platformWalletRef, {
+          tokens: FieldValue.increment(-ticket.payment.platformTokens),
           updatedAt: FieldValue.serverTimestamp()
         });
 
@@ -306,7 +308,7 @@ export async function organizerCancelEvent(
         batch.update(ticketDoc.ref, {
           status: 'CANCELLED_BY_ORGANIZER',
           'payment.refundedUserTokens': ticket.priceTokens,
-          'payment.refundedAvaloTokens': ticket.payment.avaloShareTokens,
+          'payment.refundedAvaloTokens': ticket.payment.platformTokens,
           'timestamps.updatedAt': FieldValue.serverTimestamp()
         });
 
@@ -587,9 +589,9 @@ export async function reportMismatchAtEntry(
       });
 
       // 5. Avalo returns 20% fee
-      const avaloWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
-      transaction.update(avaloWalletRef, {
-        tokens: FieldValue.increment(-ticket.payment.avaloShareTokens),
+      const platformWalletRef = db.collection('wallets').doc('AVALO_PLATFORM');
+      transaction.update(platformWalletRef, {
+        tokens: FieldValue.increment(-ticket.payment.platformTokens),
         updatedAt: FieldValue.serverTimestamp()
       });
 
@@ -597,7 +599,7 @@ export async function reportMismatchAtEntry(
       transaction.update(ticketRef, {
         status: 'REFUNDED_MISMATCH',
         'payment.refundedUserTokens': ticket.priceTokens,
-        'payment.refundedAvaloTokens': ticket.payment.avaloShareTokens,
+        'payment.refundedAvaloTokens': ticket.payment.platformTokens,
         'timestamps.updatedAt': FieldValue.serverTimestamp()
       });
 
@@ -944,6 +946,21 @@ export async function handleEventPanic(
     return { success: false };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

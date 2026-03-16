@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 290 — Creator Dashboard & Analytics
- * Complete analytics system for earning creators
+ * Complete analytics system for earning earners
  * 
  * Features:
  * - Earnings overview (tokens + fiat equivalent)
@@ -8,7 +10,7 @@
  * - Payers analytics & retention
  * - Integration with wallet & withdrawals
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -31,7 +33,7 @@ import {
   mapTransactionToFeature,
   isEarningTransaction,
  TimeGranularity,
-} from './types/pack290-creator-analytics.types';
+} from './types/pack290-earner-analytics.types';
 import { WalletDataExtended } from './types/pack289-withdrawals.types';
 import { auth, functions } from './runtime';
 
@@ -109,14 +111,14 @@ function getStartOfWeek(date: Date): Date {
 // ============================================================================
 
 /**
- * Get earnings overview for a creator
+ * Get earnings overview for a earner
  * 
  * Returns:
  * - Total earned/withdrawn/current balance
  * - Earnings breakdown by feature
  * - Activity counts (chats, calls, bookings, etc.)
  */
-export const creator_analytics_overview = onCall(
+export const earner_analytics_overview = onCall(
   { cors: true },
   async (request): Promise<GetAnalyticsOverviewResponse> => {
     try {
@@ -259,7 +261,7 @@ export const creator_analytics_overview = onCall(
         data: overview,
       };
     } catch (error: any) {
-      console.error('[creator_analytics_overview] Error:', error);
+      console.error('[earner_analytics_overview] Error:', error);
       
       if (error instanceof HttpsError) {
         throw error;
@@ -319,7 +321,7 @@ function getEmptyOverview(fromDate: Date, toDate: Date): EarningsOverview {
 /**
  * Get time series data (daily or weekly breakdown)
  */
-export const creator_analytics_timeseries = onCall(
+export const earner_analytics_timeseries = onCall(
   { cors: true },
   async (request): Promise<GetTimeSeriesResponse> => {
     try {
@@ -366,7 +368,7 @@ export const creator_analytics_timeseries = onCall(
         data: timeSeriesData,
       };
     } catch (error: any) {
-      console.error('[creator_analytics_timeseries] Error:', error);
+      console.error('[earner_analytics_timeseries] Error:', error);
       
       if (error instanceof HttpsError) {
         throw error;
@@ -393,7 +395,7 @@ async function getTimeSeriesFromAggregatedData(
     const toDateStr = formatDate(toDate);
     
     const statsSnapshot = await db
-      .collection('creatorDailyStats')
+      .collection('earnerDailyStats')
       .where('userId', '==', userId)
       .where('date', '>=', fromDateStr)
       .where('date', '<=', toDateStr)
@@ -559,7 +561,7 @@ function getBucketDates(date: Date, granularity: TimeGranularity): { start: Date
 /**
  * Get payers analytics & retention data
  */
-export const creator_analytics_payers = onCall(
+export const earner_analytics_payers = onCall(
   { cors: true },
   async (request): Promise<GetPayersAnalyticsResponse> => {
     try {
@@ -667,7 +669,7 @@ export const creator_analytics_payers = onCall(
         data: payersData,
       };
     } catch (error: any) {
-      console.error('[creator_analytics_payers] Error:', error);
+      console.error('[earner_analytics_payers] Error:', error);
       
       if (error instanceof HttpsError) {
         throw error;
@@ -680,6 +682,20 @@ export const creator_analytics_payers = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

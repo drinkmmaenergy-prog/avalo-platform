@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 193 — Avalo Club Intelligence Architecture
  * Cloud Functions for smart community ranking system
@@ -316,7 +318,7 @@ export const createClubChallenge = functions.https.onCall(async (request) => {
     }
 
     const { clubId, title, description, type, difficulty, startDate, endDate } = data;
-    const creatorId = request.auth.uid;
+    const earnerId = request.auth.uid;
 
     try {
       if (isForbiddenChallengeType(type)) {
@@ -334,10 +336,10 @@ export const createClubChallenge = functions.https.onCall(async (request) => {
       }
 
       const clubData = clubSnap.data();
-      const isOwner = clubData?.ownerId === creatorId;
+      const isOwner = clubData?.ownerId === earnerId;
       const isModeratorSnap = await db
         .collection('club_moderators')
-        .doc(`${creatorId}_${clubId}`)
+        .doc(`${earnerId}_${clubId}`)
         .get();
       const isModerator = isModeratorSnap.exists && isModeratorSnap.data()?.isActive;
 
@@ -352,7 +354,7 @@ export const createClubChallenge = functions.https.onCall(async (request) => {
       const challenge: ClubChallenge = {
         challengeId,
         clubId,
-        createdBy: creatorId,
+        createdBy: earnerId,
         title,
         description,
         type: type as ChallengeType,
@@ -774,6 +776,20 @@ function calculateContributionDiversity(contributions: any[]): number {
 
   return (uniqueTypes / totalTypes) * 100;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

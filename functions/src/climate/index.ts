@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { onSchedule, onDocumentCreated } from '../runtime';
 import { db } from '../init';
@@ -245,7 +247,7 @@ export const appealContentDecision = functions.https.onCall(async (request) => {
     }
     
     await db.collection('climate_appeals').add({
-      creatorId: request.auth.uid,
+      earnerId: request.auth.uid,
       contentId,
       caseId,
       reason,
@@ -352,6 +354,22 @@ export const getClimateStatistics = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

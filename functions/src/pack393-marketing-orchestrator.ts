@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 393: Marketing Orchestration Engine
  * Central control system for global marketing campaigns
@@ -18,7 +20,7 @@ interface GeoMetrics {
   arpuByGeo: number;
   reviewRiskByGeo: number;
   fraudRiskByGeo: number;
-  creatorSupplyDemand: number;
+  earnerSupplyDemand: number;
   retentionRate: number;
   conversionRate: number;
 }
@@ -57,7 +59,7 @@ const GEO_TIERS = {
   },
   tier2: {
     countries: ['ES', 'IT', 'FR', 'NL'],
-    budgetWeight: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    budgetWeight: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
     targetCPA: 8.50,
     expectedARPU: 37.50,
     description: 'Core markets - Cultural localization focus'
@@ -84,7 +86,7 @@ type Channel = typeof CHANNELS[number];
 
 // Safety thresholds
 const SAFETY_THRESHOLDS: SafetyThresholds = {
-  reviewBombingRisk: MONETIZATION_SPLITS.CHAT.creator,
+  reviewBombingRisk: MONETIZATION_SPLITS.CHAT.earner,
   fraudProbability: 0.45,
   retentionRate: 0.12
 };
@@ -206,15 +208,15 @@ async function calculateGeoMetrics(geo: string): Promise<GeoMetrics> {
   // Get conversion rate
   const conversionRate = totalConversions > 0 ? (totalConversions / userCount) : 0;
   
-  // Creator supply/demand (placeholder - would integrate with creator discovery)
-  const creatorSupplyDemand = 1.0;
+  // Creator supply/demand (placeholder - would integrate with earner discovery)
+  const earnerSupplyDemand = 1.0;
   
   return {
     cpaByGeo,
     arpuByGeo,
     reviewRiskByGeo,
     fraudRiskByGeo,
-    creatorSupplyDemand,
+    earnerSupplyDemand,
     retentionRate,
     conversionRate
   };
@@ -626,6 +628,22 @@ export const pack393_getOrchestrationStatus = onCall(async (request) => {
     underperformingGeos: latestReport.underperformingGeos
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

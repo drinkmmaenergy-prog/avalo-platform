@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 104 — Anti-Ring & Anti-Collusion Detection
  * Notification Templates for Soft Restrictions
@@ -256,31 +258,45 @@ export function getHelpArticleForEnforcement(
       return {
         articleId: 'enforcement-visibility',
         articleTitle: 'Why was my account visibility reduced?',
-        url: 'https://help.avalo.app/enforcement/visibility-reduced',
+        url: 'https://help.platform.app/enforcement/visibility-reduced',
       };
     
     case 'MONETIZATION_THROTTLED':
       return {
         articleId: 'enforcement-throttled',
         articleTitle: 'Why are my features limited?',
-        url: 'https://help.avalo.app/enforcement/features-limited',
+        url: 'https://help.platform.app/enforcement/features-limited',
       };
     
     case 'MANUAL_REVIEW_REQUIRED':
       return {
         articleId: 'enforcement-review',
         articleTitle: 'Account under review',
-        url: 'https://help.avalo.app/enforcement/under-review',
+        url: 'https://help.platform.app/enforcement/under-review',
       };
     
     default:
       return {
         articleId: 'enforcement-general',
         articleTitle: 'Account enforcement',
-        url: 'https://help.avalo.app/enforcement',
+        url: 'https://help.platform.app/enforcement',
       };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 145 - Targeting Validator
  * Ethical Targeting Only
@@ -318,6 +320,20 @@ export class AdTargetingValidator {
     return maxScore > 0 ? (score / maxScore) * 100 : 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

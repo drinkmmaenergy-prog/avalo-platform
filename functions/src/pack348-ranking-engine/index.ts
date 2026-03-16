@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 348 — Ranking Engine Cloud Functions
  * 
@@ -14,8 +16,8 @@ const db = admin.firestore();
 const rankingService = new RankingService(db);
 
 /**
- * Calculate ranking for a specific creator
- * Called when creator metrics change
+ * Calculate ranking for a specific earner
+ * Called when earner metrics change
  */
 export const calculateCreatorRanking = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -41,7 +43,7 @@ export const calculateCreatorRanking = functions.https.onCall(async (request) =>
 });
 
 /**
- * Get ranked creators for discovery
+ * Get ranked earners for discovery
  */
 export const getRankedDiscovery = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -52,8 +54,8 @@ export const getRankedDiscovery = functions.https.onCall(async (request) => {
   const { countryCode, limit = 50 } = data;
 
   try {
-    const creators = await rankingService.getRankedCreatorsForDiscovery(countryCode, limit);
-    return { success: true, creators };
+    const earners = await rankingService.getRankedCreatorsForDiscovery(countryCode, limit);
+    return { success: true, earners };
   } catch (error) {
     console.error('Error getting ranked discovery:', error);
     throw new functions.https.HttpsError('internal', 'Failed to get ranked discovery');
@@ -301,6 +303,22 @@ export const onUserMetricsUpdate = onDocumentUpdated('users/{userId}', async (ev
       }
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

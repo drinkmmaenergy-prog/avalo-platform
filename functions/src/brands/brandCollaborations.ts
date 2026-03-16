@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { admin, db, serverTimestamp } from '../init';
 import * as functions from 'firebase-functions';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -5,11 +7,11 @@ import { FieldValue, HttpsError, auth, increment, onCall, timestamp } from '../r
 
 interface BrandCollaboration {
   brand_id: string;
-  creator_id: string;
-  type: 'sponsored_merch_drop' | 'licensed_collection' | 'creator_owned' | 'collab_bundle';
+  earner_id: string;
+  type: 'sponsored_merch_drop' | 'licensed_collection' | 'earner_owned' | 'collab_bundle';
   status: 'proposed' | 'approved' | 'active' | 'completed' | 'cancelled';
   terms?: {
-    revenue_split?: { brand: number; creator: number };
+    revenue_split?: { brand: number; earner: number };
     duration_days?: number;
     exclusivity?: boolean;
     minimum_sales?: number;
@@ -43,16 +45,16 @@ export const proposeCollaboration = functions.https.onCall(async (request) => {
       );
     }
 
-    const { brand_id, creator_id, type, terms, message } = data;
+    const { brand_id, earner_id, type, terms, message } = data;
 
-    if (!brand_id || !creator_id || !type) {
+    if (!brand_id || !earner_id || !type) {
       throw new functions.https.HttpsError(
         'invalid-argument',
-        'Brand ID, creator ID, and type are required'
+        'Brand ID, earner ID, and type are required'
       );
     }
 
-    const validTypes = ['sponsored_merch_drop', 'licensed_collection', 'creator_owned', 'collab_bundle'];
+    const validTypes = ['sponsored_merch_drop', 'licensed_collection', 'earner_owned', 'collab_bundle'];
     if (!validTypes.includes(type)) {
       throw new functions.https.HttpsError(
         'invalid-argument',
@@ -69,7 +71,7 @@ export const proposeCollaboration = functions.https.onCall(async (request) => {
     }
 
     const brandData = brandDoc.data();
-    if (brandData?.owner_id !== request.auth.uid && creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && earner_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to propose this collaboration'
@@ -87,7 +89,7 @@ export const proposeCollaboration = functions.https.onCall(async (request) => {
     const now = Timestamp.now();
     const collaboration: BrandCollaboration = {
       brand_id,
-      creator_id,
+      earner_id,
       type: type as any,
       status: 'proposed',
       created_at: now,
@@ -111,12 +113,12 @@ export const proposeCollaboration = functions.https.onCall(async (request) => {
       timestamp: now,
       metadata: {
         brand_id,
-        creator_id,
+        earner_id,
         type
       }
     });
 
-    const notifyUserId = brandData?.owner_id === request.auth.uid ? creator_id : brand_id;
+    const notifyUserId = brandData?.owner_id === request.auth.uid ? earner_id : brand_id;
     await db.collection('notifications').add({
       user_id: notifyUserId,
       type: 'collaboration_proposal',
@@ -178,7 +180,7 @@ export const approveCollaboration = functions.https.onCall(async (request) => {
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && collabData.earner_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to approve this collaboration'
@@ -204,7 +206,7 @@ export const approveCollaboration = functions.https.onCall(async (request) => {
     });
 
     const notifyUserId = brandData?.owner_id === request.auth.uid 
-      ? collabData.creator_id 
+      ? collabData.earner_id 
       : collabData.brand_id;
       
     await db.collection('notifications').add({
@@ -267,7 +269,7 @@ export const updateCollaborationStatus = functions.https.onCall(async (request) 
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && collabData.earner_id !== request.auth.uid) {
       throw new functions.https.HttpsError(
         'permission-denied',
         'Not authorized to update this collaboration'
@@ -326,7 +328,7 @@ export const getCollaboration = functions.https.onCall(async (request) => {
     const brandDoc = await db.collection('brand_profiles').doc(collabData.brand_id).get();
     const brandData = brandDoc.data();
 
-    if (brandData?.owner_id !== request.auth.uid && collabData.creator_id !== request.auth.uid) {
+    if (brandData?.owner_id !== request.auth.uid && collabData.earner_id !== request.auth.uid) {
       const isAdmin = await db.collection('admin_users').doc(request.auth.uid).get()
         .then(doc => doc.exists);
       if (!isAdmin) {
@@ -373,7 +375,7 @@ export const listUserCollaborations = functions.https.onCall(async (request) => 
     }
 
     let query = db.collection('brand_collaborations')
-      .where('creator_id', '==', user_id);
+      .where('earner_id', '==', user_id);
 
     if (status) {
       query = query.where('status', '==', status);
@@ -400,6 +402,22 @@ export const listUserCollaborations = functions.https.onCall(async (request) => 
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

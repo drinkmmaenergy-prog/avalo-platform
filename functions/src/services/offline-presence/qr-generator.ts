@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 135: QR Code Generator
  * Generates secure, dynamic QR codes for Avalo profiles
@@ -8,7 +10,7 @@ import { db, generateId } from '../../init';
 import { validateQRContent } from './moderation';
 
 export class QRGenerator {
-  private static readonly BASE_URL = process.env.AVALO_BASE_URL || 'https://avalo.app';
+  private static readonly BASE_URL = process.env.AVALO_BASE_URL || 'https://platform.app';
   private static readonly QR_API_URL = 'https://api.qrserver.com/v1/create-qr-code/';
 
   /**
@@ -153,7 +155,7 @@ export class QRGenerator {
   static validateQRUrl(url: string): boolean {
     try {
       const parsedUrl = new URL(url);
-      const allowedDomains = ['avalo.app', 'www.avalo.app', 'localhost'];
+      const allowedDomains = ['platform.app', 'www.platform.app', 'localhost'];
       return allowedDomains.some(domain => parsedUrl.hostname === domain);
     } catch {
       return false;
@@ -166,6 +168,22 @@ export const generateQRVariations = QRGenerator.generateQRVariations.bind(QRGene
 export const getOrCreateQRProfile = QRGenerator.getOrCreateQRProfile.bind(QRGenerator);
 export const regenerateQRProfile = QRGenerator.regenerateQRProfile.bind(QRGenerator);
 export const generateQRimageUrl = QRGenerator.generateQRimageUrl.bind(QRGenerator);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

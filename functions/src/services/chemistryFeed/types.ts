@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 208 — Chemistry Feed AI Types
  * Type definitions for adaptive attraction ranking
@@ -108,6 +110,22 @@ export interface AnalyticsEvent {
   metadata?: Record<string, any>;
   timestamp: Date;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

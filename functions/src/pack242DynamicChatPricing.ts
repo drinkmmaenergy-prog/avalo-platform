@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * @deprecated LEGACY — ELIMINATED by canonical-chat-engine.ts (v2_canonical)
  *
@@ -178,8 +180,8 @@ const CONSECUTIVE_DROP_MONTHS_FOR_LOCK = 3;
 const EARNINGS_DROP_THRESHOLD = 0.85; // If earnings < 85% of previous month
 
 // Revenue split (unchanged from base system)
-const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65%
-const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
+const EARNER_SHARE = MONETIZATION_SPLITS.CHAT.earner; // 65%
+const PLATFORM_SHARE = MONETIZATION_SPLITS.CHAT.platform; // 35%
 
 // ============================================================================
 // ELIGIBILITY EVALUATION
@@ -345,7 +347,7 @@ async function countUniquePaidChatPartners(userId: string): Promise<number> {
  */
 async function countCalendarBookings(userId: string): Promise<number> {
   const bookings = await db.collection('calendarBookings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', 'in', ['confirmed', 'completed'])
     .get();
   
@@ -818,6 +820,22 @@ export async function unlockPack242Pricing(
   
   return { success: true, message: 'Pricing unlocked successfully' };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Viral Surfaces (Non-Intrusive Sharing)
  * 
@@ -42,7 +44,7 @@ export type ShareStatus =
 
 export interface ViralShare {
   shareId: string;
-  creatorId: string;
+  earnerId: string;
   format: ShareFormat;
   platform: SharePlatform;
   status: ShareStatus;
@@ -64,7 +66,7 @@ export interface ViralShare {
 }
 
 export interface ViralShareStats {
-  creatorId: string;
+  earnerId: string;
   totalShares: number;
   sharesByFormat: {
     [key in ShareFormat]?: number;
@@ -83,11 +85,11 @@ export interface ViralShareStats {
 // ============================================================================
 
 /**
- * Generate creator card share
+ * Generate earner card share
  * Auto-safe image (no nudity)
  */
 export async function generateCreatorCardShare(data: {
-  creatorId: string;
+  earnerId: string;
   platform: SharePlatform;
   campaignName?: string;
 }): Promise<{
@@ -96,29 +98,29 @@ export async function generateCreatorCardShare(data: {
   sharUSDl: string;
   assetUrl: string;
 }> {
-  const { creatorId, platform, campaignName } = data;
+  const { earnerId, platform, campaignName } = data;
   
-  // Validate creator exists
-  const creatorSnap = await db.collection('users').doc(creatorId).get();
-  if (!creatorSnap.exists) {
+  // Validate earner exists
+  const earnerSnap = await db.collection('users').doc(earnerId).get();
+  if (!earnerSnap.exists) {
     throw new functions.https.HttpsError('not-found', 'Creator not found');
   }
   
-  const creator = creatorSnap.data();
+  const earner = earnerSnap.data();
   
   // Generate safe profile card asset
   // NOTE: In production, this would call an image generation service
   // that automatically filters NSFW content and creates branded cards
-  const assetUrl = `https://avalo.app/api/cards/${creatorId}?campaign=${campaignName || 'default'}`;
+  const assetUrl = `https://platform.app/api/cards/${earnerId}?campaign=${campaignName || 'default'}`;
   
   // Create share tracking document
   const shareId = generateId();
   const trackingId = generateId();
-  const sharUSDl = `https://avalo.app/c/${creatorId}?share=${trackingId}`;
+  const sharUSDl = `https://platform.app/c/${earnerId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
-    creatorId,
+    earnerId,
     format: 'CREATOR_CARD',
     platform,
     status: 'CREATED',
@@ -133,7 +135,7 @@ export async function generateCreatorCardShare(data: {
   await db.collection('viral_shares').doc(shareId).set(share);
   
   // Update stats (async, non-blocking)
-  updateShareStatsAsync(creatorId, 'CREATOR_CARD', platform).catch(() => {});
+  updateShareStatsAsync(earnerId, 'CREATOR_CARD', platform).catch(() => {});
   
   return {
     success: true,
@@ -147,7 +149,7 @@ export async function generateCreatorCardShare(data: {
  * Generate event poster share
  */
 export async function generateEventPosterShare(data: {
-  creatorId: string;
+  earnerId: string;
   eventId: string;
   platform: SharePlatform;
 }): Promise<{
@@ -156,32 +158,32 @@ export async function generateEventPosterShare(data: {
   sharUSDl: string;
   posterUrl: string;
 }> {
-  const { creatorId, eventId, platform } = data;
+  const { earnerId, eventId, platform } = data;
   
-  // Validate event exists and belongs to creator
+  // Validate event exists and belongs to earner
   const eventSnap = await db.collection('events').doc(eventId).get();
   if (!eventSnap.exists) {
     throw new functions.https.HttpsError('not-found', 'Event not found');
   }
   
-  if (eventSnap.data()?.creatorId !== creatorId) {
+  if (eventSnap.data()?.earnerId !== earnerId) {
     throw new functions.https.HttpsError(
       'permission-denied',
-      'Event does not belong to creator'
+      'Event does not belong to earner'
     );
   }
   
   // Generate event poster
-  const posterUrl = `https://avalo.app/api/posters/${eventId}`;
+  const posterUrl = `https://platform.app/api/posters/${eventId}`;
   
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const sharUSDl = `https://avalo.app/e/${eventId}?share=${trackingId}`;
+  const sharUSDl = `https://platform.app/e/${eventId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
-    creatorId,
+    earnerId,
     format: 'EVENT_POSTER',
     platform,
     status: 'CREATED',
@@ -196,7 +198,7 @@ export async function generateEventPosterShare(data: {
   await db.collection('viral_shares').doc(shareId).set(share);
   
   // Update stats (async, non-blocking)
-  updateShareStatsAsync(creatorId, 'EVENT_POSTER', platform).catch(() => {});
+  updateShareStatsAsync(earnerId, 'EVENT_POSTER', platform).catch(() => {});
   
   return {
     success: true,
@@ -210,7 +212,7 @@ export async function generateEventPosterShare(data: {
  * Generate AI companion share card
  */
 export async function generateAICompanionShare(data: {
-  creatorId: string;
+  earnerId: string;
   aiCompanionId: string;
   platform: SharePlatform;
 }): Promise<{
@@ -219,7 +221,7 @@ export async function generateAICompanionShare(data: {
   sharUSDl: string;
   avatarUrl: string;
 }> {
-  const { creatorId, aiCompanionId, platform } = data;
+  const { earnerId, aiCompanionId, platform } = data;
   
   // Validate AI companion exists
   const companionSnap = await db.collection('ai_companions').doc(aiCompanionId).get();
@@ -227,24 +229,24 @@ export async function generateAICompanionShare(data: {
     throw new functions.https.HttpsError('not-found', 'AI Companion not found');
   }
   
-  if (companionSnap.data()?.creatorId !== creatorId) {
+  if (companionSnap.data()?.earnerId !== earnerId) {
     throw new functions.https.HttpsError(
       'permission-denied',
-      'AI Companion does not belong to creator'
+      'AI Companion does not belong to earner'
     );
   }
   
   // Generate avatar card
-  const avatarUrl = `https://avalo.app/api/ai-cards/${aiCompanionId}`;
+  const avatarUrl = `https://platform.app/api/ai-cards/${aiCompanionId}`;
   
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const sharUSDl = `https://avalo.app/ai/${aiCompanionId}?share=${trackingId}`;
+  const sharUSDl = `https://platform.app/ai/${aiCompanionId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
-    creatorId,
+    earnerId,
     format: 'AI_COMPANION',
     platform,
     status: 'CREATED',
@@ -259,7 +261,7 @@ export async function generateAICompanionShare(data: {
   await db.collection('viral_shares').doc(shareId).set(share);
   
   // Update stats (async, non-blocking)
-  updateShareStatsAsync(creatorId, 'AI_COMPANION', platform).catch(() => {});
+  updateShareStatsAsync(earnerId, 'AI_COMPANION', platform).catch(() => {});
   
   return {
     success: true,
@@ -273,7 +275,7 @@ export async function generateAICompanionShare(data: {
  * Generate booking invite share
  */
 export async function generateBookingInviteShare(data: {
-  creatorId: string;
+  earnerId: string;
   bookingId: string;
   platform: SharePlatform;
   recipientId?: string;
@@ -282,7 +284,7 @@ export async function generateBookingInviteShare(data: {
   shareId: string;
   sharUSDl: string;
 }> {
-  const { creatorId, bookingId, platform, recipientId } = data;
+  const { earnerId, bookingId, platform, recipientId } = data;
   
   // Validate booking exists
   const bookingSnap = await db.collection('bookings').doc(bookingId).get();
@@ -290,21 +292,21 @@ export async function generateBookingInviteShare(data: {
     throw new functions.https.HttpsError('not-found', 'Booking not found');
   }
   
-  if (bookingSnap.data()?.creatorId !== creatorId) {
+  if (bookingSnap.data()?.earnerId !== earnerId) {
     throw new functions.https.HttpsError(
       'permission-denied',
-      'Booking does not belong to creator'
+      'Booking does not belong to earner'
     );
   }
   
   // Create share tracking
   const shareId = generateId();
   const trackingId = generateId();
-  const sharUSDl = `https://avalo.app/booking/${bookingId}?share=${trackingId}`;
+  const sharUSDl = `https://platform.app/booking/${bookingId}?share=${trackingId}`;
   
   const share: ViralShare = {
     shareId,
-    creatorId,
+    earnerId,
     format: 'BOOKING_INVITE',
     platform,
     status: 'CREATED',
@@ -319,7 +321,7 @@ export async function generateBookingInviteShare(data: {
   await db.collection('viral_shares').doc(shareId).set(share);
   
   // Update stats (async, non-blocking)
-  updateShareStatsAsync(creatorId, 'BOOKING_INVITE', platform).catch(() => {});
+  updateShareStatsAsync(earnerId, 'BOOKING_INVITE', platform).catch(() => {});
   
   return {
     success: true,
@@ -366,7 +368,7 @@ export async function trackShareOpen(data: {
     });
     
     // Update stats (async, non-blocking)
-    incrementShareOpenAsync(share.creatorId).catch(() => {});
+    incrementShareOpenAsync(share.earnerId).catch(() => {});
   }
   
   return { success: true };
@@ -405,7 +407,7 @@ export async function trackShareConversion(data: {
   });
   
   // Update stats (async, non-blocking)
-  incrementShareConversionAsync(share.creatorId).catch(() => {});
+  incrementShareConversionAsync(share.earnerId).catch(() => {});
   
   return { success: true };
 }
@@ -418,11 +420,11 @@ export async function trackShareConversion(data: {
  * Update share statistics
  */
 async function updateShareStatsAsync(
-  creatorId: string,
+  earnerId: string,
   format: ShareFormat,
   platform: SharePlatform
 ): Promise<void> {
-  const statsRef = db.collection('viral_share_stats').doc(creatorId);
+  const statsRef = db.collection('viral_share_stats').doc(earnerId);
   
   await db.runTransaction(async (transaction) => {
     const statsSnap = await transaction.get(statsRef);
@@ -430,7 +432,7 @@ async function updateShareStatsAsync(
     if (!statsSnap.exists) {
       // Create new stats
       const initialStats: ViralShareStats = {
-        creatorId,
+        earnerId,
         totalShares: 1,
         sharesByFormat: { [format]: 1 },
         sharesByPlatform: { [platform]: 1 },
@@ -455,40 +457,40 @@ async function updateShareStatsAsync(
 /**
  * Increment share opens counter
  */
-async function incrementShareOpenAsync(creatorId: string): Promise<void> {
-  const statsRef = db.collection('viral_share_stats').doc(creatorId);
+async function incrementShareOpenAsync(earnerId: string): Promise<void> {
+  const statsRef = db.collection('viral_share_stats').doc(earnerId);
   
   await statsRef.set({
-    creatorId,
+    earnerId,
     totalOpens: increment(1),
     updatedAt: serverTimestamp()
   }, { merge: true });
   
   // Recalculate conversion rate
-  recalculateShareConversionRate(creatorId).catch(() => {});
+  recalculateShareConversionRate(earnerId).catch(() => {});
 }
 
 /**
  * Increment share conversions counter
  */
-async function incrementShareConversionAsync(creatorId: string): Promise<void> {
-  const statsRef = db.collection('viral_share_stats').doc(creatorId);
+async function incrementShareConversionAsync(earnerId: string): Promise<void> {
+  const statsRef = db.collection('viral_share_stats').doc(earnerId);
   
   await statsRef.set({
-    creatorId,
+    earnerId,
     totalConversions: increment(1),
     updatedAt: serverTimestamp()
   }, { merge: true });
   
   // Recalculate conversion rate
-  recalculateShareConversionRate(creatorId).catch(() => {});
+  recalculateShareConversionRate(earnerId).catch(() => {});
 }
 
 /**
  * Recalculate conversion rate
  */
-async function recalculateShareConversionRate(creatorId: string): Promise<void> {
-  const statsRef = db.collection('viral_share_stats').doc(creatorId);
+async function recalculateShareConversionRate(earnerId: string): Promise<void> {
+  const statsRef = db.collection('viral_share_stats').doc(earnerId);
   const statsSnap = await statsRef.get();
   
   if (!statsSnap.exists) return;
@@ -509,14 +511,14 @@ async function recalculateShareConversionRate(creatorId: string): Promise<void> 
 // ============================================================================
 
 /**
- * Get creator's viral share stats
+ * Get earner's viral share stats
  */
 export async function getCreatorShareStats(data: {
-  creatorId: string;
+  earnerId: string;
 }): Promise<ViralShareStats | null> {
-  const { creatorId } = data;
+  const { earnerId } = data;
   
-  const statsSnap = await db.collection('viral_share_stats').doc(creatorId).get();
+  const statsSnap = await db.collection('viral_share_stats').doc(earnerId).get();
   
   if (!statsSnap.exists) {
     return null;
@@ -526,17 +528,17 @@ export async function getCreatorShareStats(data: {
 }
 
 /**
- * Get creator's share history
+ * Get earner's share history
  */
 export async function getCreatorShares(data: {
-  creatorId: string;
+  earnerId: string;
   limit?: number;
   format?: ShareFormat;
 }): Promise<ViralShare[]> {
-  const { creatorId, limit = 100, format } = data;
+  const { earnerId, limit = 100, format } = data;
   
   let query = db.collection('viral_shares')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('createdAt', 'desc')
     .limit(limit);
   
@@ -550,14 +552,14 @@ export async function getCreatorShares(data: {
 }
 
 /**
- * Get top performing share platforms for creator
+ * Get top performing share platforms for earner
  */
 export async function getTopSharePlatforms(data: {
-  creatorId: string;
+  earnerId: string;
 }): Promise<Array<{ platform: SharePlatform; shares: number }>> {
-  const { creatorId } = data;
+  const { earnerId } = data;
   
-  const stats = await getCreatorShareStats({ creatorId });
+  const stats = await getCreatorShareStats({ earnerId });
   
   if (!stats || !stats.sharesByPlatform) {
     return [];
@@ -580,6 +582,20 @@ export async function getTopSharePlatforms(data: {
  * - Share performance analytics
  * - Creator card, event poster, AI companion, booking invite formats
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

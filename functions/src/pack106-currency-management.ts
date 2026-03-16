@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 
 export function generateLocalizedStorefront(){
 return {currency:"USD"}
@@ -10,6 +12,20 @@ return {currency:"USD"}
 export function getEnabledCurrencies(){
 return ["USD"]
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

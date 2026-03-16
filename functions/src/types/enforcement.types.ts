@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 87 — Enforcement & Account State Machine
  * TypeScript types for enforcement system
@@ -226,6 +228,22 @@ export const DEFAULT_ENFORCEMENT_CONFIG: EnforcementConfig = {
     'AGGRESSIVE_SENDER': 'LOW',
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

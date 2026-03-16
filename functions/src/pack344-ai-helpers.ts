@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 344 — In-App AI Helpers
  * Message Suggestions · Anti Copy-Paste Guard · Discovery & Profile Coach
@@ -605,6 +607,20 @@ export const pack344_cleanupOldPatterns = onSchedule({ schedule: "0 2 * * *", ti
       console.error('[PACK 344] Error cleaning up patterns:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

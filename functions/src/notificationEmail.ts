@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 53 - Email Notification Delivery
  * Handles sending email notifications via SendGrid
@@ -48,7 +50,7 @@ export async function sendEmailNotification(notification: NotificationDocument):
     // Send email via SendGrid
     await sgMail.send({
       to: userEmail,
-      from: process.env.SENDGRID_FROM_EMAIL || "notifications@avalo.app",
+      from: process.env.SENDGRID_FROM_EMAIL || "notifications@platform.app",
       subject: notification.title,
       text: emailContent.text,
       html: emailContent.html,
@@ -68,9 +70,9 @@ function buildEmailContent(notification: NotificationDocument): { text: string; 
   const { title, body, type, context } = notification;
 
   // Build deep link URL if available
-  let actionUrl = "https://avalo.app";
+  let actionUrl = "https://platform.app";
   if (context?.deepLink) {
-    actionUrl = `https://avalo.app/${context.deepLink}`;
+    actionUrl = `https://platform.app/${context.deepLink}`;
   }
 
   // Text version
@@ -82,7 +84,7 @@ ${body}
 Open Avalo: ${actionUrl}
 
 ---
-To manage your notification preferences, visit: https://avalo.app/settings/notifications
+To manage your notification preferences, visit: https://platform.app/settings/notifications
   `.trim();
 
   // HTML version
@@ -110,7 +112,7 @@ To manage your notification preferences, visit: https://avalo.app/settings/notif
     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;">
     
     <p style="color: #999; font-size: 12px; text-align: center;">
-      <a href="https://avalo.app/settings/notifications" style="color: #667eea; text-decoration: none;">Manage notification preferences</a>
+      <a href="https://platform.app/settings/notifications" style="color: #667eea; text-decoration: none;">Manage notification preferences</a>
     </p>
   </div>
 </body>
@@ -119,6 +121,20 @@ To manage your notification preferences, visit: https://avalo.app/settings/notif
 
   return { text, html };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

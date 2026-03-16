@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 129 — Tax & Treasury Integration
  * Integration layer between tax calculation and treasury payout system
@@ -234,8 +236,8 @@ export async function processPayoutWithTax(
     // 2. Calculate tax
     const taxCalc = await calculateTaxForPayout(userId, requestedTokens);
 
-    // 3. Verify creator vault has sufficient balance (including withholding)
-    const vaultDoc = await db.collection('creator_vaults').doc(userId).get();
+    // 3. Verify earner vault has sufficient balance (including withholding)
+    const vaultDoc = await db.collection('earner_vaults').doc(userId).get();
     if (!vaultDoc.exists) {
       return {
         success: false,
@@ -452,6 +454,20 @@ export async function verifyTaxConsistency(userId: string): Promise<{
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

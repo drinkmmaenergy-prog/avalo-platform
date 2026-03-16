@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import { ConsentVerification } from './types';
 import { FieldValue, db, serverTimestamp, timestamp } from '../runtime';
@@ -190,6 +192,22 @@ export class ConsentVerificationEngine {
 }
 
 export const consentVerification = new ConsentVerificationEngine();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

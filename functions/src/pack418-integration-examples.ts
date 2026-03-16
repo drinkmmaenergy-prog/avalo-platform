@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 418 — Integration Examples
  * 
@@ -46,8 +48,8 @@ export async function exampleSpendTokensIntegration(
   // Create compliance context
   const tokenomicsCtx: TokenomicsContext = {
     type,
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
     transactionId: `txn_${Date.now()}`,
@@ -85,8 +87,8 @@ export async function exampleRequestPayoutIntegration(
   // Create tokenomics context
   const tokenomicsCtx: TokenomicsContext = {
     type: 'PAYOUT',
-    creatorShare: 1.0, // User gets 100% of their earned balance
-    avaloShare: 0.0,
+    earner: 1.0, // User gets 100% of their earned balance
+    platform: 0.0,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
   };
@@ -114,32 +116,32 @@ export async function exampleRequestPayoutIntegration(
 export async function examplePaidChatIntegration(
   senderId: string,
   senderAge: number,
-  creatorId: string,
-  creatorAge: number,
-  creatorIsVerified: boolean,
+  earnerId: string,
+  earnerAge: number,
+  earnerIsVerified: boolean,
   chatPrice: number
 ): Promise<void> {
   // Tokenomics context for chat
   const split = getRevenueSplit('CHAT');
   const tokenomicsCtx: TokenomicsContext = {
     type: 'CHAT',
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: senderId,
   };
   
-  // User context for creator (the one earning)
-  const creatorCtx: UserComplianceContext = {
-    userId: creatorId,
-    age: creatorAge,
-   isVerified: creatorIsVerified,
+  // User context for earner (the one earning)
+  const earnerCtx: UserComplianceContext = {
+    userId: earnerId,
+    age: earnerAge,
+   isVerified: earnerIsVerified,
     isEarning: true,
     hasActiveMeetingsOrEvents: false,
   };
   
   // GUARD: Validate chat monetization
-  await guardChatMonetization(tokenomicsCtx, creatorCtx);
+  await guardChatMonetization(tokenomicsCtx, earnerCtx);
   
   // Also check sender age (they must be 18+ to access paid chat)
   if (senderAge < 18) {
@@ -165,9 +167,9 @@ export async function examplePaidChatIntegration(
 export async function exampleMeetingBookingIntegration(
   fanId: string,
   fanAge: number,
-  creatorId: string,
-  creatorAge: number,
-  creatorIsVerified: boolean,
+  earnerId: string,
+  earnerAge: number,
+  earnerIsVerified: boolean,
   meetingPrice: number,
   meetingId: string
 ): Promise<void> {
@@ -175,25 +177,25 @@ export async function exampleMeetingBookingIntegration(
   const split = getRevenueSplit('MEETING');
   const tokenomicsCtx: TokenomicsContext = {
     type: 'MEETING',
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: fanId,
     transactionId: `meeting_${meetingId}`,
   };
   
-  // User context for creator
-  const creatorCtx: UserComplianceContext = {
-    userId: creatorId,
-    age: creatorAge,
-    isVerified: creatorIsVerified,
+  // User context for earner
+  const earnerCtx: UserComplianceContext = {
+    userId: earnerId,
+    age: earnerAge,
+    isVerified: earnerIsVerified,
     isEarning: true,
     hasActiveMeetingsOrEvents: true,
     entityId: meetingId,
   };
   
   // GUARD: Validate meeting booking
-  await guardMeetingBooking(tokenomicsCtx, creatorCtx);
+  await guardMeetingBooking(tokenomicsCtx, earnerCtx);
   
   // Also check fan age
   if (fanAge < 18) {
@@ -212,9 +214,9 @@ export async function exampleMeetingBookingIntegration(
 export async function exampleEventTicketingIntegration(
   attendeeId: string,
   attendeeAge: number,
-  creatorId: string,
-  creatorAge: number,
-  creatorIsVerified: boolean,
+  earnerId: string,
+  earnerAge: number,
+  earnerIsVerified: boolean,
   ticketPrice: number,
   eventId: string
 ): Promise<void> {
@@ -222,25 +224,25 @@ export async function exampleEventTicketingIntegration(
   const split = getRevenueSplit('EVENT');
   const tokenomicsCtx: TokenomicsContext = {
     type: 'EVENT',
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: attendeeId,
     transactionId: `event_${eventId}`,
   };
   
-  // User context for creator
-  const creatorCtx: UserComplianceContext = {
-    userId: creatorId,
-    age: creatorAge,
-    isVerified: creatorIsVerified,
+  // User context for earner
+  const earnerCtx: UserComplianceContext = {
+    userId: earnerId,
+    age: earnerAge,
+    isVerified: earnerIsVerified,
     isEarning: true,
     hasActiveMeetingsOrEvents: true,
     entityId: eventId,
   };
   
   // GUARD: Validate event ticketing
-  await guardEventTicketing(tokenomicsCtx, creatorCtx);
+  await guardEventTicketing(tokenomicsCtx, earnerCtx);
   
   // Also check attendee age
   if (attendeeAge < 18) {
@@ -269,8 +271,8 @@ export async function exampleAICompanionIntegration(
   const split = getRevenueSplit('AI_COMPANION');
   const tokenomicsCtx: TokenomicsContext = {
     type: 'AI_COMPANION',
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId,
     transactionId: `ai_${aiCharacterId}_${Date.now()}`,
@@ -295,32 +297,32 @@ export async function exampleAICompanionIntegration(
 export async function exampleTipIntegration(
   fanId: string,
   fanAge: number,
-  creatorId: string,
-  creatorAge: number,
-  creatorIsVerified: boolean,
+  earnerId: string,
+  earnerAge: number,
+  earnerIsVerified: boolean,
   tipAmount: number
 ): Promise<void> {
   // Tokenomics context for tip
   const split = getRevenueSplit('TIP');
   const tokenomicsCtx: TokenomicsContext = {
     type: 'TIP',
-    creatorShare: split.creator,
-    avaloShare: split.avalo,
+    earner: split.earner,
+    platform: split.platform,
     payoutRateUSDPerToken: TOKEN_TOKEN_PAYOUT_USD,
     userId: fanId,
   };
   
-  // User context for creator
-  const creatorCtx: UserComplianceContext = {
-    userId: creatorId,
-    age: creatorAge,
-    isVerified: creatorIsVerified,
+  // User context for earner
+  const earnerCtx: UserComplianceContext = {
+    userId: earnerId,
+    age: earnerAge,
+    isVerified: earnerIsVerified,
     isEarning: true,
     hasActiveMeetingsOrEvents: false,
   };
   
   // GUARD: Validate tip flow
-  await guardTipFlow(tokenomicsCtx, creatorCtx);
+  await guardTipFlow(tokenomicsCtx, earnerCtx);
   
   console.log(`✅ Tip compliance check passed`);
   // ... rest of tip logic
@@ -351,9 +353,9 @@ export async function exampleManualRefundIntegration(
     // (except for calendar meetings which have special exception)
     if (originalType !== 'MEETING') {
       console.warn(`⚠️ Full refund requested for ${originalType} - Avalo share should not be refunded`);
-      // Adjust refund to only include creator's share
-      const adjustedRefund = refundAmount * split.creator;
-      console.log(`Adjusted refund: ${adjustedRefund} tokens (creator share only)`);
+      // Adjust refund to only include earner's share
+      const adjustedRefund = refundAmount * split.earner;
+      console.log(`Adjusted refund: ${adjustedRefund} tokens (earner share only)`);
     }
   }
   
@@ -398,6 +400,21 @@ export async function exampleManualRefundIntegration(
  *    ✓ MUST call appropriate guard function
  *    ✓ MUST NOT hard-code splits or rates
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

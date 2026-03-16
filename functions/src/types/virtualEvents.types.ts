@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 118 — Virtual Events / Live Classes Type Definitions
  * 
@@ -330,7 +332,7 @@ export function calculateEventRevenueSplit(priceTokens: number): {
   platformFee: number;
   hostEarnings: number;
 } {
-  const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
+  const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;
   const platformFee = Math.floor(priceTokens * PLATFORM_FEE_PERCENTAGE);
   const hostEarnings = priceTokens - platformFee;
   
@@ -453,6 +455,23 @@ export interface ModeratorActionRequest {
   targetUserId?: string;            // Required except for END_SESSION
   reason?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

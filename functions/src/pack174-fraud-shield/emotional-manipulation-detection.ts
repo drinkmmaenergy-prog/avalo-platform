@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 174 - Emotional Manipulation Detection
  * Detect emotional manipulation tied to spending
@@ -343,6 +345,22 @@ async function checkIsAdmin(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.exists && userDoc.data()?.role === 'admin';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

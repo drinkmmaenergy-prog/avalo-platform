@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 346 — Creator KPI Updater
- * Tracks and updates creator performance metrics
+ * Tracks and updates earner performance metrics
  */
 
 import * as functions from "firebase-functions";
@@ -10,7 +12,7 @@ import { CreatorKPI } from "./pack346-types";
 import { HttpsError, admin, auth, onCall, onSchedule, onDocumentCreated, onDocumentUpdated } from './runtime';
 
 /**
- * Update creator KPI on chat completion
+ * Update earner KPI on chat completion
  */
 export const updateCreatorKPIOnChat = onDocumentUpdated("chats/{chatId}", async (event) => {
   const change = event.data;
@@ -34,7 +36,7 @@ export const updateCreatorKPIOnChat = onDocumentUpdated("chats/{chatId}", async 
   });
 
 /**
- * Update creator KPI on call completion
+ * Update earner KPI on call completion
  */
 export const updateCreatorKPIOnCall = onDocumentUpdated("calls/{callId}", async (event) => {
   const change = event.data;
@@ -44,10 +46,10 @@ export const updateCreatorKPIOnCall = onDocumentUpdated("calls/{callId}", async 
 
     // Only trigger on call completion
     if (before.status !== "completed" && after.status === "completed") {
-      const creatorId = after.creatorId;
+      const earnerId = after.earnerId;
       
-      if (creatorId) {
-        await incrementCreatorMetric(creatorId, {
+      if (earnerId) {
+        await incrementCreatorMetric(earnerId, {
           totalCalls: 1,
           earningsUSD: after.totalEarnings || 0,
         });
@@ -58,7 +60,7 @@ export const updateCreatorKPIOnCall = onDocumentUpdated("calls/{callId}", async 
   });
 
 /**
- * Update creator KPI on calendar booking
+ * Update earner KPI on calendar booking
  */
 export const updateCreatorKPIOnBooking = onDocumentUpdated("calendarBookings/{bookingId}", async (event) => {
   const change = event.data;
@@ -66,89 +68,89 @@ export const updateCreatorKPIOnBooking = onDocumentUpdated("calendarBookings/{bo
     const before = change.before.data();
     const after = change.after.data();
 
-    const creatorId = after.creatorId;
+    const earnerId = after.earnerId;
     
-    if (!creatorId) {
+    if (!earnerId) {
       return null;
     }
 
     // Track completion
     if (before.status !== "completed" && after.status === "completed") {
-      await incrementCreatorMetric(creatorId, {
+      await incrementCreatorMetric(earnerId, {
         totalCalendar: 1,
-        earningsUSD: after.creatorEarnings || 0,
+        earningsUSD: after.earnerEarnings || 0,
       });
     }
 
     // Track cancellation rate
-    if (before.status !== "cancelled_by_creator" && after.status === "cancelled_by_creator") {
-      await incrementCreatorMetric(creatorId, {
+    if (before.status !== "cancelled_by_earner" && after.status === "cancelled_by_earner") {
+      await incrementCreatorMetric(earnerId, {
         totalCalendar: 1, // Count towards total
       });
       
       // Recalculate cancel rate
-      await recalculateCreatorRates(creatorId);
+      await recalculateCreatorRates(earnerId);
     }
 
     return null;
   });
 
 /**
- * Update creator KPI on refund
+ * Update earner KPI on refund
  */
 export const updateCreatorKPIOnRefund = onDocumentCreated("refunds/{refundId}", async (event) => {
   const snap = event.data;
   if (!snap) return;
     const refund = snap.data();
-    const creatorId = refund.creatorId;
+    const earnerId = refund.earnerId;
 
-    if (creatorId) {
-      await recalculateCreatorRates(creatorId);
+    if (earnerId) {
+      await recalculateCreatorRates(earnerId);
     }
 
     return null;
   });
 
 /**
- * Update creator KPI on safety event
+ * Update earner KPI on safety event
  */
 export const updateCreatorKPIOnSafety = onDocumentCreated("safetyEvents/{eventId}", async (event) => {
   const snap = event.data;
   if (!snap) return;
     const eventData = snap.data();
-    const creatorId = eventData.reportedUser;
+    const earnerId = eventData.reportedUser;
 
-    if (!creatorId) {
+    if (!earnerId) {
       return null;
     }
 
     // Track panic rate
     if (eventData.type === "panic_button") {
-      await incrementCreatorMetric(creatorId, {
+      await incrementCreatorMetric(earnerId, {
         reportCount: 1,
       });
-      await recalculateCreatorRates(creatorId);
+      await recalculateCreatorRates(earnerId);
     }
 
     // Track mismatch rate
     if (eventData.type === "selfie_mismatch") {
-      await incrementCreatorMetric(creatorId, {
+      await incrementCreatorMetric(earnerId, {
         reportCount: 1,
       });
-      await recalculateCreatorRates(creatorId);
+      await recalculateCreatorRates(earnerId);
     }
 
     return null;
   });
 
 /**
- * Increment creator metrics
+ * Increment earner metrics
  */
 async function incrementCreatorMetric(
-  creatorId: string,
+  earnerId: string,
   increments: Partial<Record<keyof CreatorKPI, number>>
 ): Promise<void> {
-  const kpiRef = db.collection("creators").doc(creatorId).collection("kpi").doc("current");
+  const kpiRef = db.collection("earners").doc(earnerId).collection("kpi").doc("current");
 
   const updates: any = {
     updatedAt: serverTimestamp(),
@@ -162,16 +164,16 @@ async function incrementCreatorMetric(
 }
 
 /**
- * Recalculate creator rates (refund rate, cancel rate, etc.)
+ * Recalculate earner rates (refund rate, cancel rate, etc.)
  */
-async function recalculateCreatorRates(creatorId: string): Promise<void> {
-  const kpiRef = db.collection("creators").doc(creatorId).collection("kpi").doc("current");
+async function recalculateCreatorRates(earnerId: string): Promise<void> {
+  const kpiRef = db.collection("earners").doc(earnerId).collection("kpi").doc("current");
   const kpiSnap = await kpiRef.get();
 
   if (!kpiSnap.exists) {
     // Initialize if not exists
     await kpiRef.set({
-      creatorId,
+      earnerId,
       totalChats: 0,
       totalCalls: 0,
       totalCalendar: 0,
@@ -208,7 +210,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
 
   const refundsSnap = await db
     .collection("refunds")
-    .where("creatorId", "==", creatorId)
+    .where("earnerId", "==", earnerId)
     .where("createdAt", ">=", thirtyDaysAgo)
     .where("status", "==", "completed")
     .count()
@@ -221,7 +223,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
   // Calculate cancel rate
   const bookingsSnap = await db
     .collection("calendarBookings")
-    .where("creatorId", "==", creatorId)
+    .where("earnerId", "==", earnerId)
     .where("createdAt", ">=", thirtyDaysAgo)
     .get();
 
@@ -230,7 +232,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
 
   bookingsSnap.forEach((doc) => {
     totalBookings++;
-    if (doc.data().status === "cancelled_by_creator") {
+    if (doc.data().status === "cancelled_by_earner") {
       cancelledBookings++;
     }
   });
@@ -241,7 +243,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
   const panicSnap = await db
     .collection("safetyEvents")
     .where("type", "==", "panic_button")
-    .where("reportedUser", "==", creatorId)
+    .where("reportedUser", "==", earnerId)
     .where("createdAt", ">=", thirtyDaysAgo)
     .count()
     .get();
@@ -253,7 +255,7 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
   const mismatchSnap = await db
     .collection("safetyEvents")
     .where("type", "==", "selfie_mismatch")
-    .where("reportedUser", "==", creatorId)
+    .where("reportedUser", "==", earnerId)
     .where("createdAt", ">=", thirtyDaysAgo)
     .count()
     .get();
@@ -282,32 +284,32 @@ async function recalculateCreatorRates(creatorId: string): Promise<void> {
 }
 
 /**
- * Scheduled daily creator KPI refresh
+ * Scheduled daily earner KPI refresh
  */
 export const refreshCreatorKPIs = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
-    // Get all creators
-    const creatorsSnap = await db
+    // Get all earners
+    const earnersSnap = await db
       .collection("users")
       .where("modes.earnFromChat", "==", true)
       .get();
 
     let processed = 0;
 
-    for (const creatorDoc of creatorsSnap.docs) {
+    for (const earnerDoc of earnersSnap.docs) {
       try {
-        await recalculateCreatorRates(creatorDoc.id);
+        await recalculateCreatorRates(earnerDoc.id);
         processed++;
       } catch (error) {
-        console.error(`Failed to refresh KPI for creator ${creatorDoc.id}:`, error);
+        console.error(`Failed to refresh KPI for earner ${earnerDoc.id}:`, error);
       }
     }
 
-    console.log(`Refreshed KPIs for ${processed} creators`);
+    console.log(`Refreshed KPIs for ${processed} earners`);
     // Scheduler functions must return void
   });
 
 /**
- * Get creator KPI (callable function)
+ * Get earner KPI (callable function)
  */
 export const getCreatorKPI = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -318,9 +320,9 @@ export const getCreatorKPI = functions.https.onCall(async (request) => {
       );
     }
 
-    const { creatorId } = data;
+    const { earnerId } = data;
 
-    if (!creatorId) {
+    if (!earnerId) {
       throw new functions.https.HttpsError(
         "invalid-argument",
         "Creator ID is required"
@@ -328,8 +330,8 @@ export const getCreatorKPI = functions.https.onCall(async (request) => {
     }
 
     const kpiSnap = await db
-      .collection("creators")
-      .doc(creatorId)
+      .collection("earners")
+      .doc(earnerId)
       .collection("kpi")
       .doc("current")
       .get();
@@ -341,6 +343,20 @@ export const getCreatorKPI = functions.https.onCall(async (request) => {
     return kpiSnap.data();
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

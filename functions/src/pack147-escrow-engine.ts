@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 147 — Escrow Engine
  * 
@@ -27,8 +29,8 @@ import { admin, functions } from './runtime';
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
-const RECIPIENT_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;
+const RECIPIENT_PERCENTAGE = MONETIZATION_SPLITS.CHAT.earner;
 
 // ============================================================================
 // ESCROW FUNCTIONS
@@ -305,7 +307,7 @@ export async function refundEscrow(
     if (refundAmount < escrow.totalAmount) {
       const remainingAmount = escrow.totalAmount - refundAmount;
       const recipientShare = Math.floor(remainingAmount * RECIPIENT_PERCENTAGE);
-      const platformShare = remainingAmount - recipientShare;
+      const platform = remainingAmount - recipientShare;
       
       // Credit recipient with their share of remainder
       const recipientRef = db.collection('users').doc(escrow.recipientId);
@@ -318,7 +320,7 @@ export async function refundEscrow(
       // Credit platform with their share
       const platformRef = db.collection('platform_wallet').doc('earnings');
       transaction.set(platformRef, {
-        balance: FieldValue.increment(platformShare),
+        balance: FieldValue.increment(platform),
         updatedAt: serverTimestamp()
       }, { merge: true });
     }
@@ -495,6 +497,22 @@ export async function getUserEscrowBalance(userId: string): Promise<{
     asRecipientCount: recipientSnapshot.size
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

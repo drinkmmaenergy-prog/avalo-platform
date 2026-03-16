@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 402 — Global KPI & Monitoring Engine
  * 
@@ -62,7 +64,7 @@ export interface EngagementKpi {
 
 /**
  * Revenue & Tokenomics KPIs
- * Tracks token purchases, spending, creator earnings, payouts, paying users
+ * Tracks token purchases, spending, earner earnings, payouts, paying users
  */
 export interface RevenueKpi {
   key: KpiKey;
@@ -72,8 +74,8 @@ export interface RevenueKpi {
   tokenPurchasedTotal: number;
 
   tokensSpentTotal: number;
-  creatorEarningsTokens: number;
-  avaloRevenueTokens: number;
+  earnerEarningsTokens: number;
+  platformRevenueTokens: number;
 
   payoutsRequestedTokens: number;
   payoutsApprovedTokens: number;
@@ -167,6 +169,20 @@ export const KPI_COLLECTIONS = {
   safety: 'kpiSafety',
   support: 'kpiSupport',
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

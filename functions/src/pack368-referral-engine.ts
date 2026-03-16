@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 368 — Viral Referral & Invite Engine
  * Core referral processing engine
@@ -47,7 +49,7 @@ export async function generateInviteCode(userId: string): Promise<{
 
     // Generate unique code
     const inviteCode = generateUniqueCode(8);
-    const inviteLink = `https://avalo.app/invite/${inviteCode}`;
+    const inviteLink = `https://platform.app/invite/${inviteCode}`;
     const qrInvitePayload = JSON.stringify({
       code: inviteCode,
       userId,
@@ -533,6 +535,20 @@ export async function getReferralStats(
     return null;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

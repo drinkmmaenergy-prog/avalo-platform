@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 303 — Statement Export Service
  * 
  * Handles PDF and CSV generation for monthly statements
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -13,7 +15,7 @@ import {
   ExportStatementRequest,
   ExportStatementResponse,
   STATEMENT_EXPORT_CONFIG,
-} from './types/pack303-creator-earnings.types';
+} from './types/pack303-earner-earnings.types';
 import { getMonthlyStatement, logStatementAudit } from './pack303-earnings-service';
 
 // ============================================================================
@@ -434,6 +436,20 @@ export async function exportStatement(
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

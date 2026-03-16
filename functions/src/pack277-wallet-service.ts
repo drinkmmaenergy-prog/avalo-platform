@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 277 — Unified Wallet Service (Enhanced with PACK 321)
  * Core wallet operations: spend, earn, refund, payout
@@ -38,18 +40,18 @@ export function getWalletSplitForContext(
     case 'CALL_VIDEO':
     case 'AI_SESSION':
     case 'MEDIA_PURCHASE':
-      return { platformShare: MONETIZATION_SPLITS.CHAT.avalo, earnerShare: MONETIZATION_SPLITS.CHAT.creator };
+      return { platform: MONETIZATION_SPLITS.CHAT.platform, earner: MONETIZATION_SPLITS.CHAT.earner };
     
     case 'CALENDAR_BOOKING':
     case 'EVENT_TICKET':
-      return { platformShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo, earnerShare: MONETIZATION_SPLITS.EVENT_TICKET.creator };
+      return { platform: MONETIZATION_SPLITS.EVENT_TICKET.platform, earner: MONETIZATION_SPLITS.EVENT_TICKET.earner };
     
     case 'TIP':
-      return { platformShare: 0.10, earnerShare: 0.90 };
+      return { platform: 0.10, earner: 0.90 };
     
     case 'AVALO_ONLY_REVENUE':
     case 'AVALO_ONLY_VIDEO':
-      return { platformShare: 1.0, earnerShare: 0.0 };
+      return { platform: 1.0, earner: 0.0 };
     
     default:
       throw new Error(`Unsupported WalletRevenueContextType: ${ctx}`);
@@ -58,13 +60,13 @@ export function getWalletSplitForContext(
 
 // Legacy revenue split (deprecated, kept for backward compatibility)
 const REVENUE_SPLIT = {
-  CHAT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  CALL: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  CALENDAR: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  EVENT: { creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, avalo: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  TIP: { creator: 0.90, avalo: 0.10 },
-  MEDIA: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
-  DIGITAL_PRODUCT: { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo },
+  CHAT: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CALL: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  CALENDAR: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  EVENT: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  TIP: { earner: 0.90, platform: 0.10 },
+  MEDIA: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  DIGITAL_PRODUCT: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
 };
 
 // ============================================================================
@@ -75,8 +77,8 @@ const REVENUE_SPLIT = {
  * Get revenue split for transaction source (LEGACY)
  * Use getWalletSplitForContext for new code
  */
-function getRevenueSplit(source: TransactionSource): { creator: number; avalo: number } {
-  return REVENUE_SPLIT[source] || { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo };
+function getRevenueSplit(source: TransactionSource): { earner: number; platform: number } {
+  return REVENUE_SPLIT[source] || { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform };
 }
 
 /**
@@ -159,7 +161,7 @@ export async function spendTokens(
     amountTokens,
     source,
     relatedId,
-    creatorId,
+    earnerId,
     metadata = {},
     contextType,
     contextRef
@@ -175,7 +177,7 @@ export async function spendTokens(
   // PACK 321: Handle AVALO_ONLY_REVENUE/VIDEO context (no earner required)
   const isAvaloOnlyRevenue = contextType === 'AVALO_ONLY_REVENUE' || contextType === 'AVALO_ONLY_VIDEO';
   
-  if (!creatorId && !isAvaloOnlyRevenue && !['TIP', 'EVENT'].includes(source)) {
+  if (!earnerId && !isAvaloOnlyRevenue && !['TIP', 'EVENT'].includes(source)) {
     return {
       success: false,
       error: 'Creator ID required for this transaction type',
@@ -184,8 +186,8 @@ export async function spendTokens(
 
   try {
     await ensureWallet(userId);
-    if (creatorId) {
-      await ensureWallet(creatorId);
+    if (earnerId) {
+      await ensureWallet(earnerId);
     }
 
     // Run transaction atomically
@@ -211,49 +213,49 @@ export async function spendTokens(
         lastUpdated: serverTimestamp(),
       });
 
-      let creatorEarned = 0;
-      let avaloShare = 0;
+      let earnerEarned = 0;
+      let platform = 0;
 
       // PACK 321: Use context-based split if provided, otherwise fall back to legacy
       if (contextType) {
         const split = getWalletSplitForContext(contextType);
-        creatorEarned = Math.floor(amountTokens * split.earnerShare);
-        avaloShare = amountTokens - creatorEarned;
+        earnerEarned = Math.floor(amountTokens * split.earner);
+        platform = amountTokens - earnerEarned;
 
         // Only credit earner if there's an earner share
-        if (creatorId && split.earnerShare > 0) {
-          const creatorWalletRef = db.collection('wallets').doc(creatorId);
-          const creatorDoc = await transaction.get(creatorWalletRef);
-          const creatorWallet = creatorDoc.data() as WalletData;
+        if (earnerId && split.earner > 0) {
+          const earnerWalletRef = db.collection('wallets').doc(earnerId);
+          const earnerDoc = await transaction.get(earnerWalletRef);
+          const earnerWallet = earnerDoc.data() as WalletData;
 
-          transaction.update(creatorWalletRef, {
-            tokensBalance: creatorWallet.tokensBalance + creatorEarned,
-            lifetimeEarnedTokens: FieldValue.increment(creatorEarned),
+          transaction.update(earnerWalletRef, {
+            tokensBalance: earnerWallet.tokensBalance + earnerEarned,
+            lifetimeEarnedTokens: FieldValue.increment(earnerEarned),
             lastUpdated: serverTimestamp(),
           });
         }
-      } else if (creatorId) {
+      } else if (earnerId) {
         // Legacy split logic for backward compatibility
         const split = getRevenueSplit(source);
-        creatorEarned = Math.floor(amountTokens * split.creator);
-        avaloShare = amountTokens - creatorEarned;
+        earnerEarned = Math.floor(amountTokens * split.earner);
+        platform = amountTokens - earnerEarned;
 
-        const creatorWalletRef = db.collection('wallets').doc(creatorId);
-        const creatorDoc = await transaction.get(creatorWalletRef);
-        const creatorWallet = creatorDoc.data() as WalletData;
+        const earnerWalletRef = db.collection('wallets').doc(earnerId);
+        const earnerDoc = await transaction.get(earnerWalletRef);
+        const earnerWallet = earnerDoc.data() as WalletData;
 
-        transaction.update(creatorWalletRef, {
-          tokensBalance: creatorWallet.tokensBalance + creatorEarned,
-          lifetimeEarnedTokens: FieldValue.increment(creatorEarned),
+        transaction.update(earnerWalletRef, {
+          tokensBalance: earnerWallet.tokensBalance + earnerEarned,
+          lifetimeEarnedTokens: FieldValue.increment(earnerEarned),
           lastUpdated: serverTimestamp(),
         });
       }
 
       // Always track Avalo's platform revenue
-      if (avaloShare > 0) {
+      if (platform > 0) {
         const revenueRef = db.collection('platformRevenue').doc('total');
         transaction.set(revenueRef, {
-          totalRevenue: FieldValue.increment(avaloShare),
+          totalRevenue: FieldValue.increment(platform),
           lastUpdated: serverTimestamp(),
         }, { merge: true });
       }
@@ -261,8 +263,8 @@ export async function spendTokens(
       return {
         beforeBalance,
         afterBalance,
-        creatorEarned,
-        avaloShare,
+        earnerEarned,
+        platform,
       };
     });
 
@@ -276,29 +278,29 @@ export async function spendTokens(
       result.afterBalance,
       {
         relatedId,
-        creatorId,
+        earnerId,
         contextType,
         contextRef,
-        split: (creatorId || contextType) ? {
-          creatorAmount: result.creatorEarned,
-          avaloAmount: result.avaloShare,
+        split: (earnerId || contextType) ? {
+          earnerAmount: result.earnerEarned,
+          platformAmount: result.platform,
           splitPercent: contextType
-            ? getWalletSplitForContext(contextType).earnerShare * 100
-            : getRevenueSplit(source).creator * 100,
+            ? getWalletSplitForContext(contextType).earner * 100
+            : getRevenueSplit(source).earner * 100,
         } : undefined,
         ...metadata,
       }
     );
 
-    // Create earning transaction for creator
-    if (creatorId && result.creatorEarned > 0) {
+    // Create earning transaction for earner
+    if (earnerId && result.earnerEarned > 0) {
       await createTransaction(
-        creatorId,
+        earnerId,
         'EARN',
         source,
-        result.creatorEarned,
+        result.earnerEarned,
         result.beforeBalance,
-        result.afterBalance + result.creatorEarned,
+        result.afterBalance + result.earnerEarned,
         {
           relatedId,
           payerId: userId,
@@ -313,8 +315,8 @@ export async function spendTokens(
       success: true,
       txId,
       newBalance: result.afterBalance,
-      creatorEarned: result.creatorEarned,
-      avaloShare: result.avaloShare,
+      earnerEarned: result.earnerEarned,
+      platform: result.platform,
     };
   } catch (error: any) {
     if (error.message === 'INSUFFICIENT_FUNDS') {
@@ -458,7 +460,7 @@ export async function refundTokens(
       // If platform share should be refunded, deduct from both earner and platform
       if (shouldRefundPlatformShare && contextType && earnerUserId) {
         const split = getWalletSplitForContext(contextType);
-        earnerDeduction = Math.floor(amountTokens * split.earnerShare);
+        earnerDeduction = Math.floor(amountTokens * split.earner);
         platformDeduction = amountTokens - earnerDeduction;
 
         // Deduct from earner wallet
@@ -571,6 +573,22 @@ export async function getTransactionHistory(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

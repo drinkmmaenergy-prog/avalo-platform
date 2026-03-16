@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 288 — Token Store & Purchases Types
  * 
@@ -385,6 +387,22 @@ export function isValidCurrency(currency: string): boolean {
   const validCurrencies = ['USD', 'USD', 'USD', 'USD'];
   return validCurrencies.includes(currency);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

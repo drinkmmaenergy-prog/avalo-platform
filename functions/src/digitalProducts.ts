@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 116: CREATOR DIGITAL PRODUCT SALES (SAFE CONTENT ONLY)
@@ -8,7 +10,7 @@
  * STRICT RULES:
  * - NO NSFW content allowed
  * - All purchases use Avalo tokens (no fiat bypass)
- * - 65% creator / 35% Avalo split (fixed, no discounts)
+ * - 65% earner / 35% Avalo split (fixed, no discounts)
  * - No external payment links or DM selling
  * - Full encryption + watermarking
  * - AI content scanning required
@@ -51,9 +53,9 @@ export enum ProductCategory {
 
 export interface DigitalProduct {
   productId: string;
-  creatorUserId: string;
-  creatorName: string;
-  creatorAvatar?: string;
+  earnerUserId: string;
+  earnerName: string;
+  earnerAvatar?: string;
   
   title: string;
   description: string;
@@ -85,12 +87,12 @@ export interface DigitalProductPurchase {
   buyerUserId: string;
   buyerName: string;
   
-  creatorUserId: string;
-  creatorName: string;
+  earnerUserId: string;
+  earnerName: string;
   
   tokensAmount: number;
   platformFee: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
   
   downloadUrl?: string;
   downloadUrlExpiry?: Timestamp;
@@ -110,8 +112,8 @@ export interface DigitalProductPurchase {
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
-const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;
+const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.earner;
 const MIN_PRODUCT_PRICE = 10;
 const MAX_PRODUCT_PRICE = 10000;
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
@@ -166,11 +168,11 @@ function validatePrice(price: number): void {
 
 function calculateRevenueSplit(priceTokens: number): {
   platformFee: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
 } {
   const platformFee = Math.floor(priceTokens * PLATFORM_FEE_PERCENTAGE);
-  const creatorEarnings = priceTokens - platformFee;
-  return { platformFee, creatorEarnings };
+  const earnerEarnings = priceTokens - platformFee;
+  return { platformFee, earnerEarnings };
 }
 
 function generateWatermarkId(buyerId: string, timestamp: number): string {
@@ -233,7 +235,7 @@ export const createDigitalProduct = onCall(
     if (!(await isVerifiedCreator(uid))) {
       throw new HttpsError(
         'permission-denied',
-        'Only verified creators can sell digital products'
+        'Only verified earners can sell digital products'
       );
     }
     
@@ -276,9 +278,9 @@ export const createDigitalProduct = onCall(
     
     const product: DigitalProduct = {
       productId,
-      creatorUserId: uid,
-      creatorName: userData?.profile?.name || 'Unknown',
-      creatorAvatar: userData?.profile?.photos?.[0],
+      earnerUserId: uid,
+      earnerName: userData?.profile?.name || 'Unknown',
+      earnerAvatar: userData?.profile?.photos?.[0],
       title,
       description,
       priceTokens,
@@ -341,7 +343,7 @@ export const updateDigitalProduct = onCall(
     }
     
     const product = productDoc.data() as DigitalProduct;
-    if (product.creatorUserId !== uid) {
+    if (product.earnerUserId !== uid) {
       throw new HttpsError('permission-denied', 'Not your product');
     }
     
@@ -402,7 +404,7 @@ export const deleteDigitalProduct = onCall(
     }
     
     const product = productDoc.data() as DigitalProduct;
-    if (product.creatorUserId !== uid) {
+    if (product.earnerUserId !== uid) {
       throw new HttpsError('permission-denied', 'Not your product');
     }
     
@@ -421,19 +423,19 @@ export const deleteDigitalProduct = onCall(
 );
 
 /**
- * List creator's digital products
+ * List earner's digital products
  */
 export const listCreatorDigitalProducts = onCall(
   { region: 'europe-west1' },
   async (request) => {
-    const { creatorUserId, includeInactive = false } = request.data;
+    const { earnerUserId, includeInactive = false } = request.data;
     
-    if (!creatorUserId) {
-      throw new HttpsError('invalid-argument', 'Missing creatorUserId');
+    if (!earnerUserId) {
+      throw new HttpsError('invalid-argument', 'Missing earnerUserId');
     }
     
     let query = db.collection('digital_products')
-      .where('creatorUserId', '==', creatorUserId)
+      .where('earnerUserId', '==', earnerUserId)
       .orderBy('createdAt', 'desc');
     
     if (!includeInactive) {
@@ -512,7 +514,7 @@ export const purchaseDigitalProduct = onCall(
         throw new HttpsError('failed-precondition', 'Product is not available');
       }
       
-      if (product.creatorUserId === uid) {
+      if (product.earnerUserId === uid) {
         throw new HttpsError('failed-precondition', 'Cannot purchase your own product');
       }
       
@@ -544,7 +546,7 @@ export const purchaseDigitalProduct = onCall(
         );
       }
       
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(product.priceTokens);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(product.priceTokens);
       
       const purchaseId = generateId();
       const watermarkId = generateWatermarkId(uid, Date.now());
@@ -556,11 +558,11 @@ export const purchaseDigitalProduct = onCall(
         productTitle: product.title,
         buyerUserId: uid,
         buyerName: buyer?.profile?.name || 'Unknown',
-        creatorUserId: product.creatorUserId,
-        creatorName: product.creatorName,
+        earnerUserId: product.earnerUserId,
+        earnerName: product.earnerName,
         tokensAmount: product.priceTokens,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         downloadCount: 0,
         maxDownloads: MAX_DOWNLOADS_PER_PURCHASE,
         watermarkId,
@@ -574,10 +576,10 @@ export const purchaseDigitalProduct = onCall(
         updatedAt: serverTimestamp(),
       });
       
-      const creatorRef = db.collection('users').doc(product.creatorUserId);
-      tx.update(creatorRef, {
-        'wallet.balance': increment(creatorEarnings),
-        'wallet.earned': increment(creatorEarnings),
+      const earnerRef = db.collection('users').doc(product.earnerUserId);
+      tx.update(earnerRef, {
+        'wallet.balance': increment(earnerEarnings),
+        'wallet.earned': increment(earnerEarnings),
         updatedAt: serverTimestamp(),
       });
       
@@ -598,18 +600,18 @@ export const purchaseDigitalProduct = onCall(
         metadata: {
           productId,
           productTitle: product.title,
-          creatorUserId: product.creatorUserId,
+          earnerUserId: product.earnerUserId,
           purchaseId,
         },
         createdAt: serverTimestamp(),
       });
       
-      const creatorTxRef = db.collection('transactions').doc(`tx_creator_${purchaseId}`);
-      tx.set(creatorTxRef, {
-        txId: `tx_creator_${purchaseId}`,
+      const earnerTxRef = db.collection('transactions').doc(`tx_earner_${purchaseId}`);
+      tx.set(earnerTxRef, {
+        txId: `tx_earner_${purchaseId}`,
         type: 'digital_product_sale',
-        uid: product.creatorUserId,
-        amount: creatorEarnings,
+        uid: product.earnerUserId,
+        amount: earnerEarnings,
         metadata: {
           productId,
           productTitle: product.title,
@@ -725,6 +727,22 @@ export const getProductDownloadUrl = onCall(
 );
 
 logger.info('✅ Digital Products (PACK 116) module loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

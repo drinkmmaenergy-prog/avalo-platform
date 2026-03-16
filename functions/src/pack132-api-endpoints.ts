@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 132 — Avalo Global Analytics Cloud
  * API Endpoints (Callable Functions)
@@ -102,7 +104,7 @@ async function checkRateLimit(
 // ============================================================================
 
 /**
- * Get creator analytics
+ * Get earner analytics
  * Accessible by: Creator themselves
  */
 export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<GetCreatorAnalyticsResponse>>(
@@ -112,21 +114,21 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
     
-    const { creatorId, period = 'DAY_30', includeHeatmaps = false, includeInsights = false } = request.data;
+    const { earnerId, period = 'DAY_30', includeHeatmaps = false, includeInsights = false } = request.data;
     
-    if (!creatorId) {
+    if (!earnerId) {
       throw new HttpsError('invalid-argument', 'Creator ID required');
     }
     
-    // Security: Only creator can view their own analytics
-    if (request.auth.uid !== creatorId) {
+    // Security: Only earner can view their own analytics
+    if (request.auth.uid !== earnerId) {
       throw new HttpsError('permission-denied', 'Can only access your own analytics');
     }
     
     // Rate limiting
     const withinLimit = await checkRateLimit(
       request.auth.uid,
-      'creator_analytics',
+      'earner_analytics',
       RATE_LIMITS.CREATOR_ANALYTICS_PER_HOUR
     );
     
@@ -137,8 +139,8 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
     try {
       // Check for cached metrics
       const cachedDoc = await db
-        .collection('analytics_creators')
-        .doc(creatorId)
+        .collection('analytics_earners')
+        .doc(earnerId)
         .get();
       
       let metrics;
@@ -168,23 +170,23 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
       
       // If no cached data or too old, compute fresh
       if (!metrics) {
-        logger.info('Computing fresh metrics for creator', { creatorId, period });
-        metrics = await computeCreatorMetrics(creatorId, period);
+        logger.info('Computing fresh metrics for earner', { earnerId, period });
+        metrics = await computeCreatorMetrics(earnerId, period);
         
         if (includeHeatmaps) {
-          heatmaps = await generateContentHeatmap(creatorId, period);
+          heatmaps = await generateContentHeatmap(earnerId, period);
         }
         
         if (includeInsights) {
-          insights = await generatePredictiveInsights(creatorId);
+          insights = await generatePredictiveInsights(earnerId);
         }
         
         // Cache the results
         await db
-          .collection('analytics_creators')
-          .doc(creatorId)
+          .collection('analytics_earners')
+          .doc(earnerId)
           .set({
-            creatorId,
+            earnerId,
             metrics: { [period]: metrics },
             ...(heatmaps && { heatmaps: { [period]: heatmaps } }),
             ...(insights && { insights }),
@@ -196,7 +198,7 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
       const privacy = validatePrivacy(metrics);
       
       if (!privacy.valid) {
-        logger.error('Privacy validation failed', { creatorId, violations: privacy.violations });
+        logger.error('Privacy validation failed', { earnerId, violations: privacy.violations });
         throw new HttpsError('failed-precondition', 'Privacy validation failed');
       }
       
@@ -207,11 +209,11 @@ export const getCreatorAnalytics = onCall<GetCreatorAnalyticsRequest, Promise<Ge
         privacy,
       };
       
-      logger.info('Creator analytics retrieved', { creatorId, period });
+      logger.info('Creator analytics retrieved', { earnerId, period });
       
       return response;
     } catch (error: any) {
-      logger.error('Error getting creator analytics', { creatorId, error });
+      logger.error('Error getting earner analytics', { earnerId, error });
       
       if (error instanceof HttpsError) {
         throw error;
@@ -536,7 +538,7 @@ export const getPlatformAnalytics = onCall<GetPlatformAnalyticsRequest, Promise<
  * Compute platform-wide metrics
  */
 async function computePlatformMetrics(period: AnalyticsPeriod): Promise<PlatformMetrics> {
-  // This would aggregate across all users, creators, and transactions
+  // This would aggregate across all users, earners, and transactions
   // For now, return a placeholder structure
   
   const metrics: PlatformMetrics = {
@@ -621,6 +623,20 @@ async function computeRegionalInsights(period: AnalyticsPeriod): Promise<Array<{
   // Placeholder for regional insights
   return [];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

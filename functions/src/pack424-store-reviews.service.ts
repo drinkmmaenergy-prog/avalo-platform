@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 424 — Store Review Ingestion Service
  * Collects reviews from Google Play and App Store
@@ -420,6 +422,20 @@ export class StoreReviewService {
 }
 
 export const storeReviewService = new StoreReviewService();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

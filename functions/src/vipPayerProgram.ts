@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 232 — VIP Repeat Payer Program
  * 
@@ -331,7 +333,7 @@ async function updateVIPScore(userId: string): Promise<void> {
       await db.collection('vipSettings').doc(userId).set({
         showBadgeToCreators: false, // Default off for privacy
         notifyOnLevelUp: true,
-        privacyMode: 'creators', // Show to creators only
+        privacyMode: 'earners', // Show to earners only
         createdAt: now,
         updatedAt: now,
       });
@@ -505,7 +507,7 @@ async function sendVIPLevelUpNotification(
  * Triggered when a chat is added to queue
  */
 export const applyVIPQueuePriority = onDocumentCreated(
-  'paidChatQueue/{creatorId}/chats/{chatId}',
+  'paidChatQueue/{earnerId}/chats/{chatId}',
   async (event) => {
     const queueData = event.data?.data();
     if (!queueData) return;
@@ -551,14 +553,14 @@ export const applyVIPQueuePriority = onDocumentCreated(
  */
 export async function logVIPPrivilegeUse(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   privilegeType: string,
   metadata?: Record<string, any>
 ): Promise<void> {
   try {
     await db.collection('vipPrivilegesLog').add({
       userId,
-      creatorId,
+      earnerId,
       privilegeType,
       timestamp: Timestamp.now(),
       metadata: metadata || {},
@@ -668,6 +670,20 @@ export {
   calculateScoreComponents,
   determineVIPLevel,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

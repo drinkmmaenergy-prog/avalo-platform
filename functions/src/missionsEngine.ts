@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 13 - Daily Missions Engine
  * Manages daily missions, progress tracking, and rewards
@@ -93,7 +95,7 @@ const MISSION_DEFINITIONS: MissionDefinition[] = [
     id: 'daily_tips',
     type: 'DAILY_TIPS',
     name: 'Generous Tipper',
-    description: 'Tip a creator at least 20 tokens',
+    description: 'Tip a earner at least 20 tokens',
     targetCount: 20,
     rewardTokens: 10,
     iconKey: '💝',
@@ -327,7 +329,7 @@ export async function claimMissionReward(
       senderUid: 'mission_system',
       receiverUid: userId,
       tokensAmount: rewardTokens,
-      avaloFee: 0,
+      platformFee: 0,
       transactionType: 'mission_reward',
       missionId,
       date: today,
@@ -511,6 +513,20 @@ function getYesterdayString(fromDate?: string): string {
 export {
   MISSION_DEFINITIONS,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

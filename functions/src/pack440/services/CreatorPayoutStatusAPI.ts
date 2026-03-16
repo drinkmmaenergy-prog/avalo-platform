@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Module: Creator Payout Status API
  * 
- * Provides transparency layer for creators:
+ * Provides transparency layer for earners:
  * - Current payout status
  * - Pending payouts with ETAs
  * - Simplified integrity score tier
@@ -37,7 +39,7 @@ export interface ActivePayoutInfo {
 }
 
 export interface PayoutStatusTransparency {
-  creatorId: string;
+  earnerId: string;
   currentStatus: PayoutCurrentStatus;
   activePayouts: ActivePayoutInfo[];
   nextPayoutETA?: Timestamp;
@@ -59,12 +61,12 @@ export class CreatorPayoutStatusAPI {
   }
   
   /**
-   * Get payout status for a creator
+   * Get payout status for a earner
    */
-  async getStatus(creatorId: string): Promise<PayoutStatusTransparency> {
+  async getStatus(earnerId: string): Promise<PayoutStatusTransparency> {
     const statusDoc = await this.db
       .collection('payout_status_transparency')
-      .doc(creatorId)
+      .doc(earnerId)
       .get();
     
     if (statusDoc.exists) {
@@ -72,17 +74,17 @@ export class CreatorPayoutStatusAPI {
     }
     
     // Generate status if doesn't exist
-    return this.generateStatus(creatorId);
+    return this.generateStatus(earnerId);
   }
   
   /**
    * Generate fresh payout status
    */
-  async generateStatus(creatorId: string): Promise<PayoutStatusTransparency> {
+  async generateStatus(earnerId: string): Promise<PayoutStatusTransparency> {
     // Get integrity score
     const integrityDoc = await this.db
-      .collection('creator_revenue_integrity')
-      .doc(creatorId)
+      .collection('earner_revenue_integrity')
+      .doc(earnerId)
       .get();
     
     const integrityScore = integrityDoc.exists 
@@ -92,7 +94,7 @@ export class CreatorPayoutStatusAPI {
     // Get active payouts
     const payoutsSnapshot = await this.db
       .collection('payout_escrow')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('status', 'in', ['PENDING', 'IN_ESCROW', 'FROZEN'])
       .orderBy('metadata.createdAt', 'desc')
       .limit(10)
@@ -112,7 +114,7 @@ export class CreatorPayoutStatusAPI {
     // Get active freezes
     const freezesSnapshot = await this.db
       .collection('payout_freezes')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('status', '==', 'ACTIVE')
 .get();
     
@@ -129,7 +131,7 @@ export class CreatorPayoutStatusAPI {
     
     // Generate messages
     const messages = await this.generateMessages(
-      creatorId,
+      earnerId,
       integrityScore,
       hasActiveFreezes,
       freezesSnapshot.docs
@@ -141,7 +143,7 @@ export class CreatorPayoutStatusAPI {
       : undefined;
     
     const status: PayoutStatusTransparency = {
-      creatorId,
+      earnerId,
       currentStatus,
       activePayouts,
       nextPayoutETA,
@@ -160,15 +162,15 @@ export class CreatorPayoutStatusAPI {
   /**
    * Update payout status (called by background jobs)
    */
-  async updateStatus(creatorId: string): Promise<void> {
-    await this.generateStatus(creatorId);
+  async updateStatus(earnerId: string): Promise<void> {
+    await this.generateStatus(earnerId);
   }
   
   /**
    * Mark message as read
    */
-  async markMessageRead(creatorId: string, messageId: string): Promise<void> {
-    const statusRef = this.db.collection('payout_status_transparency').doc(creatorId);
+  async markMessageRead(earnerId: string, messageId: string): Promise<void> {
+    const statusRef = this.db.collection('payout_status_transparency').doc(earnerId);
     const statusDoc = await statusRef.get();
     
     if (!statusDoc.exists) return;
@@ -275,10 +277,10 @@ export class CreatorPayoutStatusAPI {
   }
   
   /**
-   * Generate messages for creator
+   * Generate messages for earner
    */
   private async generateMessages(
-    creatorId: string,
+    earnerId: string,
     score: number,
     hasActiveFreezes: boolean,
     freezeDocs: any[]
@@ -332,10 +334,26 @@ export class CreatorPayoutStatusAPI {
   private async saveStatus(status: PayoutStatusTransparency): Promise<void> {
     await this.db
       .collection('payout_status_transparency')
-      .doc(status.creatorId)
+      .doc(status.earnerId)
       .set(status);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

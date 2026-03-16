@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 169 - Notification Governance Middleware
  * Detects and blocks romantic, manipulative, and addictive notification patterns
@@ -16,7 +18,7 @@ interface NotificationContent {
 const ROMANTIC_PATTERNS = [
   /\b(miss(es)?|missed|missing)\s+(you|u)\b/i,
   /\b(waiting|waited)\s+(for\s+)?(you|u)\b/i,
-  /\b(your|ur)\s+(creator|partner|babe|hun|honey|darling)\b/i,
+  /\b(your|ur)\s+(earner|partner|babe|hun|honey|darling)\b/i,
   /\b(she|he)['']?s\s+(waiting|lonely|sad|missing)\b/i,
   /\b(come\s+back|return)\s+(to\s+(me|us))?\b/i,
   /\b(don['']?t\s+(leave|go|ignore))\b/i,
@@ -279,6 +281,22 @@ export class NotificationGovernance {
 }
 
 export const governance = new NotificationGovernance();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

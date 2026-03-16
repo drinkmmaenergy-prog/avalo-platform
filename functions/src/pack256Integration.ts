@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 256: AI Reply Accelerator - Integration Layer
  * Connects AI suggestions with existing chat monetization system
@@ -11,7 +13,7 @@ import { shouldShowSuggestions, type SuggestionTrigger } from './pack256AiReplyS
 // ============================================================================
 
 /**
- * Hook into processMessageBilling to check if suggestions should be shown
+ * Hook into shimProcessMessageBilling to check if suggestions should be shown
  * This should be called AFTER a message is received in a chat
  */
 export async function onChatMessageReceived(
@@ -312,6 +314,20 @@ export async function cleanupExpiredSessions(): Promise<number> {
     return 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 105 — Creator Revenue Export System
  * 
@@ -6,7 +8,7 @@
  * Business Rules:
  * - Factual data only (no tax advice)
  * - No auto-filing or tax estimation
- * - Read-only export for creator records
+ * - Read-only export for earner records
  * - Annual and custom date range exports
  */
 
@@ -23,7 +25,7 @@ import { auth, functions, storage, z } from './runtime';
 // ============================================================================
 
 /**
- * Get creator revenue export for a specific year or date range
+ * Get earner revenue export for a specific year or date range
  */
 export const getCreatorRevenueExport = onCall(
   {
@@ -94,7 +96,7 @@ export const getCreatorRevenueExport = onCall(
 );
 
 /**
- * Generate creator revenue export data
+ * Generate earner revenue export data
  */
 async function generateCreatorRevenueExport(
   userId: string,
@@ -107,7 +109,7 @@ async function generateCreatorRevenueExport(
 
   const earningsSnapshot = await db
     .collection('earnings_ledger')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', startTimestamp)
     .where('createdAt', '<=', endTimestamp)
     .get();
@@ -465,6 +467,20 @@ export async function generateVATInvoice(params: {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

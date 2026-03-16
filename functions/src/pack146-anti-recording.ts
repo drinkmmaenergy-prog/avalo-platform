@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 146 — Anti-Recording & Screenshot Detection
  * Client-side helper system for detecting screen captures
@@ -222,7 +224,7 @@ async function applyScreenCaptureAction(
       break;
     
     case 'FREEZE_ACCESS':
-      // Freeze user's access to this creator's paid content
+      // Freeze user's access to this earner's paid content
       await freezeUserAccess(userId, contentOwnerId);
       response.warning = 'Your access has been frozen due to repeated screen capture attempts.';
       response.accessFrozen = true;
@@ -253,11 +255,11 @@ async function applyScreenCaptureAction(
 }
 
 /**
- * Freeze user access to creator's content
+ * Freeze user access to earner's content
  */
 async function freezeUserAccess(
   userId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<void> {
   
   const freezeId = generateId();
@@ -265,7 +267,7 @@ async function freezeUserAccess(
   await db.collection('access_freezes').doc(freezeId).set({
     freezeId,
     userId,
-    creatorId,
+    earnerId,
     reason: 'REPEATED_SCREEN_CAPTURE',
     frozenAt: serverTimestamp(),
     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
@@ -273,10 +275,10 @@ async function freezeUserAccess(
     appealDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
   });
   
-  // Revoke all unlocks for this creator
+  // Revoke all unlocks for this earner
   const unlocks = await db.collection('media_unlocks')
     .where('userId', '==', userId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
   
   const batch = db.batch();
@@ -290,7 +292,7 @@ async function freezeUserAccess(
   
   await batch.commit();
   
-  logger.warn(`Access frozen for user ${userId} to creator ${creatorId}`);
+  logger.warn(`Access frozen for user ${userId} to earner ${earnerId}`);
 }
 
 /**
@@ -339,16 +341,16 @@ export const checkAccessFreeze = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
     
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
     
-    if (!creatorId) {
+    if (!earnerId) {
       throw new HttpsError('invalid-argument', 'Creator ID required');
     }
     
     try {
       const freezes = await db.collection('access_freezes')
         .where('userId', '==', uid)
-        .where('creatorId', '==', creatorId)
+        .where('earnerId', '==', earnerId)
         .where('expiresAt', '>', new Date())
         .limit(1)
         .get();
@@ -381,7 +383,7 @@ export const checkAccessFreeze = onCall(
 // ============================================================================
 
 /**
- * Get creator's screen capture statistics
+ * Get earner's screen capture statistics
  */
 export const getScreenCaptureStats = onCall(
   {
@@ -395,7 +397,7 @@ export const getScreenCaptureStats = onCall(
     }
     
     try {
-      // Get all events for this creator's content
+      // Get all events for this earner's content
       const eventsSnapshot = await db.collection('screen_capture_events')
         .where('contentOwnerId', '==', uid)
         .get();
@@ -460,6 +462,20 @@ export default {
   checkAccessFreeze,
   getScreenCaptureStats,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

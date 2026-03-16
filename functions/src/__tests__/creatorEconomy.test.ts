@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Creator Economy Test Suite
  * Comprehensive tests for Creator Shop and Creator Hub
@@ -49,12 +51,12 @@ jest.mock('firebase-admin/storage', () => ({
 describe('Revenue Split Calculations', () => {
   it('should correctly calculate 35/65 split', () => {
     const price = 1000;
-    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
-    const creatorEarnings = price - platformFee;
+    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.platform);
+    const earnerEarnings = price - platformFee;
 
     expect(platformFee).toBe(350);
-    expect(creatorEarnings).toBe(650);
-    expect(platformFee + creatorEarnings).toBe(price);
+    expect(earnerEarnings).toBe(650);
+    expect(platformFee + earnerEarnings).toBe(price);
   });
 
   it('should handle edge case prices', () => {
@@ -66,18 +68,18 @@ describe('Revenue Split Calculations', () => {
     ];
 
     testCases.forEach(({ price, expectedPlatform, expectedCreator }) => {
-      const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
-      const creatorEarnings = price - platformFee;
+      const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.platform);
+      const earnerEarnings = price - platformFee;
 
       expect(platformFee).toBe(expectedPlatform);
-      expect(creatorEarnings).toBe(expectedCreator);
+      expect(earnerEarnings).toBe(expectedCreator);
     });
   });
 
   it('should ensure platform fee is always floored', () => {
     // Test prices that would create decimal platform fees
-    const price = 97; // MONETIZATION_SPLITS.CHAT.avalo * 97 = 33.95
-    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.avalo);
+    const price = 97; // MONETIZATION_SPLITS.CHAT.platform * 97 = 33.95
+    const platformFee = Math.floor(price * MONETIZATION_SPLITS.CHAT.platform);
 
     expect(platformFee).toBe(33);
     expect(Number.isInteger(platformFee)).toBe(true);
@@ -194,9 +196,9 @@ describe('Creator Level System', () => {
 
 describe('Level-Based Commission Rates', () => {
   const COMMISSION_RATES = {
-    bronze: MONETIZATION_SPLITS.CHAT.creator,
+    bronze: MONETIZATION_SPLITS.CHAT.earner,
     silver: 0.67,
-    gold: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+    gold: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
     platinum: 0.72,
     royal: 0.75,
   };
@@ -206,8 +208,8 @@ describe('Level-Based Commission Rates', () => {
 
     Object.entries(COMMISSION_RATES).forEach(([level, rate]) => {
       const platformFee = Math.floor(price * (1 - rate));
-      const creatorEarnings = price - platformFee;
-      const actualRate = creatorEarnings / price;
+      const earnerEarnings = price - platformFee;
+      const actualRate = earnerEarnings / price;
 
       expect(actualRate).toBeGreaterThanOrEqual(rate);
     });
@@ -398,14 +400,14 @@ describe('Purchase Flow', () => {
 
 describe('Security Validations', () => {
   it('should prevent purchasing own products', () => {
-    const product = { creatorId: 'user123' };
+    const product = { earnerId: 'user123' };
     const buyerId = 'user123';
 
-    const canPurchase = product.creatorId !== buyerId;
+    const canPurchase = product.earnerId !== buyerId;
     expect(canPurchase).toBe(false);
   });
 
-  it('should verify creator status', () => {
+  it('should verify earner status', () => {
     const user = {
       verification: { status: 'approved' },
       settings: { earnFromChat: true },
@@ -552,6 +554,23 @@ describe('Creator Analytics', () => {
 });
 
 console.log('✅ Creator Economy Test Suite - 50+ Tests Defined');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

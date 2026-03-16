@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 355 - Referral & Invite Engine Service
  * 
@@ -90,7 +92,7 @@ export async function generateReferralCode(
     .toString('hex')
     .toUpperCase()}`;
 
-  const trackingLink = `https://avalo.app/r/${code}`;
+  const trackingLink = `https://platform.app/r/${code}`;
 
   const referralCode: ReferralCode = {
     userId,
@@ -667,6 +669,20 @@ export async function freezeUserReferrals(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

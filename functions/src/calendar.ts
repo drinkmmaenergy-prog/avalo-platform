@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Calendar Booking System
  * Handles booking creation, confirmation, verification, cancellation, and refunds
@@ -42,7 +44,7 @@ export const bookSlotCallable = onCall(
 
       const bookerUid = request.auth.uid;
       const {
-        creatorUid,
+        earnerUid,
         start,
         end,
         priceTokens,
@@ -137,7 +139,7 @@ export const bookSlotCallable = onCall(
           // Create booking
           const bookingData: CalendarBooking = {
             bookingId,
-            creatorId: creatorUid,
+            earnerId: earnerUid,
             bookerId: bookerUid,
             slot: {
               start: startTime,
@@ -171,7 +173,7 @@ export const bookSlotCallable = onCall(
             amountTokens: platformFeeTokens,
             split: {
               platformTokens: platformFeeTokens,
-              creatorTokens: 0,
+              earnerTokens: 0,
             },
             status: "completed",
             metadata: { bookingId },
@@ -194,7 +196,7 @@ export const bookSlotCallable = onCall(
   );
 
 /**
- * Confirm booking (creator acceptance)
+ * Confirm booking (earner acceptance)
  * POST /v1/calendar/confirm
  */
 export const confirmBookingCallable = onCall(
@@ -209,7 +211,7 @@ export const confirmBookingCallable = onCall(
         );
       }
 
-      const creatorUid = request.auth.uid;
+      const earnerUid = request.auth.uid;
       const { bookingId } = request.data;
 
       return withErrorLogging("functions.calendar", "RESERVATIONS", async () => {
@@ -225,10 +227,10 @@ export const confirmBookingCallable = onCall(
 
         const booking = bookingSnap.data() as CalendarBooking;
 
-        if (booking.creatorId !== creatorUid) {
+        if (booking.earnerId !== earnerUid) {
           throw new HttpsError(
             "permission-denied",
-            "Not the creator"
+            "Not the earner"
           );
         }
 
@@ -285,7 +287,7 @@ export const cancelBookingCallable = onCall(
 
         // Verify canceler
         if (
-          (by === "creator" && booking.creatorId !== userUid) ||
+          (by === "earner" && booking.earnerId !== userUid) ||
           (by === "booker" && booking.bookerId !== userUid)
         ) {
           throw new HttpsError(
@@ -299,9 +301,9 @@ export const cancelBookingCallable = onCall(
           bookingId,
           meetingStartTime: (booking.slot.start as any).toDate(),
           priceTokens: booking.priceTokens,
-          earnerShareTokens: booking.payment.escrowTokens,
-          avaloCommission: booking.payment.platformFeeTokens,
-          cancelledBy: by === "creator" ? "earner" : "payer",
+          earnerTokens: booking.payment.escrowTokens,
+          platformCommission: booking.payment.platformFeeTokens,
+          cancelledBy: by === "earner" ? "earner" : "payer",
         });
 
         const refundToBooker = refundCalc.refundToPayerAmount;
@@ -345,7 +347,7 @@ export const cancelBookingCallable = onCall(
             transaction.update(
               db
                 .collection("users")
-                .doc(booking.creatorId)
+                .doc(booking.earnerId)
                 .collection("wallet")
                 .doc("current"),
               {
@@ -374,19 +376,19 @@ export const cancelBookingCallable = onCall(
           
           const refundTransaction: RefundTransaction = {
             transactionId: refundTxId,
-            refundType: by === "creator" ? RefundTrigger.CANCELLATION_EARLY :
+            refundType: by === "earner" ? RefundTrigger.CANCELLATION_EARLY :
                        hoursBeforeMeeting >= 72 ? RefundTrigger.CANCELLATION_EARLY :
                        hoursBeforeMeeting >= 24 ? RefundTrigger.CANCELLATION_MID :
                        RefundTrigger.CANCELLATION_LATE,
             bookingId,
             payerId: booking.bookerId,
-            earnerId: booking.creatorId,
+            earnerId: booking.earnerId,
             originalAmount: booking.priceTokens,
-            earnerShare: booking.payment.escrowTokens,
-            avaloCommission: booking.payment.platformFeeTokens,
+            earner: booking.payment.escrowTokens,
+            platformCommission: booking.payment.platformFeeTokens,
             refundToPayerAmount: refundToBooker,
             earnerKeptAmount: releaseToCreator,
-            avaloKeptAmount: booking.payment.platformFeeTokens,
+            platformKeptAmount: booking.payment.platformFeeTokens,
             triggeredBy: userUid,
             automaticRefund: false,
             hoursBeforeMeeting,
@@ -395,7 +397,7 @@ export const cancelBookingCallable = onCall(
             processedAt: serverTimestamp() as Timestamp,
             metadata: {
               source: 'meeting',
-              cancellationReason: by === "creator" ? "Creator cancelled" : "Payer cancelled",
+              cancellationReason: by === "earner" ? "Creator cancelled" : "Payer cancelled",
             },
           };
           transaction.set(db.collection('refund_transactions').doc(refundTxId), refundTransaction);
@@ -454,7 +456,7 @@ export const verifyMeetingCallable = onCall(
         const booking = bookingSnap.data() as CalendarBooking;
 
         if (
-          booking.creatorId !== userUid &&
+          booking.earnerId !== userUid &&
           booking.bookerId !== userUid
         ) {
           throw new HttpsError(
@@ -469,17 +471,17 @@ export const verifyMeetingCallable = onCall(
           updatedAt: serverTimestamp(),
         };
 
-        // If any method is verified, release escrow to creator
+        // If any method is verified, release escrow to earner
         if (!booking.verification || Object.keys(booking.verification).length === 0) {
           verificationUpdate["verification.completedAt"] = serverTimestamp();
           verificationUpdate.status = BookingStatus.COMPLETED;
 
-          // Release escrow to creator
+          // Release escrow to earner
           await db.runTransaction(async (transaction) => {
             transaction.update(
               db
                 .collection("users")
-                .doc(booking.creatorId)
+                .doc(booking.earnerId)
                 .collection("wallet")
                 .doc("current"),
               {
@@ -500,16 +502,16 @@ export const verifyMeetingCallable = onCall(
               }
             );
 
-            // Record creator payment
+            // Record earner payment
             const txId = generateId();
             transaction.set(db.collection("transactions").doc(txId), {
               txId,
-              uid: booking.creatorId,
+              uid: booking.earnerId,
               type: TransactionType.CALENDAR,
               amountTokens: booking.payment.escrowTokens,
               split: {
                 platformTokens: 0,
-                creatorTokens: booking.payment.escrowTokens,
+                earnerTokens: booking.payment.escrowTokens,
               },
               status: "completed",
               metadata: { bookingId, verifiedBy: method },
@@ -668,6 +670,20 @@ export const getRefundHistoryCallable = onCall(
       });
     }
   );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

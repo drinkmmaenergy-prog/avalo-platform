@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 382 — Global Creator Academy & Earnings Optimization Engine
  * TypeScript Types and Interfaces
@@ -477,7 +479,7 @@ export interface CreatorEarningMission {
 // ========================================
 
 export type BadgeType =
-  | 'certified-creator'
+  | 'certified-earner'
   | 'voice-pro'
   | 'event-organizer'
   | 'elite-chat-pro'
@@ -661,8 +663,8 @@ export interface CreatorAcademyAnalytics {
   };
   
   burnoutStats: {
-    creatorsAtRisk: number;
-    creatorsInCritical: number;
+    earnersAtRisk: number;
+    earnersInCritical: number;
     preventionActionsApplied: number;
   };
   
@@ -683,6 +685,22 @@ export interface CreatorAcademyAnalytics {
   
   generatedAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

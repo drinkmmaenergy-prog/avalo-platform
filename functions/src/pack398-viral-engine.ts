@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 398 - VIRAL REFERRAL ENGINE
  * 
@@ -122,7 +124,7 @@ export const generateReferralCode = functions.https.onCall(async (request) => {
 
   // Generate unique code
   const code = await generateUniqueCode();
-  const link = `https://avalo.app/invite/${code}`;
+  const link = `https://platform.app/invite/${code}`;
 
   await db.collection('referral_codes').add({
     userId,
@@ -298,7 +300,7 @@ export const sendViralInvite = functions.https.onCall(async (request) => {
   } else {
     // Generate new code
     const code = await generateUniqueCode();
-    referralLink = `https://avalo.app/invite/${code}`;
+    referralLink = `https://platform.app/invite/${code}`;
     await db.collection('referral_codes').add({
       userId: request.auth.uid,
       code,
@@ -611,6 +613,20 @@ async function generateUniqueCode(): Promise<string> {
 
   return code;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

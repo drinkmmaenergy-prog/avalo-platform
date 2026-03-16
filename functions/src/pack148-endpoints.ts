@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 148 - API Endpoints
  * Callable functions for ledger access and management
@@ -145,12 +147,12 @@ export const getLedgerOverviewEndpoint = functions.https.onCall(async (request) 
       // Simple calculation (can be optimized)
       for (const tx of userTransactions) {
         if (tx.status === 'completed' && tx.payoutEligible) {
-          totalPaidOut += tx.creatorShare;
+          totalPaidOut += tx.earner;
         } else if (tx.status === 'pending' || tx.status === 'escrowed') {
-          pendingPayout += tx.creatorShare;
+          pendingPayout += tx.earner;
         }
-        totalEarned += tx.creatorShare;
-        platformFees += tx.platformShare;
+        totalEarned += tx.earner;
+        platformFees += tx.platform;
       }
 
       return {
@@ -242,8 +244,8 @@ export const getTransactionHistoryEndpoint = functions.https.onCall(async (reque
           timestamp: tx.timestamp.toDate(),
           blockchainHash: tx.blockchainHash,
           verified: tx.blockchainVerified,
-          platformShare: tx.platformShare,
-          creatorShare: tx.creatorShare,
+          platform: tx.platform,
+          earner: tx.earner,
         })),
         count: transactions.length,
       };
@@ -534,6 +536,20 @@ export const updateLedgerOnDisputeEndpoint = functions.https.onCall(async (reque
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

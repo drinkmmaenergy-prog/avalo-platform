@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 250 - Paid Media Unlock 2.0
  * Token-Gated Albums, Bundles & Story Drops
@@ -67,7 +69,7 @@ interface MediaItem {
 
 interface PaidMediaProduct {
   productId: string;
-  creatorId: string;
+  earnerId: string;
   productType: MediaProductType;
   title: string;
   description?: string;
@@ -134,16 +136,16 @@ async function getWalletBalance(userId: string): Promise<number> {
 }
 
 /**
- * Check anti-farming: has buyer purchased too much from this creator?
+ * Check anti-farming: has buyer purchased too much from this earner?
  */
 async function checkFarmingRisk(
   buyerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<{ isSuspicious: boolean; purchaseCount: number }> {
   const purchases = await db
     .collection('media_purchases')
     .where('buyerId', '==', buyerId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'COMPLETED')
     .get();
   
@@ -235,7 +237,7 @@ const createMediaProduct = onCall(async (request) => {
   
   const product: PaidMediaProduct = {
     productId: productRef.id,
-    creatorId: auth.uid,
+    earnerId: auth.uid,
     productType,
     title,
     description,
@@ -290,7 +292,7 @@ const publishMediaProduct = onCall(async (request) => {
   
   const product = productDoc.data() as PaidMediaProduct;
   
-  if (product.creatorId !== auth.uid) {
+  if (product.earnerId !== auth.uid) {
     throw new Error('Unauthorized: You can only publish your own products');
   }
   
@@ -315,7 +317,7 @@ const publishMediaProduct = onCall(async (request) => {
     await db.collection('story_drops').doc(productId).set({
       storyId: productId,
       productId,
-      creatorId: product.creatorId,
+      earnerId: product.earnerId,
       items: product.items,
       buyerIds: [],
       viewCount: 0,
@@ -394,7 +396,7 @@ const purchaseMediaProduct = onCall(async (request) => {
   }
   
   // Prevent self-purchase
-  if (product.creatorId === auth.uid) {
+  if (product.earnerId === auth.uid) {
     throw new Error('You cannot purchase your own content');
   }
   
@@ -415,14 +417,14 @@ const purchaseMediaProduct = onCall(async (request) => {
   }
   
   // Check farming risk
-  const farmingCheck = await checkFarmingRisk(auth.uid, product.creatorId);
+  const farmingCheck = await checkFarmingRisk(auth.uid, product.earnerId);
   
   // Perform transaction
   const purchaseRef = db.collection('media_purchases').doc();
   const accessId = `${auth.uid}_${productId}`;
   
-  const creatorEarnings = Math.floor(product.priceTokens * CONFIG.CREATOR_CUT_PERCENT / 100);
-  const platformFee = product.priceTokens - creatorEarnings;
+  const earnerEarnings = Math.floor(product.priceTokens * CONFIG.CREATOR_CUT_PERCENT / 100);
+  const platformFee = product.priceTokens - earnerEarnings;
   
   try {
     await db.runTransaction(async (transaction) => {
@@ -438,15 +440,15 @@ const purchaseMediaProduct = onCall(async (request) => {
         updatedAt: Timestamp.now(),
       });
       
-      // Add to creator's wallet
-      const creatorWalletRef = db
+      // Add to earner's wallet
+      const earnerWalletRef = db
         .collection('users')
-        .doc(product.creatorId)
+        .doc(product.earnerId)
         .collection('wallet')
         .doc('main');
       
-      transaction.update(creatorWalletRef, {
-        balance: FieldValue.increment(creatorEarnings),
+      transaction.update(earnerWalletRef, {
+        balance: FieldValue.increment(earnerEarnings),
         updatedAt: Timestamp.now(),
       });
       
@@ -455,9 +457,9 @@ const purchaseMediaProduct = onCall(async (request) => {
         purchaseId: purchaseRef.id,
         productId,
         buyerId: auth.uid,
-        creatorId: product.creatorId,
+        earnerId: product.earnerId,
         priceTokens: product.priceTokens,
-        creatorEarnings,
+        earnerEarnings,
         platformFee,
         productSnapshot: {
           title: product.title,
@@ -474,7 +476,7 @@ const purchaseMediaProduct = onCall(async (request) => {
         accessId,
         userId: auth.uid,
         productId,
-        creatorId: product.creatorId,
+        earnerId: product.earnerId,
         purchaseId: purchaseRef.id,
         productType: product.productType,
         itemUrls: product.items.map(item => item.url),
@@ -490,13 +492,13 @@ const purchaseMediaProduct = onCall(async (request) => {
       });
       
       // Create earning record
-      const earningRef = db.collection('creator_media_earnings').doc();
+      const earningRef = db.collection('earner_media_earnings').doc();
       transaction.set(earningRef, {
         earningId: earningRef.id,
-        creatorId: product.creatorId,
+        earnerId: product.earnerId,
         purchaseId: purchaseRef.id,
         productId,
-        tokensEarned: creatorEarnings,
+        tokensEarned: earnerEarnings,
         status: 'PENDING',
         earnedAt: Timestamp.now(),
       });
@@ -512,18 +514,18 @@ const purchaseMediaProduct = onCall(async (request) => {
         balanceAfter: balance - product.priceTokens,
         metadata: {
           productId,
-          creatorId: product.creatorId,
+          earnerId: product.earnerId,
           productType: product.productType,
         },
         createdAt: Timestamp.now(),
       });
       
-      const creatorTxRef = db.collection('transactions').doc();
-      transaction.set(creatorTxRef, {
-        transactionId: creatorTxRef.id,
-        userId: product.creatorId,
+      const earnerTxRef = db.collection('transactions').doc();
+      transaction.set(earnerTxRef, {
+        transactionId: earnerTxRef.id,
+        userId: product.earnerId,
         type: 'media_earning',
-        amount: creatorEarnings,
+        amount: earnerEarnings,
         metadata: {
           productId,
           buyerId: auth.uid,
@@ -545,12 +547,12 @@ const purchaseMediaProduct = onCall(async (request) => {
     // Update unique buyers count (separate query to avoid transaction conflicts)
     await updateUniqueBuyersCount(productId);
     
-    // Update discovery score for creator
-    await updateDiscoveryScore(product.creatorId);
+    // Update discovery score for earner
+    await updateDiscoveryScore(product.earnerId);
     
     // Log farming risk if suspicious
     if (farmingCheck.isSuspicious) {
-      logger.warn(`Potential farming detected: buyer ${auth.uid} has ${farmingCheck.purchaseCount} purchases from creator ${product.creatorId}`);
+      logger.warn(`Potential farming detected: buyer ${auth.uid} has ${farmingCheck.purchaseCount} purchases from earner ${product.earnerId}`);
     }
     
     logger.info(`Media purchase completed: ${purchaseRef.id}`);
@@ -559,7 +561,7 @@ const purchaseMediaProduct = onCall(async (request) => {
       success: true,
       purchaseId: purchaseRef.id,
       accessUrls: product.items.map(item => item.url),
-      creatorId: product.creatorId, // For "Say Something Now" CTA
+      earnerId: product.earnerId, // For "Say Something Now" CTA
     });
 
     
@@ -636,7 +638,7 @@ async function updateUniqueBuyersCount(productId: string): Promise<void> {
 }
 
 /**
- * Get creator dashboard stats
+ * Get earner dashboard stats
  */
 const getCreatorMediaDashboard = onCall(async (request) => {
   const { auth } = request;
@@ -645,10 +647,10 @@ const getCreatorMediaDashboard = onCall(async (request) => {
     throw new Error('Authentication required');
   }
   
-  // Get all creator's products
+  // Get all earner's products
   const productsSnapshot = await db
     .collection('paid_media_products')
-    .where('creatorId', '==', auth.uid)
+    .where('earnerId', '==', auth.uid)
     .get();
   
   const products = productsSnapshot.docs.map(doc => doc.data() as PaidMediaProduct);
@@ -667,8 +669,8 @@ const getCreatorMediaDashboard = onCall(async (request) => {
   const oneMonthAgo = now - 30 * 24 * 60 * 60 * 1000;
   
   const earningsSnapshot = await db
-    .collection('creator_media_earnings')
-    .where('creatorId', '==', auth.uid)
+    .collection('earner_media_earnings')
+    .where('earnerId', '==', auth.uid)
     .where('status', '==', 'PENDING')
     .get();
   
@@ -688,7 +690,7 @@ const getCreatorMediaDashboard = onCall(async (request) => {
   // Get unique buyers
   const purchasesSnapshot = await db
     .collection('media_purchases')
-    .where('creatorId', '==', auth.uid)
+    .where('earnerId', '==', auth.uid)
     .where('status', '==', 'COMPLETED')
     .get();
   
@@ -752,7 +754,7 @@ const generateDailyAnalytics = onSchedule(
     
     const dateStr = yesterday.toISOString().split('T')[0];
     
-    // Get all creators with sales yesterday
+    // Get all earners with sales yesterday
     const purchasesSnapshot = await db
       .collection('media_purchases')
       .where('purchasedAt', '>=', Timestamp.fromDate(yesterday))
@@ -760,14 +762,14 @@ const generateDailyAnalytics = onSchedule(
       .where('status', '==', 'COMPLETED')
       .get();
     
-    const creatorStats = new Map<string, any>();
+    const earnerStats = new Map<string, any>();
     
     purchasesSnapshot.forEach(doc => {
       const purchase = doc.data();
-      const creatorId = purchase.creatorId;
+      const earnerId = purchase.earnerId;
       
-      if (!creatorStats.has(creatorId)) {
-        creatorStats.set(creatorId, {
+      if (!earnerStats.has(earnerId)) {
+        earnerStats.set(earnerId, {
           totalSales: 0,
           totalRevenue: 0,
           uniqueBuyers: new Set<string>(),
@@ -776,9 +778,9 @@ const generateDailyAnalytics = onSchedule(
         });
       }
       
-      const stats = creatorStats.get(creatorId);
+      const stats = earnerStats.get(earnerId);
       stats.totalSales++;
-      stats.totalRevenue += purchase.creatorEarnings;
+      stats.totalRevenue += purchase.earnerEarnings;
       stats.uniqueBuyers.add(purchase.buyerId);
       
       const productType = purchase.productSnapshot.productType;
@@ -787,16 +789,16 @@ const generateDailyAnalytics = onSchedule(
       const productId = purchase.productId;
       const productStats = stats.products.get(productId) || { sales: 0, revenue: 0 };
       productStats.sales++;
-      productStats.revenue += purchase.creatorEarnings;
+      productStats.revenue += purchase.earnerEarnings;
       stats.products.set(productId, productStats);
     });
     
-    // Save analytics for each creator
+    // Save analytics for each earner
     const batch = db.batch();
     
-    const creatorEntries = Array.from(creatorStats.entries());
-    for (const [creatorId, stats] of creatorEntries) {
-      const analyticsRef = db.collection('media_sales_analytics').doc(`${creatorId}_${dateStr}`);
+    const earnerEntries = Array.from(earnerStats.entries());
+    for (const [earnerId, stats] of earnerEntries) {
+      const analyticsRef = db.collection('media_sales_analytics').doc(`${earnerId}_${dateStr}`);
       
       const salesByProductType: Record<string, number> = {};
       stats.productTypes.forEach((count: number, type: string) => {
@@ -814,7 +816,7 @@ const generateDailyAnalytics = onSchedule(
       
       batch.set(analyticsRef, {
         analyticsId: analyticsRef.id,
-        creatorId,
+        earnerId,
         date: dateStr,
         totalSales: stats.totalSales,
         totalRevenue: stats.totalRevenue,
@@ -831,7 +833,7 @@ const generateDailyAnalytics = onSchedule(
     
     await batch.commit();
     
-    logger.info(`Generated daily analytics for ${creatorStats.size} creators`);
+    logger.info(`Generated daily analytics for ${earnerStats.size} earners`);
   }
 );
 
@@ -840,13 +842,13 @@ const generateDailyAnalytics = onSchedule(
 // ============================================================================
 
 /**
- * Update discovery score for a creator
+ * Update discovery score for a earner
  */
-async function updateDiscoveryScore(creatorId: string): Promise<void> {
+async function updateDiscoveryScore(earnerId: string): Promise<void> {
   // Get purchases
   const purchasesSnapshot = await db
     .collection('media_purchases')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'COMPLETED')
     .get();
   
@@ -869,7 +871,7 @@ async function updateDiscoveryScore(creatorId: string): Promise<void> {
     
     if (purchase.purchasedAt.toMillis() >= sevenDaysAgo) {
       recentSales++;
-      recentRevenue += purchase.creatorEarnings;
+      recentRevenue += purchase.earnerEarnings;
     }
   });
   
@@ -892,7 +894,7 @@ async function updateDiscoveryScore(creatorId: string): Promise<void> {
   // Get refund data
   const refundsSnapshot = await db
     .collection('media_purchases')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'REFUNDED')
     .get();
   
@@ -916,8 +918,8 @@ async function updateDiscoveryScore(creatorId: string): Promise<void> {
   ));
   
   // Save discovery score
-  await db.collection('user_media_discovery_score').doc(creatorId).set({
-    userId: creatorId,
+  await db.collection('user_media_discovery_score').doc(earnerId).set({
+    userId: earnerId,
     totalSales,
     uniqueBuyers: uniqueBuyers.size,
     repeatPurchaseRate,
@@ -932,7 +934,7 @@ async function updateDiscoveryScore(creatorId: string): Promise<void> {
     updatedAt: Timestamp.now(),
   });
   
-  logger.info(`Updated discovery score for ${creatorId}: ${discoveryScore}`);
+  logger.info(`Updated discovery score for ${earnerId}: ${discoveryScore}`);
 }
 
 /**
@@ -959,11 +961,11 @@ const getRecommendedMedia = onCall(async (request) => {
   const scoresSnapshot = await query.get();
   const topCreatorIds = scoresSnapshot.docs.map(doc => doc.data().userId);
   
-  // Get products from top creators
+  // Get products from top earners
   let productsQuery: any = db
     .collection('paid_media_products')
     .where('status', '==', 'PUBLISHED')
-    .where('creatorId', 'in', topCreatorIds.slice(0, 10)); // Firestore limit
+    .where('earnerId', 'in', topCreatorIds.slice(0, 10)); // Firestore limit
   
   if (productType) {
     productsQuery = productsQuery.where('productType', '==', productType);
@@ -979,15 +981,15 @@ const getRecommendedMedia = onCall(async (request) => {
       const product = doc.data() as PaidMediaProduct;
       const isPurchased = await hasUserPurchased(auth.uid, product.productId);
       
-      // Get creator info
-      const creatorDoc = await db.collection('users').doc(product.creatorId).get();
-      const creator = creatorDoc.data();
+      // Get earner info
+      const earnerDoc = await db.collection('users').doc(product.earnerId).get();
+      const earner = earnerDoc.data();
       
       return {
         productId: product.productId,
-        creatorId: product.creatorId,
-        creatorName: creator?.displayName || 'Unknown',
-        creatorAvatar: creator?.photoURL || '',
+        earnerId: product.earnerId,
+        earnerName: earner?.displayName || 'Unknown',
+        earnerAvatar: earner?.photoURL || '',
         productType: product.productType,
         title: product.title,
         thumbnailUrl: product.thumbnailUrl,
@@ -1077,6 +1079,20 @@ export {
   // Scheduled tasks
   expireStoryDrops,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

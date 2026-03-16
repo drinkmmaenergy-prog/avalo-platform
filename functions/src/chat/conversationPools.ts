@@ -1,5 +1,23 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export interface ConversationPool{
- creatorId:string
+ earnerId:string
  activeChats:string[]
  maxSimultaneous:number
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

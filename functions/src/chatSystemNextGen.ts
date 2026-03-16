@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * CHAT SYSTEM NEXT-GEN - COMPLETE IMPLEMENTATION
@@ -6,7 +8,7 @@
  *
  * Features:
  * - AI Autocomplete for message suggestions
- * - AI SuperReply to help creators polish responses
+ * - AI SuperReply to help earners polish responses
  * - Dynamic cost per word/media
  * - Chat gifts with animations
  * - Paid voice/video messages
@@ -518,10 +520,10 @@ export const sendChatMessage = onCall(
       });
 
       const recipientRef = db.collection("users").doc(recipientId);
-      const creatorEarnings = Math.floor(cost * MONETIZATION_SPLITS.CHAT.creator); // 65% to creator
+      const earnerEarnings = Math.floor(cost * MONETIZATION_SPLITS.CHAT.earner); // 65% to earner
       tx.update(recipientRef, {
-        "wallet.earned": FieldValue.increment(creatorEarnings),
-        "wallet.balance": FieldValue.increment(creatorEarnings),
+        "wallet.earned": FieldValue.increment(earnerEarnings),
+        "wallet.balance": FieldValue.increment(earnerEarnings),
         updatedAt: FieldValue.serverTimestamp(),
       });
 
@@ -616,12 +618,12 @@ export const polishMessageWithAISuperReply = onCall(
       throw new HttpsError("invalid-argument", "Missing message");
     }
 
-    // Check if user is verified creator
+    // Check if user is verified earner
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
     if (!userData?.verification?.status || userData.verification.status !== "approved") {
-      throw new HttpsError("permission-denied", "Only verified creators can use AI SuperReply");
+      throw new HttpsError("permission-denied", "Only verified earners can use AI SuperReply");
     }
 
     const polished = await polishMessageWithAI(message);
@@ -649,7 +651,7 @@ export const getQuickTemplates = onCall(
     // Get user's custom templates
     const templatesSnapshot = await db
       .collection("messageTemplates")
-      .where("creatorId", "==", uid)
+      .where("earnerId", "==", uid)
       .get();
 
     const customTemplates = templatesSnapshot.docs.map(doc => doc.data());
@@ -754,6 +756,19 @@ export const updateChatAISettings = onCall(
 );
 
 logger.info("✅ Chat System Next-Gen module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

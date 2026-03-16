@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 278 — Purchase Validation
  * 
@@ -221,7 +223,7 @@ export async function validateGooglePlayPurchase(
     // });
     //
     // const result = await androidpublisher.purchases.subscriptions.get({
-    //   packageName: 'com.avalo.app',
+    //   packageName: 'com.platform.app',
     //   subscriptionId: productId,
     //   token: purchaseToken,
     //   auth: await auth.getClient(),
@@ -424,6 +426,20 @@ export async function checkPurchaseFrequency(
   
   return { allowed: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

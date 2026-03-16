@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 152 - Global Ambassadors & City Leaders Program
  * Type definitions for offline community growth
@@ -25,7 +27,7 @@ export interface AmbassadorProfile {
   // Performance (business metrics only)
   eventsHosted: number;
   usersOnboarded: number;
-  creatorsOnboarded: number;
+  earnersOnboarded: number;
   totalAttendees: number;
   averageSatisfactionScore: number;
   
@@ -49,10 +51,10 @@ export type EventType =
   | 'wellness_workshop'
   | 'fitness_meetup'
   | 'photography_walk'
-  | 'creator_collaboration'
+  | 'earner_collaboration'
   | 'business_networking'
   | 'beauty_masterclass'
-  | 'creator_growth_seminar'
+  | 'earner_growth_seminar'
   | 'outdoor_challenge'
   | 'tech_gaming_night'
   | 'skill_workshop'
@@ -270,7 +272,7 @@ export interface AmbassadorEarningsRecord {
   ambassadorId: string;
   
   // Earning Source
-  sourceType: 'event_hosted' | 'user_onboarded' | 'creator_onboarded' | 'ticket_revenue';
+  sourceType: 'event_hosted' | 'user_onboarded' | 'earner_onboarded' | 'ticket_revenue';
   sourceId: string; // eventId or userId
   
   // Amount
@@ -348,7 +350,7 @@ export const APPROVED_EVENT_KEYWORDS: string[] = [
   'wellness',
   'fitness',
   'photography',
-  'creator',
+  'earner',
   'business',
   'networking',
   'beauty',
@@ -364,6 +366,22 @@ export const APPROVED_EVENT_KEYWORDS: string[] = [
   'collaboration',
   'growth'
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

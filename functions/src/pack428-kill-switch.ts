@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 428 — Kill-Switch Layer
  * 
@@ -37,7 +39,7 @@ export async function initializeKillSwitches(): Promise<void> {
     {
       key: KillSwitchKey.WITHDRAWALS_GLOBAL,
       name: 'Global Withdrawals Kill Switch',
-      description: 'Disables all creator withdrawals and payouts',
+      description: 'Disables all earner withdrawals and payouts',
       active: false,
       notifyOps: true
     },
@@ -441,6 +443,20 @@ export async function autoActivateKillSwitch(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

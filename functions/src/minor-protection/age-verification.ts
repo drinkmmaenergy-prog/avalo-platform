@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 178 - Age Verification System
  * Zero-minors admission policy with strict 18+ enforcement
@@ -264,7 +266,7 @@ export async function verifyAge(
 
 export async function reverifyIdentity(
   userId: string,
-  reason: 'appearance_change' | 'periodic' | 'high_risk_behavior' | 'creator_enable',
+  reason: 'appearance_change' | 'periodic' | 'high_risk_behavior' | 'earner_enable',
   triggerData?: any
 ): Promise<AgeVerificationResult> {
   try {
@@ -433,6 +435,22 @@ export async function checkAgeVerificationStatus(userId: string): Promise<{
     isMinor: false
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

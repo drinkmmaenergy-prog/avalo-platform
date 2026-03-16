@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 230: Post-Meeting Glow Engine
  * 
@@ -778,8 +780,8 @@ async function processVoluntaryRefund(
   if (!bookingSnap.exists) return;
   
   const booking = bookingSnap.data();
-  const earnerShare = booking?.escrowAmount || 0;
-  const refundAmount = Math.floor(earnerShare * (refundPercent / 100));
+  const earner = booking?.escrowAmount || 0;
+  const refundAmount = Math.floor(earner * (refundPercent / 100));
   
   if (refundAmount === 0) return;
   
@@ -987,6 +989,20 @@ export async function expireOldGlowStates(): Promise<void> {
   
   await batch.commit();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * FEED & DISCOVERY 3.0 - COMPLETE IMPLEMENTATION
@@ -9,7 +11,7 @@
  * - Infinite Feed (scroll mode)
  * - AI Discovery (personalized recommendations)
  * - Popular Today (trending profiles)
- * - Rising Stars (new high-quality creators)
+ * - Rising Stars (new high-quality earners)
  * - Low Competition (free chat opportunities)
  * - Live Now (currently streaming)
  * - Promo Events (featured/promoted)
@@ -90,7 +92,7 @@ export interface ProfileCard {
 
   // Creator info
   isCreator: boolean;
-  creatorLevel?: string;
+  earnerLevel?: string;
   shopPreview?: {
     productCount: number;
     topProducts: Array<{
@@ -148,7 +150,7 @@ export interface FeedFilters {
   gender?: string[];
   online?: boolean;
   verified?: boolean;
-  creatorOnly?: boolean;
+  earnerOnly?: boolean;
   hasShop?: boolean;
   acceptingChats?: boolean;
 }
@@ -267,12 +269,12 @@ async function buildProfileCard(userId: string, viewerId: string): Promise<Profi
     isPrimary: index === 0,
   }));
 
-  // Get shop preview if creator
+  // Get shop preview if earner
   let shopPreview;
   if (user?.settings?.earnFromChat) {
     const productsSnapshot = await db
-      .collection("creatorProducts")
-      .where("creatorId", "==", userId)
+      .collection("earnerProducts")
+      .where("earnerId", "==", userId)
       .where("status", "==", "active")
       .orderBy("revenue", "desc")
       .limit(3)
@@ -313,7 +315,7 @@ async function buildProfileCard(userId: string, viewerId: string): Promise<Profi
     distance: user?.location?.distance || undefined,
     socialLinks: user?.socialLinks,
     isCreator: user?.settings?.earnFromChat || false,
-    creatorLevel: user?.creatorLevel,
+    earnerLevel: user?.earnerLevel,
     shopPreview,
     compatibilityScore: compatibility.score,
     matchReasons: compatibility.reasons,
@@ -740,7 +742,7 @@ async function getLowCompetitionFeed(
   filters: FeedFilters,
   limit: number
 ): Promise<{ profiles: ProfileCard[]; hasMore: boolean }> {
-  // Find creators with low active chats
+  // Find earners with low active chats
   const snapshot = await db
     .collection("users")
     .where("settings.earnFromChat", "==", false) // Non-earning users
@@ -933,6 +935,20 @@ async function generateDiscoveryScores(userId: string): Promise<void> {
 }
 
 logger.info("✅ Feed & Discovery 3.0 module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

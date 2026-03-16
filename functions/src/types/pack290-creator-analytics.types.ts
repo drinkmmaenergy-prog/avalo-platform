@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 290 — Creator Dashboard & Analytics Types
- * Complete analytics system for earning creators
+ * Complete analytics system for earning earners
  * 
  * Purpose:
  * - Show earnings overview (tokens + fiat equivalent)
@@ -15,7 +17,7 @@
  * - PACK 287 (media in chat)
  * - PACK 288-289 (token store + payouts)
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -116,7 +118,7 @@ export interface EarningsOverview {
   };
   
   fiat: {
-    ratePerTokenUSD: number;  // Always MONETIZATION_SPLITS.EVENT_TICKET.avalo
+    ratePerTokenUSD: number;  // Always MONETIZATION_SPLITS.EVENT_TICKET.platform
     totalEarnedUSD: number;
     currentBalanceUSD: number;
     availableToWithdrawUSD: number;
@@ -372,6 +374,23 @@ export function isSpendingTransaction(type: string): boolean {
   ];
   return spendingTypes.includes(type);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

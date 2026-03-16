@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Subscription Service
  * Phase 33-3: UI-only subscription management for creators
@@ -313,3 +314,4 @@ export default {
   AVALO_COMMISSION,
   CREATOR_EARNINGS,
 };
+

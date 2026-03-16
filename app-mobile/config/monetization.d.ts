@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Monetization Configuration
  * Single source of truth for all monetization-related values in the Avalo app.
@@ -640,4 +641,5 @@ declare const _default: {
     splitEscrowTokens: typeof splitEscrowTokens;
 };
 export default _default;
+
 

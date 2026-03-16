@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 59: User Control Center
  * Centralized control for privacy, incognito, passport, ads/marketing, contact preferences, and support entry
@@ -425,8 +427,8 @@ export const getSupportMetaEndpoint = onCall(
     return {
       success: true,
       meta: {
-        faqUrl: "https://avalo.app/help",
-        supportEmail: "support@avalo.app",
+        faqUrl: "https://platform.app/help",
+        supportEmail: "support@platform.app",
         canOpenDisputes: true,
         canOpenContentReports: true,
       },
@@ -567,6 +569,20 @@ export async function getUserIncognitoSettings(
   const profile = await getUserControlProfile(userId);
   return profile.incognito;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

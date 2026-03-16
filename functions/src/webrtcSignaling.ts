@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 30 - Voice & Video Interactions
  *
@@ -92,7 +94,7 @@ export const startCallV1 = onCall(
     const { type, participantIds, pricePerMinute } = validationResult.data;
 
     try {
-      // Verify user is verified creator for paid calls
+      // Verify user is verified earner for paid calls
       if (pricePerMinute && pricePerMinute > 0) {
         const userDoc = await db.collection("users").doc(uid).get();
         if (!userDoc.exists || userDoc.data()?.verification?.status !== "approved") {
@@ -286,7 +288,7 @@ async function processCallPayment(
 ): Promise<void> {
   try {
     const platformFee = Math.floor(totalCost * 0.3); // 30%
-    const creatorEarnings = totalCost - platformFee; // 70%
+    const earnerEarnings = totalCost - platformFee; // 70%
 
     // Process each participant
     for (const participantId of call.participantIds) {
@@ -315,7 +317,7 @@ async function processCallPayment(
 
         // Credit host
         transaction.update(hostRef, {
-          tokens: FieldValue.increment(creatorEarnings),
+          tokens: FieldValue.increment(earnerEarnings),
         });
 
         // Create transaction records
@@ -326,7 +328,7 @@ async function processCallPayment(
           toUserId: call.hostId,
           amount: totalCost,
           platformFee,
-          creatorEarnings,
+          earnerEarnings,
           createdAt: Timestamp.now(),
         });
       });
@@ -387,6 +389,20 @@ export const sendSignalingMessageV1 = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

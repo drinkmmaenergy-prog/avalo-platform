@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 426 - Region Router Stub
  * Provides region routing functionality for global message delivery
@@ -116,6 +118,20 @@ export function getAvailableRegions(): Region[] {
 export function isRegionAvailable(region: Region): boolean {
   return REGION_CONFIGS[region]?.enabled ?? false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

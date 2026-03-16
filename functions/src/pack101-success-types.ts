@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 101 — Creator Success Toolkit Types
- * Type definitions for creator success signals and suggestions
+ * Type definitions for earner success signals and suggestions
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
@@ -69,6 +71,20 @@ export interface GetCreatorSuccessSignalsResponse {
   scorecard: SuccessScorecard;
   suggestions: SuccessSuggestion[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

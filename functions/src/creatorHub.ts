@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * CREATOR HUB - COMPLETE DASHBOARD & PROGRESSION SYSTEM
  * ========================================================================
- * Comprehensive creator management and gamification
+ * Comprehensive earner management and gamification
  *
  * Features:
  * - Live Creator Dashboard with real-time metrics
@@ -24,7 +26,7 @@
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { admin, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
-import { enforceCreatorAgreement } from './pack451-creator-agreement';
+import { enforceCreatorAgreement } from './pack451-earner-agreement';
 ;
 
 const db = getFirestore();
@@ -55,7 +57,7 @@ export enum QuestStatus {
 }
 
 export interface CreatorDashboard {
-  creatorId: string;
+  earnerId: string;
   level: CreatorLevel;
 
   // Real-time metrics
@@ -143,7 +145,7 @@ export interface PricingRecommendation {
 
 export interface CreatorWithdrawal {
   withdrawalId: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
   currency: string;
   status: "pending" | "processing" | "completed" | "rejected";
@@ -190,7 +192,7 @@ export interface FanProfile {
 
 export interface MessageTemplate {
   templateId: string;
-  creatorId: string;
+  earnerId: string;
   title: string;
   content: string;
   category: "greeting" | "goodbye" | "promo" | "custom";
@@ -213,7 +215,7 @@ const LEVEL_REQUIREMENTS = {
 const LEVEL_BENEFITS = {
   [CreatorLevel.BRONZE]: {
     wordRatio: 11,
-    commissionRate: MONETIZATION_SPLITS.CHAT.creator,
+    commissionRate: MONETIZATION_SPLITS.CHAT.earner,
     maxProducts: 5,
     features: ["basic_analytics", "basic_templates"],
   },
@@ -225,7 +227,7 @@ const LEVEL_BENEFITS = {
   },
   [CreatorLevel.GOLD]: {
     wordRatio: 9,
-    commissionRate: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+    commissionRate: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
     maxProducts: 50,
     features: ["premium_analytics", "ai_pricing", "vip_support", "priority_listing"],
   },
@@ -248,7 +250,7 @@ const LEVEL_BENEFITS = {
 // ============================================================================
 
 /**
- * Get live creator dashboard
+ * Get live earner dashboard
  */
 export const getCreatorDashboard = onCall(
   { region: "europe-west1" },
@@ -261,16 +263,16 @@ export const getCreatorDashboard = onCall(
     // PHASE 4.2: Enforce B2B Creator Agreement acceptance
     await enforceCreatorAgreement(uid);
 
-    // Check if user is a creator
+    // Check if user is a earner
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
     if (!userData?.verification?.status || userData.verification.status !== "approved") {
-      throw new HttpsError("permission-denied", "Must be a verified creator");
+      throw new HttpsError("permission-denied", "Must be a verified earner");
     }
 
     // Get or create dashboard
-    const dashboardRef = db.collection("creatorDashboards").doc(uid);
+    const dashboardRef = db.collection("earnerDashboards").doc(uid);
     let dashboardDoc = await dashboardRef.get();
 
     if (!dashboardDoc.exists) {
@@ -283,7 +285,7 @@ export const getCreatorDashboard = onCall(
     const dashboard = dashboardDoc.data() as CreatorDashboard;
     const updated = await updateDashboardMetrics(uid, dashboard);
 
-    logger.info(`Dashboard retrieved for creator ${uid}`);
+    logger.info(`Dashboard retrieved for earner ${uid}`);
 
     return {
       success: true,
@@ -294,7 +296,7 @@ export const getCreatorDashboard = onCall(
 );
 
 /**
- * Get creator quests (daily/weekly/seasonal)
+ * Get earner quests (daily/weekly/seasonal)
  */
 export const getCreatorQuests = onCall(
   { region: "europe-west1" },
@@ -307,8 +309,8 @@ export const getCreatorQuests = onCall(
     const { type } = request.data as { type?: QuestType };
 
     let query = db
-      .collection("creatorQuests")
-      .where("creatorId", "==", uid)
+      .collection("earnerQuests")
+      .where("earnerId", "==", uid)
       .where("status", "in", [QuestStatus.ACTIVE, QuestStatus.COMPLETED]);
 
     if (type) {
@@ -351,7 +353,7 @@ export const claimQuestReward = onCall(
     }
 
     return await db.runTransaction(async (tx) => {
-      const questRef = db.collection("creatorQuests").doc(questId);
+      const questRef = db.collection("earnerQuests").doc(questId);
       const questDoc = await tx.get(questRef);
 
       if (!questDoc.exists) {
@@ -373,7 +375,7 @@ export const claimQuestReward = onCall(
       }
 
       if (quest.reward.xp) {
-        const dashboardRef = db.collection("creatorDashboards").doc(uid);
+        const dashboardRef = db.collection("earnerDashboards").doc(uid);
         tx.update(dashboardRef, {
           currentXP: FieldValue.increment(quest.reward.xp),
           updatedAt: FieldValue.serverTimestamp(),
@@ -448,7 +450,7 @@ export const requestWithdrawal = onCall(
 
       const withdrawal: CreatorWithdrawal = {
         withdrawalId,
-        creatorId: uid,
+        earnerId: uid,
         amount,
         currency: "tokens",
         status: "pending",
@@ -512,7 +514,7 @@ export const getCreatorFanbase = onCall(
 
     const { tierFilter, sortBy = "totalSpent", limit = 50 } = request.data;
 
-    // Get all chats where creator is earning
+    // Get all chats where earner is earning
     const chatsSnapshot = await db
       .collection("chats")
       .where("participants", "array-contains", uid)
@@ -579,7 +581,7 @@ export const getCreatorFanbase = onCall(
       return 0;
     });
 
-    logger.info(`Retrieved ${fans.length} fans for creator ${uid}`);
+    logger.info(`Retrieved ${fans.length} fans for earner ${uid}`);
 
     return {
       success: true,
@@ -608,7 +610,7 @@ export const getMessageTemplates = onCall(
 
     const snapshot = await db
       .collection("messageTemplates")
-      .where("creatorId", "==", uid)
+      .where("earnerId", "==", uid)
       .orderBy("useCount", "desc")
       .get();
 
@@ -650,7 +652,7 @@ export const saveMessageTemplate = onCall(
 
     const template: MessageTemplate = {
       templateId,
-      creatorId: uid,
+      earnerId: uid,
       title,
       content,
       category,
@@ -681,10 +683,10 @@ export const getPricingRecommendations = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    // Get creator's products
+    // Get earner's products
     const productsSnapshot = await db
-      .collection("creatorProducts")
-      .where("creatorId", "==", uid)
+      .collection("earnerProducts")
+      .where("earnerId", "==", uid)
       .where("status", "==", "active")
       .get();
 
@@ -694,12 +696,12 @@ export const getPricingRecommendations = onCall(
     const recommendations: PricingRecommendation[] = [];
 
     for (const product of products) {
-      // Get similar products from other creators
+      // Get similar products from other earners
       const similarSnapshot = await db
-        .collection("creatorProducts")
+        .collection("earnerProducts")
         .where("type", "==", product.type)
         .where("status", "==", "active")
-        .where("creatorId", "!=", uid)
+        .where("earnerId", "!=", uid)
         .limit(50)
         .get();
 
@@ -760,11 +762,11 @@ export const getPricingRecommendations = onCall(
 // ============================================================================
 
 /**
- * Initialize creator dashboard
+ * Initialize earner dashboard
  */
-async function initializeCreatorDashboard(creatorId: string): Promise<CreatorDashboard> {
+async function initializeCreatorDashboard(earnerId: string): Promise<CreatorDashboard> {
   const dashboard: CreatorDashboard = {
-    creatorId,
+    earnerId,
     level: CreatorLevel.BRONZE,
     onlineStatus: false,
     activeChats: 0,
@@ -798,10 +800,10 @@ async function initializeCreatorDashboard(creatorId: string): Promise<CreatorDas
     updatedAt: Timestamp.now(),
   };
 
-  await db.collection("creatorDashboards").doc(creatorId).set(dashboard);
+  await db.collection("earnerDashboards").doc(earnerId).set(dashboard);
 
   // Generate initial quests
-  await generateDailyQuests(creatorId);
+  await generateDailyQuests(earnerId);
 
   return dashboard;
 }
@@ -810,11 +812,11 @@ async function initializeCreatorDashboard(creatorId: string): Promise<CreatorDas
  * Update dashboard metrics
  */
 async function updateDashboardMetrics(
-  creatorId: string,
+  earnerId: string,
   currentDashboard: CreatorDashboard
 ): Promise<CreatorDashboard> {
   // Get user data
-  const userDoc = await db.collection("users").doc(creatorId).get();
+  const userDoc = await db.collection("users").doc(earnerId).get();
   const userData = userDoc.data();
 
   const earned = userData?.wallet?.earned || 0;
@@ -845,7 +847,7 @@ async function updateDashboardMetrics(
     updatedAt: Timestamp.now(),
   };
 
-  await db.collection("creatorDashboards").doc(creatorId).update(updateData);
+  await db.collection("earnerDashboards").doc(earnerId).update(updateData);
 
   const updated: CreatorDashboard = {
     ...currentDashboard,
@@ -873,7 +875,7 @@ function getNextLevel(currentLevel: CreatorLevel): CreatorLevel {
 /**
  * Generate daily quests
  */
-async function generateDailyQuests(creatorId: string): Promise<Quest[]> {
+async function generateDailyQuests(earnerId: string): Promise<Quest[]> {
   const questTemplates = [
     {
       title: "Early Bird",
@@ -925,15 +927,15 @@ async function generateDailyQuests(creatorId: string): Promise<Quest[]> {
       expiresAt,
     };
 
-    await db.collection("creatorQuests").doc(questId).set({
+    await db.collection("earnerQuests").doc(questId).set({
       ...quest,
-      creatorId,
+      earnerId,
     });
 
     quests.push(quest);
   }
 
-  logger.info(`Generated ${quests.length} daily quests for ${creatorId}`);
+  logger.info(`Generated ${quests.length} daily quests for ${earnerId}`);
 
   return quests;
 }
@@ -941,7 +943,7 @@ async function generateDailyQuests(creatorId: string): Promise<Quest[]> {
 /**
  * Create default message templates
  */
-async function createDefaultTemplates(creatorId: string): Promise<MessageTemplate[]> {
+async function createDefaultTemplates(earnerId: string): Promise<MessageTemplate[]> {
   const defaultTemplates = [
     {
       title: "Welcome Message",
@@ -967,7 +969,7 @@ async function createDefaultTemplates(creatorId: string): Promise<MessageTemplat
 
     const template: MessageTemplate = {
       templateId,
-      creatorId,
+      earnerId,
       title: tmpl.title,
       content: tmpl.content,
       category: tmpl.category,
@@ -983,6 +985,22 @@ async function createDefaultTemplates(creatorId: string): Promise<MessageTemplat
 }
 
 logger.info("✅ Creator Hub module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

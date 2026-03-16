@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 197 — AI Recommendation Engine — Match by Vibe, Not by Demographics
  * REVISED v2 — Overwrite of friendship-only bias
@@ -390,17 +392,17 @@ async function calculateVibeMatch(
   
   // Calculate chemistry score (before preferences)
   const chemistryScore = Math.round(
-    (photoEnergyMatch * MONETIZATION_SPLITS.SUBSCRIPTION.avalo) +
+    (photoEnergyMatch * MONETIZATION_SPLITS.SUBSCRIPTION.platform) +
     (interestMatch * 0.25) +
-    (chatToneMatch * MONETIZATION_SPLITS.EVENT_TICKET.avalo) +
+    (chatToneMatch * MONETIZATION_SPLITS.EVENT_TICKET.platform) +
     (locationBonus * 0.15) +
     (successPatternBonus * 0.10)
   );
   
   // Calculate final vibe score (with preferences)
   const vibeScore = Math.round(
-    (chemistryScore * MONETIZATION_SPLITS.SUBSCRIPTION.creator) +
-    (attractionMatch * MONETIZATION_SPLITS.SUBSCRIPTION.avalo)
+    (chemistryScore * MONETIZATION_SPLITS.SUBSCRIPTION.earner) +
+    (attractionMatch * MONETIZATION_SPLITS.SUBSCRIPTION.platform)
   );
   
   // Generate reasons
@@ -816,6 +818,22 @@ export const onVibeProfileUpdated = onDocumentCreated(
 );
 
 logger.info('✅ Vibe Recommendation Engine (PACK 197 v2) loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 185 - AI Identity & Lore Generator
  * 
@@ -311,7 +313,7 @@ export const generateAICharacter = functions.https.onCall(async (request) => {
  */
 async function createCharacterProfile(
   request: CharacterGenerationRequest,
-  creatorUserId: string
+  earnerUserId: string
 ): Promise<AICharacterProfile> {
   const characterId = generateId();
   
@@ -1035,6 +1037,20 @@ function generateCurrentLifeSituation(character: AICharacterProfile): string {
   ];
   return templates[Math.floor(Math.random() * templates.length)];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

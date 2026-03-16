@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 123 - Team Security Monitoring
  * 
@@ -278,6 +280,22 @@ export const validateDeviceFingerprint = functions.https.onCall(async (request) 
     return { valid: true, isNewDevice: !isKnownDevice };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

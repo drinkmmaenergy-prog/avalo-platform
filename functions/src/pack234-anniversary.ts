@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 234: Anniversary System
  * Automatic celebrations that reactivate couples emotionally
@@ -914,6 +916,20 @@ export const initializeAnniversaryStatus = functions.https.onCall(async (request
 });
 
 console.log('✅ PACK 234: Anniversary System functions loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Market Segmentation Engine
  * Classify countries into market segments for tailored strategies
@@ -9,7 +11,7 @@ import { Timestamp } from './runtime';
 export type MarketSegment = 
   | 'YOUNG_DIGITAL'          // Gen Z heavy, mobile-first
   | 'DATING_MATURE'          // Established dating app markets
-  | 'CREATOR_ECONOMY_RICH'   // Strong creator/influencer culture
+  | 'CREATOR_ECONOMY_RICH'   // Strong earner/influencer culture
   | 'SAFETY_SENSITIVE'       // High focus on safety/moderation
   | 'FRAUD_INTENSIVE'        // Higher fraud risk, needs extra controls
   | 'EMERGING'               // New to dating apps
@@ -57,25 +59,25 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentProfile> = {
       'Strong ASO and positioning',
       'Differentiate with AI/events',
       'Premium tier focus',
-      'High quality creator pool',
+      'High quality earner pool',
     ],
   },
   CREATOR_ECONOMY_RICH: {
     segment: 'CREATOR_ECONOMY_RICH',
-    description: 'Strong creator/influencer culture with monetization expectations',
+    description: 'Strong earner/influencer culture with monetization expectations',
     characteristics: [
-      'Active creator community',
+      'Active earner community',
       'Monetization is expected',
       'Content creation culture',
       'High engagement rates',
       'Platform loyalty',
     ],
     recommendedStrategies: [
-      'Early creator onboarding',
+      'Early earner onboarding',
       'Enable monetization from day 1',
       'Creator academy and support',
       'Revenue sharing transparency',
-      'Bootstrap with seed creators',
+      'Bootstrap with seed earners',
     ],
   },
   SAFETY_SENSITIVE: {
@@ -146,7 +148,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentProfile> = {
       'Push VIP and Royal tiers',
       'Premium features highlighted',
       'Exclusive events',
-      'High-quality creator pool',
+      'High-quality earner pool',
       'Passport and Incognito focus',
     ],
   },
@@ -474,6 +476,20 @@ export async function analyzeMarketOpportunity(
   
   return { score: Math.round(score * 100) / 100, factors, recommendation };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

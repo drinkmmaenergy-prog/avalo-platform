@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 145 - Ad Safety Validator
  * NSFW/Romance/Exploitative Content Detection
@@ -243,6 +245,20 @@ export class AdSafetyValidator {
     return (nsfwScore * 0.4) + (romanceScore * 0.4) + (exploitativeScore * 0.2);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

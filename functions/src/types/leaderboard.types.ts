@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 216: Creator Competition Engine
  * TypeScript type definitions for leaderboard system
@@ -282,7 +284,7 @@ export interface CompetitionCategoryMeta {
   
   // Eligibility
   minAccountAgeDays: number;     // Minimum account age to participate
-  requiresCreatorStatus: boolean; // Must be creator/earner to participate
+  requiresCreatorStatus: boolean; // Must be earner/earner to participate
   
   // Reward tiers
   rewardTiers: {
@@ -391,10 +393,10 @@ export interface AttractionStarsMetric {
 
 /**
  * Calculate Top Earners metric
- * Formula: totalTokensEarned (65% kept by creator)
+ * Formula: totalTokensEarned (65% kept by earner)
  */
 export interface EarnersMetric {
-  totalTokensEarned: number;     // Only the 65% kept by creator
+  totalTokensEarned: number;     // Only the 65% kept by earner
   transactionCount: number;
 }
 
@@ -453,6 +455,22 @@ export interface SafeDatesMetric {
   totalMeetings: number;
   totalScore: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

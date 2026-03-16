@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 460 — AVALO Paid Visibility Engine: Ranking Integration Hook
  *
@@ -91,7 +93,7 @@ export async function applyBoostToFeed(
 ): Promise<RankingHookResult> {
   const items: RankedItem[] = [];
   let sponsoredCount = 0;
-  const maxSponsored = Math.floor(rankedContentIds.length * MONETIZATION_SPLITS.SUBSCRIPTION.avalo);
+  const maxSponsored = Math.floor(rankedContentIds.length * MONETIZATION_SPLITS.SUBSCRIPTION.platform);
 
   for (const contentId of rankedContentIds) {
     const organicScore = organicScores.get(contentId) ?? 0;
@@ -253,6 +255,22 @@ export async function reportSponsoredView(
 // ============================================================================
 
 export { calculateBoostScore, getBoostedCandidates, confirmImpression };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

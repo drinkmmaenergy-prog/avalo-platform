@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 337a — FIX PATCH (Append-Only) for Original PACK 337
  * 
@@ -160,18 +162,18 @@ export const pack337_fraudFreezeWallet = functions.https.onCall(async (request) 
 });
 
 /**
- * Ads → Wallet: Credit ad revenue to creator wallet
+ * Ads → Wallet: Credit ad revenue to earner wallet
  */
 export const pack337_adsCreditRevenue = functions.https.onCall(async (request) => {
   const data = request.data;
-  const { creatorId, amount, impressionIds, period } = data;
+  const { earnerId, amount, impressionIds, period } = data;
 
-  if (!creatorId || !amount) {
-    throw new functions.https.HttpsError('invalid-argument', 'creatorId and amount are required');
+  if (!earnerId || !amount) {
+    throw new functions.https.HttpsError('invalid-argument', 'earnerId and amount are required');
   }
 
   try {
-    const walletRef = db.collection('wallets').doc(creatorId);
+    const walletRef = db.collection('wallets').doc(earnerId);
     await db.runTransaction(async (transaction) => {
       const walletDoc = await transaction.get(walletRef);
       const currentBalance = walletDoc.data()?.balance || 0;
@@ -184,7 +186,7 @@ export const pack337_adsCreditRevenue = functions.https.onCall(async (request) =
       // Log transaction
       const txRef = db.collection('walletTransactions').doc();
       transaction.set(txRef, {
-        userId: creatorId,
+        userId: earnerId,
         type: 'AD_REVENUE',
         amount,
         impressionIds: impressionIds || [],
@@ -193,7 +195,7 @@ export const pack337_adsCreditRevenue = functions.https.onCall(async (request) =
       });
     });
 
-    console.log(`[PACK337] Ad revenue credited: ${amount} tokens to creator ${creatorId}`);
+    console.log(`[PACK337] Ad revenue credited: ${amount} tokens to earner ${earnerId}`);
 
     return {
       success: true,
@@ -279,6 +281,20 @@ export const pack337aExports = {
 };
 
 console.log('✅ PACK 337a exports initialized - Cross-system integration layer active');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

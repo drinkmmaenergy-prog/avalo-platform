@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 79 — In-Chat Paid Gifts
  * Service: Gift Service
@@ -245,3 +246,4 @@ export function buildGiftMessageText(
 export function buildEarningsMessage(tokensEarned: number): string {
   return `You earned ${tokensEarned} tokens from a gift! 🎁`;
 }
+

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Live Streaming Functions (Phase 9)
  *
@@ -405,7 +407,7 @@ export const sendLiveTipCallable = onCall(
       }
 
       // Transaction: Deduct from sender, credit to recipient (80/20 split)
-      const platformFee = Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.avalo); // 20% platform fee
+      const platformFee = Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform); // 20% platform fee
       const recipientAmount = amount - platformFee;
 
       await db.runTransaction(async (tx) => {
@@ -565,7 +567,7 @@ export const tickBillingScheduler = onSchedule(
               });
 
               // Credit host (70%)
-              const hostAmount = Math.floor(tokensPerTick * MONETIZATION_SPLITS.SUBSCRIPTION.creator);
+              const hostAmount = Math.floor(tokensPerTick * MONETIZATION_SPLITS.SUBSCRIPTION.earner);
               const hostRef = db.collection("users").doc(hostId);
               tx.update(hostRef, {
                 "wallet.balance": FieldValue.increment(hostAmount),
@@ -629,6 +631,22 @@ export async function getSessionViewerCount(sessionId: string): Promise<number> 
   const session = sessionDoc.data() as LiveSession;
   return session?.viewerIds?.length || 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

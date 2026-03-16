@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 388 — KYC + AML Regulatory Shield
  * 
@@ -570,6 +572,20 @@ export const pack388_getKYCStatus = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get KYC status');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

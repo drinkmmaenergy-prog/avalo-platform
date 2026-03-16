@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO 3.0 — SENDGRID EMAIL NOTIFICATION SYSTEM
@@ -42,7 +44,7 @@ const logger = {
 // ============================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@avalo.app";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@platform.app";
 const FROM_NAME = "Avalo Team";
 
 // Retry configuration
@@ -365,7 +367,7 @@ ${breachDetails.actionTaken}
 If this wasn't you, please:
 1. Change your password immediately
 2. Review your recent account activity
-3. Contact support at support@avalo.app
+3. Contact support at support@platform.app
 
 ---
 Avalo Security Team
@@ -406,7 +408,7 @@ Avalo Security Team
       <ul>
         <li>Change your password immediately</li>
         <li>Review your recent account activity</li>
-        <li>Contact support at support@avalo.app</li>
+        <li>Contact support at support@platform.app</li>
       </ul>
     </div>
     <div class="footer">
@@ -471,7 +473,7 @@ ${config.message}
 ${details?.reason ? `Reason: ${details.reason}` : ""}
 ${details?.nextSteps ? `Next Steps:\n${details.nextSteps}` : ""}
 
-If you have questions, contact support@avalo.app
+If you have questions, contact support@platform.app
 
 ---
 Avalo Verification Team
@@ -500,7 +502,7 @@ Avalo Verification Team
       ${details?.nextSteps ? `<p><strong>Next Steps:</strong></p><p>${details.nextSteps}</p>` : ""}
     </div>
     <div class="footer">
-      <p>Questions? Contact us at support@avalo.app</p>
+      <p>Questions? Contact us at support@platform.app</p>
     </div>
   </div>
 </body>
@@ -800,6 +802,20 @@ export async function getEmailStatistics(
     successRate,
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 302 — Unified Token & Subscription Checkout (USD Canonical)
  * Types and Interfaces
@@ -279,5 +281,19 @@ export const CURRENCY_CONFIGS: Record<string,{
     conversionRate:1
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

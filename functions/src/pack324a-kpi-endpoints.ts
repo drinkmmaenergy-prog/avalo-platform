@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324A — Admin KPI API Endpoints
  * 
@@ -152,7 +154,7 @@ export const pack324a_getPlatformKpiDaily = onCall(
 // ============================================================================
 
 /**
- * Get creator KPI for a specific user and date
+ * Get earner KPI for a specific user and date
  * Admin-only, read-only
  */
 export const pack324a_getCreatorKpiDaily = onCall(
@@ -237,7 +239,7 @@ export const pack324a_getCreatorKpiDaily = onCall(
       
       return response;
     } catch (error: any) {
-      logger.error('Error fetching creator KPI:', error);
+      logger.error('Error fetching earner KPI:', error);
       throw new HttpsError('internal', `Failed to fetch KPI: ${error.message}`);
     }
   }
@@ -358,7 +360,7 @@ export const pack324a_aggregateDailyKpi = onSchedule(
       
       logger.info('Daily KPI aggregation complete:', {
         date: result.platformKpi.date,
-        creatorsProcessed: result.creatorsProcessed,
+        earnersProcessed: result.earnersProcessed,
         platformRevenue: result.platformKpi.totalTokenRevenueUSD,
         safetyReports: result.safetyKpi.reportsTotal,
       });
@@ -457,13 +459,13 @@ export const pack324a_admin_triggerDailyAggregation = onCall(
       const result = await aggregateAllKpiDaily(dateObj);
       
       logger.info(`Manual aggregation complete for ${date}`, {
-        creatorsProcessed: result.creatorsProcessed,
+        earnersProcessed: result.earnersProcessed,
       });
       
       console.log('Scheduled job result:', {
         success: true,
         date: result.platformKpi.date,
-        creatorsProcessed: result.creatorsProcessed,
+        earnersProcessed: result.earnersProcessed,
         platformKpi: result.platformKpi,
         safetyKpi: result.safetyKpi,
       });
@@ -564,7 +566,7 @@ export const pack324a_admin_getKpiSummary = onCall(
 );
 
 /**
- * Get top creators by earnings for a date range
+ * Get top earners by earnings for a date range
  * Admin-only
  */
 export const pack324a_admin_getTopCreators = onCall(
@@ -586,22 +588,22 @@ export const pack324a_admin_getTopCreators = onCall(
     }
     
     try {
-      const creatorsSnapshot = await db
+      const earnersSnapshot = await db
         .collection(KPI_CONFIG.COLLECTIONS.CREATOR_DAILY)
         .where('date', '>=', startDate)
         .where('date', '<=', endDate)
         .get();
       
-      // Aggregate by creator
-      const creatorMap = new Map<string, {
+      // Aggregate by earner
+      const earnerMap = new Map<string, {
         totalEarnings: number;
         totalSessions: number;
         days: number;
       }>();
       
-      creatorsSnapshot.forEach((doc) => {
+      earnersSnapshot.forEach((doc) => {
         const kpi = doc.data();
-        const current = creatorMap.get(kpi.userId) || {
+        const current = earnerMap.get(kpi.userId) || {
           totalEarnings: 0,
           totalSessions: 0,
           days: 0,
@@ -611,11 +613,11 @@ export const pack324a_admin_getTopCreators = onCall(
         current.totalSessions += kpi.sessionsCount;
         current.days += 1;
         
-        creatorMap.set(kpi.userId, current);
+        earnerMap.set(kpi.userId, current);
       });
       
       // Convert to array and sort
-      const topCreators = Array.from(creatorMap.entries())
+      const topCreators = Array.from(earnerMap.entries())
         .map(([userId, data]) => ({
           userId,
           totalEarningsTokens: data.totalEarnings,
@@ -632,17 +634,31 @@ export const pack324a_admin_getTopCreators = onCall(
         startDate,
         endDate,
         topCreators,
-        totalCreators: creatorMap.size,
+        totalCreators: earnerMap.size,
       });
 
       
       return;
     } catch (error: any) {
-      logger.error('Error fetching top creators:', error);
-      throw new HttpsError('internal', `Failed to fetch top creators: ${error.message}`);
+      logger.error('Error fetching top earners:', error);
+      throw new HttpsError('internal', `Failed to fetch top earners: ${error.message}`);
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

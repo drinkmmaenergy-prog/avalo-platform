@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 266: Smart Supporter CRM Engine
  * 
- * Core business logic for the Supporter CRM system that helps creators
+ * Core business logic for the Supporter CRM system that helps earners
  * understand their paying audience, retain supporters, and prioritize engagement.
  * 
  * KEY FEATURES:
@@ -67,7 +69,7 @@ const VIP_TOP_COUNT = 10;
  */
 export async function calculateBehavioralSignals(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<BehavioralSignals> {
   const now = Timestamp.now();
@@ -78,7 +80,7 @@ export async function calculateBehavioralSignals(
   const chatsQuery = await db
     .collection('chats')
     .where('participants', 'array-contains', supporterId)
-    .where('roles.earnerId', '==', creatorId)
+    .where('roles.earnerId', '==', earnerId)
     .get();
 
   let recentChatActivity = 0;
@@ -104,7 +106,7 @@ export async function calculateBehavioralSignals(
   const giftsQuery = await db
     .collection('gifts')
     .where('senderId', '==', supporterId)
-    .where('recipientId', '==', creatorId)
+    .where('recipientId', '==', earnerId)
     .get();
 
   let totalGiftsSent = 0;
@@ -139,7 +141,7 @@ export async function calculateBehavioralSignals(
   const profileViewsQuery = await db
     .collection('profileViews')
     .where('viewerId', '==', supporterId)
-    .where('profileOwnerId', '==', creatorId)
+    .where('profileOwnerId', '==', earnerId)
     .get();
 
   let profileViewsLast7Days = 0;
@@ -159,7 +161,7 @@ export async function calculateBehavioralSignals(
   const liveAttendanceQuery = await db
     .collection('liveStreamAttendance')
     .where('userId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   let liveStreamsAttended = 0;
@@ -186,7 +188,7 @@ export async function calculateBehavioralSignals(
   const ppvQuery = await db
     .collection('ppvPurchases')
     .where('buyerId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   let ppvPurchases = 0;
@@ -207,7 +209,7 @@ export async function calculateBehavioralSignals(
 
   // Fetch fan club membership
   const fanClubDoc = await db
-    .doc(`fanClubMemberships/${creatorId}_${supporterId}`)
+    .doc(`fanClubMemberships/${earnerId}_${supporterId}`)
     .get();
 
   let isFanClubMember = false;
@@ -227,7 +229,7 @@ export async function calculateBehavioralSignals(
   const eventsQuery = await db
     .collection('eventAttendance')
     .where('userId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   let eventsAttended = 0;
@@ -421,19 +423,19 @@ export function getConversionPotential(probability: number): ConversionPotential
 }
 
 /**
- * Segment all supporters for a creator
+ * Segment all supporters for a earner
  */
 export async function segmentSupporters(
   db: Firestore,
-  creatorId: string
+  earnerId: string
 ): Promise<SupporterSegmentData[]> {
-  // Get all supporters (users who have spent tokens with this creator)
+  // Get all supporters (users who have spent tokens with this earner)
   const supportersSet = new Set<string>();
 
   // From gifts
   const giftsQuery = await db
     .collection('gifts')
-    .where('recipientId', '==', creatorId)
+    .where('recipientId', '==', earnerId)
     .get();
   
   giftsQuery.forEach(doc => {
@@ -443,7 +445,7 @@ export async function segmentSupporters(
   // From chats
   const chatsQuery = await db
     .collection('chats')
-    .where('roles.earnerId', '==', creatorId)
+    .where('roles.earnerId', '==', earnerId)
     .where('state', '!=', 'FREE_ACTIVE')
     .get();
 
@@ -457,7 +459,7 @@ export async function segmentSupporters(
   // From PPV
   const ppvQuery = await db
     .collection('ppvPurchases')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   ppvQuery.forEach(doc => {
@@ -467,7 +469,7 @@ export async function segmentSupporters(
   // From fan clubs
   const fanClubQuery = await db
     .collection('fanClubMemberships')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', '==', 'active')
     .get();
 
@@ -481,11 +483,11 @@ export async function segmentSupporters(
   // Process each supporter
   for (const supporterId of supporters) {
     // Calculate lifetime spending
-    const lifetimeSpent = await calculateLifetimeSpending(db, creatorId, supporterId);
-    const monthlySpent = await calculateMonthlySpending(db, creatorId, supporterId);
+    const lifetimeSpent = await calculateLifetimeSpending(db, earnerId, supporterId);
+    const monthlySpent = await calculateMonthlySpending(db, earnerId, supporterId);
 
     // Calculate behavioral signals
-    const signals = await calculateBehavioralSignals(db, creatorId, supporterId);
+    const signals = await calculateBehavioralSignals(db, earnerId, supporterId);
 
     // Calculate conversion probability
     const conversionProbability = calculateConversionProbability(signals);
@@ -504,7 +506,7 @@ export async function segmentSupporters(
 
     segmentedData.push({
       supporterId,
-      creatorId,
+      earnerId,
       segment,
       conversionPotential,
       conversionProbability,
@@ -521,7 +523,7 @@ export async function segmentSupporters(
   const batch = db.batch();
   for (const data of segmentedData) {
     const ref = db
-      .doc(`supporterSegments/${creatorId}/supporters/${data.supporterId}`);
+      .doc(`supporterSegments/${earnerId}/supporters/${data.supporterId}`);
     batch.set(ref, data);
   }
   await batch.commit();
@@ -537,17 +539,17 @@ export async function segmentSupporters(
     updatedAt: Timestamp.now()
   };
 
-  await db.doc(`supporterSegmentSummary/${creatorId}`).set(summary);
+  await db.doc(`supporterSegmentSummary/${earnerId}`).set(summary);
 
   return segmentedData;
 }
 
 /**
- * Calculate lifetime spending for a supporter with a creator
+ * Calculate lifetime spending for a supporter with a earner
  */
 async function calculateLifetimeSpending(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<number> {
   let total = 0;
@@ -556,7 +558,7 @@ async function calculateLifetimeSpending(
   const giftsQuery = await db
     .collection('gifts')
     .where('senderId', '==', supporterId)
-    .where('recipientId', '==', creatorId)
+    .where('recipientId', '==', earnerId)
     .get();
 
   giftsQuery.forEach(doc => {
@@ -567,7 +569,7 @@ async function calculateLifetimeSpending(
   const chatsQuery = await db
     .collection('chats')
     .where('participants', 'array-contains', supporterId)
-    .where('roles.earnerId', '==', creatorId)
+    .where('roles.earnerId', '==', earnerId)
     .get();
 
   chatsQuery.forEach(doc => {
@@ -578,7 +580,7 @@ async function calculateLifetimeSpending(
   const ppvQuery = await db
     .collection('ppvPurchases')
     .where('buyerId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   ppvQuery.forEach(doc => {
@@ -589,7 +591,7 @@ async function calculateLifetimeSpending(
   const fanClubQuery = await db
     .collection('fanClubTransactions')
     .where('memberId', '==', supporterId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   fanClubQuery.forEach(doc => {
@@ -604,7 +606,7 @@ async function calculateLifetimeSpending(
  */
 async function calculateMonthlySpending(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<number> {
   const thirtyDaysAgo = Timestamp.fromMillis(
@@ -617,7 +619,7 @@ async function calculateMonthlySpending(
   const giftsQuery = await db
     .collection('gifts')
     .where('senderId', '==', supporterId)
-    .where('recipientId', '==', creatorId)
+    .where('recipientId', '==', earnerId)
     .where('createdAt', '>=', thirtyDaysAgo)
     .get();
 
@@ -639,11 +641,11 @@ async function calculateMonthlySpending(
  */
 export async function generateInboxEntries(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   tab: string,
   limit: number = 50
 ): Promise<CRMInboxEntry[]> {
-  const segmentsRef = db.collection(`supporterSegments/${creatorId}/supporters`);
+  const segmentsRef = db.collection(`supporterSegments/${earnerId}/supporters`);
   let query = segmentsRef.orderBy('conversionProbability', 'desc');
 
   // Filter by tab
@@ -703,8 +705,8 @@ export async function generateInboxEntries(
     const unreadQuery = await db
       .collection('chats')
       .where('participants', 'array-contains', data.supporterId)
-      .where('roles.earnerId', '==', creatorId)
-      .where(`unreadCount.${creatorId}`, '>', 0)
+      .where('roles.earnerId', '==', earnerId)
+      .where(`unreadCount.${earnerId}`, '>', 0)
       .get();
 
     const unreadMessages = unreadQuery.size;
@@ -747,7 +749,7 @@ export async function generateInboxEntries(
   // Save to Firestore for caching
   const batch = db.batch();
   entries.forEach(entry => {
-    const ref = db.doc(`crmInboxEntries/${creatorId}/entries/${entry.supporterId}`);
+    const ref = db.doc(`crmInboxEntries/${earnerId}/entries/${entry.supporterId}`);
     batch.set(ref, { ...entry, tab, updatedAt: Timestamp.now() });
   });
   await batch.commit();
@@ -785,31 +787,31 @@ function calculatePriorityScore(data: SupporterSegmentData): number {
  */
 export async function buildSupporterProfile(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<SupporterProfile> {
-  const signals = await calculateBehavioralSignals(db, creatorId, supporterId);
-  const lifetimeSpent = await calculateLifetimeSpending(db, creatorId, supporterId);
-  const monthlySpent = await calculateMonthlySpending(db, creatorId, supporterId);
-  const weeklySpent = await calculateWeeklySpending(db, creatorId, supporterId);
+  const signals = await calculateBehavioralSignals(db, earnerId, supporterId);
+  const lifetimeSpent = await calculateLifetimeSpending(db, earnerId, supporterId);
+  const monthlySpent = await calculateMonthlySpending(db, earnerId, supporterId);
+  const weeklySpent = await calculateWeeklySpending(db, earnerId, supporterId);
 
   // Calculate feature usage breakdown
-  const featureUsage = await calculateFeatureUsage(db, creatorId, supporterId, signals);
+  const featureUsage = await calculateFeatureUsage(db, earnerId, supporterId, signals);
 
   // Calculate attendance metrics
-  const attendance = await calculateAttendanceMetrics(db, creatorId, supporterId);
+  const attendance = await calculateAttendanceMetrics(db, earnerId, supporterId);
 
   // Calculate DM response score
-  const dmResponseScore = await calculateDMResponseScore(db, creatorId, supporterId);
+  const dmResponseScore = await calculateDMResponseScore(db, earnerId, supporterId);
 
   // Calculate best contact time using AI
   const bestContactTime = calculateBestContactTime(signals);
 
   // Identify behavioral patterns
-  const patterns = await identifyBehavioralPatterns(db, creatorId, supporterId, signals);
+  const patterns = await identifyBehavioralPatterns(db, earnerId, supporterId, signals);
 
   // Get first purchase date
-  const firstPurchaseAt = await getFirstPurchaseDate(db, creatorId, supporterId);
+  const firstPurchaseAt = await getFirstPurchaseDate(db, earnerId, supporterId);
 
   // Calculate lifetime days
   const lifetimeDays = firstPurchaseAt
@@ -818,7 +820,7 @@ export async function buildSupporterProfile(
 
   const profile: SupporterProfile = {
     supporterId,
-    creatorId,
+    earnerId,
     lifetimeTokensSpent: lifetimeSpent,
     monthlyTokensSpent: monthlySpent,
     weeklyTokensSpent: weeklySpent,
@@ -836,7 +838,7 @@ export async function buildSupporterProfile(
 
   // Save to Firestore
   await db
-    .doc(`supporterProfiles/${creatorId}/profiles/${supporterId}`)
+    .doc(`supporterProfiles/${earnerId}/profiles/${supporterId}`)
     .set(profile);
 
   return profile;
@@ -844,7 +846,7 @@ export async function buildSupporterProfile(
 
 async function calculateWeeklySpending(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<number> {
   const sevenDaysAgo = Timestamp.fromMillis(
@@ -856,7 +858,7 @@ async function calculateWeeklySpending(
   const giftsQuery = await db
     .collection('gifts')
     .where('senderId', '==', supporterId)
-    .where('recipientId', '==', creatorId)
+    .where('recipientId', '==', earnerId)
     .where('createdAt', '>=', sevenDaysAgo)
     .get();
 
@@ -869,7 +871,7 @@ async function calculateWeeklySpending(
 
 async function calculateFeatureUsage(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string,
   signals: BehavioralSignals
 ) {
@@ -912,7 +914,7 @@ async function calculateFeatureUsage(
 
 async function calculateAttendanceMetrics(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ) {
   // Simplified - would need full calculation
@@ -927,7 +929,7 @@ async function calculateAttendanceMetrics(
 
 async function calculateDMResponseScore(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ) {
   return {
@@ -951,7 +953,7 @@ function calculateBestContactTime(signals: BehavioralSignals) {
 
 async function identifyBehavioralPatterns(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string,
   signals: BehavioralSignals
 ) {
@@ -989,7 +991,7 @@ async function identifyBehavioralPatterns(
 
 async function getFirstPurchaseDate(
   db: Firestore,
-  creatorId: string,
+  earnerId: string,
   supporterId: string
 ): Promise<Timestamp> {
   // Find earliest transaction
@@ -1044,6 +1046,20 @@ export function sanitizeSupporterData(data: any): any {
 
   return sanitized;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

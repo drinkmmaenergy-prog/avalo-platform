@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 126 — Evidence-Based Moderation Vault
  *
@@ -439,6 +441,20 @@ async function logVaultEvent(
   
   await db.collection(SAFETY_AUDIT_COLLECTION).add(log);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 278 — Subscription Configuration
  * 
@@ -122,3 +123,4 @@ export const SUBSCRIPTION_PRODUCT_IDS = {
     web: 'price_royal_monthly',
   },
 } as const;
+

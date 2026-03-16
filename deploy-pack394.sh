@@ -25,7 +25,7 @@ NC='\033[0m' # No Color
 # Configuration
 ENVIRONMENT=${1:-staging}
 PROJECT_ID="avalo-app-production"
-REGION="us-central1"
+REGION="europe-west1"
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║         PACK 394 — Viral Growth Engine Deployment         ║${NC}"

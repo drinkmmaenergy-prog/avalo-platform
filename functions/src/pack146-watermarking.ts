@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 146 — Watermarking Service
  * Visible + Invisible Watermarking for Content Protection
@@ -363,6 +365,20 @@ export default {
   getWatermarkCoordinates,
   calculateWatermarkSize,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

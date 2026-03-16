@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 128 - Treasury Service (Mobile)
  * Client-side service for treasury operations
@@ -225,3 +226,4 @@ export function getTreasuryErrorMessage(error: any): string {
 
   return 'An unexpected error occurred';
 }
+

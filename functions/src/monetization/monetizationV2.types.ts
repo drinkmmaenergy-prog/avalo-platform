@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * MONETIZATION V2 — Types
  *
@@ -20,7 +22,7 @@ import { LedgerEntryType, WalletMutationResult } from '../wallet/types';
 export interface ChargeRequest {
   /** The user being charged (spender / buyer). */
   actorId: string;
-  /** The creator receiving the split (null for 100% Avalo features). */
+  /** The earner receiving the split (null for 100% Avalo features). */
   counterpartyId: string | null;
   /** Total tokens to charge. Must be a positive integer. */
   amountTokens: number;
@@ -94,7 +96,7 @@ export interface CallBillRequest extends ChargeRequest {
 export interface CallEscrowRequest {
   /** The payer user. */
   actorId: string;
-  /** The creator (earner). */
+  /** The earner (earner). */
   counterpartyId: string;
   /** Tokens to reserve. Must be a positive integer. */
   reserveTokens: number;
@@ -199,7 +201,7 @@ export type RefundReason =
 export interface CalendarRefundRequest {
   /** The original booking actor (buyer). */
   actorId: string;
-  /** The creator who was booked. */
+  /** The earner who was booked. */
   counterpartyId: string;
   /** Original charge amount. */
   originalAmountTokens: number;
@@ -219,7 +221,7 @@ export interface CalendarRefundRequest {
 export interface CallEscrowRefundRequest {
   /** The payer who reserved escrow. */
   actorId: string;
-  /** The creator. */
+  /** The earner. */
   counterpartyId: string;
   /** Unused tokens to refund. */
   unusedTokens: number;
@@ -260,6 +262,22 @@ export interface EventPayoutValidation {
   /** When validation occurred. */
   validatedAt: string | null;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

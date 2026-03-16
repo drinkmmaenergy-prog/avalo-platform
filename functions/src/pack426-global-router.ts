@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 426 — Global Router
  * 
@@ -49,24 +51,24 @@ export const REGION_CONFIGS: Record<Region, RegionConfig> = {
   EU: {
     region: 'EU',
     firestoreLocation: 'europe-west1',
-    cdnEndpoint: 'https://cdn-eu.avalo.app',
-    aiEndpoint: 'https://ai-eu.avalo.app',
+    cdnEndpoint: 'https://cdn-eu.platform.app',
+    aiEndpoint: 'https://ai-eu.platform.app',
     fallbackRegion: 'US',
     priority: 1,
   },
   US: {
     region: 'US',
     firestoreLocation: 'us-central1',
-    cdnEndpoint: 'https://cdn-us.avalo.app',
-    aiEndpoint: 'https://ai-us.avalo.app',
+    cdnEndpoint: 'https://cdn-us.platform.app',
+    aiEndpoint: 'https://ai-us.platform.app',
     fallbackRegion: 'EU',
     priority: 1,
   },
   APAC: {
     region: 'APAC',
     firestoreLocation: 'asia-south1',
-    cdnEndpoint: 'https://cdn-apac.avalo.app',
-    aiEndpoint: 'https://ai-apac.avalo.app',
+    cdnEndpoint: 'https://cdn-apac.platform.app',
+    aiEndpoint: 'https://ai-apac.platform.app',
     fallbackRegion: 'EU',
     priority: 2,
   },
@@ -457,6 +459,20 @@ export default {
   getRegionConfig,
   regionHealthCheck,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

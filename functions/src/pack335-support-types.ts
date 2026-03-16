@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 335: User Support System - Type Definitions
  * Shared types for support ticket system
@@ -135,6 +137,20 @@ export interface AiSupportResponse {
   relatedFaqs: string[];
   suggestedActions?: string[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

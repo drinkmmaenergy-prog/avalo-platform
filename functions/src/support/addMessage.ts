@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 300 - Add Message to Support Ticket
  * Cloud Function to add a message to an existing ticket
@@ -211,6 +213,22 @@ export const addMessage = functions.https.onCall(async (request) => {
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

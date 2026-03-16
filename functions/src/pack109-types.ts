@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 109 — Cross-App Social Partnerships, Influencer Collaboration Pipeline & Talent Relations CRM
  * 
@@ -6,7 +8,7 @@
  * CRITICAL CONSTRAINTS:
  * - Zero free tokens, zero bonuses, zero discounts, zero incentives
  * - Token price per unit remains unchanged
- * - Revenue split always 65% creator / 35% Avalo
+ * - Revenue split always 65% earner / 35% Avalo
  * - No special ranking boost in discovery
  * - No algorithmic "pay-to-win" advantages
  * - This is pure B2B/Talent CRM + campaign orchestration
@@ -70,7 +72,7 @@ export type TalentCategory =
 export interface TalentProfile {
   id: string;
   partnerId?: string; // Optional link to partner organization
-  avaloUserId?: string; // Optional link if talent has Avalo account
+  platformUserId?: string; // Optional link if talent has Avalo account
   externalHandles: {
     instagram?: string;
     tiktok?: string;
@@ -104,7 +106,7 @@ export type CampaignObjective =
   | 'CONTENT_DROP'         // Content launch event
   | 'ENGAGEMENT'           // Drive engagement
   | 'LIVE_EVENT'           // Live streaming event
-  | 'CREATOR_RECRUITMENT'; // Recruit new creators
+  | 'CREATOR_RECRUITMENT'; // Recruit new earners
 
 export type CampaignChannel =
   | 'TIKTOK'
@@ -128,7 +130,7 @@ export interface PartnershipCampaign {
   status: CampaignStatus;
   partnerIds: string[]; // Involved partner organizations
   talentIds: string[]; // Involved talent profiles
-  trackingTags: string[]; // Additional tracking tags (e.g., 'avalox_partner_01')
+  trackingTags: string[]; // Additional tracking tags (e.g., 'platformx_partner_01')
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
 }
@@ -148,7 +150,7 @@ export interface CampaignAttributionEvent {
   id: string;
   campaignId: string; // Reference to partnership_campaigns
   talentId: string; // Reference to talent_profiles
-  avaloUserId?: string; // Optional (if user signs up / acts)
+  platformUserId?: string; // Optional (if user signs up / acts)
   eventType: CampaignAttributionEventType;
   occurredAt: Timestamp | FieldValue;
   platform?: CampaignChannel; // Platform where event originated
@@ -252,7 +254,7 @@ export interface UpdatePartnerRequest {
 // Talent Management
 export interface CreateTalentProfileRequest {
   partnerId?: string;
-  avaloUserId?: string;
+  platformUserId?: string;
   externalHandles: {
     instagram?: string;
     tiktok?: string;
@@ -270,7 +272,7 @@ export interface CreateTalentProfileRequest {
 export interface UpdateTalentProfileRequest {
   talentId: string;
   partnerId?: string;
-  avaloUserId?: string;
+  platformUserId?: string;
   externalHandles?: {
     instagram?: string;
     tiktok?: string;
@@ -412,6 +414,20 @@ export class PartnershipError extends Error {
     this.name = 'PartnershipError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

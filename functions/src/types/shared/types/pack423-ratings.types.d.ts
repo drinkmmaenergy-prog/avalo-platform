@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface UserRating  {
     id: string;
     fromUserId: string;
@@ -21,6 +23,23 @@ export interface RatingMetrics  {
   [key: string]: any;
 }
 export type RatingCategory = 'OVERALL' | 'COMMUNICATION' | 'RELIABILITY' | 'QUALITY';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

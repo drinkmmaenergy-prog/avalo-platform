@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Ambassador Onboarding Engine
@@ -432,8 +434,8 @@ export class AmbassadorOnboardingService {
         state: application.targetRegion.state,
       },
       referralCode,
-      qrCode: `https://avalo.app/r/${referralCode}`,
-      digitalIdCard: `https://avalo.app/id/${profileId}`,
+      qrCode: `https://platform.app/r/${referralCode}`,
+      digitalIdCard: `https://platform.app/id/${profileId}`,
       kpis: ambassadorTypeService.getDefaultKPIs(application.role),
       compensation: {
         cpi: 2.0 * regionalConfig.multiplier,
@@ -450,7 +452,7 @@ export class AmbassadorOnboardingService {
       performance: {
         totalReferrals: 0,
         verifiedReferrals: 0,
-        creatorsRecruited: 0,
+        earnersRecruited: 0,
         eventsHosted: 0,
         revenue: 0,
         rating: 0,
@@ -706,6 +708,20 @@ export function createAmbassadorOnboardingService(
 ): AmbassadorOnboardingService {
   return new AmbassadorOnboardingService(db);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

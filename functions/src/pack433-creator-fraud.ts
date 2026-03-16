@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 433 — Influencer Marketplace & Creator Deal Automation Engine
  * Part 5: Safety & Fraud Control
@@ -43,7 +45,7 @@ export type FraudStatus = 'DETECTED' | 'REVIEWING' | 'CONFIRMED' | 'FALSE_POSITI
 
 export interface FraudSignal {
   id: string;
-  creatorId: string;
+  earnerId: string;
   attributionId: string;
   userId: string;
   signalType: FraudSignalType;
@@ -79,7 +81,7 @@ export interface FraudSignal {
 }
 
 export interface CreatorRiskScore {
-  creatorId: string;
+  earnerId: string;
   overallScore: number; // 0-100, higher is riskier
   fraudSignalsCount: number;
   confirmedFraudCount: number;
@@ -111,7 +113,7 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
   const signals: Array<Omit<FraudSignal, 'id'>> = [];
 
   // Get attribution
-  const attrDoc = await db.collection('creator_attributions').doc(attributionId).get();
+  const attrDoc = await db.collection('earner_attributions').doc(attributionId).get();
   
   if (!attrDoc.exists) {
     return signals;
@@ -119,40 +121,40 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
 
   const attribution = attrDoc.data();
   const userId = attribution?.userId;
-  const creatorId = attribution?.creatorId;
+  const earnerId = attribution?.earnerId;
   const ipAddress = attribution?.ipAddress;
   const deviceId = attribution?.deviceId;
 
   // Rule 1: Check for self-referral
-  const creatorProfile = await db.collection('creator_profiles').doc(creatorId).get();
-  if (creatorProfile.exists) {
-    const creator = creatorProfile.data();
-    if (creator?.userId === userId) {
+  const earnerProfile = await db.collection('earner_profiles').doc(earnerId).get();
+  if (earnerProfile.exists) {
+    const earner = earnerProfile.data();
+    if (earner?.userId === userId) {
       signals.push(createFraudSignal({
-        creatorId,
+        earnerId,
         attributionId,
         userId,
         signalType: 'SELF_REFERRAL',
         severity: 'CRITICAL',
-        evidence: { userId, creatorUserId: creator.userId },
+        evidence: { userId, earnerUserId: earner.userId },
         description: 'Creator referred themselves',
         confidence: 100,
       }));
     }
   }
 
-  // Rule 2: Check for duplicate IP within same creator
+  // Rule 2: Check for duplicate IP within same earner
   if (ipAddress && ipAddress !== 'unknown') {
     const duplicateIPQuery = await db
-      .collection('creator_attributions')
-      .where('creatorId', '==', creatorId)
+      .collection('earner_attributions')
+      .where('earnerId', '==', earnerId)
       .where('ipAddress', '==', ipAddress)
       .where('installedAt', '>=', Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000))
       .get();
 
     if (duplicateIPQuery.size > 5) {
       signals.push(createFraudSignal({
-        creatorId,
+        earnerId,
         attributionId,
         userId,
         signalType: 'CLICK_FARM',
@@ -167,14 +169,14 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
   // Rule 3: Check for duplicate device
   if (deviceId) {
     const duplicateDeviceQuery = await db
-      .collection('creator_attributions')
+      .collection('earner_attributions')
       .where('deviceId', '==', deviceId)
       .limit(2)
       .get();
 
     if (duplicateDeviceQuery.size > 1) {
       signals.push(createFraudSignal({
-        creatorId,
+        earnerId,
         attributionId,
         userId,
         signalType: 'DUPLICATE_DEVICE',
@@ -188,14 +190,14 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
 
   // Rule 4: Check for rapid installs (bot pattern)
   const recentInstalls = await db
-    .collection('creator_attributions')
-    .where('creatorId', '==', creatorId)
+    .collection('earner_attributions')
+    .where('earnerId', '==', earnerId)
     .where('installedAt', '>=', Timestamp.fromMillis(Date.now() - 60 * 60 * 1000))
     .get();
 
   if (recentInstalls.size > 100) {
     signals.push(createFraudSignal({
-      creatorId,
+      earnerId,
       attributionId,
       userId,
       signalType: 'RAPID_INSTALLS',
@@ -209,7 +211,7 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
   // Rule 5: Check for VPN/proxy patterns
   if (ipAddress && isKnownVPNIP(ipAddress)) {
     signals.push(createFraudSignal({
-      creatorId,
+      earnerId,
       attributionId,
       userId,
       signalType: 'VPN_SPOOFING',
@@ -227,7 +229,7 @@ async function analyzeAttributionForFraud(attributionId: string): Promise<Array<
  * Helper to create fraud signal
  */
 function createFraudSignal(params: {
-  creatorId: string;
+  earnerId: string;
   attributionId: string;
   userId: string;
   signalType: FraudSignalType;
@@ -237,7 +239,7 @@ function createFraudSignal(params: {
   confidence: number;
 }): Omit<FraudSignal, 'id'> {
   return {
-    creatorId: params.creatorId,
+    earnerId: params.earnerId,
     attributionId: params.attributionId,
     userId: params.userId,
     signalType: params.signalType,
@@ -275,7 +277,7 @@ function isKnownVPNIP(ipAddress: string): boolean {
  * Auto-triggered when new attribution is created
  */
 export const onAttributionCreated = onDocumentCreated(
-  'creator_attributions/{attributionId}',
+  'earner_attributions/{attributionId}',
   async (event) => {
     try {
       const attributionId = event.params.attributionId;
@@ -292,7 +294,7 @@ export const onAttributionCreated = onDocumentCreated(
 
       if (signals.length === 0) {
         // No fraud detected, mark as verified
-        await db.collection('creator_attributions').doc(attributionId).update({
+        await db.collection('earner_attributions').doc(attributionId).update({
           verified: true,
           updatedAt: Timestamp.now(),
         });
@@ -318,7 +320,7 @@ export const onAttributionCreated = onDocumentCreated(
 
       if (highSeveritySignals.length > 0) {
         // Mark attribution as not verified (needs review)
-        await db.collection('creator_attributions').doc(attributionId).update({
+        await db.collection('earner_attributions').doc(attributionId).update({
           verified: false,
           updatedAt: Timestamp.now(),
         });
@@ -328,11 +330,11 @@ export const onAttributionCreated = onDocumentCreated(
           highSeverity: highSeveritySignals.length,
         });
 
-        // Update creator risk score
-        await updateCreatorRiskScore(attribution.creatorId);
+        // Update earner risk score
+        await updateCreatorRiskScore(attribution.earnerId);
       } else {
         // Low severity only - verify but flag for monitoring
-        await db.collection('creator_attributions').doc(attributionId).update({
+        await db.collection('earner_attributions').doc(attributionId).update({
           verified: true,
           updatedAt: Timestamp.now(),
         });
@@ -350,13 +352,13 @@ export const onAttributionCreated = onDocumentCreated(
 // ============================================================================
 
 /**
- * Update creator's risk score based on fraud signals
+ * Update earner's risk score based on fraud signals
  */
-async function updateCreatorRiskScore(creatorId: string): Promise<void> {
+async function updateCreatorRiskScore(earnerId: string): Promise<void> {
   // Count fraud signals
   const signalsQuery = await db
     .collection('fraud_signals')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   let fraudSignalsCount = 0;
@@ -398,7 +400,7 @@ async function updateCreatorRiskScore(creatorId: string): Promise<void> {
   }
 
   // Save risk score
-  const riskScoreData: Omit<CreatorRiskScore, 'creatorId'> = {
+  const riskScoreData: Omit<CreatorRiskScore, 'earnerId'> = {
     overallScore: Math.round(riskScore),
     fraudSignalsCount,
     confirmedFraudCount,
@@ -414,16 +416,16 @@ async function updateCreatorRiskScore(creatorId: string): Promise<void> {
     lastUpdated: Timestamp.now(),
   };
 
-  await db.collection('creator_risk_scores').doc(creatorId).set(riskScoreData);
+  await db.collection('earner_risk_scores').doc(earnerId).set(riskScoreData);
 
-  // Update creator profile status if needed
+  // Update earner profile status if needed
   if (accountStatus === 'BANNED' || accountStatus === 'SUSPENDED') {
-    await db.collection('creator_profiles').doc(creatorId).update({
+    await db.collection('earner_profiles').doc(earnerId).update({
       status: accountStatus,
       updatedAt: Timestamp.now(),
     });
 
-    logger.warn(`Creator ${creatorId} status updated to ${accountStatus}`, {
+    logger.warn(`Creator ${earnerId} status updated to ${accountStatus}`, {
       riskScore,
       confirmedFraudCount,
     });
@@ -473,8 +475,8 @@ export const reviewFraudSignal = onCall(
         resolvedAt: status !== 'REVIEWING' ? Timestamp.now() : null,
       });
 
-      // Update creator risk score
-      await updateCreatorRiskScore(signal.creatorId);
+      // Update earner risk score
+      await updateCreatorRiskScore(signal.earnerId);
 
       logger.info(`Fraud signal reviewed: ${signalId}`, {
         newStatus: status,
@@ -494,7 +496,7 @@ export const reviewFraudSignal = onCall(
 );
 
 /**
- * Get fraud signals for creator (admin/creator)
+ * Get fraud signals for earner (admin/earner)
  */
 export const getCreatorFraudSignals = onCall(
   { region: 'europe-west1' },
@@ -503,12 +505,12 @@ export const getCreatorFraudSignals = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId, limit } = request.data;
+    const { earnerId, limit } = request.data;
 
     try {
       let query: FirebaseFirestore.Query = db
         .collection('fraud_signals')
-        .where('creatorId', '==', creatorId)
+        .where('earnerId', '==', earnerId)
         .orderBy('detectedAt', 'desc');
 
       if (limit) {
@@ -533,7 +535,7 @@ export const getCreatorFraudSignals = onCall(
 );
 
 /**
- * Get creator risk score
+ * Get earner risk score
  */
 export const getCreatorRiskScore = onCall(
   { region: 'europe-west1' },
@@ -542,17 +544,17 @@ export const getCreatorRiskScore = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { creatorId } = request.data;
+    const { earnerId } = request.data;
 
     try {
-      const riskDoc = await db.collection('creator_risk_scores').doc(creatorId).get();
+      const riskDoc = await db.collection('earner_risk_scores').doc(earnerId).get();
 
       if (!riskDoc.exists) {
         return;
       }
 
       return {
-        creatorId,
+        earnerId,
         ...riskDoc.data(),
       } as CreatorRiskScore;
     } catch (error: any) {
@@ -567,7 +569,7 @@ export const getCreatorRiskScore = onCall(
 // ============================================================================
 
 /**
- * Daily fraud scan for all active creators
+ * Daily fraud scan for all active earners
  */
 export const dailyFraudScan = onSchedule(
   {
@@ -579,24 +581,24 @@ export const dailyFraudScan = onSchedule(
     try {
       logger.info('Starting daily fraud scan');
 
-      // Get all active creators
-      const creatorsQuery = await db
-        .collection('creator_profiles')
+      // Get all active earners
+      const earnersQuery = await db
+        .collection('earner_profiles')
         .where('status', 'in', ['ACTIVE', 'WATCH_LIST'])
         .get();
 
       let scannedCount = 0;
 
-      for (const creatorDoc of creatorsQuery.docs) {
-        const creatorId = creatorDoc.id;
+      for (const earnerDoc of earnersQuery.docs) {
+        const earnerId = earnerDoc.id;
 
         // Update risk score
-        await updateCreatorRiskScore(creatorId);
+        await updateCreatorRiskScore(earnerId);
 
         scannedCount++;
       }
 
-      logger.info(`Daily fraud scan completed - scanned ${scannedCount} creators`);
+      logger.info(`Daily fraud scan completed - scanned ${scannedCount} earners`);
 
       return;
     } catch (error: any) {
@@ -648,6 +650,20 @@ export const cleanupOldFraudSignals = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

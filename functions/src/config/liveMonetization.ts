@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Live Streaming 2.0 Monetization Configuration
  * 
@@ -7,7 +9,7 @@
  * IMPORTANT: Phase 14 live streaming monetization rules:
  * - NO deposit required (unlike chat monetization)
  * - All gifts are NON-REFUNDABLE
- * - 70% creator / 30% Avalo split on all live revenue
+ * - 70% earner / 30% Avalo split on all live revenue
  * - Queue payments follow same 70/30 split
  * - No "hetero man pays" rule in live (anyone can gift/join queue)
  */
@@ -30,10 +32,10 @@ export interface LiveGift {
 
 export interface LiveRevenueConfig {
   /** Creator's share of all live revenue (gifts + queue) */
-  CREATOR_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.creator
+  CREATOR_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.earner
   
   /** Avalo's share of all live revenue */
-  AVALO_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.avalo
+  AVALO_SPLIT: number; // MONETIZATION_SPLITS.SUBSCRIPTION.platform
   
   /** Whether gifts require deposit (NO for live) */
   REQUIRES_DEPOSIT: false;
@@ -179,8 +181,8 @@ export const LIVE_GIFTS: LiveGift[] = [
  * Applies to ALL live monetization (gifts + queue)
  */
 export const LIVE_REVENUE: LiveRevenueConfig = {
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator,  // 70% to creator
-  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,    // 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.earner,  // 70% to earner
+  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.platform,    // 30% to Avalo
   REQUIRES_DEPOSIT: false,
   GIFTS_REFUNDABLE: false,
 };
@@ -278,18 +280,18 @@ export const LIVE_COLLECTIONS = {
 // ============================================================================
 
 /**
- * Calculate creator and Avalo earnings from total tokens
+ * Calculate earner and Avalo earnings from total tokens
  */
 export function calculateLiveSplit(totalTokens: number): {
-  creatorTokens: number;
-  avaloTokens: number;
+  earnerTokens: number;
+  platformTokens: number;
 } {
-  const creatorTokens = Math.floor(totalTokens * LIVE_REVENUE.CREATOR_SPLIT);
-  const avaloTokens = totalTokens - creatorTokens;
+  const earnerTokens = Math.floor(totalTokens * LIVE_REVENUE.CREATOR_SPLIT);
+  const platformTokens = totalTokens - earnerTokens;
   
   return {
-    creatorTokens,
-    avaloTokens,
+    earnerTokens,
+    platformTokens,
   };
 }
 
@@ -321,6 +323,24 @@ export function canAffordGift(userBalance: number, giftId: string): boolean {
 export function canAffordQueue(userBalance: number): boolean {
   return userBalance >= QUEUE_CONFIG.QUEUE_ENTRY_COST_TOKENS;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

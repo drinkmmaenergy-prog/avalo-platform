@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 113 — Full Ecosystem API Gateway
  * Type Definitions for External Developer Access
@@ -19,7 +21,7 @@ import { admin, timestamp } from './runtime';
 // ============================================================================
 
 export type ExternalAppType = 
-  | 'CREATOR_TOOL'      // Tools for creators to manage their presence
+  | 'CREATOR_TOOL'      // Tools for earners to manage their presence
   | 'ANALYTICS_TOOL'    // Analytics and insights tools
   | 'CONTENT_SCHEDULER' // Content scheduling tools
   | 'PORTFOLIO_SITE'    // Portfolio/website integrations
@@ -67,16 +69,16 @@ export interface ExternalApp {
 
 export type APIScope =
   // Profile operations
-  | 'PROFILE_READ'           // Read creator's public profile
+  | 'PROFILE_READ'           // Read earner's public profile
   | 'PROFILE_UPDATE'         // Update profile basics (bio, photos, links)
   
   // Content operations  
-  | 'POST_STORY'             // Publish stories on behalf of creator
+  | 'POST_STORY'             // Publish stories on behalf of earner
   | 'POST_FEED_CONTENT'      // Publish feed posts
   | 'DELETE_OWN_CONTENT'     // Delete own published content
   
   // Analytics (read-only, aggregated)
-  | 'ANALYTICS_READ'         // Read creator's aggregated analytics
+  | 'ANALYTICS_READ'         // Read earner's aggregated analytics
   | 'AUDIENCE_READ_AGGREGATE'// High-level demographic breakdown only
   
   // Webhook subscriptions
@@ -525,6 +527,20 @@ export function validateScopeRequest(requestedScopes: string[]): {
   
   return { valid, invalid, forbidden };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

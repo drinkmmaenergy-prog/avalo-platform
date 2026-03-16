@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 293 - Notifications & Activity Center
  * Notification delivery engines (Push, In-App, Email)
@@ -321,7 +323,7 @@ export async function deliverEmailNotification(
     
     const msg = {
       to: userEmail,
-      from: 'notifications@avalo.app',
+      from: 'notifications@platform.app',
       subject: notification.title,
       text: notification.body,
       html: `<p>${notification.body}</p>`,
@@ -475,6 +477,20 @@ export async function updateDeviceLastSeen(deviceId: string): Promise<void> {
     lastSeenAt: admin.firestore.Timestamp.now(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

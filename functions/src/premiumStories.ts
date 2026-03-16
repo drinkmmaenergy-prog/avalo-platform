@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Premium Story Posts - Cloud Functions
  * Handles unlock processing, commission distribution, and cleanup
@@ -21,8 +23,8 @@ const PREMIUM_STORIES_CONFIG = {
   MIN_PRICE: 50,
   MAX_PRICE: 500,
   UNLOCK_DURATION_HOURS: 24,
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
-  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.earner, // 65% to earner
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.platform, // 35% to Avalo
   MAX_VIDEO_DURATION_SECONDS: 30,
   MAX_IMAGE_WIDTH: 1080,
   MAX_IMAGE_HEIGHT: 1920,
@@ -60,8 +62,8 @@ export interface PremiumStoryUnlock {
   unlockedAt: Timestamp;
   expiresAt: Timestamp;
   pricePaid: number;
-  creatorEarnings: number;
-  avaloFee: number;
+  earnerEarnings: number;
+  platformFee: number;
 }
 
 interface UnlockResult {
@@ -183,8 +185,8 @@ export async function unlockPremiumStory(
     }
     
     // Calculate commission split
-    const creatorEarnings = Math.floor(price * PREMIUM_STORIES_CONFIG.CREATOR_SPLIT);
-    const avaloFee = price - creatorEarnings;
+    const earnerEarnings = Math.floor(price * PREMIUM_STORIES_CONFIG.CREATOR_SPLIT);
+    const platformFee = price - earnerEarnings;
     
     // Calculate expiry (24 hours from now)
     const now = Timestamp.now();
@@ -214,10 +216,10 @@ export async function unlockPremiumStory(
         updatedAt: serverTimestamp(),
       });
       
-      // Credit creator (65%)
-      const creatorWalletRef = db.collection('wallets').doc(story.authorId);
-      transaction.set(creatorWalletRef, {
-        tokens: FieldValue.increment(creatorEarnings),
+      // Credit earner (65%)
+      const earnerWalletRef = db.collection('wallets').doc(story.authorId);
+      transaction.set(earnerWalletRef, {
+        tokens: FieldValue.increment(earnerEarnings),
         updatedAt: serverTimestamp(),
       }, { merge: true });
       
@@ -230,8 +232,8 @@ export async function unlockPremiumStory(
         unlockedAt: now,
         expiresAt,
         pricePaid: price,
-        creatorEarnings,
-        avaloFee,
+        earnerEarnings,
+        platformFee,
         createdAt: serverTimestamp(),
       });
       
@@ -252,11 +254,11 @@ export async function unlockPremiumStory(
         description: `Unlocked premium story`,
       });
       
-      // Record earning for creator
+      // Record earning for earner
       transaction.set(db.collection('transactions').doc(), {
         userId: story.authorId,
         type: 'premium_story_earning',
-        amount: creatorEarnings,
+        amount: earnerEarnings,
         storyId,
         unlockId,
         createdAt: serverTimestamp(),
@@ -265,9 +267,9 @@ export async function unlockPremiumStory(
       
       // Record Avalo commission
       transaction.set(db.collection('transactions').doc(), {
-        userId: 'avalo_platform',
+        userId: 'platform_platform',
         type: 'premium_story_commission',
-        amount: avaloFee,
+        amount: platformFee,
         storyId,
         unlockId,
         createdAt: serverTimestamp(),
@@ -277,7 +279,7 @@ export async function unlockPremiumStory(
     
     // Record earning in ledger (PACK 81)
     recordStoryEarning({
-      creatorId: story.authorId,
+      earnerId: story.authorId,
       buyerId: userId,
       storyId,
       priceTokens: price,
@@ -287,7 +289,7 @@ export async function unlockPremiumStory(
     });
     
     // Send notifications (non-blocking)
-    sendUnlockNotifications(userId, story.authorId, creatorEarnings, storyId).catch((err) => {
+    sendUnlockNotifications(userId, story.authorId, earnerEarnings, storyId).catch((err) => {
       logger.error('Failed to send unlock notifications', err);
     });
     
@@ -585,24 +587,24 @@ export async function revokeUserUnlocks(userId: string): Promise<number> {
  */
 async function sendUnlockNotifications(
   buyerId: string,
-  creatorId: string,
+  earnerId: string,
   tokensEarned: number,
   storyId: string
 ): Promise<void> {
   try {
     // Get user profiles for notification
-    const [buyerSnap, creatorSnap] = await Promise.all([
+    const [buyerSnap, earnerSnap] = await Promise.all([
       db.collection('profiles').doc(buyerId).get(),
-      db.collection('profiles').doc(creatorId).get(),
+      db.collection('profiles').doc(earnerId).get(),
     ]);
     
     const buyerProfile = buyerSnap.data();
-    const creatorProfile = creatorSnap.data();
+    const earnerProfile = earnerSnap.data();
     
-    // Notification to creator
-    if (creatorProfile?.fcmToken) {
+    // Notification to earner
+    if (earnerProfile?.fcmToken) {
       await admin.messaging().send({
-        token: creatorProfile.fcmToken,
+        token: earnerProfile.fcmToken,
         notification: {
           title: '💰 Story Unlocked!',
           body: `Your story was unlocked — you earned ${tokensEarned} tokens.`,
@@ -615,9 +617,9 @@ async function sendUnlockNotifications(
       });
     }
     
-    // Create in-app notification for creator
+    // Create in-app notification for earner
     await db.collection('notifications').add({
-      userId: creatorId,
+      userId: earnerId,
       type: 'premium_story_earning',
       title: 'Story Unlocked',
       message: `Your story was unlocked — you earned ${tokensEarned} tokens.`,
@@ -687,6 +689,22 @@ export {
   checkExistingUnlock,
   PREMIUM_STORIES_CONFIG,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

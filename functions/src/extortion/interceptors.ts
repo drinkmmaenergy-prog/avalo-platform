@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import { extortionDetector } from './detector';
 import { safetyVault } from './safetyVault';
@@ -444,6 +446,22 @@ export class MessageInterceptor {
 }
 
 export const messageInterceptor = new MessageInterceptor();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

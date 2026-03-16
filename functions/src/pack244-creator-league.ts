@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 244 - Top Creator League
  * Cloud Functions for prestige-based monthly ranking system
@@ -29,7 +31,7 @@ import type {
   LeagueIneligibilityReason,
   LeaguePrivileges,
   HallOfFameAchievement,
-} from './types/shared/src/types/creatorLeague';
+} from './types/shared/src/types/earnerLeague';
 import { HttpsError, admin, auth, onCall, timestamp, onSchedule } from "./runtime";
 
 
@@ -55,7 +57,7 @@ const FAST_REPLY_THRESHOLD_SECONDS = 60;
 // ============================================================================
 
 /**
- * Calculate earnings score for a creator based on pack specifications
+ * Calculate earnings score for a earner based on pack specifications
  * Score = tokensEarned * timeEfficiency * replyQuality * conversion
  */
 async function calculateEarningsScore(
@@ -103,7 +105,7 @@ async function calculateEarningsScore(
 }
 
 /**
- * Get total tokens earned by creator in a given month
+ * Get total tokens earned by earner in a given month
  */
 async function getMonthlyTokensEarned(userId: string, month: string): Promise<number> {
   try {
@@ -112,7 +114,7 @@ async function getMonthlyTokensEarned(userId: string, month: string): Promise<nu
     const startDate = new Date(year, monthNum - 1, 1);
     const endDate = new Date(year, monthNum, 0, 23, 59, 59, 999);
     
-    // Query token_earn_events for this creator in this month
+    // Query token_earn_events for this earner in this month
     const eventsSnapshot = await db
       .collection('token_earn_events')
       .where('userId', '==', userId)
@@ -146,7 +148,7 @@ async function calculateTimeEfficiencyMultiplier(
     const startDate = new Date(year, monthNum - 1, 1);
     const endDate = new Date(year, monthNum, 0, 23, 59, 59, 999);
     
-    // Get all messages sent by creator in this month
+    // Get all messages sent by earner in this month
     const messagesSnapshot = await db
       .collection('messages')
       .where('senderId', '==', userId)
@@ -225,7 +227,7 @@ async function calculateReplyQualityMultiplier(
     const startDate = new Date(year, monthNum - 1, 1);
     const endDate = new Date(year, monthNum, 0, 23, 59, 59, 999);
     
-    // Get all conversations where creator participated
+    // Get all conversations where earner participated
     const conversationsSnapshot = await db
       .collection('conversations')
       .where('participants', 'array-contains', userId)
@@ -280,7 +282,7 @@ async function calculateReplyQualityMultiplier(
 
 /**
  * Calculate conversion multiplier (1.0 - 1.3)
- * Rewards creators who convert chats to calls/bookings
+ * Rewards earners who convert chats to calls/bookings
  */
 async function calculateConversionMultiplier(
   userId: string,
@@ -308,7 +310,7 @@ async function calculateConversionMultiplier(
     // Get paid calls count
     const callsSnapshot = await db
       .collection('calls')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('startedAt', '>=', startDate)
       .where('startedAt', '<=', endDate)
       .where('status', '==', 'completed')
@@ -321,7 +323,7 @@ async function calculateConversionMultiplier(
     try {
       const bookingsSnapshot = await db
         .collection('bookings')
-        .where('creatorId', '==', userId)
+        .where('earnerId', '==', userId)
         .where('createdAt', '>=', startDate)
         .where('createdAt', '<=', endDate)
         .where('status', 'in', ['confirmed', 'completed'])
@@ -359,7 +361,7 @@ async function storeLeagueMetrics(
   metrics: any
 ): Promise<void> {
   try {
-    await db.collection('creator_league_metrics').doc(`${userId}_${month}`).set({
+    await db.collection('earner_league_metrics').doc(`${userId}_${month}`).set({
       userId,
       month,
       ...metrics,
@@ -375,11 +377,11 @@ async function storeLeagueMetrics(
 // ============================================================================
 
 /**
- * Calculate rankings for all creators in a given month
+ * Calculate rankings for all earners in a given month
  * Scheduled function runs daily at 2 AM UTC
  */
 export const calculateDailyRankings = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
-    logger.info('Starting daily creator league rankings calculation');
+    logger.info('Starting daily earner league rankings calculation');
     
     try {
       const now = new Date();
@@ -400,24 +402,24 @@ export const calculateDailyRankings = onSchedule({ schedule: "0 2 * * *", timeZo
 async function calculateRankingsForMonth(month: string): Promise<void> {
   logger.info(`Calculating rankings for month: ${month}`);
   
-  // Get all creators
-  const creatorsSnapshot = await db
+  // Get all earners
+  const earnersSnapshot = await db
     .collection('users')
-    .where('roles', 'array-contains', 'creator')
+    .where('roles', 'array-contains', 'earner')
     .get();
   
-  logger.info(`Found ${creatorsSnapshot.size} creators`);
+  logger.info(`Found ${earnersSnapshot.size} earners`);
   
-  // Calculate scores for all creators
-  const creatorScores: Array<{
+  // Calculate scores for all earners
+  const earnerScores: Array<{
     userId: string;
     score: number;
     userData: any;
   }> = [];
   
-  for (const creatorDoc of creatorsSnapshot.docs) {
-    const userId = creatorDoc.id;
-    const userData = creatorDoc.data();
+  for (const earnerDoc of earnersSnapshot.docs) {
+    const userId = earnerDoc.id;
+    const userData = earnerDoc.data();
     
     // Check safety eligibility
     const isEligible = await checkSafetyEligibility(userId);
@@ -430,7 +432,7 @@ async function calculateRankingsForMonth(month: string): Promise<void> {
     // Calculate earnings score
     const score = await calculateEarningsScore(userId, month);
     
-    creatorScores.push({
+    earnerScores.push({
       userId,
       score,
       userData,
@@ -438,13 +440,13 @@ async function calculateRankingsForMonth(month: string): Promise<void> {
   }
   
   // Sort by score descending
-  creatorScores.sort((a, b) => b.score - a.score);
+  earnerScores.sort((a, b) => b.score - a.score);
   
   // Calculate rankings by category
-  await calculateGlobalRankings(month, creatorScores);
-  await calculateCountryRankings(month, creatorScores);
-  await calculateCityRankings(month, creatorScores);
-  await calculateNewCreatorRankings(month, creatorScores);
+  await calculateGlobalRankings(month, earnerScores);
+  await calculateCountryRankings(month, earnerScores);
+  await calculateCityRankings(month, earnerScores);
+  await calculateNewCreatorRankings(month, earnerScores);
   
   logger.info('Rankings calculation completed');
 }
@@ -454,38 +456,38 @@ async function calculateRankingsForMonth(month: string): Promise<void> {
  */
 async function calculateGlobalRankings(
   month: string,
-  creatorScores: Array<{ userId: string; score: number; userData: any }>
+  earnerScores: Array<{ userId: string; score: number; userData: any }>
 ): Promise<void> {
   logger.info('Calculating global rankings');
   
   const rankings: LeagueRankEntry[] = [];
   
-  for (let i = 0; i < creatorScores.length; i++) {
-    const creator = creatorScores[i];
+  for (let i = 0; i < earnerScores.length; i++) {
+    const earner = earnerScores[i];
     const rank = i + 1;
     
     rankings.push({
       rank,
-      userId: creator.userId,
-      displayName: creator.userData.displayName || creator.userData.username || 'Unknown',
-      avatar: creator.userData.photoURL || creator.userData.avatar || '',
-      earningsScore: creator.score,
+      userId: earner.userId,
+      displayName: earner.userData.displayName || earner.userData.username || 'Unknown',
+      avatar: earner.userData.photoURL || earner.userData.avatar || '',
+      earningsScore: earner.score,
       badges: determineBadges(rank),
-      isNewCreator: await isNewCreator(creator.userId),
-      country: creator.userData.location?.country,
-      city: creator.userData.location?.city,
+      isNewCreator: await isNewCreator(earner.userId),
+      country: earner.userData.location?.country,
+      city: earner.userData.location?.city,
     });
     
-    // Update creator's league document
-    await updateCreatorLeague(creator.userId, month, {
+    // Update earner's league document
+    await updateCreatorLeague(earner.userId, month, {
       globalRank: rank,
-      earningsScore: creator.score,
+      earningsScore: earner.score,
       badges: determineBadges(rank),
     });
     
     // Award privileges for top ranks
     if (rank <= 100) {
-      await awardPrivileges(creator.userId, rank, 'global', month);
+      await awardPrivileges(earner.userId, rank, 'global', month);
     }
   }
   
@@ -499,7 +501,7 @@ async function calculateGlobalRankings(
     nextResetAt: getNextMonthResetDate(month).toISOString(),
   });
   
-  logger.info(`Global rankings stored: ${rankings.length} creators`);
+  logger.info(`Global rankings stored: ${rankings.length} earners`);
 }
 
 /**
@@ -507,47 +509,47 @@ async function calculateGlobalRankings(
  */
 async function calculateCountryRankings(
   month: string,
-  creatorScores: Array<{ userId: string; score: number; userData: any }>
+  earnerScores: Array<{ userId: string; score: number; userData: any }>
 ): Promise<void> {
   logger.info('Calculating country rankings');
   
   // Group by country
   const byCountry = new Map<string, Array<{ userId: string; score: number; userData: any }>>();
   
-  for (const creator of creatorScores) {
-    const country = creator.userData.location?.country;
+  for (const earner of earnerScores) {
+    const country = earner.userData.location?.country;
     if (country) {
       if (!byCountry.has(country)) {
         byCountry.set(country, []);
       }
-      byCountry.get(country)!.push(creator);
+      byCountry.get(country)!.push(earner);
     }
   }
   
   // Calculate rankings for each country
-  for (const [country, creators] of Array.from(byCountry.entries())) {
-    creators.sort((a, b) => b.score - a.score);
+  for (const [country, earners] of Array.from(byCountry.entries())) {
+    earners.sort((a, b) => b.score - a.score);
     
     const rankings: LeagueRankEntry[] = [];
     
-    for (let i = 0; i < creators.length; i++) {
-      const creator = creators[i];
+    for (let i = 0; i < earners.length; i++) {
+      const earner = earners[i];
       const rank = i + 1;
       
       rankings.push({
         rank,
-        userId: creator.userId,
-        displayName: creator.userData.displayName || creator.userData.username || 'Unknown',
-        avatar: creator.userData.photoURL || creator.userData.avatar || '',
-        earningsScore: creator.score,
+        userId: earner.userId,
+        displayName: earner.userData.displayName || earner.userData.username || 'Unknown',
+        avatar: earner.userData.photoURL || earner.userData.avatar || '',
+        earningsScore: earner.score,
         badges: determineBadges(rank),
-        isNewCreator: await isNewCreator(creator.userId),
-        country: creator.userData.location?.country,
-        city: creator.userData.location?.city,
+        isNewCreator: await isNewCreator(earner.userId),
+        country: earner.userData.location?.country,
+        city: earner.userData.location?.city,
       });
       
-      // Update creator's league document
-      await updateCreatorLeague(creator.userId, month, {
+      // Update earner's league document
+      await updateCreatorLeague(earner.userId, month, {
         countryRank: rank,
       });
     }
@@ -572,51 +574,51 @@ async function calculateCountryRankings(
  */
 async function calculateCityRankings(
   month: string,
-  creatorScores: Array<{ userId: string; score: number; userData: any }>
+  earnerScores: Array<{ userId: string; score: number; userData: any }>
 ): Promise<void> {
   logger.info('Calculating city rankings');
   
   // Group by city (only large cities)
   const byCity = new Map<string, Array<{ userId: string; score: number; userData: any }>>();
   
-  for (const creator of creatorScores) {
-    const city = creator.userData.location?.city;
+  for (const earner of earnerScores) {
+    const city = earner.userData.location?.city;
     if (city) {
       if (!byCity.has(city)) {
         byCity.set(city, []);
       }
-      byCity.get(city)!.push(creator);
+      byCity.get(city)!.push(earner);
     }
   }
   
-  // Calculate rankings for cities with enough creators (min 10)
-  for (const [city, creators] of Array.from(byCity.entries())) {
-    if (creators.length < 10) {
+  // Calculate rankings for cities with enough earners (min 10)
+  for (const [city, earners] of Array.from(byCity.entries())) {
+    if (earners.length < 10) {
       continue; // Skip small cities
     }
     
-    creators.sort((a, b) => b.score - a.score);
+    earners.sort((a, b) => b.score - a.score);
     
     const rankings: LeagueRankEntry[] = [];
     
-    for (let i = 0; i < creators.length; i++) {
-      const creator = creators[i];
+    for (let i = 0; i < earners.length; i++) {
+      const earner = earners[i];
       const rank = i + 1;
       
       rankings.push({
         rank,
-        userId: creator.userId,
-        displayName: creator.userData.displayName || creator.userData.username || 'Unknown',
-        avatar: creator.userData.photoURL || creator.userData.avatar || '',
-        earningsScore: creator.score,
+        userId: earner.userId,
+        displayName: earner.userData.displayName || earner.userData.username || 'Unknown',
+        avatar: earner.userData.photoURL || earner.userData.avatar || '',
+        earningsScore: earner.score,
         badges: determineBadges(rank),
-        isNewCreator: await isNewCreator(creator.userId),
-        country: creator.userData.location?.country,
-        city: creator.userData.location?.city,
+        isNewCreator: await isNewCreator(earner.userId),
+        country: earner.userData.location?.country,
+        city: earner.userData.location?.city,
       });
       
-      // Update creator's league document
-      await updateCreatorLeague(creator.userId, month, {
+      // Update earner's league document
+      await updateCreatorLeague(earner.userId, month, {
         cityRank: rank,
       });
     }
@@ -637,19 +639,19 @@ async function calculateCityRankings(
 }
 
 /**
- * Calculate new creator rankings (< 60 days old)
+ * Calculate new earner rankings (< 60 days old)
  */
 async function calculateNewCreatorRankings(
   month: string,
-  creatorScores: Array<{ userId: string; score: number; userData: any }>
+  earnerScores: Array<{ userId: string; score: number; userData: any }>
 ): Promise<void> {
-  logger.info('Calculating new creator rankings');
+  logger.info('Calculating new earner rankings');
   
   const newCreators = [];
   
-  for (const creator of creatorScores) {
-    if (await isNewCreator(creator.userId)) {
-      newCreators.push(creator);
+  for (const earner of earnerScores) {
+    if (await isNewCreator(earner.userId)) {
+      newCreators.push(earner);
     }
   }
   
@@ -658,23 +660,23 @@ async function calculateNewCreatorRankings(
   const rankings: LeagueRankEntry[] = [];
   
   for (let i = 0; i < newCreators.length; i++) {
-    const creator = newCreators[i];
+    const earner = newCreators[i];
     const rank = i + 1;
     
     rankings.push({
       rank,
-      userId: creator.userId,
-      displayName: creator.userData.displayName || creator.userData.username || 'Unknown',
-      avatar: creator.userData.photoURL || creator.userData.avatar || '',
-      earningsScore: creator.score,
+      userId: earner.userId,
+      displayName: earner.userData.displayName || earner.userData.username || 'Unknown',
+      avatar: earner.userData.photoURL || earner.userData.avatar || '',
+      earningsScore: earner.score,
       badges: determineBadges(rank),
       isNewCreator: true,
-      country: creator.userData.location?.country,
-      city: creator.userData.location?.city,
+      country: earner.userData.location?.country,
+      city: earner.userData.location?.city,
     });
     
-    // Update creator's league document
-    await updateCreatorLeague(creator.userId, month, {
+    // Update earner's league document
+    await updateCreatorLeague(earner.userId, month, {
       newCreatorRank: rank,
     });
   }
@@ -689,7 +691,7 @@ async function calculateNewCreatorRankings(
     nextResetAt: getNextMonthResetDate(month).toISOString(),
   });
   
-  logger.info(`New creator rankings stored: ${rankings.length} creators`);
+  logger.info(`New earner rankings stored: ${rankings.length} earners`);
 }
 
 // ============================================================================
@@ -697,7 +699,7 @@ async function calculateNewCreatorRankings(
 // ============================================================================
 
 /**
- * Check if creator is new (< 60 days)
+ * Check if earner is new (< 60 days)
  */
 async function isNewCreator(userId: string): Promise<boolean> {
   try {
@@ -710,7 +712,7 @@ async function isNewCreator(userId: string): Promise<boolean> {
     
     return daysSinceCreation < NEW_CREATOR_THRESHOLD_DAYS;
   } catch (error) {
-    logger.error(`Error checking if creator is new: ${userId}`, error);
+    logger.error(`Error checking if earner is new: ${userId}`, error);
     return false;
   }
 }
@@ -730,7 +732,7 @@ function determineBadges(rank: number): LeagueBadges {
 }
 
 /**
- * Update creator league document
+ * Update earner league document
  */
 async function updateCreatorLeague(
   userId: string,
@@ -738,7 +740,7 @@ async function updateCreatorLeague(
   updates: Partial<CreatorLeague>
 ): Promise<void> {
   try {
-    const leagueRef = db.collection('creator_league').doc(userId);
+    const leagueRef = db.collection('earner_league').doc(userId);
     const leagueDoc = await leagueRef.get();
     
     if (!leagueDoc.exists) {
@@ -775,7 +777,7 @@ async function updateCreatorLeague(
       });
     }
   } catch (error) {
-    logger.error(`Error updating creator league for ${userId}:`, error);
+    logger.error(`Error updating earner league for ${userId}:`, error);
   }
 }
 
@@ -788,7 +790,7 @@ function getNextMonthResetDate(currentMonth: string): Date {
 }
 
 /**
- * Award privileges to top-ranked creators
+ * Award privileges to top-ranked earners
  */
 async function awardPrivileges(
   userId: string,
@@ -832,7 +834,7 @@ async function awardPrivileges(
 // ============================================================================
 
 /**
- * Check if creator is eligible for league participation
+ * Check if earner is eligible for league participation
  */
 async function checkSafetyEligibility(userId: string): Promise<boolean> {
   try {
@@ -957,7 +959,7 @@ async function detectManipulation(userId: string): Promise<boolean> {
     // Flag if any single payer made > 20 payments in 24 hours
     for (const count of Array.from(payerCounts.values())) {
       if (count > 20) {
-        logger.warn(`Suspicious pattern detected for creator ${userId}: ${count} payments from single payer`);
+        logger.warn(`Suspicious pattern detected for earner ${userId}: ${count} payments from single payer`);
         return true;
       }
     }
@@ -978,7 +980,7 @@ async function detectManipulation(userId: string): Promise<boolean> {
  * Archives winners, resets rankings, and starts new competition
  */
 export const monthlyLeagueReset = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
-    logger.info('Starting monthly creator league reset');
+    logger.info('Starting monthly earner league reset');
     
     try {
       const now = new Date();
@@ -994,7 +996,7 @@ export const monthlyLeagueReset = onSchedule({ schedule: "0 0 1 * *", timeZone: 
       // Step 2: Clear active privileges that expired
       await clearExpiredPrivileges();
       
-      // Step 3: Reset all creator league documents
+      // Step 3: Reset all earner league documents
       await resetAllCreatorLeagues(currentMonthString);
       
       // Step 4: Record reset event
@@ -1003,7 +1005,7 @@ export const monthlyLeagueReset = onSchedule({ schedule: "0 0 1 * *", timeZone: 
       // Step 5: Send congratulatory notifications to winners
       await notifyWinners(lastMonthString);
       
-      logger.info('Monthly creator league reset completed successfully');
+      logger.info('Monthly earner league reset completed successfully');
     } catch (error) {
       logger.error('Error during monthly league reset:', error);
       throw error;
@@ -1049,7 +1051,7 @@ async function archiveWinnersToHallOfFame(month: string): Promise<void> {
             city: ranking.city,
           });
           
-          // Update creator's Hall of Fame
+          // Update earner's Hall of Fame
           await addToCreatorHallOfFame(entry.userId, month, category, entry.rank);
         }
       }
@@ -1062,7 +1064,7 @@ async function archiveWinnersToHallOfFame(month: string): Promise<void> {
 }
 
 /**
- * Add achievement to creator's Hall of Fame
+ * Add achievement to earner's Hall of Fame
  */
 async function addToCreatorHallOfFame(
   userId: string,
@@ -1071,7 +1073,7 @@ async function addToCreatorHallOfFame(
   rank: number
 ): Promise<void> {
   try {
-    const leagueRef = db.collection('creator_league').doc(userId);
+    const leagueRef = db.collection('earner_league').doc(userId);
     const leagueDoc = await leagueRef.get();
     
     if (!leagueDoc.exists) {
@@ -1166,13 +1168,13 @@ async function clearExpiredPrivileges(): Promise<void> {
 }
 
 /**
- * Reset all creator league documents for new month
+ * Reset all earner league documents for new month
  */
 async function resetAllCreatorLeagues(newMonth: string): Promise<void> {
-  logger.info(`Resetting all creator league documents for ${newMonth}`);
+  logger.info(`Resetting all earner league documents for ${newMonth}`);
   
   try {
-    const leagueSnapshot = await db.collection('creator_league').get();
+    const leagueSnapshot = await db.collection('earner_league').get();
     
     const batch = db.batch();
     let resetCount = 0;
@@ -1202,15 +1204,15 @@ async function resetAllCreatorLeagues(newMonth: string): Promise<void> {
       // Commit in batches of 500
       if (resetCount % 500 === 0) {
         await batch.commit();
-        logger.info(`Reset ${resetCount} creator league documents...`);
+        logger.info(`Reset ${resetCount} earner league documents...`);
       }
     }
     
     // Commit remaining
     await batch.commit();
-    logger.info(`Reset completed for ${resetCount} creator league documents`);
+    logger.info(`Reset completed for ${resetCount} earner league documents`);
   } catch (error) {
-    logger.error('Error resetting creator leagues:', error);
+    logger.error('Error resetting earner leagues:', error);
   }
 }
 
@@ -1396,7 +1398,7 @@ export const getLeaderboard = functions.https.onCall(async (request) => {
 });
 
 /**
- * Get creator's league status (publicly callable)
+ * Get earner's league status (publicly callable)
  */
 export const getCreatorLeagueStatus = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -1407,7 +1409,7 @@ export const getCreatorLeagueStatus = functions.https.onCall(async (request) => 
       throw new functions.https.HttpsError('invalid-argument', 'userId is required');
     }
     
-    const leagueDoc = await db.collection('creator_league').doc(userId).get();
+    const leagueDoc = await db.collection('earner_league').doc(userId).get();
     
     if (!leagueDoc.exists) {
       return {
@@ -1440,7 +1442,7 @@ export const getCreatorLeagueStatus = functions.https.onCall(async (request) => 
     
     return;
   } catch (error) {
-    logger.error('Error fetching creator league status:', error);
+    logger.error('Error fetching earner league status:', error);
     throw new functions.https.HttpsError('internal', 'Failed to fetch league status');
   }
 });
@@ -1454,6 +1456,20 @@ export {
   updateCreatorLeague,
   awardPrivileges,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

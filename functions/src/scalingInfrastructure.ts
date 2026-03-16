@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * SCALING INFRASTRUCTURE - 20 MILLION USERS
@@ -140,7 +142,7 @@ const SHARD_CONFIGS: ShardConfig[] = [
 
 const CACHE_STRATEGIES: CacheStrategy[] = [
   { key: "user_profile", ttl: 300, strategy: "lru", enabled: true },
-  { key: "creator_stats", ttl: 900, strategy: "lru", enabled: true },
+  { key: "earner_stats", ttl: 900, strategy: "lru", enabled: true },
   { key: "product_listing", ttl: 300, strategy: "lru", enabled: true },
   { key: "feed_data", ttl: 180, strategy: "ttl", enabled: true },
 ];
@@ -150,9 +152,9 @@ const REGIONS: RegionalConfig[] = [
     region: "europe-west1",
     enabled: true,
     endpoints: {
-      api: "https://api.avalo.app",
-      cdn: "https://cdn.avalo.app",
-      storage: "https://storage.avalo.app",
+      api: "https://api.platform.app",
+      cdn: "https://cdn.platform.app",
+      storage: "https://storage.platform.app",
     },
     loadBalancing: {
       strategy: "geographic",
@@ -383,6 +385,20 @@ export const healthCheck = onCall(
 );
 
 logger.info("✅ Scaling Infrastructure module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

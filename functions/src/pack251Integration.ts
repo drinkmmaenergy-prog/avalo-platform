@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 251 Integration — Welcome Funnel <> Chat Monetization
  *
@@ -8,7 +10,7 @@
  */
 
 import { db, serverTimestamp, increment } from './init';
-import { processMessageBilling } from './chatMonetization';
+import { shimProcessMessageBilling } from './chatMonetization';
 import {
   initializeWelcomeFunnel,
   trackFunnelConversion,
@@ -46,16 +48,16 @@ export async function onUserRegistered(
 
 /**
  * Enhanced message billing that integrates with welcome funnel
- * Wraps existing processMessageBilling to add funnel conversion tracking
+ * Wraps existing shimProcessMessageBilling to add funnel conversion tracking
  */
-export async function processMessageBillingWithFunnel(
+export async function shimProcessMessageBillingWithFunnel(
   chatId: string,
   senderId: string,
   messageText: string
 ): Promise<{ allowed: boolean; reason?: string; tokensCost: number; showConversionUI?: boolean; partnerName?: string }> {
   
   // Call existing chat monetization logic
-  const billingResult = await processMessageBilling(chatId, senderId, messageText);
+  const billingResult = await shimProcessMessageBilling(chatId, senderId, messageText);
   
   // If message not allowed due to deposit requirement, check if user is in welcome funnel Phase 3
   if (!billingResult.allowed && billingResult.reason?.includes('Deposit required')) {
@@ -312,6 +314,20 @@ export async function isInWelcomeFunnel(userId: string): Promise<boolean> {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

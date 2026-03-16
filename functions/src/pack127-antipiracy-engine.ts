@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 127 — Anti-Piracy & Watermarking Engine
  * 
@@ -5,7 +7,7 @@
  * 
  * NON-NEGOTIABLE RULES:
  * - Watermark embeds user/device fingerprint for leak tracing
- * - Leaker (not creator) is penalized
+ * - Leaker (not earner) is penalized
  * - Creator earnings unaffected by piracy
  * - No economic distortion
  */
@@ -240,8 +242,8 @@ export async function detectPiracyFromWatermark(
     status: 'DETECTED',
     
     // CRITICAL: Creator is not affected
-    creatorAffected: false,
-    creatorEarningsAffected: false,
+    earnerAffected: false,
+    earnerEarningsAffected: false,
     leakerPayoutFrozen: false,
     
     evidencUSDls: piratedUrl ? [piratedUrl] : [],
@@ -253,7 +255,7 @@ export async function detectPiracyFromWatermark(
   // Suspend leaker pending investigation
   await suspendLeakerPendingInvestigation(watermarkMetadata.userId, detectionId);
   
-  // Notify creator (not affected economically)
+  // Notify earner (not affected economically)
   await notifyCreatorOfPiracy(originalFingerprint.ownerUserId, detectionId);
   
   return detection;
@@ -295,8 +297,8 @@ export async function reportPiracy(
     status: 'INVESTIGATING',
     
     // CRITICAL: Creator is not affected
-    creatorAffected: false,
-    creatorEarningsAffected: false,
+    earnerAffected: false,
+    earnerEarningsAffected: false,
     leakerPayoutFrozen: false,
     
     evidencUSDls: [piratedUrl],
@@ -510,14 +512,14 @@ export async function getPiracyDetectionsForContent(
 }
 
 /**
- * Get piracy detections for creator
+ * Get piracy detections for earner
  */
 export async function getPiracyDetectionsForCreator(
-  creatorId: string
+  earnerId: string
 ): Promise<PiracyDetection[]> {
   const snapshot = await db
     .collection('piracy_detections')
-    .where('originalOwnerId', '==', creatorId)
+    .where('originalOwnerId', '==', earnerId)
     .orderBy('detectedAt', 'desc')
     .get();
   
@@ -525,15 +527,15 @@ export async function getPiracyDetectionsForCreator(
 }
 
 /**
- * Notify creator of piracy detection
+ * Notify earner of piracy detection
  */
 async function notifyCreatorOfPiracy(
-  creatorId: string,
+  earnerId: string,
   detectionId: string
 ): Promise<void> {
   await db.collection('ip_notifications').add({
     notificationId: generateId(),
-    userId: creatorId,
+    userId: earnerId,
     type: 'PIRACY_DETECTED',
     title: 'Content Piracy Detected',
     message: 'We detected unauthorized distribution of your content. The leaker has been identified and action is being taken. Your earnings are not affected.',
@@ -574,6 +576,20 @@ export async function getSuspiciousAccessRecords(): Promise<ContentAccessRecord[
   
   return snapshot.docs.map(doc => doc.data() as ContentAccessRecord);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

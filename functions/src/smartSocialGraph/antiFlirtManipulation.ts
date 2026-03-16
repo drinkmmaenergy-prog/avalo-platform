@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Anti-Flirt Manipulation Detection
- * Prevents creators from gaming discovery through seductive content
+ * Prevents earners from gaming discovery through seductive content
  * 
  * VIOLATIONS:
  * - Seductive thumbnails
@@ -194,7 +196,7 @@ function detectParasocialHooks(caption: string, title?: string): boolean {
  */
 export async function detectFlirtManipulation(
   contentId: string,
-  creatorId: string,
+  earnerId: string,
   data: {
     caption?: string;
     title?: string;
@@ -237,7 +239,7 @@ export async function detectFlirtManipulation(
     
     const flags: FlirtManipulationFlags = {
       contentId,
-      creatorId,
+      earnerId,
       seductiveThumbnail,
       suggestiveClothingAngles: suggestiveAngles,
       clickbaitFlirtCaptions: clickbaitCaption,
@@ -276,7 +278,7 @@ export async function detectFlirtManipulation(
 async function handleFlirtViolation(flags: FlirtManipulationFlags): Promise<void> {
   try {
     logger.warn(
-      `Flirt manipulation detected for content ${flags.contentId} by creator ${flags.creatorId}` +
+      `Flirt manipulation detected for content ${flags.contentId} by earner ${flags.earnerId}` +
       ` (confidence: ${flags.confidence}%)`
     );
     
@@ -320,12 +322,12 @@ async function demoteContent(contentId: string): Promise<void> {
       'discovery.demotedAt': serverTimestamp(),
     });
     
-    // Reduce creator's relevance score
+    // Reduce earner's relevance score
     const contentDoc = await db.collection('content').doc(contentId).get();
     if (contentDoc.exists) {
-      const creatorId = contentDoc.data()?.creatorId;
-      if (creatorId) {
-        await penalizeCreatorScore(creatorId);
+      const earnerId = contentDoc.data()?.earnerId;
+      if (earnerId) {
+        await penalizeCreatorScore(earnerId);
       }
     }
   } catch (error) {
@@ -334,11 +336,11 @@ async function demoteContent(contentId: string): Promise<void> {
 }
 
 /**
- * Penalize creator's relevance score
+ * Penalize earner's relevance score
  */
-async function penalizeCreatorScore(creatorId: string): Promise<void> {
+async function penalizeCreatorScore(earnerId: string): Promise<void> {
   try {
-    const scoreRef = db.collection('creator_relevance_scores').doc(creatorId);
+    const scoreRef = db.collection('earner_relevance_scores').doc(earnerId);
     const scoreDoc = await scoreRef.get();
     
     if (scoreDoc.exists) {
@@ -350,10 +352,10 @@ async function penalizeCreatorScore(creatorId: string): Promise<void> {
         lastCalculated: serverTimestamp(),
       });
       
-      logger.warn(`Creator ${creatorId} safety score reduced to ${penalizedScore}`);
+      logger.warn(`Creator ${earnerId} safety score reduced to ${penalizedScore}`);
     }
   } catch (error) {
-    logger.error('Error penalizing creator score:', error);
+    logger.error('Error penalizing earner score:', error);
   }
 }
 
@@ -369,7 +371,7 @@ async function openSafetyCase(flags: FlirtManipulationFlags): Promise<void> {
       caseId,
       type: 'FLIRT_MANIPULATION',
       contentId: flags.contentId,
-      creatorId: flags.creatorId,
+      earnerId: flags.earnerId,
       status: 'OPEN',
       priority: flags.confidence >= 75 ? 'HIGH' : 'MEDIUM',
       evidence: {
@@ -398,7 +400,7 @@ async function flagForReview(flags: FlirtManipulationFlags): Promise<void> {
   try {
     await db.collection('content_review_queue').add({
       contentId: flags.contentId,
-      creatorId: flags.creatorId,
+      earnerId: flags.earnerId,
       reason: 'POTENTIAL_FLIRT_MANIPULATION',
       confidence: flags.confidence,
       flags: {
@@ -457,7 +459,7 @@ export async function scanRecentContentForFlirts(hours: number = 24): Promise<{
       try {
         const flags = await detectFlirtManipulation(
           doc.id,
-          content.creatorId || content.userId,
+          content.earnerId || content.userId,
           {
             caption: content.caption || content.description,
             title: content.title,
@@ -493,6 +495,22 @@ export async function scanRecentContentForFlirts(hours: number = 24): Promise<{
 }
 
 logger.info('✅ Anti-Flirt Manipulation Detection initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

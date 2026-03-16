@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Viral Analytics Dashboard (Admin)
  * 
@@ -38,14 +40,14 @@ export interface GrowthDashboardMetrics {
     totalConversions: number;
     conversionRate: number;
     topEntryTypes: Array<{ type: string; conversions: number }>;
-    topCreators: Array<{ creatorId: string; conversions: number; cpa: number }>;
+    topCreators: Array<{ earnerId: string; conversions: number; cpa: number }>;
   };
   boosts: {
     totalPurchased: number;
     totalSpent: number; // in tokens
     totalRevenue: {
-      creators: number;
-      avalo: number;
+      earners: number;
+      platform: number;
     };
     byType: {
       [key: string]: {
@@ -73,7 +75,7 @@ export interface GrowthDashboardMetrics {
 }
 
 export interface CreatorGrowthMetrics {
-  creatorId: string;
+  earnerId: string;
   referrals: {
     sent: number;
     converted: number;
@@ -149,32 +151,32 @@ export async function getPlatformGrowthMetrics(data: {
 }
 
 /**
- * Get detailed creator growth analytics
+ * Get detailed earner growth analytics
  */
 export async function getCreatorGrowthMetrics(data: {
-  creatorId: string;
+  earnerId: string;
   startDate: Date;
   endDate: Date;
 }): Promise<CreatorGrowthMetrics> {
-  const { creatorId, startDate, endDate } = data;
+  const { earnerId, startDate, endDate } = data;
   
   // Referral performance
-  const referralStats = await getCreatorReferralStats(creatorId, startDate, endDate);
+  const referralStats = await getCreatorReferralStats(earnerId, startDate, endDate);
   
   // Viral performance
-  const viralStats = await getCreatorViralStats(creatorId, startDate, endDate);
+  const viralStats = await getCreatorViralStats(earnerId, startDate, endDate);
   
   // Boost spending
-  const boostStats = await getCreatorBoostStats(creatorId, startDate, endDate);
+  const boostStats = await getCreatorBoostStats(earnerId, startDate, endDate);
   
   // Share performance
-  const shareStats = await getCreatorShareStats(creatorId, startDate, endDate);
+  const shareStats = await getCreatorShareStats(earnerId, startDate, endDate);
   
   // Promotion score and rank
-  const promotionData = await getCreatorPromotionData(creatorId);
+  const promotionData = await getCreatorPromotionData(earnerId);
   
   return {
-    creatorId,
+    earnerId,
     referrals: referralStats,
     viralPerformance: viralStats,
     boostSpending: boostStats,
@@ -245,18 +247,18 @@ async function getViralLoopMetrics(startDate: Date, endDate: Date) {
     .sort((a, b) => b.conversions - a.conversions)
     .slice(0, 5);
   
-  // Top creators (simplified - would need CPA calculation)
-  const creatorCounts = new Map<string, number>();
+  // Top earners (simplified - would need CPA calculation)
+  const earnerCounts = new Map<string, number>();
   invitesQuery.docs.forEach(doc => {
     const data = doc.data();
     if (data.status === 'converted') {
-      const creatorId = data.creatorId;
-      creatorCounts.set(creatorId, (creatorCounts.get(creatorId) || 0) + 1);
+      const earnerId = data.earnerId;
+      earnerCounts.set(earnerId, (earnerCounts.get(earnerId) || 0) + 1);
     }
   });
   
-  const topCreators = Array.from(creatorCounts.entries())
-    .map(([creatorId, conversions]) => ({ creatorId, conversions, cpa: 0 }))
+  const topCreators = Array.from(earnerCounts.entries())
+    .map(([earnerId, conversions]) => ({ earnerId, conversions, cpa: 0 }))
     .sort((a, b) => b.conversions - a.conversions)
     .slice(0, 10);
   
@@ -285,8 +287,8 @@ async function getBoostMetrics(startDate: Date, endDate: Date) {
   boostsQuery.docs.forEach(doc => {
     const data = doc.data();
     totalSpent += data.tokensCharged || 0;
-    totalCreatorRevenue += data.creatorReceives || 0;
-    totalAvaloRevenue += data.avaloReceives || 0;
+    totalCreatorRevenue += data.earnerReceives || 0;
+    totalAvaloRevenue += data.platformReceives || 0;
     
     const type = data.type;
     const current = typeCounts.get(type) || { count: 0, revenue: 0 };
@@ -305,8 +307,8 @@ async function getBoostMetrics(startDate: Date, endDate: Date) {
     totalPurchased,
     totalSpent,
     totalRevenue: {
-      creators: totalCreatorRevenue,
-      avalo: totalAvaloRevenue
+      earners: totalCreatorRevenue,
+      platform: totalAvaloRevenue
     },
     byType,
     avgROI: 0 // Would need additional conversion tracking
@@ -388,9 +390,9 @@ async function getGrowthMetrics(startDate: Date, endDate: Date) {
 }
 
 // Creator-specific helpers
-async function getCreatorReferralStats(creatorId: string, startDate: Date, endDate: Date) {
+async function getCreatorReferralStats(earnerId: string, startDate: Date, endDate: Date) {
   const referralsQuery = await db.collection('referrals')
-    .where('referrerId', '==', creatorId)
+    .where('referrerId', '==', earnerId)
     .where('createdAt', '>=', startDate)
     .where('createdAt', '<=', endDate)
     .get();
@@ -407,8 +409,8 @@ async function getCreatorReferralStats(creatorId: string, startDate: Date, endDa
   };
 }
 
-async function getCreatorViralStats(creatorId: string, startDate: Date, endDate: Date) {
-  const viralStatsSnap = await db.collection('viral_stats').doc(creatorId).get();
+async function getCreatorViralStats(earnerId: string, startDate: Date, endDate: Date) {
+  const viralStatsSnap = await db.collection('viral_stats').doc(earnerId).get();
   const viralStats = viralStatsSnap.exists ? viralStatsSnap.data() : null;
   
   // Get best entry type
@@ -431,9 +433,9 @@ async function getCreatorViralStats(creatorId: string, startDate: Date, endDate:
   };
 }
 
-async function getCreatorBoostStats(creatorId: string, startDate: Date, endDate: Date) {
+async function getCreatorBoostStats(earnerId: string, startDate: Date, endDate: Date) {
   const boostsQuery = await db.collection('pack347_boosts')
-    .where('userId', '==', creatorId)
+    .where('userId', '==', earnerId)
     .where('createdAt', '>=', startDate)
     .where('createdAt', '<=', endDate)
     .get();
@@ -445,7 +447,7 @@ async function getCreatorBoostStats(creatorId: string, startDate: Date, endDate:
   boostsQuery.docs.forEach(doc => {
     const data = doc.data();
     totalSpent += data.tokensCharged || 0;
-    earned += data.creatorReceives || 0;
+    earned += data.earnerReceives || 0;
   });
   
   return {
@@ -455,8 +457,8 @@ async function getCreatorBoostStats(creatorId: string, startDate: Date, endDate:
   };
 }
 
-async function getCreatorShareStats(creatorId: string, startDate: Date, endDate: Date) {
-  const shareStatsSnap = await db.collection('viral_share_stats').doc(creatorId).get();
+async function getCreatorShareStats(earnerId: string, startDate: Date, endDate: Date) {
+  const shareStatsSnap = await db.collection('viral_share_stats').doc(earnerId).get();
   const shareStats = shareStatsSnap.exists ? shareStatsSnap.data() : null;
   
   // Get best platform
@@ -478,8 +480,8 @@ async function getCreatorShareStats(creatorId: string, startDate: Date, endDate:
   };
 }
 
-async function getCreatorPromotionData(creatorId: string) {
-  const promotionSnap = await db.collection('promotion_scores').doc(creatorId).get();
+async function getCreatorPromotionData(earnerId: string) {
+  const promotionSnap = await db.collection('promotion_scores').doc(earnerId).get();
   const promotion = promotionSnap.exists ? promotionSnap.data() : null;
   
   return {
@@ -517,6 +519,20 @@ async function verifyAdminAccess(userId: string): Promise<void> {
  * - ROI and CPA calculations
  * - Admin-only access with permission verification
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

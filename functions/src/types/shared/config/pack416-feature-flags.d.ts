@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface FeatureFlag {
     id: string;
     name: string;
@@ -11,6 +13,23 @@ export interface FeatureFlagConfig {
 }
 export declare const FEATURE_FLAGS: Record<string, FeatureFlag>;
 export declare const getFeatureFlag: (flagId: string) => FeatureFlag | undefined;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

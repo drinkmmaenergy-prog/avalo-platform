@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 420 — Data Export Adapter
  * 
@@ -108,6 +110,20 @@ export async function generateUserDataExport(userId: string): Promise<DataExport
    * 6. Return DataExportResult with storage path
    */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

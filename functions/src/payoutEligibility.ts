@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 56 — Payout Eligibility Module
  * 
@@ -19,7 +21,7 @@ export interface PayoutEligibilityContext {
     kycLevel: "NONE" | "BASIC" | "FULL";
     riskScore: number;
   };
-  creatorEarnings: {
+  earnerEarnings: {
     totalTokensEarnedAllTime: number;
     withdrawableTokens: number;
   };
@@ -75,7 +77,7 @@ export function computePayoutEligibility(
   }
 
   // Rule 5: Must have withdrawable tokens
-  if (context.creatorEarnings.withdrawableTokens <= 0) {
+  if (context.earnerEarnings.withdrawableTokens <= 0) {
     eligible = false;
     reasons.push("NO_EARNINGS");
   }
@@ -122,6 +124,20 @@ export function getEligibilityReasonMessage(
 
   return messages[reason]?.[language] || reason;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

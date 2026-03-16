@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 358 — Financial Stress Scenario Simulator
  * 
@@ -479,7 +481,7 @@ class StressScenarioEngine {
 
     if (scenario.payoutMultiplier > 1) {
       recommendations.push('Review payout structure and consider adjustments');
-      recommendations.push('Negotiate better terms with high-volume creators');
+      recommendations.push('Negotiate better terms with high-volume earners');
       recommendations.push('Optimize revenue sharing thresholds');
     }
 
@@ -697,6 +699,20 @@ export const getScenarioResults = onCall(
       throw new HttpsError('internal', 'Failed to fetch results');
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

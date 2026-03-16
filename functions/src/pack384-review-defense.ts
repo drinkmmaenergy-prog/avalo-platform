@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 384 — App Store Review Defense Engine
  * Detects and prevents review bombing, fake reviews, and coordinated attacks
@@ -451,6 +453,20 @@ export const detectCopyPasteReviews = onSchedule("every 6 hours", async (event) 
     console.error('Error detecting copy-paste reviews:', error);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

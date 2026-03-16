@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 79 — In-Chat Paid Gifts
  * Firebase Function: sendGift
@@ -16,8 +18,8 @@ const FieldValue = { serverTimestamp, increment };
 /**
  * Commission split configuration (non-negotiable)
  */
-const AVALO_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
-const RECEIVER_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
+const AVALO_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;
+const RECEIVER_COMMISSION_PERCENTAGE = MONETIZATION_SPLITS.CHAT.earner;
 
 /**
  * Rate limiting configuration
@@ -72,13 +74,13 @@ function checkRateLimit(userId: string): boolean {
  * Calculate commission split
  */
 function calculateCommission(priceTokens: number): {
-  avaloCommission: number;
+  platformCommission: number;
   receiverEarnings: number;
 } {
-  const avaloCommission = Math.floor(priceTokens * AVALO_COMMISSION_PERCENTAGE);
-  const receiverEarnings = priceTokens - avaloCommission;
+  const platformCommission = Math.floor(priceTokens * AVALO_COMMISSION_PERCENTAGE);
+  const receiverEarnings = priceTokens - platformCommission;
   
-  return { avaloCommission, receiverEarnings };
+  return { platformCommission, receiverEarnings };
 }
 
 /**
@@ -217,7 +219,7 @@ export const sendGift = functions.https.onCall(async (request) => {
       }
 
       // 5g. Calculate commission split (35% Avalo / 65% Receiver)
-      const { avaloCommission, receiverEarnings } = calculateCommission(priceTokens);
+      const { platformCommission, receiverEarnings } = calculateCommission(priceTokens);
 
       // 5h. Create transaction record
       const transactionId = uuidv4();
@@ -230,7 +232,7 @@ export const sendGift = functions.https.onCall(async (request) => {
         chatId,
         giftId,
         priceTokens,
-        commissionAvalo: avaloCommission,
+        commissionAvalo: platformCommission,
         receiverEarnings,
         createdAt: FieldValue.serverTimestamp(),
         status: 'completed',
@@ -404,6 +406,23 @@ async function sendGiftNotification(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

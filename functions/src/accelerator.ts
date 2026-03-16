@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 197 - Avalo Global Creator Accelerator
  * 
- * Professional creator growth program with:
+ * Professional earner growth program with:
  * - Merit-based selection
  * - Professional mentorship
  * - Funding opportunities
@@ -450,7 +452,7 @@ export const requestGrant = functions.https.onCall(async (request) => {
     requestedAt: FieldValue.serverTimestamp() as any,
   };
 
-  await db.collection('creator_grants').doc(requestId).set(grantRequest);
+  await db.collection('earner_grants').doc(requestId).set(grantRequest);
 
   return {
     success: true,
@@ -478,7 +480,7 @@ export const issueGrant = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid grant review data');
   }
 
-  const grantRef = db.collection('creator_grants').doc(requestId);
+  const grantRef = db.collection('earner_grants').doc(requestId);
   const grant = await grantRef.get();
 
   if (!grant.exists) {
@@ -684,6 +686,20 @@ function calculateSeverity(reportType: string, description: string): 'low' | 'me
   
   return 'low';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

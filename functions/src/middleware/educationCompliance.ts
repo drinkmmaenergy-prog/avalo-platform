@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { ScamDetectionResult } from '../types/education.types';
 
 const BLOCKED_CATEGORIES = [
@@ -410,6 +412,22 @@ export function performFullComplianceCheck(courseData: {
     blockedContent
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

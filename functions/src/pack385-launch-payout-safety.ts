@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 385 — Payment, Payout & Tax Safety During Launch
  * Manages delayed payouts, fraud buffers, and verification requirements during market launch
@@ -241,7 +243,7 @@ async function checkVerificationRequired(
   config: PayoutSafetyConfig,
   userData: any
 ): Promise<{ required: boolean; reason?: string }> {
-  // Always require for creators and ambassadors
+  // Always require for earners and ambassadors
   if (userData.isCreator || userData.isLaunchAmbassador) {
     return { required: true, reason: 'Creator/Ambassador status' };
   }
@@ -569,6 +571,20 @@ export const pack385_releaseFraudBuffers = onSchedule("every 24 hours", async (e
 
     console.log(`Released ${released} fraud buffers`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

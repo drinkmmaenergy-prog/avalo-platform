@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 254: MEET & DATE ENGINE - OFFLINE MEETINGS AUTOMATION
  * 
@@ -27,7 +29,7 @@ const db = getFirestore();
 
 export const MEETING_CONFIG = {
   PLATFORM_FEE_PERCENT: 35,          // Avalo takes 35% immediately (non-refundable)
-  ESCROW_PERCENT: 65,                // 65% held in escrow for creator
+  ESCROW_PERCENT: 65,                // 65% held in escrow for earner
   MIN_MEETING_DURATION_MINUTES: 30, // Minimum meeting duration
   MAX_MEETING_DURATION_HOURS: 8,    // Maximum meeting duration
   CHECK_IN_WINDOW_MINUTES: 15,      // 15 minutes before/after start time
@@ -60,8 +62,8 @@ export type RefundReason =
 
 export interface Meeting {
   meetingId: string;
-  creatorId: string;
-  creatorName: string;
+  earnerId: string;
+  earnerName: string;
   bookerId?: string;
   bookerName?: string;
   title: string;
@@ -88,7 +90,7 @@ export interface MeetingBooking {
   bookingId: string;
   meetingId: string;
   bookerId: string;
-  creatorId: string;
+  earnerId: string;
   totalTokens: number;
   platformFee: number;        // 35% taken immediately
   escrowAmount: number;       // 65% held in escrow
@@ -129,11 +131,11 @@ export interface MeetingRefund {
   meetingId: string;
   bookingId: string;
   bookerId: string;
-  creatorId: string;
+  earnerId: string;
   requesterId: string;
   refundReason: RefundReason;
   refundAmount: number;
-  avaloFeeRefunded: boolean;  // Only refunded in confirmed fraud cases
+  platformFeeRefunded: boolean;  // Only refunded in confirmed fraud cases
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PROCESSED';
   reviewedBy?: string;
   reviewedAt?: Timestamp;
@@ -174,7 +176,7 @@ export interface PanicAlert {
  * Creator creates a meeting slot
  */
 export async function createMeetingSlot(
-  creatorId: string,
+  earnerId: string,
   meetingData: {
     title: string;
     description: string;
@@ -186,17 +188,17 @@ export async function createMeetingSlot(
     verificationType: VerificationType;
   }
 ): Promise<{ meetingId: string; meeting: Meeting }> {
-  // Validate creator
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  if (!creatorDoc.exists) {
+  // Validate earner
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  if (!earnerDoc.exists) {
     throw new HttpsError('not-found', 'Creator not found');
   }
 
-  const creator = creatorDoc.data();
-  if (!creator?.earnFromChat && !creator?.isCreator) {
+  const earner = earnerDoc.data();
+  if (!earner?.earnFromChat && !earner?.isCreator) {
     throw new HttpsError(
       'permission-denied',
-      'Only creators can create meeting slots'
+      'Only earners can create meeting slots'
     );
   }
 
@@ -232,8 +234,8 @@ export async function createMeetingSlot(
   const meetingRef = db.collection('meetings').doc();
   const meeting: Meeting = {
     meetingId: meetingRef.id,
-    creatorId,
-    creatorName: creator.displayName || 'Anonymous',
+    earnerId,
+    earnerName: earner.displayName || 'Anonymous',
     title: meetingData.title,
     description: meetingData.description,
     startTime: Timestamp.fromDate(meetingData.startTime),
@@ -249,7 +251,7 @@ export async function createMeetingSlot(
 
   await meetingRef.set(meeting);
 
-  logger.info(`Meeting slot created: ${meetingRef.id} by ${creatorId}`);
+  logger.info(`Meeting slot created: ${meetingRef.id} by ${earnerId}`);
 
   return { meetingId: meetingRef.id, meeting };
 }
@@ -278,7 +280,7 @@ export async function bookMeeting(
     }
 
     // Prevent self-booking
-    if (meeting.creatorId === bookerId) {
+    if (meeting.earnerId === bookerId) {
       throw new HttpsError('invalid-argument', 'Cannot book your own meeting');
     }
 
@@ -314,9 +316,9 @@ export async function bookMeeting(
     });
 
     // Credit Avalo platform fee immediately (non-refundable)
-    const avaloWalletRef = db.collection('system').doc('avalo_wallet');
+    const platformWalletRef = db.collection('system').doc('platform_wallet');
     transaction.set(
-      avaloWalletRef,
+      platformWalletRef,
       {
         balance: FieldValue.increment(platformFee),
         updatedAt: FieldValue.serverTimestamp(),
@@ -346,7 +348,7 @@ export async function bookMeeting(
       bookingId: bookingRef.id,
       meetingId,
       bookerId,
-      creatorId: meeting.creatorId,
+      earnerId: meeting.earnerId,
       totalTokens: meeting.priceTokens,
       platformFee,
       escrowAmount,
@@ -363,7 +365,7 @@ export async function bookMeeting(
       transactionId: escrowTransactionRef.id,
       type: 'meeting_escrow_hold',
       fromUserId: bookerId,
-      toUserId: meeting.creatorId,
+      toUserId: meeting.earnerId,
       amount: escrowAmount,
       meetingId,
       bookingId: bookingRef.id,
@@ -420,7 +422,7 @@ export async function validateMeetingCheckpoint(
     const meeting = meetingDoc.data() as Meeting;
 
     // Verify user is participant
-    if (userId !== meeting.creatorId && userId !== meeting.bookerId) {
+    if (userId !== meeting.earnerId && userId !== meeting.bookerId) {
       throw new HttpsError(
         'permission-denied',
         'Only meeting participants can check in/out'
@@ -520,7 +522,7 @@ export async function validateMeetingCheckpoint(
 
       const checkIns = validationsSnapshot.docs.map((doc) => doc.data());
       const bothCheckedIn =
-        checkIns.some((v) => v.userId === meeting.creatorId) &&
+        checkIns.some((v) => v.userId === meeting.earnerId) &&
         checkIns.some((v) => v.userId === meeting.bookerId);
 
       if (bothCheckedIn) {
@@ -541,7 +543,7 @@ export async function validateMeetingCheckpoint(
 
       const checkOuts = validationsSnapshot.docs.map((doc) => doc.data());
       const bothCheckedOut =
-        checkOuts.some((v) => v.userId === meeting.creatorId) &&
+        checkOuts.some((v) => v.userId === meeting.earnerId) &&
         checkOuts.some((v) => v.userId === meeting.bookerId);
 
       if (bothCheckedOut) {
@@ -551,7 +553,7 @@ export async function validateMeetingCheckpoint(
           updatedAt: FieldValue.serverTimestamp(),
         });
 
-        // Release escrow to creator
+        // Release escrow to earner
         await releaseEscrowAfterCompletion(meetingId, transaction);
       }
     }
@@ -569,7 +571,7 @@ export async function validateMeetingCheckpoint(
 }
 
 /**
- * Release escrow to creator after meeting completion
+ * Release escrow to earner after meeting completion
  */
 async function releaseEscrowAfterCompletion(
   meetingId: string,
@@ -591,9 +593,9 @@ async function releaseEscrowAfterCompletion(
   const bookingDoc = bookingsSnapshot.docs[0];
   const booking = bookingDoc.data() as MeetingBooking;
 
-  // Credit creator
-  const creatorRef = db.collection('users').doc(booking.creatorId);
-  transaction.update(creatorRef, {
+  // Credit earner
+  const earnerRef = db.collection('users').doc(booking.earnerId);
+  transaction.update(earnerRef, {
     tokenBalance: FieldValue.increment(booking.escrowAmount),
     updatedAt: FieldValue.serverTimestamp(),
   });
@@ -610,7 +612,7 @@ async function releaseEscrowAfterCompletion(
     transactionId: transactionRef.id,
     type: 'meeting_escrow_release',
     fromUserId: booking.bookerId,
-    toUserId: booking.creatorId,
+    toUserId: booking.earnerId,
     amount: booking.escrowAmount,
     meetingId,
     bookingId: booking.bookingId,
@@ -621,7 +623,7 @@ async function releaseEscrowAfterCompletion(
   });
 
   logger.info(
-    `Escrow released: ${booking.escrowAmount} tokens to ${booking.creatorId} for meeting ${meetingId}`
+    `Escrow released: ${booking.escrowAmount} tokens to ${booking.earnerId} for meeting ${meetingId}`
   );
 }
 
@@ -654,7 +656,7 @@ export async function requestMeetingRefund(
     const meeting = meetingDoc.data() as Meeting;
 
     // Verify requester is participant
-    if (requesterId !== meeting.creatorId && requesterId !== meeting.bookerId) {
+    if (requesterId !== meeting.earnerId && requesterId !== meeting.bookerId) {
       throw new HttpsError(
         'permission-denied',
         'Only meeting participants can request refunds'
@@ -689,13 +691,13 @@ export async function requestMeetingRefund(
 
     // Calculate refund amount
     let refundAmount = booking.escrowAmount;
-    let avaloFeeRefunded = false;
+    let platformFeeRefunded = false;
 
     // Avalo fee is non-refundable EXCEPT in confirmed fraud cases (PACK 248)
     if (refundReason === 'IDENTITY_MISMATCH') {
       // Fraud case - full refund including Avalo fee
       refundAmount = booking.totalTokens;
-      avaloFeeRefunded = true;
+      platformFeeRefunded = true;
     }
 
     // Create refund request
@@ -705,11 +707,11 @@ export async function requestMeetingRefund(
       meetingId,
       bookingId: booking.bookingId,
       bookerId: booking.bookerId,
-      creatorId: booking.creatorId,
+      earnerId: booking.earnerId,
       requesterId,
       refundReason,
       refundAmount,
-      avaloFeeRefunded,
+      platformFeeRefunded,
       status: 'PENDING',
       evidence,
       createdAt: Timestamp.now(),
@@ -764,9 +766,9 @@ async function processRefundApproval(
   });
 
   // If Avalo fee refunded (fraud case), deduct from Avalo wallet
-  if (refund.avaloFeeRefunded) {
-    const avaloWalletRef = db.collection('system').doc('avalo_wallet');
-    transaction.update(avaloWalletRef, {
+  if (refund.platformFeeRefunded) {
+    const platformWalletRef = db.collection('system').doc('platform_wallet');
+    transaction.update(platformWalletRef, {
       balance: FieldValue.increment(-booking.platformFee),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -791,7 +793,7 @@ async function processRefundApproval(
   transaction.set(transactionRef, {
     transactionId: transactionRef.id,
     type: 'meeting_refund',
-    fromUserId: refund.creatorId,
+    fromUserId: refund.earnerId,
     toUserId: refund.bookerId,
     amount: refund.refundAmount,
     meetingId: refund.meetingId,
@@ -799,7 +801,7 @@ async function processRefundApproval(
     timestamp: FieldValue.serverTimestamp(),
     metadata: {
       refundReason: refund.refundReason,
-      avaloFeeRefunded: refund.avaloFeeRefunded,
+      platformFeeRefunded: refund.platformFeeRefunded,
     },
   });
 
@@ -844,7 +846,7 @@ export async function triggerPanicAlert(
     const meeting = meetingDoc.data() as Meeting;
 
     // Verify user is participant
-    if (userId !== meeting.creatorId && userId !== meeting.bookerId) {
+    if (userId !== meeting.earnerId && userId !== meeting.bookerId) {
       throw new HttpsError(
         'permission-denied',
         'Only meeting participants can trigger alerts'
@@ -852,7 +854,7 @@ export async function triggerPanicAlert(
     }
 
     // Get the other participant's info
-    const otherUserId = userId === meeting.creatorId ? meeting.bookerId : meeting.creatorId;
+    const otherUserId = userId === meeting.earnerId ? meeting.bookerId : meeting.earnerId;
     const otherUserDoc = await transaction.get(db.collection('users').doc(otherUserId!));
     const otherUser = otherUserDoc.data();
 
@@ -966,7 +968,7 @@ export async function submitMeetingRating(
     }
 
     // Verify rater is participant
-    if (raterId !== meeting.creatorId && raterId !== meeting.bookerId) {
+    if (raterId !== meeting.earnerId && raterId !== meeting.bookerId) {
       throw new HttpsError(
         'permission-denied',
         'Only meeting participants can rate'
@@ -986,7 +988,7 @@ export async function submitMeetingRating(
     }
 
     // Determine rated user
-    const ratedUserId = raterId === meeting.creatorId ? meeting.bookerId : meeting.creatorId;
+    const ratedUserId = raterId === meeting.earnerId ? meeting.bookerId : meeting.earnerId;
 
     // Check if already rated
     const existingRatings = await db
@@ -1058,6 +1060,20 @@ export async function submitMeetingRating(
     return { ratingId: ratingRef.id };
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

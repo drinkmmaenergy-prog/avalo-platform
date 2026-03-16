@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 57 — Dispute Engine
  * Pure dispute logic for computing resolution actions
@@ -178,7 +180,7 @@ function computeEarningResolutionActions(
           earningStatus: "SUSPENDED"
         };
       }
-      actions.internalNotes = "Enforcement action taken on creator account.";
+      actions.internalNotes = "Enforcement action taken on earner account.";
       break;
 
     default:
@@ -344,6 +346,20 @@ export function isValidDisputeOutcome(outcome: string): outcome is DisputeOutcom
     "OTHER"
   ].includes(outcome);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

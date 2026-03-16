@@ -1,13 +1,15 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Dashboard & Monthly Statements
  * Main export file
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
 // Export all types
-export * from './types/pack303-creator-earnings.types';
+export * from './types/pack303-earner-earnings.types';
 
 // Export services
 export {
@@ -43,6 +45,20 @@ export {
   cronDailyEarningsAggregation,
   httpTriggerAggregation,
 } from './pack303-endpoints';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

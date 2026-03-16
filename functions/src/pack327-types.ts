@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ============================================================================
  * PACK 327 — Creator Promo Bundles Types
@@ -179,9 +181,25 @@ export const DEFAULT_BUNDLES: Omit<PromoBundle, 'id' | 'createdAt'>[] = [
 export const PACK327_CONFIG = {
   MIN_BUNDLE_PRICE_USD: 10.0,
   MAX_BUNDLE_PRICE_USD: 999.99,
-  TOKEN_CONVERSION_RATE: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD for calculation
-  AVALO_REVENUE_SPLIT: 1.0, // 100% Avalo revenue, no creator split
+  TOKEN_CONVERSION_RATE: MONETIZATION_SPLITS.EVENT_TICKET.platform, // 1 token = MONETIZATION_SPLITS.EVENT_TICKET.platform USD for calculation
+  AVALO_REVENUE_SPLIT: 1.0, // 100% Avalo revenue, no earner split
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

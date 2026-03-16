@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import {
   FORBIDDEN_SEED_PATTERNS,
   ALLOWED_SEED_ARCHETYPES,
@@ -303,7 +305,7 @@ export class AiSeedSafetyScreening {
   private static calculateConfidence(flagCount: number, severity: string): number {
     if (severity === 'critical') return 0.95;
     if (severity === 'high') return 0.85;
-    if (severity === 'medium') return MONETIZATION_SPLITS.SUBSCRIPTION.creator;
+    if (severity === 'medium') return MONETIZATION_SPLITS.SUBSCRIPTION.earner;
     if (severity === 'low') return 0.55;
     return 0.40;
   }
@@ -316,6 +318,23 @@ export async function screenBeforeCreation(seedData: Partial<AiSeed>): Promise<S
 export async function screenBeforePublish(listing: Partial<AiSeedMarketplaceListing>): Promise<SafetyScreeningResult> {
   return AiSeedSafetyScreening.screenMarketplaceListing(listing);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

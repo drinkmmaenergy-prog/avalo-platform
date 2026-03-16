@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 312 — Customer Support Console & Case Management
  * Cloud Functions for Support Operations
  * 
  * RULES:
- * - No changes to token packages, prices, or payout rates (MONETIZATION_SPLITS.EVENT_TICKET.avalo USD/token)
+ * - No changes to token packages, prices, or payout rates (MONETIZATION_SPLITS.EVENT_TICKET.platform USD/token)
  * - No changes to revenue splits (65/35, 80/20)
  * - No free tokens, discounts, or economic promotions
  * - All monetary actions must use existing, approved business rules
@@ -682,6 +684,22 @@ export const support_getUserTickets = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

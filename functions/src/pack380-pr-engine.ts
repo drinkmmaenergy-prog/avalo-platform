@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 380 — Global PR Engine
  * Automated + Manual Hybrid PR System
@@ -207,7 +209,7 @@ async function generatePressReleaseContent(
     feature: {
       premium: {
         subtitle: 'Avalo introduces innovative feature enhancing premium dating experience',
-        content: `Avalo, the world's premier dating and creator platform, today announced {{featureName}}, 
+        content: `Avalo, the world's premier dating and earner platform, today announced {{featureName}}, 
 a groundbreaking feature designed to elevate the user experience for premium members worldwide.
 
 {{featureDescription}}
@@ -218,8 +220,8 @@ a groundbreaking feature designed to elevate the user experience for premium mem
 The feature is now available to all users globally, with enhanced capabilities for Royal Club members.
 
 About Avalo:
-Avalo is a next-generation dating and creator economy platform, combining premium matchmaking with 
-creator monetization tools. With industry-leading safety features and global reach, Avalo empowers 
+Avalo is a next-generation dating and earner economy platform, combining premium matchmaking with 
+earner monetization tools. With industry-leading safety features and global reach, Avalo empowers 
 millions of users to build meaningful connections.`
       },
       'safety-first': {
@@ -238,13 +240,13 @@ Safety remains Avalo's top priority, with continuous investment in protection sy
       premium: {
         subtitle: 'Avalo reaches significant milestone in global expansion',
         content: `Avalo today announced reaching {{milestone}}, marking a significant achievement 
-in the company's mission to revolutionize modern dating and creator economy.
+in the company's mission to revolutionize modern dating and earner economy.
 
 {{milestoneDetails}}
 
 This milestone reflects strong user trust, platform quality, and continued growth across all markets.
 
-Avalo continues to invest in innovation, safety, and creator support as it scales globally.`
+Avalo continues to invest in innovation, safety, and earner support as it scales globally.`
       }
     },
     safety: {
@@ -264,16 +266,16 @@ AI-powered protection, and 24/7 support teams.`
     },
     earnings: {
       empowerment: {
-        subtitle: 'Avalo creators achieve record earnings milestone',
-        content: `Avalo today announced that creators on the platform have collectively earned 
-{{earningsAmount}}, demonstrating the platform's commitment to creator economic empowerment.
+        subtitle: 'Avalo earners achieve record earnings milestone',
+        content: `Avalo today announced that earners on the platform have collectively earned 
+{{earningsAmount}}, demonstrating the platform's commitment to earner economic empowerment.
 
 {{earningsDetails}}
 
-"We're building the most creator-friendly platform in the industry," said {{spokesperson}}. 
-"Our creators' success is our success."
+"We're building the most earner-friendly platform in the industry," said {{spokesperson}}. 
+"Our earners' success is our success."
 
-Avalo provides creators with multiple monetization tools including premium chat, calendar bookings, 
+Avalo provides earners with multiple monetization tools including premium chat, calendar bookings, 
 content sales, and Royal Club subscriptions.`
       }
     }
@@ -644,7 +646,7 @@ async function analyzeSentiment(text: string): Promise<{
  */
 function extractKeywords(text: string): string[] {
   const importantKeywords = [
-    'avalo', 'dating', 'creator', 'safety', 'security', 'feature',
+    'platform', 'dating', 'earner', 'safety', 'security', 'feature',
     'launch', 'expansion', 'global', 'premium', 'royal', 'monetization'
   ];
 
@@ -713,6 +715,20 @@ export const addPressContact = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

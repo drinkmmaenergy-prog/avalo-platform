@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Phase 11C - Creator Ranking System Types
- * Type definitions for global ranking and creator dashboard
+ * Type definitions for global ranking and earner dashboard
  */
 
 import { timestamp } from '../runtime';
@@ -15,7 +17,7 @@ export type CategoryFilter = 'all' | 'video' | 'chat' | 'tips' | 'content';
  */
 export interface RankingAction {
   type: 'tip' | 'paid_chat' | 'voice_call' | 'video_call' | 'content_purchase' | 'boost' | 'first_time_fan';
-  creatorId: string;
+  earnerId: string;
   payerId: string;
   points: number;
   tokensAmount?: number;
@@ -28,7 +30,7 @@ export interface RankingAction {
  * Creator's ranking score for a specific period
  */
 export interface RankingScore {
-  creatorId: string;
+  earnerId: string;
   period: RankingPeriod;
   segment: RankingSegment;
   genderFilter: GenderFilter;
@@ -59,7 +61,7 @@ export interface RankingScore {
  */
 export interface LeaderboardEntry {
   rank: number;
-  creatorId: string;
+  earnerId: string;
   displayName: string;
   avatar?: string;
   gender: 'male' | 'female' | 'other';
@@ -94,7 +96,7 @@ export interface LeaderboardEntry {
  * Creator Dashboard data
  */
 export interface CreatorDashboard {
-  creatorId: string;
+  earnerId: string;
   
   // Current rankings
   rankings: {
@@ -185,7 +187,7 @@ export interface TimelinePoint {
  * Top 10 bonus status
  */
 export interface Top10Bonus {
-  creatorId: string;
+  earnerId: string;
   rank: number;
   activatedAt: Date;
   expiresAt: Date;
@@ -227,6 +229,22 @@ export interface LeaderboardResponse {
   };
   lastUpdated: Date;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

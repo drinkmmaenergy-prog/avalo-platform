@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 85 — Trust & Risk Engine Integration Helpers
  * 
@@ -262,6 +264,20 @@ export async function hasRiskFlag(userId: string, flag: string): Promise<boolean
   const profile = await getTrustProfile(userId);
   return profile.flags.includes(flag as any);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

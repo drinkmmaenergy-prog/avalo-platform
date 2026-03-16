@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 381 — Regional Expansion Engine
  * Regional Expansion Tracking & Readiness Scoring
@@ -74,7 +76,7 @@ export interface RegionExpansionStatus {
   };
   
   // Creator Economy
-  creators: {
+  earners: {
     totalCreators: number;
     activeCreators: number;
     monetizedCreators: number;
@@ -488,10 +490,10 @@ export const pack381_expansionReadinessScore = functions.https.onCall(async (req
     // Calculate weighted overall score
     const weights = {
       legal: 0.25,
-      product: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+      product: MONETIZATION_SPLITS.EVENT_TICKET.platform,
       support: 0.15,
-      market: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-      infrastructure: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+      market: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+      infrastructure: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     };
 
     const overallScore = Math.round(
@@ -633,6 +635,22 @@ export const pack381_languageAvailabilityMatrix = functions.https.onCall(async (
     return { matrix };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

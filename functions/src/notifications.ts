@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO COMPLETE NOTIFICATION SYSTEM
@@ -31,10 +33,10 @@ import { sgMail } from './lib/stubs';
 // ============================================================================
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@avalo.app";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "notifications@platform.app";
 const FROM_NAME = "Avalo";
-const SUPPORT_EMAIL = "support@avalo.app";
-const APP_URL = process.env.APP_URL || "https://avalo.app";
+const SUPPORT_EMAIL = "support@platform.app";
+const APP_URL = process.env.APP_URL || "https://platform.app";
 
 // Initialize SendGrid
 if (SENDGRID_API_KEY) {
@@ -91,7 +93,7 @@ Here's what you can do next:
 1. Complete your profile to get better matches
 2. Add photos and a video intro
 3. Start exploring and connecting with others
-4. Check out our Royal Club program for creators
+4. Check out our Royal Club program for earners
 
 Need help? Visit ${APP_URL}/help or email us at ${SUPPORT_EMAIL}
 
@@ -820,6 +822,20 @@ export async function sendAISubscriptionActivatedEmail(
   const template = getAISubscriptionActivatedEmailTemplate();
   return sendEmail(userId, email, NotificationType.AI_SUBSCRIPTION_ACTIVATED, template);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

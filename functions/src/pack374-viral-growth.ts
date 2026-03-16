@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ═══════════════════════════════════════════════════════════════
  * PACK 374 — VIRAL GROWTH ENGINE
@@ -70,8 +72,8 @@ export const pack374_generateInviteCode = functions.https.onCall(async (request)
 
     // Generate unique code
     const code = generateUniqueCode(8);
-    const deepLink = `avalo://invite?code=${code}`;
-    const webLink = `https://avalo.app/join/${code}`;
+    const deepLink = `platform://invite?code=${code}`;
+    const webLink = `https://platform.app/join/${code}`;
 
     const inviteCodeData: InviteCodeData = {
       code,
@@ -326,7 +328,7 @@ export const pack374_rewardInviteSuccess = functions.https.onCall(async (request
 // ═════════════════════════════════════════════════════════════
 
 interface BoostConfig {
-  boostType: 'profile' | 'story' | 'creator' | 'local';
+  boostType: 'profile' | 'story' | 'earner' | 'local';
   durationHours: number;
   strength: number; // 1-5
   price?: number; // In tokens (if paid)
@@ -606,7 +608,7 @@ export const pack374_trackShareEvent = functions.https.onCall(async (request) =>
 
     // Generate share tracking ID
     const shareId = db.collection('shareTracking').doc().id;
-    const trackingUrl = `https://avalo.app/s/${shareId}`;
+    const trackingUrl = `https://platform.app/s/${shareId}`;
 
     await db.collection('shareTracking').doc(shareId).set({
       shareId,
@@ -978,7 +980,7 @@ async function applyBoostEffects(
     case 'story':
       effects.feedPriority = strength * 15;
       break;
-    case 'creator':
+    case 'earner':
       effects.visibilityScore = strength * 5;
       break;
     case 'local':
@@ -1046,6 +1048,20 @@ async function updateLoopMetrics(
     updatedAt: admin.firestore.Timestamp.now(),
   }, { merge: true });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

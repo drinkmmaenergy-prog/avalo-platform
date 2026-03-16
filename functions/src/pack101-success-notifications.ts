@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 101 — Success Toolkit Notification Integration
- * Gentle insights notifications for creators (opt-in only)
+ * Gentle insights notifications for earners (opt-in only)
  */
 
 import { db } from './init';
@@ -10,7 +12,7 @@ import { SuccessSuggestion } from './pack101-success-types';
 import { admin, functions } from './runtime';
 
 /**
- * Send gentle insight notification to creator
+ * Send gentle insight notification to earner
  * Only sends for HIGH priority suggestions and respects user preferences
  */
 export async function sendSuccessInsightNotification(
@@ -110,6 +112,20 @@ export async function processSuccessNotifications(
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

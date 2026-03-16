@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 393: Influencer Engine
  * Manages influencer partnerships, campaigns, and payouts
@@ -345,13 +347,13 @@ export const pack393_checkInfluencerFraud = onSchedule("every 24 hours", async (
       // Check for device fingerprint issues (would integrate with PACK 302)
       const suspiciousDevices = await countSuspiciousDevices(partnerId);
       if (suspiciousDevices > 10) {
-        fraudScore += MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
+        fraudScore += MONETIZATION_SPLITS.SUBSCRIPTION.platform;
       }
       
       // Spike pattern detection
       const hasSpike = await detectInstallSpike(partnerId);
       if (hasSpike) {
-        fraudScore += MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+        fraudScore += MONETIZATION_SPLITS.EVENT_TICKET.platform;
       }
       
       // Update fraud score
@@ -522,6 +524,22 @@ export const pack393_getInfluencerDashboard = functions.https.onCall(async (requ
     fraudScore: partner?.fraudScore || 0
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

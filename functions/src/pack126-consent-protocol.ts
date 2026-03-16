@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 126 — Universal Consent Protocol
  * 
@@ -538,6 +540,20 @@ export async function getUserConsentRecordsByState(
   const allRecords = await getUserConsentRecords(userId);
   return allRecords.filter(r => r.state === state);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

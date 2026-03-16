@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 191 — Live Arena Safety Monitor
  * 
@@ -471,7 +473,7 @@ export const detectStalking = onDocumentCreated(
 // ============================================================================
 
 /**
- * Monitor creator burnout and force breaks
+ * Monitor earner burnout and force breaks
  */
 export const monitorCreatorBurnout = onSchedule(
   {
@@ -479,7 +481,7 @@ export const monitorCreatorBurnout = onSchedule(
     region: 'europe-west1',
   },
   async () => {
-    console.log('Monitoring creator burnout...');
+    console.log('Monitoring earner burnout...');
 
     // Get all live streams
     const liveStreams = await db.collection('live_streams')
@@ -512,7 +514,7 @@ export const monitorCreatorBurnout = onSchedule(
         });
 
         // Update burnout tracking
-        await db.collection('creator_burnout').doc(hostId).set({
+        await db.collection('earner_burnout').doc(hostId).set({
           userId: hostId,
           currentStreamDuration: duration,
           breakReminders: FieldValue.increment(1),
@@ -533,7 +535,7 @@ export const monitorCreatorBurnout = onSchedule(
           updatedAt: FieldValue.serverTimestamp(),
         });
 
-        // Notify creator
+        // Notify earner
         await db.collection('notifications').doc().set({
           userId: hostId,
           type: 'stream_auto_ended',
@@ -644,6 +646,20 @@ export const cleanupModerationEvents = onSchedule(
     console.log('Cleanup complete');
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

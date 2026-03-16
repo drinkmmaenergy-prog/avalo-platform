@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 94 — Discovery Endpoints
  * Callable functions and scheduled jobs for Discovery Engine v2
@@ -146,6 +148,20 @@ export const onMonetizationEvent = onDocumentCreated('transactions/{txId}', asyn
   });
 
 console.log('✅ Discovery Endpoints initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

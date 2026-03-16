@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 80 — Paid Media Cloud Functions
  * Firebase Functions for sending and unlocking paid media
@@ -69,8 +71,8 @@ interface UnlockPaidMediaResponse {
 // CONSTANTS
 // ============================================================================
 
-const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo;
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.platform;
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner;
 
 const MIN_PRICE = 5;
 const MAX_PRICE = 10000;
@@ -104,13 +106,13 @@ function validatePrice(price: number): { valid: boolean; error?: string } {
  * Calculate commission split
  */
 function calculateCommission(priceTokens: number): {
-  avaloFee: number;
-  creatorAmount: number;
+  platformFee: number;
+  earnerAmount: number;
 } {
-  const avaloFee = Math.floor(priceTokens * AVALO_COMMISSION);
-  const creatorAmount = priceTokens - avaloFee;
+  const platformFee = Math.floor(priceTokens * AVALO_COMMISSION);
+  const earnerAmount = priceTokens - platformFee;
 
-  return { avaloFee, creatorAmount };
+  return { platformFee, earnerAmount };
 }
 
 /**
@@ -171,7 +173,7 @@ async function recordTransaction(
   senderId: string,
   receiverId: string,
   tokensAmount: number,
-  avaloFee: number,
+  platformFee: number,
   mediaId: string,
   chatId: string
 ): Promise<string> {
@@ -179,7 +181,7 @@ async function recordTransaction(
     senderUid: senderId,
     receiverUid: receiverId,
     tokensAmount,
-    avaloFee,
+    platformFee,
     mediaId,
     chatId,
     transactionType: 'paid_media_unlock',
@@ -454,7 +456,7 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
       }
 
       // Calculate commission split
-      const { avaloFee, creatorAmount } = calculateCommission(priceTokens);
+      const { platformFee, earnerAmount } = calculateCommission(priceTokens);
 
       // Use transaction to ensure atomicity
       const batch = db.batch();
@@ -466,18 +468,18 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
         lastUpdated: serverTimestamp(),
       });
 
-      // Add to creator (seller)
-      const creatorWalletRef = db.doc(`balances/${senderId}/wallet`);
-      const creatorWalletSnap = await creatorWalletRef.get();
+      // Add to earner (seller)
+      const earnerWalletRef = db.doc(`balances/${senderId}/wallet`);
+      const earnerWalletSnap = await earnerWalletRef.get();
       
-      if (!creatorWalletSnap.exists) {
-        batch.set(creatorWalletRef, {
-          tokens: creatorAmount,
+      if (!earnerWalletSnap.exists) {
+        batch.set(earnerWalletRef, {
+          tokens: earnerAmount,
           lastUpdated: serverTimestamp(),
         });
       } else {
-        batch.update(creatorWalletRef, {
-          tokens: increment(creatorAmount),
+        batch.update(earnerWalletRef, {
+          tokens: increment(earnerAmount),
           lastUpdated: serverTimestamp(),
         });
       }
@@ -500,7 +502,7 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
         buyerId,
         senderId,
         priceTokens,
-        avaloFee,
+        platformFee,
         mediaId,
         chatId
       );
@@ -516,12 +518,12 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
       // Send push notification to seller (non-blocking)
       sendPushNotification(senderId, {
         title: 'Media Unlocked! 💰',
-        body: `You earned ${creatorAmount} tokens from a locked media unlock`,
+        body: `You earned ${earnerAmount} tokens from a locked media unlock`,
         data: {
           type: 'paid_media_unlocked',
           mediaId,
           buyerId,
-          tokensEarned: creatorAmount.toString(),
+          tokensEarned: earnerAmount.toString(),
           chatId,
         },
       }).catch((error) => {
@@ -530,7 +532,7 @@ export const unlockPaidMedia = functions.https.onCall(async (request) => {
 
       // Record earning in ledger (PACK 81)
       recordPaidMediaEarning({
-        creatorId: senderId,
+        earnerId: senderId,
         buyerId,
         mediaId,
         priceTokens,
@@ -639,6 +641,22 @@ export default {
   unlockPaidMedia,
   cleanupDeletedMedia,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

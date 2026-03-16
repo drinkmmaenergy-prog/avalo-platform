@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 74 — Safety Relationship API
  * 
@@ -289,6 +291,20 @@ export {
   getRelationshipHint as getRelationshipHintEndpoint,
   logSafetyAction as logSafetyActionEndpoint,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

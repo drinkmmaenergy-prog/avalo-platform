@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 399 — Influencer Wave Engine Tests
  * 
@@ -10,7 +12,7 @@ import { Timestamp, auth, db } from '../runtime';
 
 // Initialize test environment
 const test = functions({
-  projectId: 'avalo-test',
+  projectId: 'platform-test',
 }, './service-account-test.json');
 
 // Mock data
@@ -59,7 +61,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
       expect(result.success).toBe(true);
       expect(result.influencerId).toBeDefined();
       expect(result.referralCode).toBeDefined();
-      expect(result.referralLink).toContain('https://avalo.app/r/');
+      expect(result.referralLink).toContain('https://platform.app/r/');
 
       // Verify profile in database
       const profileDoc = await db
@@ -102,7 +104,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
         userId: mockUserId,
         state: 'CANDIDATE',
         referralCode: mockReferralCode,
-        customReferralLink: `https://avalo.app/r/${mockReferralCode}`,
+        customReferralLink: `https://platform.app/r/${mockReferralCode}`,
         totalInstalls: 0,
         verifiedProfiles: 0,
         firstPurchases: 0,
@@ -159,7 +161,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
         userId: mockUserId,
         state: 'VERIFIED',
         referralCode: mockReferralCode,
-        customReferralLink: `https://avalo.app/r/${mockReferralCode}`,
+        customReferralLink: `https://platform.app/r/${mockReferralCode}`,
         totalInstalls: 0,
         verifiedProfiles: 0,
         firstPurchases: 0,
@@ -197,7 +199,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
       expect(result.isFraud).toBe(false);
 
       // Verify funnel creation
-      const funnelDoc = await db.collection('creator_funnels').doc(result.funnelId).get();
+      const funnelDoc = await db.collection('earner_funnels').doc(result.funnelId).get();
       expect(funnelDoc.exists).toBe(true);
       
       const funnel = funnelDoc.data();
@@ -253,7 +255,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
       expect(result.isFraud).toBe(true);
 
       // Verify funnel marked as fraud
-      const funnelDoc = await db.collection('creator_funnels').doc(result.funnelId).get();
+      const funnelDoc = await db.collection('earner_funnels').doc(result.funnelId).get();
       expect(funnelDoc.data()?.isFraud).toBe(true);
       expect(funnelDoc.data()?.fraudScore).toBeGreaterThan(0.8);
     });
@@ -269,7 +271,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
 
     beforeEach(async () => {
       // Set up funnel
-      await db.collection('creator_funnels').doc(mockFunnelId).set({
+      await db.collection('earner_funnels').doc(mockFunnelId).set({
         funnelId: mockFunnelId,
         influencerId: mockInfluencerId,
         userId: mockUserId,
@@ -361,7 +363,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
 
     test('should skip commission for fraud users', async () => {
       // Mark funnel as fraud
-      await db.collection('creator_funnels').doc(mockFunnelId).update({
+      await db.collection('earner_funnels').doc(mockFunnelId).update({
         isFraud: true,
         fraudScore: 0.95,
       });
@@ -405,7 +407,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
       const commissionId = 'fraud-commission-456';
 
       // Set up fraudulent funnel (not detected yet)
-      await db.collection('creator_funnels').doc(funnelId).set({
+      await db.collection('earner_funnels').doc(funnelId).set({
         funnelId,
         influencerId: mockInfluencerId,
         userId: 'fraud-user-789',
@@ -447,7 +449,7 @@ describe('PACK 399 — Influencer Wave Engine', () => {
       expect(result.actionsCount).toBeGreaterThan(0);
 
       // Verify funnel marked as fraud
-      const funnelDoc = await db.collection('creator_funnels').doc(funnelId).get();
+      const funnelDoc = await db.collection('earner_funnels').doc(funnelId).get();
       expect(funnelDoc.data()?.isFraud).toBe(true);
 
       // Verify commission reversed
@@ -713,6 +715,22 @@ describe('PACK 399 — Performance Tests', () => {
     // TODO: Implement fraud detection performance test
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

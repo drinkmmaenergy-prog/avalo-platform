@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 75 - Admin Call Management Endpoints
  * 
@@ -102,7 +104,7 @@ export async function getCallDetail(callId: string): Promise<{
   billingBreakdown: {
     tokensCharged: number;
     calleeEarnings: number;
-    avaloRevenue: number;
+    platformRevenue: number;
   };
 } | null> {
   try {
@@ -132,8 +134,8 @@ export async function getCallDetail(callId: string): Promise<{
 
     // Calculate billing breakdown (65/35 split)
     const tokensCharged = callData.totalTokensCharged;
-    const calleeEarnings = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.creator);
-    const avaloRevenue = tokensCharged - calleeEarnings;
+    const calleeEarnings = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.earner);
+    const platformRevenue = tokensCharged - calleeEarnings;
 
     return {
       call: callData,
@@ -142,7 +144,7 @@ export async function getCallDetail(callId: string): Promise<{
       billingBreakdown: {
         tokensCharged,
         calleeEarnings,
-        avaloRevenue
+        platformRevenue
       }
     };
   } catch (error) {
@@ -219,6 +221,22 @@ export async function getCallStats(params: {
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

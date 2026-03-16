@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 424 — Review-to-Retention Feedback Loop
  * Auto-triggers actions based on review ratings
@@ -86,7 +88,7 @@ export class ReviewRetentionService {
     // 2. Trigger referral prompt (if eligible)
     await this.offerReferralIncentive(userId, review);
 
-    // 3. Award creator encouragement badge/points
+    // 3. Award earner encouragement badge/points
     await this.awardEngagementBonus(userId, review);
 
     // 4. Log positive engagement
@@ -307,7 +309,7 @@ export class ReviewRetentionService {
 
       await db.collection('users').doc(userId).update({
         influencerPoints: admin.firestore.FieldValue.increment(bonusPoints),
-        'badges': admin.firestore.FieldValue.arrayUnion('avalo_advocate'),
+        'badges': admin.firestore.FieldValue.arrayUnion('platform_advocate'),
       });
 
       // Send notification about bonus
@@ -424,6 +426,20 @@ export const triggerRetentionForReview = functions.https.onCall(async (request) 
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

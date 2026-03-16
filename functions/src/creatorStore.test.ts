@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Tests for Creator Marketplace (Phase 24)
  * Focus on revenue splits, pricing, and purchase flow
@@ -26,55 +28,55 @@ describe("Creator Marketplace", () => {
 
     function calculateRevenueSplit(price: number): {
       platformFee: number;
-      creatorEarnings: number;
+      earnerEarnings: number;
     } {
       const platformFee = Math.floor(price * PLATFORM_PERCENTAGE);
-      const creatorEarnings = price - platformFee;
+      const earnerEarnings = price - platformFee;
 
-      return { platformFee, creatorEarnings };
+      return { platformFee, earnerEarnings };
     }
 
     test("should split 1000 tokens as 200/800", () => {
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(1000);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(1000);
 
       expect(platformFee).toBe(200);
-      expect(creatorEarnings).toBe(800);
+      expect(earnerEarnings).toBe(800);
     });
 
     test("should split 5000 tokens as 1000/4000", () => {
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(5000);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(5000);
 
       expect(platformFee).toBe(1000);
-      expect(creatorEarnings).toBe(4000);
+      expect(earnerEarnings).toBe(4000);
     });
 
     test("should split 100 tokens as 20/80", () => {
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(100);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(100);
 
       expect(platformFee).toBe(20);
-      expect(creatorEarnings).toBe(80);
+      expect(earnerEarnings).toBe(80);
     });
 
     test("should handle price of 1 token", () => {
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(1);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(1);
 
       expect(platformFee).toBe(0); // Floor of 0.2
-      expect(creatorEarnings).toBe(1);
+      expect(earnerEarnings).toBe(1);
     });
 
     test("should ensure total equals original price", () => {
       const price = 7777;
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(price);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(price);
 
-      expect(platformFee + creatorEarnings).toBe(price);
+      expect(platformFee + earnerEarnings).toBe(price);
     });
 
     test("should maintain 20/80 split for large amounts", () => {
       const price = 100000;
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(price);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(price);
 
       expect(platformFee).toBe(20000);
-      expect(creatorEarnings).toBe(80000);
+      expect(earnerEarnings).toBe(80000);
     });
   });
 
@@ -239,14 +241,14 @@ describe("Creator Marketplace", () => {
 
     function canPurchase(
       user: User,
-      product: { price: number; creatorId: string }
+      product: { price: number; earnerId: string }
     ): { eligible: boolean; reason?: string } {
       if (user.tokens < product.price) {
         return { eligible: false, reason: "insufficient_tokens" };
       }
 
-      if (user.blockedCreators.includes(product.creatorId)) {
-        return { eligible: false, reason: "creator_blocked" };
+      if (user.blockedCreators.includes(product.earnerId)) {
+        return { eligible: false, reason: "earner_blocked" };
       }
 
       return { eligible: true };
@@ -254,7 +256,7 @@ describe("Creator Marketplace", () => {
 
     test("should allow purchase with sufficient tokens", () => {
       const user: User = { tokens: 1000, blockedCreators: [] };
-      const product = { price: 500, creatorId: "creator123" };
+      const product = { price: 500, earnerId: "earner123" };
 
       const { eligible } = canPurchase(user, product);
       expect(eligible).toBe(true);
@@ -262,25 +264,25 @@ describe("Creator Marketplace", () => {
 
     test("should block purchase with insufficient tokens", () => {
       const user: User = { tokens: 100, blockedCreators: [] };
-      const product = { price: 500, creatorId: "creator123" };
+      const product = { price: 500, earnerId: "earner123" };
 
       const { eligible, reason } = canPurchase(user, product);
       expect(eligible).toBe(false);
       expect(reason).toBe("insufficient_tokens");
     });
 
-    test("should block purchase from blocked creator", () => {
-      const user: User = { tokens: 1000, blockedCreators: ["creator123"] };
-      const product = { price: 500, creatorId: "creator123" };
+    test("should block purchase from blocked earner", () => {
+      const user: User = { tokens: 1000, blockedCreators: ["earner123"] };
+      const product = { price: 500, earnerId: "earner123" };
 
       const { eligible, reason } = canPurchase(user, product);
       expect(eligible).toBe(false);
-      expect(reason).toBe("creator_blocked");
+      expect(reason).toBe("earner_blocked");
     });
 
     test("should allow purchase with exact token amount", () => {
       const user: User = { tokens: 500, blockedCreators: [] };
-      const product = { price: 500, creatorId: "creator123" };
+      const product = { price: 500, earnerId: "earner123" };
 
       const { eligible } = canPurchase(user, product);
       expect(eligible).toBe(true);
@@ -355,7 +357,7 @@ describe("Creator Marketplace", () => {
   describe("Purchase Statistics", () => {
     interface Purchase {
       price: number;
-      creatorEarnings: number;
+      earnerEarnings: number;
     }
 
     function calculateTotalRevenue(purchases: Purchase[]): {
@@ -365,16 +367,16 @@ describe("Creator Marketplace", () => {
     } {
       return {
         totalSales: purchases.reduce((sum, p) => sum + p.price, 0),
-        totalRevenue: purchases.reduce((sum, p) => sum + p.creatorEarnings, 0),
+        totalRevenue: purchases.reduce((sum, p) => sum + p.earnerEarnings, 0),
         purchaseCount: purchases.length,
       };
     }
 
     test("should calculate statistics correctly", () => {
       const purchases: Purchase[] = [
-        { price: 1000, creatorEarnings: 800 },
-        { price: 2000, creatorEarnings: 1600 },
-        { price: 500, creatorEarnings: 400 },
+        { price: 1000, earnerEarnings: 800 },
+        { price: 2000, earnerEarnings: 1600 },
+        { price: 500, earnerEarnings: 400 },
       ];
 
       const stats = calculateTotalRevenue(purchases);
@@ -395,7 +397,7 @@ describe("Creator Marketplace", () => {
 
     test("should handle single purchase", () => {
       const purchases: Purchase[] = [
-        { price: 1000, creatorEarnings: 800 },
+        { price: 1000, earnerEarnings: 800 },
       ];
       const stats = calculateTotalRevenue(purchases);
 
@@ -443,7 +445,7 @@ describe("Creator Marketplace", () => {
     ): string[] {
       return contentFiles.map(
         (file) =>
-          `https://storage.googleapis.com/creator-products/${productId}/${file}`
+          `https://storage.googleapis.com/earner-products/${productId}/${file}`
       );
     }
 
@@ -514,6 +516,21 @@ describe("Creator Marketplace", () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 129 — Tax Profile Management
- * Functions for managing creator tax profiles and entity information
+ * Functions for managing earner tax profiles and entity information
  * 
  * NON-NEGOTIABLE RULES:
- * - No creator receives higher payout rates because of business entity type
+ * - No earner receives higher payout rates because of business entity type
  * - Entity type = compliance only, NOT privilege
  * - Profile changes require compliance review
  * - No tax avoidance by switching regions
@@ -550,6 +552,20 @@ export const tax_checkCompliance = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

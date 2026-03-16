@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 135: Offline Presence Moderation Pipeline
  * Content moderation for posters, QR codes, and print materials
@@ -12,7 +14,7 @@ const PROHIBITED_KEYWORDS = [
   'happy ending', 'sensual massage', 'body rub', 'erotic',
   // External payment bypasses
   'cashapp', 'venmo', 'paypal', 'zelle', 'cash only',
-  'outside avalo', 'direct payment', 'personal payment',
+  'outside platform', 'direct payment', 'personal payment',
   // NSFW solicitation
   'nude', 'naked', 'explicit', 'xxx', 'adult content',
   'private show', 'cam show', 'video call me',
@@ -238,7 +240,7 @@ export class ModerationPipeline {
     const flags: string[] = [];
     const details: ModerationResult['details'] = {};
 
-    if (!qrData.includes('avalo.app') && !qrData.includes('localhost')) {
+    if (!qrData.includes('platform.app') && !qrData.includes('localhost')) {
       flags.push('external_redirect');
       details.externalLinksDetected = true;
     }
@@ -291,6 +293,22 @@ export const moderateImage = ModerationPipeline.moderateImage.bind(ModerationPip
 export const moderatePoster = ModerationPipeline.moderatePoster.bind(ModerationPipeline);
 export const validateQRContent = ModerationPipeline.validateQRContent.bind(ModerationPipeline);
 export const checkRateLimit = ModerationPipeline.checkRateLimit.bind(ModerationPipeline);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

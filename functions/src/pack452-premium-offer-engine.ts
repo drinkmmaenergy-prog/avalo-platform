@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * @deprecated LEGACY — SUPERSEDED by canonical-chat-engine.ts (v2_canonical)
  *
@@ -352,8 +354,8 @@ async function acceptPremiumOffer(
         entryAtAcceptance: offer.baseChatEntryTokens,
         payoutPerToken: TOKEN_PAYOUT_USD,
         split: {
-          earnerShare: MONETIZATION_SPLITS.CHAT.creator,
-          platformShare: MONETIZATION_SPLITS.CHAT.avalo,
+          earner: MONETIZATION_SPLITS.CHAT.earner,
+          platform: MONETIZATION_SPLITS.CHAT.platform,
         },
       };
 
@@ -701,6 +703,22 @@ export async function releasePremiumOnChatEnd(chatId: string): Promise<void> {
     }
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

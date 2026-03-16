@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 431: Store Media Automation (Screenshots & Video)
  * 
@@ -283,7 +285,7 @@ export class StoreMediaEngine {
     // Simulate screenshot generation metadata
     const screenshot: ScreenshotOutput = {
       id: screenshotId,
-      url: `gs://avalo-store-screenshots/${screenshotId}.png`,
+      url: `gs://platform-store-screenshots/${screenshotId}.png`,
       type: template.type,
       platform: config.platform,
       device: config.device,
@@ -316,7 +318,7 @@ export class StoreMediaEngine {
     // 5. Upload to storage
     
     const videoId = `${config.country}_${config.language}_preview`;
-    const videoUrl = `gs://avalo-store-videos/${videoId}.${config.format}`;
+    const videoUrl = `gs://platform-store-videos/${videoId}.${config.format}`;
     
     // Save video metadata
     await this.db.collection("store_videos_pack431").doc(videoId).set({
@@ -663,6 +665,20 @@ export const createStoreMediaEngine = (
 export const createScreenshotABTestEngine = (db: FirebaseFirestore.Firestore) => {
   return new ScreenshotABTestEngine(db);
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * feed.ts - Simple public post creation + global feed fetch
  * Avalo Mobile App Functions
@@ -97,6 +99,20 @@ export const getGlobalFeedV1 = onCall(
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

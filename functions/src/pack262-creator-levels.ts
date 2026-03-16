@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 262: Creator Levels & Rewards System
  * 
@@ -49,7 +51,7 @@ export const LEVEL_CONFIGS: Record<CreatorLevel, LevelConfig> = {
     minTokens: 0,
     maxTokens: 4999,
     badgeColor: '#8B4513',
-    targetSegment: 'new creators',
+    targetSegment: 'new earners',
     benefits: {
       profileBoostPerWeek: 0,
       liveBoostPerWeek: 0,
@@ -154,7 +156,7 @@ const ABUSE_DETECTION = {
 // ============================================================================
 
 export interface CreatorLevelProfile {
-  creatorId: string;
+  earnerId: string;
   level: CreatorLevel;
   lifetimeTokensEarned: number;
   lifetimeLP: number;
@@ -183,7 +185,7 @@ export interface CreatorLevelProfile {
 
 export interface LPActivity {
   activityId: string;
-  creatorId: string;
+  earnerId: string;
   activityType: 'token_earned' | 'live_minute' | 'ppv_ticket' | 'event_ticket' | 'fan_club_sub';
   lpEarned: number;
   tokensInvolved?: number;
@@ -195,7 +197,7 @@ export interface LPActivity {
 }
 
 export interface CreatorRewards {
-  creatorId: string;
+  earnerId: string;
   level: CreatorLevel;
   benefits: LevelBenefits;
   activeBoosts: {
@@ -223,7 +225,7 @@ export interface BoostInstance {
 // ============================================================================
 
 /**
- * Initialize creator level profile
+ * Initialize earner level profile
  */
 export const initializeCreatorLevel = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -231,8 +233,8 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = request.auth.uid;
-  const levelRef = db.collection('creatorLevels').doc(creatorId);
+  const earnerId = request.auth.uid;
+  const levelRef = db.collection('earnerLevels').doc(earnerId);
 
   const existing = await levelRef.get();
   if (existing.exists) {
@@ -242,7 +244,7 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
   }
 
   const initialProfile: CreatorLevelProfile = {
-    creatorId,
+    earnerId,
     level: 'bronze',
     lifetimeTokensEarned: 0,
     lifetimeLP: 0,
@@ -273,9 +275,9 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
   await levelRef.set(initialProfile);
 
   // Initialize rewards document
-  await initializeCreatorRewards(creatorId, 'bronze');
+  await initializeCreatorRewards(earnerId, 'bronze');
 
-  logger.info(`Initialized creator level for ${creatorId}`);
+  logger.info(`Initialized earner level for ${earnerId}`);
 
   console.log('Scheduled job result:', { success: true, message: 'Creator level initialized', data: initialProfile });
 
@@ -285,7 +287,7 @@ export const initializeCreatorLevel = functions.https.onCall(async (request) => 
 
 /**
  * Record LP-earning activity and update level
- * Called by other systems when creators earn
+ * Called by other systems when earners earn
  */
 export const recordLPActivity = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -294,7 +296,7 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
   }
 
   const {
-    creatorId,
+    earnerId,
     activityType,
     tokensEarned,
     liveMinutes,
@@ -306,14 +308,14 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
   } = data;
 
   // Validate required fields
-  if (!creatorId || !activityType) {
+  if (!earnerId || !activityType) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
   // Calculate LP based on activity type
   let lpEarned = 0;
   const activityData: Partial<LPActivity> = {
-    creatorId,
+    earnerId,
     activityType,
     payerId,
     metadata,
@@ -362,7 +364,7 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
   }
 
   // Anti-abuse check
-  const abuseDetected = await detectAbuse(creatorId, activityType, {
+  const abuseDetected = await detectAbuse(earnerId, activityType, {
     tokensEarned,
     payerId,
     liveMinutes,
@@ -370,7 +372,7 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
   });
 
   if (abuseDetected.flagged) {
-    logger.warn(`Abuse detected for creator ${creatorId}: ${abuseDetected.reason}`);
+    logger.warn(`Abuse detected for earner ${earnerId}: ${abuseDetected.reason}`);
     activityData.flagged = true;
     activityData.flagReason = abuseDetected.reason;
     lpEarned = 0; // Don't award LP for suspected abuse
@@ -379,7 +381,7 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
   // Store activity log
   const activityRef = db
     .collection('levelPoints')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('activities')
     .doc();
   
@@ -388,9 +390,9 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
 
   await activityRef.set(activityData);
 
-  // Update creator level profile
+  // Update earner level profile
   if (lpEarned > 0) {
-    await updateCreatorLevel(creatorId, lpEarned, tokensEarned || 0);
+    await updateCreatorLevel(earnerId, lpEarned, tokensEarned || 0);
   }
 
   console.log('Scheduled job result:', {
@@ -405,14 +407,14 @@ export const recordLPActivity = functions.https.onCall(async (request) => {
 });
 
 /**
- * Update creator level based on LP earned
+ * Update earner level based on LP earned
  */
 async function updateCreatorLevel(
-  creatorId: string,
+  earnerId: string,
   lpEarned: number,
   tokensEarned: number
 ): Promise<void> {
-  const levelRef = db.collection('creatorLevels').doc(creatorId);
+  const levelRef = db.collection('earnerLevels').doc(earnerId);
 
   await db.runTransaction(async (transaction) => {
     const levelDoc = await transaction.get(levelRef);
@@ -466,12 +468,12 @@ async function updateCreatorLevel(
       });
 
       // Trigger level-up notification
-      await sendLevelUpNotification(creatorId, profile.level, newLevel, transaction);
+      await sendLevelUpNotification(earnerId, profile.level, newLevel, transaction);
 
       // Update rewards and benefits
-      await updateCreatorRewards(creatorId, newLevel, transaction);
+      await updateCreatorRewards(earnerId, newLevel, transaction);
 
-      logger.info(`Creator ${creatorId} leveled up from ${profile.level} to ${newLevel}`);
+      logger.info(`Creator ${earnerId} leveled up from ${profile.level} to ${newLevel}`);
     }
 
     transaction.update(levelRef, updates);
@@ -508,16 +510,16 @@ function getNextLevelConfig(currentLevel: CreatorLevel): LevelConfig | null {
 // ============================================================================
 
 /**
- * Initialize creator rewards document
+ * Initialize earner rewards document
  */
 async function initializeCreatorRewards(
-  creatorId: string,
+  earnerId: string,
   level: CreatorLevel
 ): Promise<void> {
-  const rewardsRef = db.collection('creatorRewards').doc(creatorId);
+  const rewardsRef = db.collection('earnerRewards').doc(earnerId);
 
   const rewards: CreatorRewards = {
-    creatorId,
+    earnerId,
     level,
     benefits: LEVEL_CONFIGS[level].benefits,
     activeBoosts: {},
@@ -531,14 +533,14 @@ async function initializeCreatorRewards(
 }
 
 /**
- * Update creator rewards when level changes
+ * Update earner rewards when level changes
  */
 async function updateCreatorRewards(
-  creatorId: string,
+  earnerId: string,
   newLevel: CreatorLevel,
   transaction: FirebaseFirestore.Transaction
 ): Promise<void> {
-  const rewardsRef = db.collection('creatorRewards').doc(creatorId);
+  const rewardsRef = db.collection('earnerRewards').doc(earnerId);
 
   transaction.set(
     rewardsRef,
@@ -564,13 +566,13 @@ export const activateBoost = functions.https.onCall(async (request) => {
   }
 
   const { boostType } = data; // 'profile' or 'live'
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
 
   if (!['profile', 'live'].includes(boostType)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid boost type');
   }
 
-  const rewardsRef = db.collection('creatorRewards').doc(creatorId);
+  const rewardsRef = db.collection('earnerRewards').doc(earnerId);
   const rewardsDoc = await rewardsRef.get();
 
   if (!rewardsDoc.exists) {
@@ -612,7 +614,7 @@ export const activateBoost = functions.https.onCall(async (request) => {
   // Store boost
   await db
     .collection('activeBoosts')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('boosts')
     .doc(boostId)
     .set(boost);
@@ -625,9 +627,9 @@ export const activateBoost = functions.https.onCall(async (request) => {
   });
 
   // Send notification
-  await sendBoostActivationNotification(creatorId, boostType, expiresAt);
+  await sendBoostActivationNotification(earnerId, boostType, expiresAt);
 
-  logger.info(`Boost activated for creator ${creatorId}: ${boostType}`);
+  logger.info(`Boost activated for earner ${earnerId}: ${boostType}`);
 
   return {
     success: true,
@@ -640,7 +642,7 @@ export const activateBoost = functions.https.onCall(async (request) => {
  * Reset weekly boosts (scheduled function - runs every Monday 00:00 UTC)
  */
 export const resetWeeklyBoosts = onSchedule({ schedule: "0 0 * * 1", timeZone: "UTC" }, async (event) => {
-    const rewardsSnapshot = await db.collection('creatorRewards').get();
+    const rewardsSnapshot = await db.collection('earnerRewards').get();
     const batch = db.batch();
     let count = 0;
 
@@ -660,7 +662,7 @@ export const resetWeeklyBoosts = onSchedule({ schedule: "0 0 * * 1", timeZone: "
 
     await batch.commit();
 
-    logger.info(`Reset weekly boosts for ${count} creators`);
+    logger.info(`Reset weekly boosts for ${count} earners`);
     console.log('Scheduled job result:', { success: true, count });
 
     return;
@@ -700,7 +702,7 @@ export const expireInactiveBoosts = onSchedule({ schedule: "0 * * * *", timeZone
  * Detect potential abuse patterns
  */
 async function detectAbuse(
-  creatorId: string,
+  earnerId: string,
   activityType: string,
   data: any
 ): Promise<{ flagged: boolean; reason?: string }> {
@@ -711,7 +713,7 @@ async function detectAbuse(
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentFromPayer = await db
       .collection('levelPoints')
-      .doc(creatorId)
+      .doc(earnerId)
       .collection('activities')
       .where('payerId', '==', payerId)
       .where('timestamp', '>=', oneHourAgo)
@@ -724,7 +726,7 @@ async function detectAbuse(
     });
 
     if (totalFromPayer > ABUSE_DETECTION.MAX_TOKENS_PER_HOUR_FROM_SINGLE_USER) {
-      await flagCreatorForReview(creatorId, 'high_tokens_single_user', { payerId, totalFromPayer });
+      await flagCreatorForReview(earnerId, 'high_tokens_single_user', { payerId, totalFromPayer });
       return { flagged: true, reason: 'Excessive tokens from single user' };
     }
   }
@@ -746,7 +748,7 @@ async function detectAbuse(
   // Check 4: Pattern analysis - look for suspicious activity patterns
   const recentActivities = await db
     .collection('levelPoints')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('activities')
     .orderBy('timestamp', 'desc')
     .limit(50)
@@ -756,7 +758,7 @@ async function detectAbuse(
   const suspiciousScore = analyzeSuspiciousPatterns(activities);
 
   if (suspiciousScore > ABUSE_DETECTION.SUSPICIOUS_PATTERN_THRESHOLD) {
-    await flagCreatorForReview(creatorId, 'suspicious_pattern', { score: suspiciousScore });
+    await flagCreatorForReview(earnerId, 'suspicious_pattern', { score: suspiciousScore });
     return { flagged: true, reason: 'Suspicious activity pattern detected' };
   }
 
@@ -800,18 +802,18 @@ function analyzeSuspiciousPatterns(activities: LPActivity[]): number {
 }
 
 /**
- * Flag creator for manual review
+ * Flag earner for manual review
  */
 async function flagCreatorForReview(
-  creatorId: string,
+  earnerId: string,
   flagType: string,
   metadata: any
 ): Promise<void> {
-  const flagRef = db.collection('creatorAbuseFlags').doc(creatorId);
+  const flagRef = db.collection('earnerAbuseFlags').doc(earnerId);
 
   await flagRef.set(
     {
-      creatorId,
+      earnerId,
       flags: FieldValue.arrayUnion({
         type: flagType,
         metadata,
@@ -823,7 +825,7 @@ async function flagCreatorForReview(
     { merge: true }
   );
 
-  logger.warn(`Creator ${creatorId} flagged for review: ${flagType}`);
+  logger.warn(`Creator ${earnerId} flagged for review: ${flagType}`);
 }
 
 // ============================================================================
@@ -834,7 +836,7 @@ async function flagCreatorForReview(
  * Send level-up notification
  */
 async function sendLevelUpNotification(
-  creatorId: string,
+  earnerId: string,
   oldLevel: CreatorLevel,
   newLevel: CreatorLevel,
   transaction: FirebaseFirestore.Transaction
@@ -843,7 +845,7 @@ async function sendLevelUpNotification(
 
   const notification = {
     notificationId: notificationRef.id,
-    creatorId,
+    earnerId,
     type: 'level_up',
     oldLevel,
     newLevel,
@@ -863,7 +865,7 @@ async function sendLevelUpNotification(
  * Send milestone notification (e.g., 80% to next level)
  */
 export const checkAndSendMilestoneNotifications = onSchedule({ schedule: "0 */6 * * *", timeZone: "UTC" }, async (event) => {
-    const levels = await db.collection('creatorLevels').get();
+    const levels = await db.collection('earnerLevels').get();
     const notifications: any[] = [];
 
     levels.forEach((doc) => {
@@ -874,7 +876,7 @@ export const checkAndSendMilestoneNotifications = onSchedule({ schedule: "0 */6 
         const lpRemaining = profile.nextLevelLP - profile.currentLP;
         
         notifications.push({
-          creatorId: profile.creatorId,
+          earnerId: profile.earnerId,
           type: 'milestone_approaching',
           title: '🎯 Almost There!',
           message: `You're ${profile.progressToNextLevel}% to ${getNextLevelConfig(profile.level)?.level.toUpperCase()}! Just ${lpRemaining} LP to go!`,
@@ -903,12 +905,12 @@ export const checkAndSendMilestoneNotifications = onSchedule({ schedule: "0 */6 
  * Send boost activation notification
  */
 async function sendBoostActivationNotification(
-  creatorId: string,
+  earnerId: string,
   boostType: string,
   expiresAt: Date
 ): Promise<void> {
   const notification = {
-    creatorId,
+    earnerId,
     type: 'boost_activated',
     boostType,
     title: `Your ${boostType} boost is now active for 1 hour`,
@@ -933,7 +935,7 @@ export const notifyTopSupporterOnline = onDocumentUpdated('users/{userId}/presen
     if (oldStatus.status !== 'online' && newStatus.status === 'online') {
       const userId = event.params.userId;
 
-      // Find creators for whom this user is a top supporter
+      // Find earners for whom this user is a top supporter
       const supporterDocs = await db
         .collectionGroup('topSupporters')
         .where('supporterId', '==', userId)
@@ -944,11 +946,11 @@ export const notifyTopSupporterOnline = onDocumentUpdated('users/{userId}/presen
       const notifications: any[] = [];
 
       supporterDocs.forEach((doc) => {
-        const creatorId = doc.ref.parent.parent!.id;
+        const earnerId = doc.ref.parent.parent!.id;
         const supporter = doc.data();
 
         notifications.push({
-          creatorId,
+          earnerId,
           type: 'top_supporter_online',
           supporterId: userId,
           title: '⭐ VIP Supporter Online',
@@ -976,7 +978,7 @@ export const notifyTopSupporterOnline = onDocumentUpdated('users/{userId}/presen
 // ============================================================================
 
 /**
- * Get creator level profile
+ * Get earner level profile
  */
 export const getCreatorLevel = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -984,12 +986,12 @@ export const getCreatorLevel = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = data.creatorId || request.auth.uid;
+  const earnerId = data.earnerId || request.auth.uid;
 
   // Only allow users to view their own level or public basic info
-  const isOwner = creatorId === request.auth.uid;
+  const isOwner = earnerId === request.auth.uid;
 
-  const levelDoc = await db.collection('creatorLevels').doc(creatorId).get();
+  const levelDoc = await db.collection('earnerLevels').doc(earnerId).get();
 
   if (!levelDoc.exists) {
     console.log('Scheduled job result:', { success: false, message: 'Creator level not found' });
@@ -1001,7 +1003,7 @@ export const getCreatorLevel = functions.https.onCall(async (request) => {
 
   // Return full profile if owner, partial if public
   if (isOwner) {
-    const rewardsDoc = await db.collection('creatorRewards').doc(creatorId).get();
+    const rewardsDoc = await db.collection('earnerRewards').doc(earnerId).get();
     const rewards = rewardsDoc.exists ? rewardsDoc.data() : null;
 
     console.log('Scheduled job result:', {
@@ -1036,12 +1038,12 @@ export const getLPActivityHistory = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   const { limit = 50, startAfter } = data;
 
   let query = db
     .collection('levelPoints')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('activities')
     .orderBy('timestamp', 'desc')
     .limit(limit);
@@ -1049,7 +1051,7 @@ export const getLPActivityHistory = functions.https.onCall(async (request) => {
   if (startAfter) {
     const lastDoc = await db
       .collection('levelPoints')
-      .doc(creatorId)
+      .doc(earnerId)
       .collection('activities')
       .doc(startAfter)
       .get();
@@ -1075,6 +1077,20 @@ export const getLPActivityHistory = functions.https.onCall(async (request) => {
 // ============================================================================
 // All functions are exported inline above
 // ============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

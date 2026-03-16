@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Country Feature Flag Orchestration
  * Per-country feature toggles for phased rollouts
@@ -19,7 +21,7 @@ export interface CountryFeatureFlags {
   incognitoEnabled: boolean;
 
   // Creator economy
-  creatorOnboardingEnabled: boolean;
+  earnerOnboardingEnabled: boolean;
   monetizationEnabled: boolean;
 
   // Token & payments
@@ -60,7 +62,7 @@ export const DEFAULT_FEATURE_FLAGS: CountryFeatureFlags = {
   passportEnabled: true,
   incognitoEnabled: true,
   
-  creatorOnboardingEnabled: false,
+  earnerOnboardingEnabled: false,
   monetizationEnabled: false,
   
   tokenStoreEnabled: true,
@@ -159,7 +161,7 @@ export async function initializeCountryFlags(
     // Conservative for new markets
     aiCompanionsEnabled: false,
     payoutEnabled: false,
-    creatorOnboardingEnabled: false,
+    earnerOnboardingEnabled: false,
     monetizationEnabled: false,
     chatMonetizationEnabled: false,
     callMonetizationEnabled: false,
@@ -174,14 +176,14 @@ export async function initializeCountryFlags(
 }
 
 /**
- * Enable creator economy features for a country
+ * Enable earner economy features for a country
  */
 export async function enableCreatorEconomy(
   countryCode: string,
   updatedBy: string
 ): Promise<void> {
   await updateCountryFlags(countryCode, {
-    creatorOnboardingEnabled: true,
+    earnerOnboardingEnabled: true,
     monetizationEnabled: true,
     chatMonetizationEnabled: true,
     callMonetizationEnabled: true,
@@ -191,14 +193,14 @@ export async function enableCreatorEconomy(
 }
 
 /**
- * Disable creator economy features (e.g., legal restrictions)
+ * Disable earner economy features (e.g., legal restrictions)
  */
 export async function disableCreatorEconomy(
   countryCode: string,
   updatedBy: string
 ): Promise<void> {
   await updateCountryFlags(countryCode, {
-    creatorOnboardingEnabled: false,
+    earnerOnboardingEnabled: false,
     monetizationEnabled: false,
     chatMonetizationEnabled: false,
     callMonetizationEnabled: false,
@@ -353,6 +355,20 @@ export async function getFeatureFlagStats(): Promise<{
   
   return stats;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

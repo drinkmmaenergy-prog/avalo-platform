@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 383 - Global Payment Routing, Compliance & Cross-Border Payout Engine
  * Tax & Reporting Engine
@@ -457,6 +459,20 @@ async function getYearToDatePayouts(userId: string): Promise<number> {
     return total + (doc.data().grossAmount || 0);
   }, 0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

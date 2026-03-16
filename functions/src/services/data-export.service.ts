@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 155: Data Export Service
  * GDPR Article 15, CCPA §1798.110 - Right of Access
@@ -83,7 +85,7 @@ async function processExportRequest(exportRequestId: string): Promise<void> {
       throw new Error(`Export file size (${fileSizeMB.toFixed(2)}MB) exceeds maximum allowed (${MAX_EXPORT_FILE_SIZE_MB}MB)`);
     }
 
-    const fileName = `avalo-data-export-${request.userId}-${Date.now()}.json`;
+    const fileName = `platform-data-export-${request.userId}-${Date.now()}.json`;
     const bucket = storage.bucket();
     const file = bucket.file(`exports/${fileName}`);
 
@@ -526,6 +528,22 @@ export async function cleanupExpiredExports(): Promise<number> {
 
   return deletedCount;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 422 — Global Trust, Reputation & Moderation Intelligence (Tier-2)
  * 
@@ -357,6 +359,20 @@ export const checkUserPolicy = functions.https.onCall(async (request) => {
  * Export for use in other modules
  */
 export { POLICY_CONFIGS, PolicyConfig };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 291 — AI Assist for Creators Types
  * Smart optimization engine with AI-powered insights
  * 
  * Purpose:
- * - Provide actionable insights for creators
+ * - Provide actionable insights for earners
  * - Optimize earnings through behavioral patterns
  * - Read-only layer on top of existing analytics
  * - NO modifications to tokenomics or economic rules
@@ -14,7 +16,7 @@
  * - PACK 286 (Calendar & Events)
  * - Claude Sonnet 4.5 AI
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -473,6 +475,22 @@ export function formatTimeRange(hour: number): string {
   const end = (hour + 1) % 24;
   return `${hour.toString().padStart(2, '0')}:00–${end.toString().padStart(2, '0')}:00`;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324C — Creator Trust Score Calculation Engine
  * READ-ONLY scoring - does not modify payouts, pricing, or business logic
@@ -26,7 +28,7 @@ import { admin, functions } from './runtime';
 // ============================================================================
 
 /**
- * Recalculate creator trust score from all available data sources
+ * Recalculate earner trust score from all available data sources
  * READ-ONLY - does not modify any business logic or payments
  */
 export async function recalculateCreatorTrustScore(userId: string): Promise<CreatorTrustScore> {
@@ -44,7 +46,7 @@ export async function recalculateCreatorTrustScore(userId: string): Promise<Crea
     
     // Calculate weighted trust score
     const trustScore = Math.round(
-      qualityScore * TRUST_SCORE_WEIGHTS.QUALITY +
+      qualityScore * TRUST_SCORE_WEIGHTS.RELIABILITY +
       reliabilityScore * TRUST_SCORE_WEIGHTS.RELIABILITY +
       safetyScore * TRUST_SCORE_WEIGHTS.SAFETY +
       payoutScore * TRUST_SCORE_WEIGHTS.PAYOUT
@@ -92,7 +94,7 @@ async function gatherTrustScoreInputs(userId: string): Promise<TrustScoreInputs>
   const lookbackDate = new Date();
   lookbackDate.setDate(lookbackDate.getDate() - TRUST_CONFIG.RECALC_LOOKBACK_DAYS);
   
-  // Get creator KPI data (PACK 324A)
+  // Get earner KPI data (PACK 324A)
   const kpiData = await getCreatorKpiData(userId, lookbackDate);
   
   // Get fraud/risk data (PACK 324B)
@@ -118,13 +120,13 @@ async function gatherTrustScoreInputs(userId: string): Promise<TrustScoreInputs>
 }
 
 /**
- * Get creator KPI data from PACK 324A (READ-ONLY)
+ * Get earner KPI data from PACK 324A (READ-ONLY)
  */
 async function getCreatorKpiData(userId: string, sinceDate: Date) {
   try {
     const dateStr = sinceDate.toISOString().split('T')[0];
     const snapshot = await db
-      .collection('creatorKpiDaily')
+      .collection('earnerKpiDaily')
       .where('userId', '==', userId)
       .where('date', '>=', dateStr)
       .get();
@@ -147,7 +149,7 @@ async function getCreatorKpiData(userId: string, sinceDate: Date) {
     // Get average rating from user reviews (if available)
     const reviewsSnapshot = await db
       .collection('reviews')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(sinceDate))
       .get();
     
@@ -242,7 +244,7 @@ async function getBookingData(userId: string, sinceDate: Date) {
   try {
     const bookingsSnapshot = await db
       .collection('calendarBookings')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(sinceDate))
       .get();
     
@@ -467,35 +469,35 @@ function determineTrustLevel(score: number): TrustLevel {
 // ============================================================================
 
 /**
- * Recalculate trust scores for all active creators
+ * Recalculate trust scores for all active earners
  * Used by daily ranking job
  */
 export async function recalculateAllCreatorTrustScores(): Promise<number> {
   logger.info('[PACK 324C] Starting batch trust score recalculation');
   
   try {
-    // Get all creators who have earned tokens (active creators)
-    const creatorsSnapshot = await db
-      .collection('creatorKpiDaily')
+    // Get all earners who have earned tokens (active earners)
+    const earnersSnapshot = await db
+      .collection('earnerKpiDaily')
       .where('totalEarnedTokens', '>', 0)
       .limit(1000) // Process in batches
       .get();
     
-    // Get unique creator IDs
-    const creatorIds = new Set<string>();
-    creatorsSnapshot.docs.forEach(doc => {
-      creatorIds.add(doc.data().userId);
+    // Get unique earner IDs
+    const earnerIds = new Set<string>();
+    earnersSnapshot.docs.forEach(doc => {
+      earnerIds.add(doc.data().userId);
     });
     
-    logger.info(`[PACK 324C] Recalculating trust scores for ${creatorIds.size} creators`);
+    logger.info(`[PACK 324C] Recalculating trust scores for ${earnerIds.size} earners`);
     
     // Process in batches to avoid timeouts
     const batchSize = 50;
-    const creatorArray = Array.from(creatorIds);
+    const earnerArray = Array.from(earnerIds);
     let processed = 0;
     
-    for (let i = 0; i < creatorArray.length; i += batchSize) {
-      const batch = creatorArray.slice(i, i + batchSize);
+    for (let i = 0; i < earnerArray.length; i += batchSize) {
+      const batch = earnerArray.slice(i, i + batchSize);
       
       await Promise.all(
         batch.map(async (userId) => {
@@ -509,13 +511,30 @@ export async function recalculateAllCreatorTrustScores(): Promise<number> {
       );
     }
     
-    logger.info(`[PACK 324C] Completed trust score recalculation: ${processed} creators`);
+    logger.info(`[PACK 324C] Completed trust score recalculation: ${processed} earners`);
     return processed;
   } catch (error) {
     logger.error('[PACK 324C] Error in batch recalculation:', error);
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

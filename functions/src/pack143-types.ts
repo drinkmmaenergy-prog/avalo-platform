@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 143 - Avalo Business Suite Types
  * CRM, Smart Funnels, Sales Inside Avalo
@@ -10,7 +12,7 @@ import { admin } from './runtime';
 
 export interface CRMContact {
   id: string;
-  creatorId: string;
+  earnerId: string;
   userId: string;
   displayName: string;
   avatar: string;
@@ -38,7 +40,7 @@ export interface PurchaseRecord {
 
 export interface CRMSegment {
   id: string;
-  creatorId: string;
+  earnerId: string;
   name: string;
   description: string;
   filters: SegmentFilters;
@@ -59,7 +61,7 @@ export interface SegmentFilters {
 
 export interface CRMFunnel {
   id: string;
-  creatorId: string;
+  earnerId: string;
   name: string;
   description: string;
   status: 'active' | 'paused' | 'archived';
@@ -102,7 +104,7 @@ export interface FunnelAnalytics {
 
 export interface CRMBroadcast {
   id: string;
-  creatorId: string;
+  earnerId: string;
   segmentId: string;
   subject: string;
   content: string;
@@ -120,7 +122,7 @@ export interface CRMBroadcast {
 }
 
 export interface CRMAnalytics {
-  creatorId: string;
+  earnerId: string;
   period: 'day' | 'week' | 'month' | 'year';
   periodStart: Timestamp;
   periodEnd: Timestamp;
@@ -163,7 +165,7 @@ export interface SegmentGrowth {
 
 export interface ContactLabel {
   id: string;
-  creatorId: string;
+  earnerId: string;
   name: string;
   color: string;
   contactCount: number;
@@ -206,6 +208,20 @@ export const ALLOWED_PRODUCT_TYPES = [
 export const MAX_BROADCAST_SIZE = 10000;
 export const MAX_FUNNEL_STEPS = 10;
 export const MAX_LABELS_PER_CONTACT = 20;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

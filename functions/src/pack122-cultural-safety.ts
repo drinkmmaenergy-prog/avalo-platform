@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 122 — Cultural Safety Classification System
  * Automated detection and moderation of culturally harmful content
@@ -571,6 +573,20 @@ export {
   CulturalSafetyWarning,
   RegionalViolation,
 } from './pack122-types';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

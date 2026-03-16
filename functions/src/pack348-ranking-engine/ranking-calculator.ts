@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 348 — Ranking Calculator
  * 
- * Core algorithm engine for calculating creator scores across all surfaces
+ * Core algorithm engine for calculating earner scores across all surfaces
  */
 
 import {
@@ -20,7 +22,7 @@ export class RankingCalculator {
   ) {}
 
   /**
-   * Calculate comprehensive ranking scores for a creator
+   * Calculate comprehensive ranking scores for a earner
    */
   calculateCreatorScore(
     userId: string,
@@ -327,6 +329,22 @@ export class RankingCalculator {
     return score * decayFactor;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 245: Audience Classification & VIP Segmenting
  * Segment computation engine and Cloud Functions
@@ -383,11 +385,11 @@ export async function computeIntentClassification(
 // ========================================================================
 
 /**
- * Compute proximity between viewer and creator
+ * Compute proximity between viewer and earner
  */
 export async function computeProximity(
   viewerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<ProximityCache> {
   const config = await getSegmentConfig('proximity');
   const thresholds = config?.proximityThresholds || DEFAULT_PROXIMITY_THRESHOLDS;
@@ -397,17 +399,17 @@ export async function computeProximity(
   const viewerData = viewerDoc.data();
   const viewerLoc = viewerData?.location;
 
-  // Get creator location
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
-  const creatorData = creatorDoc.data();
-  const creatorLoc = creatorData?.location;
+  // Get earner location
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
+  const earnerData = earnerDoc.data();
+  const earnerLoc = earnerData?.location;
 
-  if (!viewerLoc || !creatorLoc || !viewerLoc.lat || !creatorLoc.lat) {
+  if (!viewerLoc || !earnerLoc || !viewerLoc.lat || !earnerLoc.lat) {
     // Default to remote if location data unavailable
     return {
-      id: `${viewerId}_${creatorId}`,
+      id: `${viewerId}_${earnerId}`,
       viewerId,
-      creatorId,
+      earnerId,
       proximityClass: 'remote',
       distanceKm: 999999,
       sameCity: false,
@@ -421,10 +423,10 @@ export async function computeProximity(
         lng: 0,
         lastUpdated: serverTimestamp() as any
       },
-      creatorLocation: {
+      earnerLocation: {
         city: null,
         region: null,
-        countryCode: creatorLoc?.countryCode || 'XX',
+        countryCode: earnerLoc?.countryCode || 'XX',
         lat: 0,
         lng: 0,
         lastUpdated: serverTimestamp() as any
@@ -437,8 +439,8 @@ export async function computeProximity(
   const distanceKm = calculateDistance(
     viewerLoc.lat,
     viewerLoc.lng,
-    creatorLoc.lat,
-    creatorLoc.lng
+    earnerLoc.lat,
+    earnerLoc.lng
   );
 
   // Determine proximity class
@@ -450,14 +452,14 @@ export async function computeProximity(
   }
 
   const cache: ProximityCache = {
-    id: `${viewerId}_${creatorId}`,
+    id: `${viewerId}_${earnerId}`,
     viewerId,
-    creatorId,
+    earnerId,
     proximityClass,
     distanceKm,
-    sameCity: viewerLoc.city === creatorLoc.city,
-    sameRegion: viewerLoc.region === creatorLoc.region,
-    sameCountry: viewerLoc.countryCode === creatorLoc.countryCode,
+    sameCity: viewerLoc.city === earnerLoc.city,
+    sameRegion: viewerLoc.region === earnerLoc.region,
+    sameCountry: viewerLoc.countryCode === earnerLoc.countryCode,
     viewerLocation: {
       city: viewerLoc.city || null,
       region: viewerLoc.region || null,
@@ -466,19 +468,19 @@ export async function computeProximity(
       lng: viewerLoc.lng,
       lastUpdated: serverTimestamp() as any
     },
-    creatorLocation: {
-      city: creatorLoc.city || null,
-      region: creatorLoc.region || null,
-      countryCode: creatorLoc.countryCode,
-      lat: creatorLoc.lat,
-      lng: creatorLoc.lng,
+    earnerLocation: {
+      city: earnerLoc.city || null,
+      region: earnerLoc.region || null,
+      countryCode: earnerLoc.countryCode,
+      lat: earnerLoc.lat,
+      lng: earnerLoc.lng,
       lastUpdated: serverTimestamp() as any
     },
     lastUpdated: serverTimestamp() as any
   };
 
   // Save to cache
-  await db.collection('proximity_cache').doc(`${viewerId}_${creatorId}`).set(cache);
+  await db.collection('proximity_cache').doc(`${viewerId}_${earnerId}`).set(cache);
 
   return cache;
 }
@@ -488,37 +490,37 @@ export async function computeProximity(
 // ========================================================================
 
 /**
- * Compute passion signals between viewer and creator
+ * Compute passion signals between viewer and earner
  */
 export async function computePassionSignals(
   viewerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<PassionSignalsDocument> {
   const config = await getSegmentConfig('passion');
   const thresholds = config?.passionThresholds || DEFAULT_PASSION_THRESHOLDS;
 
-  // Get viewer and creator profiles
+  // Get viewer and earner profiles
   const viewerDoc = await db.collection('users').doc(viewerId).get();
-  const creatorDoc = await db.collection('users').doc(creatorId).get();
+  const earnerDoc = await db.collection('users').doc(earnerId).get();
 
   const viewerData = viewerDoc.data();
-  const creatorData = creatorDoc.data();
+  const earnerData = earnerDoc.data();
 
   const viewerInterests = viewerData?.interests || [];
-  const creatorInterests = creatorData?.interests || [];
+  const earnerInterests = earnerData?.interests || [];
 
   // Calculate interest overlap
   const sharedInterestsList = viewerInterests.filter((interest: string) =>
-    creatorInterests.includes(interest)
+    earnerInterests.includes(interest)
   );
   const sharedCount = sharedInterestsList.length;
-  const overlapScore = Math.min(100, (sharedCount / Math.max(1, creatorInterests.length)) * 100);
+  const overlapScore = Math.min(100, (sharedCount / Math.max(1, earnerInterests.length)) * 100);
 
   // Get engagement metrics
   const engagementSnap = await db
     .collection('attraction_signals')
     .where('userId', '==', viewerId)
-    .where('targetUserId', '==', creatorId)
+    .where('targetUserId', '==', earnerId)
     .limit(1)
     .get();
 
@@ -550,7 +552,7 @@ export async function computePassionSignals(
   const interactionsSnap = await db
     .collection('user_interactions')
     .where('fromUserId', '==', viewerId)
-    .where('toUserId', '==', creatorId)
+    .where('toUserId', '==', earnerId)
     .orderBy('timestamp', 'asc')
     .get();
 
@@ -593,9 +595,9 @@ export async function computePassionSignals(
                        loyalty.totalVisits >= thresholds.minVisitsForLoyalty;
 
   const signals: PassionSignalsDocument = {
-    id: `${viewerId}_${creatorId}`,
+    id: `${viewerId}_${earnerId}`,
     viewerId,
-    creatorId,
+    earnerId,
     interestOverlap: {
       sharedCount,
       sharedInterests: sharedInterestsList,
@@ -612,7 +614,7 @@ export async function computePassionSignals(
   };
 
   // Save to cache
-  await db.collection('passion_signals').doc(`${viewerId}_${creatorId}`).set(signals);
+  await db.collection('passion_signals').doc(`${viewerId}_${earnerId}`).set(signals);
 
   return signals;
 }
@@ -622,18 +624,18 @@ export async function computePassionSignals(
 // ========================================================================
 
 /**
- * Compute complete audience segment for viewer-creator relationship
+ * Compute complete audience segment for viewer-earner relationship
  */
 export async function computeAudienceSegment(
   viewerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<AudienceSegment> {
   // Get or compute all classifications
   const [budgetCache, intentCache, proximityCache, passionSignals] = await Promise.all([
     computeBudgetClassification(viewerId),
     computeIntentClassification(viewerId),
-    computeProximity(viewerId, creatorId),
-    computePassionSignals(viewerId, creatorId)
+    computeProximity(viewerId, earnerId),
+    computePassionSignals(viewerId, earnerId)
   ]);
 
   // Build passion signals summary
@@ -647,9 +649,9 @@ export async function computeAudienceSegment(
   const risk: RiskLevel = 'normal';
 
   const segment: AudienceSegment = {
-    id: `${viewerId}_${creatorId}`,
+    id: `${viewerId}_${earnerId}`,
     viewerId,
-    creatorId,
+    earnerId,
     budget: budgetCache.budgetTier,
     intent: intentCache.primaryIntent,
     proximity: proximityCache.proximityClass,
@@ -663,7 +665,7 @@ export async function computeAudienceSegment(
   await db.collection('audience_segments').doc(segment.id).set(segment);
 
   // Log update event
-  await logSegmentUpdate(viewerId, creatorId, 'initial_classification', [], 'computed');
+  await logSegmentUpdate(viewerId, earnerId, 'initial_classification', [], 'computed');
 
   return segment;
 }
@@ -673,15 +675,15 @@ export async function computeAudienceSegment(
  */
 async function logSegmentUpdate(
   viewerId: string,
-  creatorId: string,
+  earnerId: string,
   changeType: string,
   changes: any[],
   trigger: string
 ): Promise<void> {
   const event: SegmentUpdateEvent = {
-    id: `${viewerId}_${creatorId}_${Date.now()}`,
+    id: `${viewerId}_${earnerId}_${Date.now()}`,
     viewerId,
-    creatorId,
+    earnerId,
     changeType: changeType as any,
     changes,
     reason: `Segment ${changeType}`,
@@ -697,15 +699,15 @@ async function logSegmentUpdate(
 // ========================================================================
 
 /**
- * Compute aggregated analytics for a creator
+ * Compute aggregated analytics for a earner
  */
 export async function computeCreatorAudienceAnalytics(
-  creatorId: string
+  earnerId: string
 ): Promise<CreatorAudienceAnalytics> {
-  // Get all segments for this creator
+  // Get all segments for this earner
   const segmentsSnap = await db
     .collection('audience_segments')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
 
   const segments = segmentsSnap.docs.map(doc => doc.data() as AudienceSegment);
@@ -758,7 +760,7 @@ export async function computeCreatorAudienceAnalytics(
 
   // Calculate percentages
   const analytics: CreatorAudienceAnalytics = {
-    creatorId,
+    earnerId,
     totalAudienceSize: totalSize,
     payingAudienceSize: totalSize, // All segmented viewers are considered potential payers
     budgetDistribution: {
@@ -810,7 +812,7 @@ export async function computeCreatorAudienceAnalytics(
   };
 
   // Save analytics
-  await db.collection('creator_audience_analytics').doc(creatorId).set(analytics);
+  await db.collection('earner_audience_analytics').doc(earnerId).set(analytics);
 
   return analytics;
 }
@@ -841,7 +843,7 @@ export const scheduledSegmentUpdate = onSchedule("0 2 * * *", async (event) => {
       const updatePromises = snapshot.docs.map(async (doc) => {
         const segment = doc.data() as AudienceSegment;
         try {
-          await computeAudienceSegment(segment.viewerId, segment.creatorId);
+          await computeAudienceSegment(segment.viewerId, segment.earnerId);
         } catch (error) {
           console.error(`Failed to update segment ${segment.id}:`, error);
         }
@@ -863,11 +865,11 @@ export const triggerSegmentComputation = functions.https.onCall(async (request) 
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const { userId, creatorId, source, priority } = data;
+    const { userId, earnerId, source, priority } = data;
 
-    if (creatorId) {
+    if (earnerId) {
       // Single relationship
-      await computeAudienceSegment(userId, creatorId);
+      await computeAudienceSegment(userId, earnerId);
     } else {
       // All relationships for user
       const segmentsSnap = await db
@@ -877,7 +879,7 @@ export const triggerSegmentComputation = functions.https.onCall(async (request) 
 
       await Promise.all(
         segmentsSnap.docs.map(doc =>
-          computeAudienceSegment(userId, doc.data().creatorId)
+          computeAudienceSegment(userId, doc.data().earnerId)
         )
       );
     }
@@ -887,7 +889,7 @@ export const triggerSegmentComputation = functions.https.onCall(async (request) 
 );
 
 /**
- * HTTP endpoint to get creator analytics
+ * HTTP endpoint to get earner analytics
  */
 export const getCreatorAudienceAnalytics = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -895,10 +897,10 @@ export const getCreatorAudienceAnalytics = functions.https.onCall(async (request
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
     }
 
-    const { creatorId } = data;
+    const { earnerId } = data;
 
     // Check authorization
-    if (request.auth.uid !== creatorId) {
+    if (request.auth.uid !== earnerId) {
       // Check if user is admin
       const userDoc = await db.collection('users').doc(request.auth.uid).get();
       const userData = userDoc.data();
@@ -907,10 +909,24 @@ export const getCreatorAudienceAnalytics = functions.https.onCall(async (request
       }
     }
 
-    const analytics = await computeCreatorAudienceAnalytics(creatorId);
+    const analytics = await computeCreatorAudienceAnalytics(earnerId);
     return analytics;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

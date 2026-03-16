@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 255 — AI Matchmaker Engine — Type Definitions
  * 
@@ -197,8 +199,8 @@ export interface MatchCandidate {
  * Match ranking weights (configurable)
  */
 export interface MatchRankingWeights {
-  behavior: number;                              // default MONETIZATION_SPLITS.CHAT.avalo
-  similarity: number;                            // default MONETIZATION_SPLITS.SUBSCRIPTION.avalo
+  behavior: number;                              // default MONETIZATION_SPLITS.CHAT.platform
+  similarity: number;                            // default MONETIZATION_SPLITS.SUBSCRIPTION.platform
   recency: number;                               // default 0.15
   popularity: number;                            // default 0.10
   base: number;                                  // default 0.10
@@ -356,8 +358,8 @@ export interface MatchEngineVariant {
 // ============================================================================
 
 export const DEFAULT_RANKING_WEIGHTS: MatchRankingWeights = {
-  behavior: MONETIZATION_SPLITS.CHAT.avalo,
-  similarity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  behavior: MONETIZATION_SPLITS.CHAT.platform,
+  similarity: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
   recency: 0.15,
   popularity: 0.10,
   base: 0.10,
@@ -386,6 +388,22 @@ export const DEFAULT_ENGINE_CONFIG: MatchEngineConfig = {
   enabledFilters: ['behavior_based_only'],
   requireBehaviorBased: true,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

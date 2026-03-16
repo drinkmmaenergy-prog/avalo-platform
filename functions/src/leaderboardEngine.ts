@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 216: Creator Competition Engine
  * Core leaderboard computation, ranking, and reward distribution logic
@@ -152,7 +154,7 @@ async function isUserEligibleForCategory(
     
     case 'TOP_EARNERS':
     case 'TOP_CHARISMA':
-      // Must be creator/earner
+      // Must be earner/earner
       return userData?.earnOnChat === true || userData?.isCreator === true;
     
     default:
@@ -234,7 +236,7 @@ async function calculateEarnersMetric(
   const weekStartTs = Timestamp.fromDate(weekStart);
   const weekEndTs = Timestamp.fromDate(weekEnd);
   
-  // Get total tokens earned (65% kept by creator)
+  // Get total tokens earned (65% kept by earner)
   const transactionsSnapshot = await db
     .collection('wallet_transactions')
     .where('recipientId', '==', userId)
@@ -1204,6 +1206,20 @@ async function deactivateExpiredRewards(): Promise<void> {
   await badgeBatch.commit();
   logger.info(`Deactivated ${expiredBadgesSnapshot.size} expired badges`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

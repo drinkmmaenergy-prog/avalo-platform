@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 441 — Growth Safety Net & Viral Abuse Control
  * Referral Fraud Detection Module
@@ -622,6 +624,22 @@ export class ReferralAbuseDetector {
     return action;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 265: AI EARN ASSIST ENGINE
  * Firebase Cloud Function endpoints
@@ -30,7 +32,7 @@ import { admin, auth, functions, onSchedule } from './runtime';
 // ============================================================================
 
 /**
- * Generate daily earning suggestions for a creator
+ * Generate daily earning suggestions for a earner
  */
 export const generateDailySuggestions = onCall(
   { region: 'europe-west1' },
@@ -40,23 +42,23 @@ export const generateDailySuggestions = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = request.data.creatorId || userId;
+    const earnerId = request.data.earnerId || userId;
 
-    // Check if user is creator
-    const userDoc = await db.collection('users').doc(creatorId).get();
+    // Check if user is earner
+    const userDoc = await db.collection('users').doc(earnerId).get();
     if (!userDoc.exists) {
       throw new HttpsError('not-found', 'Creator not found');
     }
 
     const userData = userDoc.data();
     if (!userData?.earnOnChat) {
-      throw new HttpsError('permission-denied', 'User is not a creator');
+      throw new HttpsError('permission-denied', 'User is not a earner');
     }
 
     // Check if suggestions are enabled
     const settingsDoc = await db
       .collection('aiEarnAssist')
-      .doc(creatorId)
+      .doc(earnerId)
       .collection('settings')
       .doc('config')
       .get();
@@ -66,17 +68,17 @@ export const generateDailySuggestions = onCall(
       return { suggestions: [], message: 'AI Earn Assist is disabled' };
     }
 
-    logger.info(`Generating daily suggestions for creator: ${creatorId}`);
+    logger.info(`Generating daily suggestions for earner: ${earnerId}`);
 
     const suggestions: AIEarningSuggestion[] = [];
 
     // 1. Live Scheduling Suggestion
     try {
-      const liveRec = await generateLiveScheduleRecommendation(creatorId);
+      const liveRec = await generateLiveScheduleRecommendation(earnerId);
       if (liveRec.predictions.percentageAboveAverage > 10) {
         suggestions.push({
           id: `live_${Date.now()}`,
-          creatorId,
+          earnerId,
           type: SuggestionType.LIVE_SCHEDULING,
           priority: SuggestionPriority.HIGH,
           title: `Go Live ${liveRec.recommendedDay} at ${liveRec.recommendedTime}`,
@@ -108,12 +110,12 @@ export const generateDailySuggestions = onCall(
 
     // 2. High-Intent Supporter Suggestions
     try {
-      const targets = await getConversionTargets(creatorId, 5);
+      const targets = await getConversionTargets(earnerId, 5);
       if (targets.length > 0) {
         const topTargets = targets.slice(0, 3);
         suggestions.push({
           id: `supporters_${Date.now()}`,
-          creatorId,
+          earnerId,
           type: SuggestionType.SUPPORTER_ENGAGEMENT,
           priority: SuggestionPriority.HIGH,
           title: `Message your top ${topTargets.length} high-intent supporters`,
@@ -143,11 +145,11 @@ export const generateDailySuggestions = onCall(
 
     // 3. Content Optimization Suggestion
     try {
-      const contentTip = await generateContentOptimizationTip(creatorId);
+      const contentTip = await generateContentOptimizationTip(earnerId);
       if (contentTip) {
         suggestions.push({
           id: `content_${Date.now()}`,
-          creatorId,
+          earnerId,
           type: SuggestionType.CONTENT_OPTIMIZATION,
           priority: SuggestionPriority.MEDIUM,
           title: contentTip.suggestion,
@@ -172,11 +174,11 @@ export const generateDailySuggestions = onCall(
 
     // 4. Feature Awareness Suggestion
     try {
-      const featurePrompt = await generateFeatureAwarenessPrompt(creatorId);
+      const featurePrompt = await generateFeatureAwarenessPrompt(earnerId);
       if (featurePrompt) {
         suggestions.push({
           id: `feature_${Date.now()}`,
-          creatorId,
+          earnerId,
           type: SuggestionType.FEATURE_AWARENESS,
           priority: SuggestionPriority.LOW,
           title: featurePrompt.title,
@@ -216,7 +218,7 @@ export const generateDailySuggestions = onCall(
     for (const suggestion of prioritized) {
       const ref = db
         .collection('aiEarnAssist')
-        .doc(creatorId)
+        .doc(earnerId)
         .collection('suggestions')
         .doc(suggestion.id);
       batch.set(ref, suggestion);
@@ -224,7 +226,7 @@ export const generateDailySuggestions = onCall(
     await batch.commit();
 
     // Update metrics
-    await updateMetrics(creatorId, prioritized.length, 'generated');
+    await updateMetrics(earnerId, prioritized.length, 'generated');
 
     console.log('Scheduled job result:', {
       success: true,
@@ -238,7 +240,7 @@ export const generateDailySuggestions = onCall(
 );
 
 /**
- * Get current suggestions for creator
+ * Get current suggestions for earner
  */
 export const getCreatorSuggestions = onCall(
   { region: 'europe-west1' },
@@ -248,13 +250,13 @@ export const getCreatorSuggestions = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = request.data.creatorId || userId;
+    const earnerId = request.data.earnerId || userId;
 
     // Get active suggestions (not dismissed, not expired)
     const now = new Date();
     const suggestionsSnapshot = await db
       .collection('aiEarnAssist')
-      .doc(creatorId)
+      .doc(earnerId)
       .collection('suggestions')
       .where('dismissedAt', '==', null)
       .orderBy('createdAt', 'desc')
@@ -288,12 +290,12 @@ export const dismissSuggestion = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { suggestionId, creatorId } = request.data;
+    const { suggestionId, earnerId } = request.data;
     if (!suggestionId) {
       throw new HttpsError('invalid-argument', 'Suggestion ID required');
     }
 
-    const cId = creatorId || userId;
+    const cId = earnerId || userId;
 
     await db
       .collection('aiEarnAssist')
@@ -324,12 +326,12 @@ export const actOnSuggestion = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { suggestionId, creatorId } = request.data;
+    const { suggestionId, earnerId } = request.data;
     if (!suggestionId) {
       throw new HttpsError('invalid-argument', 'Suggestion ID required');
     }
 
-    const cId = creatorId || userId;
+    const cId = earnerId || userId;
 
     await db
       .collection('aiEarnAssist')
@@ -354,7 +356,7 @@ export const actOnSuggestion = onCall(
 // ============================================================================
 
 /**
- * Calculate DM priorities for creator's chats
+ * Calculate DM priorities for earner's chats
  */
 export const calculateDMPriorities = onCall(
   { region: 'europe-west1' },
@@ -364,12 +366,12 @@ export const calculateDMPriorities = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const creatorId = request.data.creatorId || userId;
+    const earnerId = request.data.earnerId || userId;
 
-    // Get creator's active chats
+    // Get earner's active chats
     const chatsSnapshot = await db
       .collection('chats')
-      .where('participants', 'array-contains', creatorId)
+      .where('participants', 'array-contains', earnerId)
       .where('lastMessageAt', '>', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) // Last 30 days
       .get();
 
@@ -377,14 +379,14 @@ export const calculateDMPriorities = onCall(
 
     for (const chatDoc of chatsSnapshot.docs) {
       const chatData = chatDoc.data();
-      const supporterId = chatData.participants.find((p: string) => p !== creatorId);
+      const supporterId = chatData.participants.find((p: string) => p !== earnerId);
       
       if (!supporterId) continue;
 
       // Analyze supporter behavior
       let signal;
       try {
-        signal = await analyzeSupporterBehavior(creatorId, supporterId);
+        signal = await analyzeSupporterBehavior(earnerId, supporterId);
       } catch (error) {
         logger.warn(`Could not analyze supporter ${supporterId}:`, error);
         continue;
@@ -411,7 +413,7 @@ export const calculateDMPriorities = onCall(
       const label: DMPriorityLabel = {
         chatId: chatDoc.id,
         supporterId,
-        creatorId,
+        earnerId,
         priority,
         reasoning: `Conversion probability: ${signal.conversionProbability}%`,
         signals,
@@ -429,7 +431,7 @@ export const calculateDMPriorities = onCall(
       // Save priority label
       await db
         .collection('aiEarnAssist')
-        .doc(creatorId)
+        .doc(earnerId)
         .collection('dmPriorities')
         .doc(chatDoc.id)
         .set(label);
@@ -458,12 +460,12 @@ export const getDMPriority = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { chatId, creatorId } = request.data;
+    const { chatId, earnerId } = request.data;
     if (!chatId) {
       throw new HttpsError('invalid-argument', 'Chat ID required');
     }
 
-    const cId = creatorId || userId;
+    const cId = earnerId || userId;
 
     const priorityDoc = await db
       .collection('aiEarnAssist')
@@ -504,8 +506,8 @@ export const dailySuggestionGeneration = onSchedule(
   async () => {
     logger.info('Starting daily suggestion generation...');
 
-    // Get all creators with AI Earn Assist enabled
-    const creatorsSnapshot = await db
+    // Get all earners with AI Earn Assist enabled
+    const earnersSnapshot = await db
       .collection('users')
       .where('earnOnChat', '==', true)
       .limit(100) // Process in batches
@@ -514,14 +516,14 @@ export const dailySuggestionGeneration = onSchedule(
     let processed = 0;
     let errors = 0;
 
-    for (const creatorDoc of creatorsSnapshot.docs) {
+    for (const earnerDoc of earnersSnapshot.docs) {
       try {
-        const creatorId = creatorDoc.id;
+        const earnerId = earnerDoc.id;
 
         // Check if enabled
         const settingsDoc = await db
           .collection('aiEarnAssist')
-          .doc(creatorId)
+          .doc(earnerId)
           .collection('settings')
           .doc('config')
           .get();
@@ -532,15 +534,15 @@ export const dailySuggestionGeneration = onSchedule(
         }
 
         // Generate suggestions - call the logic directly
-        const userDoc = await db.collection('users').doc(creatorId).get();
+        const userDoc = await db.collection('users').doc(earnerId).get();
         if (userDoc.exists && userDoc.data()?.earnOnChat) {
           // Simplified: just mark for processing
-          logger.info(`Would generate suggestions for creator: ${creatorId}`);
+          logger.info(`Would generate suggestions for earner: ${earnerId}`);
           processed++;
         }
 
       } catch (error) {
-        logger.error(`Error generating suggestions for creator ${creatorDoc.id}:`, error);
+        logger.error(`Error generating suggestions for earner ${earnerDoc.id}:`, error);
         errors++;
       }
     }
@@ -557,10 +559,10 @@ export const dailySuggestionGeneration = onSchedule(
  * Generate content optimization tip
  */
 async function generateContentOptimizationTip(
-  creatorId: string
+  earnerId: string
 ): Promise<ContentOptimizationTip | null> {
-  // Get creator's profile
-  const profileDoc = await db.collection('users').doc(creatorId).get();
+  // Get earner's profile
+  const profileDoc = await db.collection('users').doc(earnerId).get();
   const profile = profileDoc.data();
 
   if (!profile) return;
@@ -570,7 +572,7 @@ async function generateContentOptimizationTip(
 
   if (photoCount < 5) {
     return {
-      creatorId,
+      earnerId,
       type: 'profile_photo',
       suggestion: 'Add more profile photos',
       expectedImpact: '+22% conversion',
@@ -590,17 +592,17 @@ async function generateContentOptimizationTip(
  * Generate feature awareness prompt
  */
 async function generateFeatureAwarenessPrompt(
-  creatorId: string
+  earnerId: string
 ): Promise<FeatureAwarenessPrompt | null> {
-  // Check if creator has used Fan Club
+  // Check if earner has used Fan Club
   const fanClubDoc = await db
     .collection('fanClubs')
-    .doc(creatorId)
+    .doc(earnerId)
     .get();
 
   if (!fanClubDoc.exists) {
     return {
-      creatorId,
+      earnerId,
       featureId: 'fan_club',
       featureName: 'Fan Club',
       title: 'Try Fan Club for recurring revenue',
@@ -611,7 +613,7 @@ async function generateFeatureAwarenessPrompt(
       neverUsed: true,
       potentialEarnings: {
         estimate: '+18% revenue',
-        basedOn: 'Similar creators with Fan Club',
+        basedOn: 'Similar earners with Fan Club',
       },
       createdAt: new Date(),
     };
@@ -624,7 +626,7 @@ async function generateFeatureAwarenessPrompt(
  * Update AI Earn Assist metrics
  */
 async function updateMetrics(
-  creatorId: string,
+  earnerId: string,
   count: number,
   type: 'generated' | 'acted_upon' | 'dismissed'
 ): Promise<void> {
@@ -632,7 +634,7 @@ async function updateMetrics(
 
   const metricsRef = db
     .collection('aiEarnAssist')
-    .doc(creatorId)
+    .doc(earnerId)
     .collection('metrics')
     .doc(period);
 
@@ -652,6 +654,20 @@ async function updateMetrics(
 
   await metricsRef.set(updates, { merge: true });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

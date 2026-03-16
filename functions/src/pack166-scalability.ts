@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 166: AVALO DIGITAL PRODUCT SCALABILITY ENGINE
@@ -63,8 +65,8 @@ import { admin, auth, functions, timestamp } from './runtime';
 // CONSTANTS
 // ============================================================================
 
-const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;
-const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator;
+const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;
+const CREATOR_EARNINGS_PERCENTAGE = MONETIZATION_SPLITS.CHAT.earner;
 const MIN_BUNDLE_PRODUCTS = 2;
 const MAX_BUNDLE_PRODUCTS = 5;
 const MAX_BUNDLE_DISCOUNT = 40;
@@ -93,13 +95,13 @@ async function getProductById(productId: string) {
 
 async function checkProductOwnership(productId: string, userId: string): Promise<boolean> {
   const product = await getProductById(productId);
-  return product.creatorUserId === userId;
+  return product.earnerUserId === userId;
 }
 
-function calculateRevenueSplit(priceTokens: number): { platformFee: number; creatorEarnings: number } {
+function calculateRevenueSplit(priceTokens: number): { platformFee: number; earnerEarnings: number } {
   const platformFee = Math.floor(priceTokens * PLATFORM_FEE_PERCENTAGE);
-  const creatorEarnings = priceTokens - platformFee;
-  return { platformFee, creatorEarnings };
+  const earnerEarnings = priceTokens - platformFee;
+  return { platformFee, earnerEarnings };
 }
 
 // ============================================================================
@@ -118,7 +120,7 @@ export const createPricingTest = onCall<CreatePricingTestRequest, Promise<Create
     }
     
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError('permission-denied', 'Only verified creators can create pricing tests');
+      throw new HttpsError('permission-denied', 'Only verified earners can create pricing tests');
     }
     
     const {
@@ -160,7 +162,7 @@ export const createPricingTest = onCall<CreatePricingTestRequest, Promise<Create
     const pricingTest: PricingTest = {
       testId,
       productId,
-      creatorUserId: uid,
+      earnerUserId: uid,
       testName,
       description,
       variationType,
@@ -222,7 +224,7 @@ export const calculatePricingTestResults = onCall(
     
     const test = testDoc.data() as PricingTest;
     
-    if (test.creatorUserId !== uid) {
+    if (test.earnerUserId !== uid) {
       throw new HttpsError('permission-denied', 'Not your test');
     }
     
@@ -278,7 +280,7 @@ export const createBundleOffer = onCall<CreateBundleRequest, Promise<CreateBundl
     }
     
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError('permission-denied', 'Only verified creators can create bundles');
+      throw new HttpsError('permission-denied', 'Only verified earners can create bundles');
     }
     
     const { bundleName, bundleDescription, productIds, bundlePriceTokens } = request.data;
@@ -315,7 +317,7 @@ export const createBundleOffer = onCall<CreateBundleRequest, Promise<CreateBundl
     const bundleId = generateId();
     const bundle: ProductBundle = {
       bundleId,
-      creatorUserId: uid,
+      earnerUserId: uid,
       bundleName,
       bundleDescription,
       productIds,
@@ -384,7 +386,7 @@ export const purchaseBundle = onCall(
         throw new HttpsError('failed-precondition', 'Bundle is not active');
       }
       
-      if (bundle.creatorUserId === uid) {
+      if (bundle.earnerUserId === uid) {
         throw new HttpsError('failed-precondition', 'Cannot purchase your own bundle');
       }
       
@@ -405,7 +407,7 @@ export const purchaseBundle = onCall(
         );
       }
       
-      const { platformFee, creatorEarnings } = calculateRevenueSplit(bundle.bundlePriceTokens);
+      const { platformFee, earnerEarnings } = calculateRevenueSplit(bundle.bundlePriceTokens);
       
       const purchaseId = generateId();
       const productPurchaseIds: string[] = [];
@@ -419,10 +421,10 @@ export const purchaseBundle = onCall(
         purchaseId,
         bundleId,
         buyerUserId: uid,
-        creatorUserId: bundle.creatorUserId,
+        earnerUserId: bundle.earnerUserId,
         tokensAmount: bundle.bundlePriceTokens,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         productPurchaseIds,
         purchasedAt: Timestamp.now(),
         status: 'active',
@@ -433,10 +435,10 @@ export const purchaseBundle = onCall(
         updatedAt: serverTimestamp(),
       });
       
-      const creatorRef = db.collection('users').doc(bundle.creatorUserId);
-      tx.update(creatorRef, {
-        'wallet.balance': increment(creatorEarnings),
-        'wallet.earned': increment(creatorEarnings),
+      const earnerRef = db.collection('users').doc(bundle.earnerUserId);
+      tx.update(earnerRef, {
+        'wallet.balance': increment(earnerEarnings),
+        'wallet.earned': increment(earnerEarnings),
         updatedAt: serverTimestamp(),
       });
       
@@ -471,7 +473,7 @@ export const createUpsellRule = onCall<CreateUpsellRuleRequest, Promise<CreateUp
     }
     
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError('permission-denied', 'Only verified creators can create upsell rules');
+      throw new HttpsError('permission-denied', 'Only verified earners can create upsell rules');
     }
     
     const { ruleName, trigger, sourceProductId, targetProductIds, upsellType, priority } = request.data;
@@ -493,7 +495,7 @@ export const createUpsellRule = onCall<CreateUpsellRuleRequest, Promise<CreateUp
     const ruleId = generateId();
     const rule: UpsellRule = {
       ruleId,
-      creatorUserId: uid,
+      earnerUserId: uid,
       ruleName,
       trigger,
       sourceProductId,
@@ -585,7 +587,7 @@ export const scheduleProductAutomation = onCall<CreateAutomationRequest, Promise
     }
     
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError('permission-denied', 'Only verified creators can create automations');
+      throw new HttpsError('permission-denied', 'Only verified earners can create automations');
     }
     
     const { automationName, description, trigger, targetProductIds, conditions, actions } = request.data;
@@ -603,7 +605,7 @@ export const scheduleProductAutomation = onCall<CreateAutomationRequest, Promise
     const automationId = generateId();
     const automation: ProductAutomation = {
       automationId,
-      creatorUserId: uid,
+      earnerUserId: uid,
       automationName,
       description,
       trigger,
@@ -657,7 +659,7 @@ export const applyDiscount = onCall<CreateDiscountRequest, Promise<CreateDiscoun
     }
     
     if (!(await isVerifiedCreator(uid))) {
-      throw new HttpsError('permission-denied', 'Only verified creators can create discounts');
+      throw new HttpsError('permission-denied', 'Only verified earners can create discounts');
     }
     
     const {
@@ -691,7 +693,7 @@ export const applyDiscount = onCall<CreateDiscountRequest, Promise<CreateDiscoun
     const discountId = generateId();
     const discount: ProductDiscount = {
       discountId,
-      creatorUserId: uid,
+      earnerUserId: uid,
       productIds,
       discountName,
       discountType,
@@ -773,7 +775,7 @@ export const trackProductAnalytics = onCall<GetProductAnalyticsRequest, Promise<
     
     const analytics: ProductAnalytics = {
       analyticsId: generateId(),
-      creatorUserId: uid,
+      earnerUserId: uid,
       productId,
       period: { startDate: start, endDate: end },
       metrics: {
@@ -804,7 +806,7 @@ export const trackProductAnalytics = onCall<GetProductAnalyticsRequest, Promise<
 );
 
 /**
- * Get creator scalability metrics
+ * Get earner scalability metrics
  */
 export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Promise<GetCreatorMetricsResponse>>(
   { region: 'europe-west1' },
@@ -824,26 +826,26 @@ export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Pro
     const end = Timestamp.fromDate(new Date(endDate));
     
     const productsSnapshot = await db.collection('digital_products')
-      .where('creatorUserId', '==', uid)
+      .where('earnerUserId', '==', uid)
       .get();
     
     const products = productsSnapshot.docs.map(doc => doc.data());
     const activeProducts = products.filter(p => p.isActive);
     
     const testsSnapshot = await db.collection('digital_product_tests')
-      .where('creatorUserId', '==', uid)
+      .where('earnerUserId', '==', uid)
       .get();
     
     const bundlesSnapshot = await db.collection('digital_product_bundles')
-      .where('creatorUserId', '==', uid)
+      .where('earnerUserId', '==', uid)
       .get();
     
     const automationsSnapshot = await db.collection('digital_product_automations')
-      .where('creatorUserId', '==', uid)
+      .where('earnerUserId', '==', uid)
       .get();
     
     const discountsSnapshot = await db.collection('digital_product_discounts')
-      .where('creatorUserId', '==', uid)
+      .where('earnerUserId', '==', uid)
       .get();
     
     const tests = testsSnapshot.docs.map(doc => doc.data());
@@ -852,7 +854,7 @@ export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Pro
     const discounts = discountsSnapshot.docs.map(doc => doc.data());
     
     const metrics: CreatorScalabilityMetrics = {
-      creatorUserId: uid,
+      earnerUserId: uid,
       period: { startDate: start, endDate: end },
       overview: {
         totalProducts: products.length,
@@ -887,13 +889,29 @@ export const getCreatorScalabilityMetrics = onCall<GetCreatorMetricsRequest, Pro
       calculatedAt: Timestamp.now(),
     };
     
-    logger.info(`Scalability metrics calculated for creator: ${uid}`);
+    logger.info(`Scalability metrics calculated for earner: ${uid}`);
     
     return { success: true, metrics };
   }
 );
 
 logger.info('✅ PACK 166 Scalability Engine (Backend) loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

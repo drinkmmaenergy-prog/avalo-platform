@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — Affiliate Layer for Professional Studio Creators & Agencies
  * Core Agency Engine
@@ -6,7 +8,7 @@
  * - Token price per unit remains constant
  * - Avalo always receives 35% commission
  * - Creators never lose more than their 65% share
- * - Affiliates/Studios receive sub-split inside creator's 65%
+ * - Affiliates/Studios receive sub-split inside earner's 65%
  * - No visibility boosts or algorithmic bias
  * - No free tokens, discounts, bonuses
  * - Consent-based workflow preventing exploitation
@@ -81,7 +83,7 @@ export const createAgencyAccount = onCall(
         createdBy: request.auth.uid,
       };
 
-      await db.collection('creator_agency_accounts').doc(agencyId).set(agency);
+      await db.collection('earner_agency_accounts').doc(agencyId).set(agency);
 
       // Audit log
       await logAgencyAudit({
@@ -119,7 +121,7 @@ export const getAgencyAccount = onCall(
     }
 
     try {
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
 
       if (!agencyDoc.exists) {
         throw new AgencyError(
@@ -130,13 +132,13 @@ export const getAgencyAccount = onCall(
 
       const agency = agencyDoc.data() as CreatorAgencyAccount;
 
-      // Security: Only agency owner or linked creators can view
+      // Security: Only agency owner or linked earners can view
       if (agency.createdBy !== request.auth.uid) {
-        // Check if user is a linked creator
+        // Check if user is a linked earner
         const linkQuery = await db
-          .collection('creator_agency_links')
+          .collection('earner_agency_links')
           .where('agencyId', '==', agencyId)
-          .where('creatorUserId', '==', request.auth.uid)
+          .where('earnerUserId', '==', request.auth.uid)
           .where('status', '==', 'ACTIVE')
           .limit(1)
           .get();
@@ -168,7 +170,7 @@ export async function updateAgencyStatus(
   reason?: string,
   adminId?: string
 ): Promise<void> {
-  const agencyRef = db.collection('creator_agency_accounts').doc(agencyId);
+  const agencyRef = db.collection('earner_agency_accounts').doc(agencyId);
   const agencyDoc = await agencyRef.get();
 
   if (!agencyDoc.exists) {
@@ -197,7 +199,7 @@ export async function updateAgencyStatus(
 
   logger.info('Agency status updated', { agencyId, oldStatus, newStatus, reason });
 
-  // If suspended or blocked, notify all linked creators
+  // If suspended or blocked, notify all linked earners
   if (newStatus === 'SUSPENDED' || newStatus === 'BLOCKED') {
     await notifyLinkedCreators(agencyId, `Agency has been ${newStatus.toLowerCase()}`);
   }
@@ -208,7 +210,7 @@ export async function updateAgencyStatus(
 // ============================================================================
 
 /**
- * Request to link creator to agency
+ * Request to link earner to agency
  */
 export const requestCreatorLink = onCall(
   { region: 'europe-west1' },
@@ -217,10 +219,10 @@ export const requestCreatorLink = onCall(
       throw new HttpsError('unauthenticated', 'Authentication required');
     }
 
-    const { agencyId, creatorUserId, proposedPercentage, message } = request.data;
+    const { agencyId, earnerUserId, proposedPercentage, message } = request.data;
 
     // Validate inputs
-    if (!agencyId || !creatorUserId || !proposedPercentage) {
+    if (!agencyId || !earnerUserId || !proposedPercentage) {
       throw new HttpsError('invalid-argument', 'Missing required fields');
     }
 
@@ -237,7 +239,7 @@ export const requestCreatorLink = onCall(
 
     try {
       // Verify agency exists and is active
-      const agencyDoc = await db.collection('creator_agency_accounts').doc(agencyId).get();
+      const agencyDoc = await db.collection('earner_agency_accounts').doc(agencyId).get();
       
       if (!agencyDoc.exists) {
         throw new AgencyError(AgencyErrorCode.AGENCY_NOT_FOUND, 'Agency not found');
@@ -257,8 +259,8 @@ export const requestCreatorLink = onCall(
 
       // Check for existing active link
       const existingLinkQuery = await db
-        .collection('creator_agency_links')
-        .where('creatorUserId', '==', creatorUserId)
+        .collection('earner_agency_links')
+        .where('earnerUserId', '==', earnerUserId)
         .where('agencyId', '==', agencyId)
         .where('status', 'in', ['ACTIVE', 'PENDING'])
         .limit(1)
@@ -284,7 +286,7 @@ export const requestCreatorLink = onCall(
       const linkRequest: AgencyLinkRequest = {
         requestId,
         agencyId,
-        creatorUserId,
+        earnerUserId,
         proposedPercentage,
         message,
         status: 'PENDING',
@@ -298,18 +300,18 @@ export const requestCreatorLink = onCall(
       await logAgencyAudit({
         eventType: 'LINK_REQUESTED',
         agencyId,
-        creatorUserId,
+        earnerUserId,
         actorId: request.auth.uid,
         actorType: requestedBy === 'AGENCY' ? 'AGENCY' : 'CREATOR',
         metadata: { proposedPercentage, requestedBy },
       });
 
-      // TODO: Send notification to creator
-      logger.info('Agency link requested', { requestId, agencyId, creatorUserId });
+      // TODO: Send notification to earner
+      logger.info('Agency link requested', { requestId, agencyId, earnerUserId });
 
       return { requestId };
     } catch (error: any) {
-      logger.error('Error requesting creator link', error);
+      logger.error('Error requesting earner link', error);
       
       if (error instanceof AgencyError) {
         throw new HttpsError('failed-precondition', error.message);
@@ -346,8 +348,8 @@ export const acceptAgencyLinkRequest = onCall(
 
       const linkRequest = requestDoc.data() as AgencyLinkRequest;
 
-      // Verify user is the target creator
-      if (linkRequest.creatorUserId !== request.auth.uid) {
+      // Verify user is the target earner
+      if (linkRequest.earnerUserId !== request.auth.uid) {
         throw new HttpsError('permission-denied', 'Not authorized to accept this request');
       }
 
@@ -363,7 +365,7 @@ export const acceptAgencyLinkRequest = onCall(
 
       // Verify agency is still active
       const agencyDoc = await db
-        .collection('creator_agency_accounts')
+        .collection('earner_agency_accounts')
         .doc(linkRequest.agencyId)
         .get();
 
@@ -382,7 +384,7 @@ export const acceptAgencyLinkRequest = onCall(
 
       const link: CreatorAgencyLink = {
         linkId,
-        creatorUserId: linkRequest.creatorUserId,
+        earnerUserId: linkRequest.earnerUserId,
         agencyId: linkRequest.agencyId,
         percentageForAgency: linkRequest.proposedPercentage,
         status: 'ACTIVE',
@@ -392,14 +394,14 @@ export const acceptAgencyLinkRequest = onCall(
         acceptedAt: Timestamp.now(),
         totalEarningsGenerated: 0,
         agencyEarningsTotal: 0,
-        creatorEarningsTotal: 0,
+        earnerEarningsTotal: 0,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       };
 
       // Transaction: create link and update counters
       await db.runTransaction(async (transaction) => {
-        transaction.set(db.collection('creator_agency_links').doc(linkId), link);
+        transaction.set(db.collection('earner_agency_links').doc(linkId), link);
         transaction.update(requestRef, {
           status: 'ACCEPTED',
           resolvedAt: serverTimestamp(),
@@ -414,7 +416,7 @@ export const acceptAgencyLinkRequest = onCall(
       await logAgencyAudit({
         eventType: 'LINK_ACCEPTED',
         agencyId: linkRequest.agencyId,
-        creatorUserId: linkRequest.creatorUserId,
+        earnerUserId: linkRequest.earnerUserId,
         actorId: request.auth.uid,
         actorType: 'CREATOR',
         metadata: { linkId, percentageForAgency: linkRequest.proposedPercentage },
@@ -461,8 +463,8 @@ export const rejectAgencyLinkRequest = onCall(
 
       const linkRequest = requestDoc.data() as AgencyLinkRequest;
 
-      // Verify user is the target creator
-      if (linkRequest.creatorUserId !== request.auth.uid) {
+      // Verify user is the target earner
+      if (linkRequest.earnerUserId !== request.auth.uid) {
         throw new HttpsError('permission-denied', 'Not authorized to reject this request');
       }
 
@@ -475,7 +477,7 @@ export const rejectAgencyLinkRequest = onCall(
       await logAgencyAudit({
         eventType: 'LINK_REJECTED',
         agencyId: linkRequest.agencyId,
-        creatorUserId: linkRequest.creatorUserId,
+        earnerUserId: linkRequest.earnerUserId,
         actorId: request.auth.uid,
         actorType: 'CREATOR',
         metadata: { requestId, reason },
@@ -492,7 +494,7 @@ export const rejectAgencyLinkRequest = onCall(
 );
 
 /**
- * Remove agency link (can be done by creator or agency)
+ * Remove agency link (can be done by earner or agency)
  */
 export const removeAgencyLink = onCall(
   { region: 'europe-west1' },
@@ -508,7 +510,7 @@ export const removeAgencyLink = onCall(
     }
 
     try {
-      const linkRef = db.collection('creator_agency_links').doc(linkId);
+      const linkRef = db.collection('earner_agency_links').doc(linkId);
       const linkDoc = await linkRef.get();
 
       if (!linkDoc.exists) {
@@ -519,12 +521,12 @@ export const removeAgencyLink = onCall(
 
       // Check authorization
       const agencyDoc = await db
-        .collection('creator_agency_accounts')
+        .collection('earner_agency_accounts')
         .doc(link.agencyId)
         .get();
       
       const agency = agencyDoc.data() as CreatorAgencyAccount;
-      const isCreator = link.creatorUserId === request.auth.uid;
+      const isCreator = link.earnerUserId === request.auth.uid;
       const isAgency = agency?.createdBy === request.auth.uid;
 
       if (!isCreator && !isAgency) {
@@ -564,7 +566,7 @@ export const removeAgencyLink = onCall(
       await logAgencyAudit({
         eventType: 'LINK_REMOVED',
         agencyId: link.agencyId,
-        creatorUserId: link.creatorUserId,
+        earnerUserId: link.earnerUserId,
         actorId: request.auth.uid,
         actorType: isCreator ? 'CREATOR' : 'AGENCY',
         metadata: { linkId, reason, removedBy },
@@ -594,32 +596,32 @@ export const removeAgencyLink = onCall(
  * Called by earnings recording functions
  */
 export async function applyAgencyEarningsSplit(params: {
-  creatorUserId: string;
+  earnerUserId: string;
   grossTokens: number;
   sourceType: 'GIFT' | 'PREMIUM_STORY' | 'PAID_MEDIA' | 'PAID_CALL' | 'AI_COMPANION' | 'OTHER';
   sourceId: string;
   earningId: string;
 }): Promise<{
   agencyAmount: number;
-  creatorAmount: number;
+  earnerAmount: number;
   splitApplied: boolean;
 }> {
-  const { creatorUserId, grossTokens, sourceType, sourceId, earningId } = params;
+  const { earnerUserId, grossTokens, sourceType, sourceId, earningId } = params;
 
   // Check for active agency link
   const linkQuery = await db
-    .collection('creator_agency_links')
-    .where('creatorUserId', '==', creatorUserId)
+    .collection('earner_agency_links')
+    .where('earnerUserId', '==', earnerUserId)
     .where('status', '==', 'ACTIVE')
     .limit(1)
     .get();
 
   if (linkQuery.empty) {
-    // No agency link, creator gets full 65%
-    const creatorAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.creator);
+    // No agency link, earner gets full 65%
+    const earnerAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.earner);
     return {
       agencyAmount: 0,
-      creatorAmount,
+      earnerAmount,
       splitApplied: false,
     };
   }
@@ -627,25 +629,25 @@ export async function applyAgencyEarningsSplit(params: {
   const link = linkQuery.docs[0].data() as CreatorAgencyLink;
 
   // Calculate split
-  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.avalo); // 35% to Avalo (fixed)
-  const creatorShareBefore = grossTokens - platformAmount; // 65% creator share
+  const platformAmount = Math.floor(grossTokens * MONETIZATION_SPLITS.CHAT.platform); // 35% to Avalo (fixed)
+  const earnerBefore = grossTokens - platformAmount; // 65% earner share
 
-  // Agency gets percentage of creator's 65%
-  const agencyAmount = Math.floor(creatorShareBefore * (link.percentageForAgency / 100));
-  const creatorAmount = creatorShareBefore - agencyAmount;
+  // Agency gets percentage of earner's 65%
+  const agencyAmount = Math.floor(earnerBefore * (link.percentageForAgency / 100));
+  const earnerAmount = earnerBefore - agencyAmount;
 
   // Record the split
   const split: AgencyEarningsSplit = {
     earningId,
-    creatorUserId,
+    earnerUserId,
     agencyId: link.agencyId,
     linkId: link.linkId,
     grossTokens,
     platformAmount,
-    creatorShareBefore,
+    earnerBefore,
     agencyPercentage: link.percentageForAgency,
     agencyAmount,
-    creatorAmount,
+    earnerAmount,
     sourceType,
     sourceId,
     createdAt: Timestamp.now(),
@@ -657,16 +659,16 @@ export async function applyAgencyEarningsSplit(params: {
     transaction.set(splitRef, split);
 
     // Update link totals
-    const linkRef = db.collection('creator_agency_links').doc(link.linkId);
+    const linkRef = db.collection('earner_agency_links').doc(link.linkId);
     transaction.update(linkRef, {
-      totalEarningsGenerated: increment(creatorShareBefore),
+      totalEarningsGenerated: increment(earnerBefore),
       agencyEarningsTotal: increment(agencyAmount),
-      creatorEarningsTotal: increment(creatorAmount),
+      earnerEarningsTotal: increment(earnerAmount),
       updatedAt: serverTimestamp(),
     });
 
     // Update agency totals
-    const agencyRef = db.collection('creator_agency_accounts').doc(link.agencyId);
+    const agencyRef = db.collection('earner_agency_accounts').doc(link.agencyId);
     transaction.update(agencyRef, {
       totalEarnings: increment(agencyAmount),
       activeEarnings: increment(agencyAmount),
@@ -678,28 +680,28 @@ export async function applyAgencyEarningsSplit(params: {
   await logAgencyAudit({
     eventType: 'EARNING_SPLIT_APPLIED',
     agencyId: link.agencyId,
-    creatorUserId,
+    earnerUserId,
     actorType: 'SYSTEM',
     metadata: {
       earningId,
       grossTokens,
       agencyAmount,
-      creatorAmount,
+      earnerAmount,
       percentage: link.percentageForAgency,
     },
   });
 
   logger.info('Agency earnings split applied', {
-    creatorUserId,
+    earnerUserId,
     agencyId: link.agencyId,
     grossTokens,
     agencyAmount,
-    creatorAmount,
+    earnerAmount,
   });
 
   return {
     agencyAmount,
-    creatorAmount,
+    earnerAmount,
     splitApplied: true,
   };
 }
@@ -745,19 +747,19 @@ async function checkLinkRequestRateLimit(agencyId: string): Promise<{ allowed: b
 }
 
 /**
- * Notify all linked creators
+ * Notify all linked earners
  */
 async function notifyLinkedCreators(agencyId: string, message: string): Promise<void> {
   const linksSnapshot = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
     .where('status', '==', 'ACTIVE')
     .get();
 
   // TODO: Send actual notifications
-  logger.info('Notifying linked creators', {
+  logger.info('Notifying linked earners', {
     agencyId,
-    creatorCount: linksSnapshot.size,
+    earnerCount: linksSnapshot.size,
     message,
   });
 }
@@ -768,7 +770,7 @@ async function notifyLinkedCreators(agencyId: string, message: string): Promise<
 async function logAgencyAudit(params: {
   eventType: AgencyAuditEventType;
   agencyId: string;
-  creatorUserId?: string;
+  earnerUserId?: string;
   actorId?: string;
   actorType: 'AGENCY' | 'CREATOR' | 'ADMIN' | 'SYSTEM';
   metadata: Record<string, any>;
@@ -779,7 +781,7 @@ async function logAgencyAudit(params: {
     logId: generateId(),
     eventType: params.eventType,
     agencyId: params.agencyId,
-    creatorUserId: params.creatorUserId,
+    earnerUserId: params.earnerUserId,
     previousValue: params.previousValue,
     newValue: params.newValue,
     metadata: params.metadata,
@@ -798,7 +800,7 @@ async function logAgencyAudit(params: {
     module: 'AGENCY_AUDIT',
     message: `Agency event: ${params.eventType}`,
     environment: 'PROD',
-    context: { userId: params.creatorUserId || params.actorId },
+    context: { userId: params.earnerUserId || params.actorId },
     details: {
       extra: {
         agencyId: params.agencyId,
@@ -808,6 +810,22 @@ async function logAgencyAudit(params: {
     },
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

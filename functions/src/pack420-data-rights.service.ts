@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 420 — Data Rights, Account Lifecycle & GDPR/DSR Engine
  * Backend service for handling data rights requests
@@ -570,7 +572,7 @@ export async function triggerExportGeneration(
     
     // Generate signed URL for download
     // TODO: Implement signed URL generation with Firebase Storage
-    const downloadUrl = `https://storage.googleapis.com/avalo-exports/${exportResult.storagePath}`;
+    const downloadUrl = `https://storage.googleapis.com/platform-exports/${exportResult.storagePath}`;
     
     // Complete the request
     await completeExportRequest(
@@ -591,6 +593,20 @@ export async function triggerExportGeneration(
     throw error;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

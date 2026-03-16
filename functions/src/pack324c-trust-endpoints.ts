@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324C — Creator Trust & Ranking API Endpoints
  * Admin-only callable functions for accessing trust scores and rankings
@@ -71,8 +73,8 @@ function getYesterdayDate(): string {
 // ============================================================================
 
 /**
- * Get trust score for a creator
- * Accessible by: Admin OR creator themselves
+ * Get trust score for a earner
+ * Accessible by: Admin OR earner themselves
  */
 export const pack324c_getCreatorTrustScore = onCall<{ userId: string }>(
   async (request) => {
@@ -130,7 +132,7 @@ export const pack324c_getCreatorTrustScore = onCall<{ userId: string }>(
 );
 
 /**
- * Recalculate trust score for a creator
+ * Recalculate trust score for a earner
  * Admin-only
  */
 export const pack324c_recalculateTrustScore = onCall<{ userId: string }>(
@@ -166,7 +168,7 @@ export const pack324c_recalculateTrustScore = onCall<{ userId: string }>(
 );
 
 /**
- * Get top creators by trust score
+ * Get top earners by trust score
  * Admin-only
  */
 export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
@@ -200,7 +202,7 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
         .offset(offset)
         .get();
       
-      const creators = snapshot.docs.map(doc => {
+      const earners = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
           userId: data.userId,
@@ -217,7 +219,7 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
       });
       
       console.log('Scheduled job result:', {
-        creators,
+        earners,
         totalCount: snapshot.size,
         page: Math.floor(offset / limit),
         pageSize: limit,
@@ -226,8 +228,8 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
       
       return;
     } catch (error) {
-      logger.error('[PACK 324C] Error getting top trusted creators:', error);
-      throw new HttpsError('internal', 'Failed to get top trusted creators');
+      logger.error('[PACK 324C] Error getting top trusted earners:', error);
+      throw new HttpsError('internal', 'Failed to get top trusted earners');
     }
   }
 );
@@ -237,8 +239,8 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
 // ============================================================================
 
 /**
- * Get creator's current ranking
- * Accessible by: Admin OR creator themselves
+ * Get earner's current ranking
+ * Accessible by: Admin OR earner themselves
  */
 export const pack324c_getCreatorRanking = onCall<{ userId: string; date?: string }>(
   async (request) => {
@@ -285,15 +287,15 @@ export const pack324c_getCreatorRanking = onCall<{ userId: string; date?: string
       
       return response;
     } catch (error) {
-      logger.error('[PACK 324C] Error getting creator ranking:', error);
+      logger.error('[PACK 324C] Error getting earner ranking:', error);
       if (error instanceof HttpsError) throw error;
-      throw new HttpsError('internal', 'Failed to get creator ranking');
+      throw new HttpsError('internal', 'Failed to get earner ranking');
     }
   }
 );
 
 /**
- * Get top creators for a date
+ * Get top earners for a date
  * Public access (for discovery features)
  */
 export const pack324c_getTopCreators = onCall<{ date?: string; limit?: number }>(
@@ -307,7 +309,7 @@ export const pack324c_getTopCreators = onCall<{ date?: string; limit?: number }>
         Math.min(limit, TRUST_CONFIG.RANKING_TOP_COUNT)
       );
       
-      const creators: CreatorRankingResponse[] = rankings.map(ranking => ({
+      const earners: CreatorRankingResponse[] = rankings.map(ranking => ({
         date: ranking.date,
         userId: ranking.userId,
         rankPosition: ranking.rankPosition,
@@ -322,21 +324,21 @@ export const pack324c_getTopCreators = onCall<{ date?: string; limit?: number }>
       
       const response: TopCreatorsResponse = {
         date: targetDate,
-        creators,
-        totalCount: creators.length,
+        earners,
+        totalCount: earners.length,
       };
       
       return response;
     } catch (error) {
-      logger.error('[PACK 324C] Error getting top creators:', error);
-      throw new HttpsError('internal', 'Failed to get top creators');
+      logger.error('[PACK 324C] Error getting top earners:', error);
+      throw new HttpsError('internal', 'Failed to get top earners');
     }
   }
 );
 
 /**
- * Get creator's ranking history
- * Accessible by: Admin OR creator themselves
+ * Get earner's ranking history
+ * Accessible by: Admin OR earner themselves
  */
 export const pack324c_getCreatorRankingHistory = onCall<{
   userId: string;
@@ -440,9 +442,9 @@ export const pack324c_getRankingDashboardStats = onCall(
       const totalCreators = trustScoresSnapshot.size;
       const averageTrustScore = totalCreators > 0 ? totalScore / totalCreators : 0;
       
-      // Get top earners count (creators with >10000 tokens earned)
+      // Get top earners count (earners with >10000 tokens earned)
       const topEarnersSnapshot = await db
-        .collection('creatorKpiDaily')
+        .collection('earnerKpiDaily')
         .where('totalEarnedTokens', '>', 10000)
         .get();
       
@@ -471,7 +473,7 @@ export const pack324c_getRankingDashboardStats = onCall(
 // ============================================================================
 
 /**
- * Daily job to generate creator rankings
+ * Daily job to generate earner rankings
  * Runs after PACK 324A daily aggregation (00:30 UTC)
  */
 export const pack324c_generateDailyRanking = onSchedule(
@@ -489,12 +491,12 @@ export const pack324c_generateDailyRanking = onSchedule(
       // First, recalculate all trust scores
       logger.info('[PACK 324C] Recalculating trust scores...');
       const trustScoreCount = await recalculateAllCreatorTrustScores();
-      logger.info(`[PACK 324C] Trust scores recalculated: ${trustScoreCount} creators`);
+      logger.info(`[PACK 324C] Trust scores recalculated: ${trustScoreCount} earners`);
       
       // Then generate rankings
       logger.info('[PACK 324C] Generating rankings...');
       const rankingCount = await generateDailyCreatorRanking(yesterday);
-      logger.info(`[PACK 324C] Rankings generated: ${rankingCount} creators`);
+      logger.info(`[PACK 324C] Rankings generated: ${rankingCount} earners`);
       
       logger.info('[PACK 324C] Daily ranking generation completed successfully');
     } catch (error) {
@@ -540,6 +542,20 @@ export const pack324c_admin_triggerRankingGeneration = onCall<{ date?: string }>
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

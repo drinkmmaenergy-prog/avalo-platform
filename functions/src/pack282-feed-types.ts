@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 282 — Feed Engine Types
  * TypeScript type definitions for Instagram-style feed system
@@ -268,9 +270,9 @@ export interface RankingConfig {
 
 // Default ranking weights
 export const DEFAULT_RANKING_WEIGHTS: RankingConfig['weights'] = {
-  recency: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  recency: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
   relationship: 0.25,
-  engagement: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  engagement: MONETIZATION_SPLITS.EVENT_TICKET.platform,
   quality: 0.15,
   safety: 0.07,
   diversity: 0.03,
@@ -405,6 +407,22 @@ export interface BulkModerationOperation {
   reason?: string;
   performedBy: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

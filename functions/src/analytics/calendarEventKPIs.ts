@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, FieldValue, timestamp as Timestamp } from '../init';
 import { increment, logger, onSchedule, onDocumentCreated, onDocumentUpdated } from '../runtime';
@@ -32,7 +34,7 @@ export const trackCalendarBooking = onDocumentCreated('calendar_events/{eventId}
         event_type: 'booking_created',
         event_id: eventId,
         user_id: eventData.user_id,
-        creator_id: eventData.creator_id,
+        earner_id: eventData.earner_id,
         tokens: eventData.tokens || 0,
         event_date: eventData.event_date,
         timestamp: timestamp
@@ -47,12 +49,12 @@ export const trackCalendarBooking = onDocumentCreated('calendar_events/{eventId}
         total_tokens: FieldValue.increment(eventData.tokens || 0)
       }, { merge: true });
 
-      // Track creator revenue
-      await db.collection('analytics_daily').doc(`creator_calendar_revenue_${today}`).set({
-        metric_type: 'creator_calendar_revenue',
+      // Track earner revenue
+      await db.collection('analytics_daily').doc(`earner_calendar_revenue_${today}`).set({
+        metric_type: 'earner_calendar_revenue',
         date: today,
         timestamp: timestamp,
-        [`creator_${eventData.creator_id}`]: FieldValue.increment(eventData.tokens || 0)
+        [`earner_${eventData.earner_id}`]: FieldValue.increment(eventData.tokens || 0)
       }, { merge: true });
 
     } catch (error) {
@@ -78,7 +80,7 @@ export const trackBookingCancellation = onDocumentUpdated('calendar_events/{even
           event_type: 'booking_cancelled',
           event_id: eventId,
           user_id: after.user_id,
-          creator_id: after.creator_id,
+          earner_id: after.earner_id,
           tokens: after.tokens || 0,
           cancelled_by: after.cancelled_by,
           cancellation_reason: after.cancellation_reason,
@@ -121,7 +123,7 @@ export const trackQRVerification = onDocumentCreated('calendar_events/{eventId}/
         event_type: 'qr_verification',
         event_id: eventId,
         user_id: calendarEvent.user_id,
-        creator_id: calendarEvent.creator_id,
+        earner_id: calendarEvent.earner_id,
         verification_status: verification.status,
         verified_by: verification.verified_by,
         timestamp: timestamp
@@ -164,7 +166,7 @@ export const trackMismatchClaim = onDocumentCreated('mismatch_claims/{claimId}',
         claim_id: claimId,
         event_id: claim.event_id,
         user_id: claim.user_id,
-        creator_id: claim.creator_id,
+        earner_id: claim.earner_id,
         claim_type: claim.type,
         severity: claim.severity,
         timestamp: timestamp
@@ -182,7 +184,7 @@ export const trackMismatchClaim = onDocumentCreated('mismatch_claims/{claimId}',
       await db.collection('safety_events').add({
         event_type: 'mismatch_claim',
         user_id: claim.user_id,
-        creator_id: claim.creator_id,
+        earner_id: claim.earner_id,
         event_id: claim.event_id,
         severity: claim.severity || 'medium',
         timestamp: timestamp,
@@ -215,7 +217,7 @@ export const trackEventCompletion = onDocumentUpdated('calendar_events/{eventId}
           event_type: 'booking_completed',
           event_id: eventId,
           user_id: after.user_id,
-          creator_id: after.creator_id,
+          earner_id: after.earner_id,
           tokens: after.tokens || 0,
           qr_verified: after.qr_verified || false,
           timestamp: timestamp
@@ -269,16 +271,16 @@ export const aggregateCalendarEventKPIs = onSchedule({ schedule: "0 2 * * *", ti
       const mismatchClaimsRate = totalCompletedEvents > 0 ? (totalMismatchClaims / totalCompletedEvents) * 100 : 0;
 
       // Calculate 80/20 revenue distribution
-      const creatorRevenueDoc = await db.collection('analytics_daily').doc(`creator_calendar_revenue_${dateStr}`).get();
-      let creatorRevenues: { creatorId: string; revenue: number }[] = [];
+      const earnerRevenueDoc = await db.collection('analytics_daily').doc(`earner_calendar_revenue_${dateStr}`).get();
+      let earnerRevenues: { earnerId: string; revenue: number }[] = [];
       
-      if (creatorRevenueDoc.exists) {
-        const data = creatorRevenueDoc.data();
+      if (earnerRevenueDoc.exists) {
+        const data = earnerRevenueDoc.data();
         Object.keys(data || {}).forEach(key => {
-          if (key.startsWith('creator_')) {
-            const creatorId = key.replace('creator_', '');
-            creatorRevenues.push({
-              creatorId,
+          if (key.startsWith('earner_')) {
+            const earnerId = key.replace('earner_', '');
+            earnerRevenues.push({
+              earnerId,
               revenue: data![key]
             });
           }
@@ -286,12 +288,12 @@ export const aggregateCalendarEventKPIs = onSchedule({ schedule: "0 2 * * *", ti
       }
 
       // Sort by revenue descending
-      creatorRevenues.sort((a, b) => b.revenue - a.revenue);
+      earnerRevenues.sort((a, b) => b.revenue - a.revenue);
 
-      // Calculate top 20% creators' revenue
-      const top20Count = Math.ceil(creatorRevenues.length * 0.2);
-      const top20Revenue = creatorRevenues.slice(0, top20Count).reduce((sum, c) => sum + c.revenue, 0);
-      const totalRevenue = creatorRevenues.reduce((sum, c) => sum + c.revenue, 0);
+      // Calculate top 20% earners' revenue
+      const top20Count = Math.ceil(earnerRevenues.length * 0.2);
+      const top20Revenue = earnerRevenues.slice(0, top20Count).reduce((sum, c) => sum + c.revenue, 0);
+      const totalRevenue = earnerRevenues.reduce((sum, c) => sum + c.revenue, 0);
       const top20Percentage = totalRevenue > 0 ? (top20Revenue / totalRevenue) * 100 : 0;
 
       // Store aggregated metrics
@@ -324,6 +326,22 @@ export const aggregateCalendarEventKPIs = onSchedule({ schedule: "0 2 * * *", ti
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

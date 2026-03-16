@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Match Notification Service
  * 
@@ -56,7 +58,7 @@ async function sendMatchNotification(
         matchId,
         matchedUserId,
         chatId: chatId || '',
-        click_action: chatId ? `avalo://chat/${chatId}` : `avalo://profile/${matchedUserId}`,
+        click_action: chatId ? `platform://chat/${chatId}` : `platform://profile/${matchedUserId}`,
       },
       android: {
         priority: 'high',
@@ -64,7 +66,7 @@ async function sendMatchNotification(
           channelId: 'matches',
           priority: 'high',
           sound: 'match_sound',
-          clickAction: chatId ? `avalo://chat/${chatId}` : `avalo://profile/${matchedUserId}`,
+          clickAction: chatId ? `platform://chat/${chatId}` : `platform://profile/${matchedUserId}`,
         },
       },
       apns: {
@@ -153,6 +155,22 @@ export const onMatchCreated = onDocumentCreated(
  * Export for integration tests
  */
 export { sendMatchNotification };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

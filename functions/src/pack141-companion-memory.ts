@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 141 - AI Companion Memory System
  * 
@@ -378,6 +380,20 @@ export async function extractMemoriesFromMessage(
   
   return extractedMemories;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

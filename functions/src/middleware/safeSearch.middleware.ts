@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 170 — Avalo Universal Search 3.0
  * Safe-search classifier and content filtering middleware
@@ -98,7 +100,7 @@ export function analyzeSafety(text: string, context?: string): SafetyAnalysis {
     if (lowerText.includes('bikini') && lowerText.includes('fitness')) {
       suggestedAlternative = 'fitness workouts';
     } else if (lowerText.includes('model')) {
-      suggestedAlternative = 'creator profiles';
+      suggestedAlternative = 'earner profiles';
     } else if (lowerText.includes('dating') || lowerText.includes('romance')) {
       suggestedAlternative = 'social events';
     }
@@ -181,7 +183,7 @@ export function analyzeSearchContent(entry: Omit<SearchIndexEntry, 'safetyScore'
 }
 
 /**
- * Validate creator profile for search indexing
+ * Validate earner profile for search indexing
  */
 export function validateCreatorProfile(profile: {
   bio: string;
@@ -328,6 +330,22 @@ export function shouldFlagForReview(entry: SearchIndexEntry): boolean {
 
   return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

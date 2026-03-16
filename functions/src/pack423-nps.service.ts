@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 423 — In-App Ratings, Sentiment & NPS Engine
  * NPS Service
@@ -290,6 +292,20 @@ export async function isRecentDetractor(userId: string): Promise<boolean> {
   const response = recentResponseSnap.docs[0].data() as NpsSurveyResponse;
   return response.score <= 6; // Detractor
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

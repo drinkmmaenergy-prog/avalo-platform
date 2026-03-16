@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 80 — Cross-Chat Media Paywall
  * TypeScript types and interfaces for locked photos & videos inside chat messages
@@ -485,3 +486,4 @@ export function validateMediaFile(
 
   return { isValid: true };
 }
+

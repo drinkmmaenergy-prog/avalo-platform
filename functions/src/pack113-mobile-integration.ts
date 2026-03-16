@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 113 — Mobile Integration Functions
  * Cloud Functions for mobile app to manage connected apps
@@ -238,7 +240,7 @@ export const getAppDetails = onCall(
 // ============================================================================
 
 /**
- * Rotate API key for an app (app creator only)
+ * Rotate API key for an app (app earner only)
  */
 export const rotateAPIKey = onCall(
   { region: 'europe-west1' },
@@ -317,6 +319,20 @@ export const rotateAPIKey = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

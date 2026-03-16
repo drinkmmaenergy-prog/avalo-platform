@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 56 — Payout HTTP Callable Handlers
  *
@@ -12,7 +14,7 @@ import {
   getPayoutRequests,
 } from "../payouts";
 import { auth, functions } from '../runtime';
-import { enforceCreatorAgreement } from '../pack451-creator-agreement';
+import { enforceCreatorAgreement } from '../pack451-earner-agreement';
 
 /**
  * Get payout state for authenticated user.
@@ -164,6 +166,22 @@ export const getPayoutRequestsCallable = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

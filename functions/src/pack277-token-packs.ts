@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 277 — Token Packs Configuration & Purchase Logic (USD-only)
  *
@@ -23,6 +25,24 @@ export const DEFAULT_TOKEN_PACKS: Omit<TokenPack, "createdAt" | "updatedAt">[] =
   { id: "elite",    name: "Elite",    tokens: 5000,  priceUSD: 353.99, active: true, order: 6 },
   { id: "royal",    name: "Royal",    tokens: 10000, priceUSD: 674.99, active: true, order: 7 },
 ];
+
+export type CanonicalTokenPack = Omit<TokenPack, "createdAt" | "updatedAt">;
+
+export function normalizeTokenPackId(id: string): string {
+  return (id || "").trim().toLowerCase();
+}
+
+export const CANONICAL_TOKEN_PACKS_BY_ID: Readonly<Record<string, CanonicalTokenPack>> = Object.freeze(
+  DEFAULT_TOKEN_PACKS.reduce<Record<string, CanonicalTokenPack>>((acc, pack) => {
+    acc[pack.id] = pack;
+    return acc;
+  }, {})
+);
+
+export function getCanonicalTokenPackById(id: string): CanonicalTokenPack | null {
+  const normalized = normalizeTokenPackId(id);
+  return CANONICAL_TOKEN_PACKS_BY_ID[normalized] || null;
+}
 
 export async function initializeTokenPacks(): Promise<void> {
   const packsRef = db.collection("config").doc("tokenPacks");
@@ -114,6 +134,21 @@ export async function recordPurchase(
 export async function validatePurchase(userId: string, packId: string, paymentIntentId?: string): Promise<{ valid: boolean; error?: string }> {
   return { valid: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

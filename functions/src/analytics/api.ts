@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db, auth } from '../init';
 import { admin, onRequest, timestamp } from '../runtime';
@@ -39,7 +41,7 @@ export const getAnalyticsDashboard = onRequest({}, async (req, res) => {
 
     const userData = userDoc.data()!;
     const isAdmin = userData.role === 'admin' || userData.role === 'analyst';
-    const isCreator = userData.is_creator === true;
+    const isCreator = userData.is_earner === true;
 
     // Get date range
     const days = parseInt(req.query.days as string) || 7;
@@ -104,32 +106,32 @@ export const getAnalyticsDashboard = onRequest({}, async (req, res) => {
         riskDistribution: doc.data().risk_distribution
       }));
 
-      // Get top creators
-      const topCreatorsSnapshot = await db.collection('creator_metrics')
+      // Get top earners
+      const topCreatorsSnapshot = await db.collection('earner_metrics')
         .where('date', '==', endDate.toISOString().split('T')[0])
         .orderBy('exposureScore', 'desc')
         .limit(10)
         .get();
 
       dashboard.topCreators = topCreatorsSnapshot.docs.map(doc => ({
-        creatorId: doc.id,
+        earnerId: doc.id,
         ...doc.data()
       }));
     }
 
     // Creator dashboard - own metrics
     if (isCreator) {
-      const creatorMetricsSnapshot = await db.collection('creator_metrics')
+      const earnerMetricsSnapshot = await db.collection('earner_metrics')
         .doc(userId)
         .collection('daily')
         .where('date', '>=', startDate.toISOString().split('T')[0])
         .orderBy('date', 'desc')
         .get();
 
-      dashboard.creatorMetrics = creatorMetricsSnapshot.docs.map(doc => doc.data());
+      dashboard.earnerMetrics = earnerMetricsSnapshot.docs.map(doc => doc.data());
 
       // Get trends
-      const trendsDoc = await db.collection('creator_metrics').doc(userId).get();
+      const trendsDoc = await db.collection('earner_metrics').doc(userId).get();
       if (trendsDoc.exists) {
         dashboard.trends = trendsDoc.data()?.trends_7d;
       }
@@ -149,7 +151,7 @@ export const getAnalyticsDashboard = onRequest({}, async (req, res) => {
   }
 });
 
-// Get creator metrics (for creator's own dashboard)
+// Get earner metrics (for earner's own dashboard)
 export const getCreatorMetrics = onRequest({}, async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -171,10 +173,10 @@ export const getCreatorMetrics = onRequest({}, async (req, res) => {
     const decodedToken = await auth.verifyIdToken(token);
     const userId = decodedToken.uid;
 
-    const creatorId = (req.query.creatorId as string) || userId;
+    const earnerId = (req.query.earnerId as string) || userId;
 
     // Security: Only allow access to own metrics unless admin
-    if (userId !== creatorId) {
+    if (userId !== earnerId) {
       const userDoc = await db.collection('users').doc(userId).get();
       if (!userDoc.exists || !['admin', 'analyst'].includes(userDoc.data()?.role)) {
         res.status(403).json({ error: 'Access denied' });
@@ -185,8 +187,8 @@ export const getCreatorMetrics = onRequest({}, async (req, res) => {
     const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
 
     // Get daily metrics
-    const metricsDoc = await db.collection('creator_metrics')
-      .doc(creatorId)
+    const metricsDoc = await db.collection('earner_metrics')
+      .doc(earnerId)
       .collection('daily')
       .doc(date)
       .get();
@@ -199,7 +201,7 @@ export const getCreatorMetrics = onRequest({}, async (req, res) => {
     res.status(200).json(metricsDoc.data());
 
   } catch (error) {
-    console.error('Error fetching creator metrics:', error);
+    console.error('Error fetching earner metrics:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -370,6 +372,22 @@ export const getRealtimeMetrics = onRequest({}, async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

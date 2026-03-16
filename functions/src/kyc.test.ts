@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { storage } from './runtime';
 
 ;
@@ -388,6 +390,20 @@ describe("KYC Identity Verification", () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

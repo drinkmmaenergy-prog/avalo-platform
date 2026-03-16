@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 136: Verified Expert / Mentorship Marketplace
  * 
@@ -846,7 +848,7 @@ export const enrollInCurriculum = onCall(
     }
 
     const priceTokens = curriculumData.priceTokens;
-    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.platform);
     const expertEarnings = priceTokens - platformFee;
 
     await db.runTransaction(async (transaction) => {
@@ -966,7 +968,7 @@ export const scheduleMentorshipSession = onCall(
     }
 
     const priceTokens = offerData.priceTokens;
-    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
+    const platformFee = Math.floor(priceTokens * MONETIZATION_SPLITS.CHAT.platform);
     const expertEarnings = priceTokens - platformFee;
 
     const sessionId = db.collection("_").doc().id;
@@ -1482,6 +1484,22 @@ export const notifyUserOnExpertApproval = onDocumentCreated(
     });
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

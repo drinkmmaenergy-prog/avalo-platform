@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 311 — AI Companions Marketplace, Ranking & Owner Analytics
  * Ranking logic and analytics aggregation
@@ -368,6 +370,20 @@ export async function rebuildAllAvatarIndexes(): Promise<{
 
   return { processed, skipped, errors };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

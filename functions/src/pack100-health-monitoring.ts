@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 100 — Health & Monitoring Endpoints
  * 
@@ -256,7 +258,7 @@ async function getBackgroundJobStatuses(): Promise<BackgroundJobStatus[]> {
       lastRunStatus: 'SUCCESS',
     },
     {
-      jobName: 'creator_aggregateEarnings',
+      jobName: 'earner_aggregateEarnings',
       lastRunStatus: 'SUCCESS',
     },
     {
@@ -402,7 +404,7 @@ export const healthCheck = onRequest({}, (req, res) => {
     status: 'ok',
     timestamp: Date.now(),
     version: '1.0.0',
-    service: 'avalo-backend',
+    service: 'platform-backend',
   });
 });
 
@@ -485,6 +487,20 @@ export const admin_getSystemDiagnostics = functions.https.onCall(async (request)
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

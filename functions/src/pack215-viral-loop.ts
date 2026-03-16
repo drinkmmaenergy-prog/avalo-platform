@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 215: Viral Loop Engine
  * 
@@ -29,7 +31,7 @@ type RewardType =
   | 'fans_zone_badge'        // Social proof badge
   | 'chemistry_reveal'       // Chemistry match reveal (for payers)
   | 'strong_profile_badge'   // Strong profile badge (for payers)
-  | 'attraction_magnet';     // Attraction magnet badge (for creators)
+  | 'attraction_magnet';     // Attraction magnet badge (for earners)
 
 interface ViralReward {
   user_id: string;
@@ -246,7 +248,7 @@ export const generateReferralLink = functions.https.onCall(async (request) => {
 
   // Generate unique code
   const linkCode = generateLinkCode();
-  const link = `https://avalo.app/invite/${linkCode}`;
+  const link = `https://platform.app/invite/${linkCode}`;
 
   // Create referral link document
   await db.collection('referral_links').add({
@@ -462,31 +464,31 @@ export const onMeetingBooked = onDocumentCreated('meetings/{meetingId}', async (
   const snap = event.data;
   if (!snap) return;
     const data = snap.data();
-    const creatorUserId = data.creator_user_id;
+    const earnerUserId = data.earner_user_id;
     const bookerUserId = data.user_id;
 
-    // Check if booker was invited by creator
+    // Check if booker was invited by earner
     const invitedDoc = await db.collection('invited_users').doc(bookerUserId).get();
     
     if (!invitedDoc.exists) return;
     
     const invitedData = invitedDoc.data();
-    if (invitedData?.inviter_id !== creatorUserId) return;
+    if (invitedData?.inviter_id !== earnerUserId) return;
 
     // Create social proof event
     await createSocialProofEvent(
-      creatorUserId,
+      earnerUserId,
       'meeting_booked',
       [bookerUserId],
       'Someone you invited just booked a meeting — you\'re getting popular'
     );
 
-    // Boost creator's visibility (PACK 213 integration)
-    await boostMatchPriority(creatorUserId, 24 * 60 * 60 * 1000);
+    // Boost earner's visibility (PACK 213 integration)
+    await boostMatchPriority(earnerUserId, 24 * 60 * 60 * 1000);
   });
 
 /**
- * Process audience import for creators
+ * Process audience import for earners
  */
 export const processAudienceImport = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -501,20 +503,20 @@ export const processAudienceImport = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid platform');
   }
 
-  // Check if user is a creator/earner
+  // Check if user is a earner/earner
   const userDoc = await db.collection('users').doc(userId).get();
   const userData = userDoc.data();
   
   if (!userData?.earningsEnabled) {
     throw new functions.https.HttpsError(
       'permission-denied',
-      'Only creators with earnings enabled can import audience'
+      'Only earners with earnings enabled can import audience'
     );
   }
 
   // Create import tracking
   await db.collection('audience_imports').add({
-    creator_id: userId,
+    earner_id: userId,
     platform,
     follower_count: followerCount,
     created_at: admin.firestore.Timestamp.now(),
@@ -698,6 +700,20 @@ export const aggregateViralMetrics = onSchedule({ schedule: "0 2 * * *", timeZon
 
     console.log(`Viral metrics aggregated for ${yesterday.toISOString().split('T')[0]}`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

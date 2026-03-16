@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Module: Compliance Escalation Orchestrator
@@ -22,7 +24,7 @@ export type Department = 'LEGAL' | 'FINANCE' | 'COMPLIANCE' | 'FRAUD';
 
 export interface ComplianceEscalation {
   caseId: string;
-  creatorId: string;
+  earnerId: string;
   type: EscalationType;
   severity: EscalationSeverity;
   status: EscalationStatus;
@@ -60,7 +62,7 @@ export interface ComplianceEscalation {
 }
 
 export interface CreateEscalationRequest {
-  creatorId: string;
+  earnerId: string;
   type: EscalationType;
   severity: EscalationSeverity;
   description: string;
@@ -95,7 +97,7 @@ export class ComplianceEscalationOrchestrator {
     
     const escalation: ComplianceEscalation = {
       caseId,
-      creatorId: request.creatorId,
+      earnerId: request.earnerId,
       type: request.type,
       severity: request.severity,
       status: 'OPEN',
@@ -282,12 +284,12 @@ export class ComplianceEscalationOrchestrator {
   }
   
   /**
-   * Get cases for a creator
+   * Get cases for a earner
    */
-  async getCreatorCases(creatorId: string): Promise<ComplianceEscalation[]> {
+  async getCreatorCases(earnerId: string): Promise<ComplianceEscalation[]> {
     const snapshot = await this.db
       .collection('compliance_escalations')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .orderBy('timeline.createdAt', 'desc')
       .get();
     
@@ -399,12 +401,28 @@ export class ComplianceEscalationOrchestrator {
       type: 'COMPLIANCE_ESCALATION',
       event,
       caseId: escalation.caseId,
-      creatorId: escalation.creatorId,
+      earnerId: escalation.earnerId,
       timestamp: Timestamp.now(),
       ...additionalData
     });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

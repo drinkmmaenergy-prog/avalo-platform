@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 157 — Avalo Offline Business Verification & Physical Venue Partnerships
  * TypeScript type definitions
@@ -268,9 +270,9 @@ export interface VenueEvent {
   checkInCode?: string;
   checkInStartTime?: Timestamp;
   
-  // Revenue Split (same as regular events: 65% creator / 35% Avalo)
-  platformFeePercentage: number; // MONETIZATION_SPLITS.CHAT.avalo
-  venueCommission: number; // Optional commission to venue (from creator's 65%)
+  // Revenue Split (same as regular events: 65% earner / 35% Avalo)
+  platformFeePercentage: number; // MONETIZATION_SPLITS.CHAT.platform
+  venueCommission: number; // Optional commission to venue (from earner's 65%)
   
   // Metadata
   createdAt: Timestamp;
@@ -303,7 +305,7 @@ export interface VenueAttendance {
   // Payment
   tokensAmount: number;
   platformFee: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
   venueCommission: number;
   transactionId?: string;
   
@@ -559,9 +561,9 @@ export const VENUE_CONFIG = {
   minAdvanceNotice: 24 * 60 * 60 * 1000, // 24 hours
   
   // Fees (aligned with regular events)
-  platformFeePercentage: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
-  creatorEarningsPercentage: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
-  maxVenueCommission: 0.10, // max 10% from creator's share
+  platformFeePercentage: MONETIZATION_SPLITS.CHAT.platform, // 35% to Avalo
+  earnerEarningsPercentage: MONETIZATION_SPLITS.CHAT.earner, // 65% to earner
+  maxVenueCommission: 0.10, // max 10% from earner's share
   
   // Safety thresholds
   nsfwThreshold: 0.3,
@@ -604,6 +606,23 @@ export class VenueError extends Error {
     this.name = 'VenueError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

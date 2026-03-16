@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Phase 15: Drops Marketplace Types
  * Type definitions for drop products, purchases, and related entities
@@ -28,13 +30,13 @@ export interface LootboxPool {
 }
 
 export interface CoopCreatorShare {
-  creatorId: string;
-  sharePercentage: number; // 0-100, must sum to 100 across all creators
+  earnerId: string;
+  sharePercentage: number; // 0-100, must sum to 100 across all earners
 }
 
 export interface Drop {
   dropId: string;
-  ownerCreatorIds: string[]; // Single creator or multiple for COOP
+  ownerCreatorIds: string[]; // Single earner or multiple for COOP
   type: DropType;
   title: string;
   description: string;
@@ -58,7 +60,7 @@ export interface Drop {
   createdAt: Date;
   updatedAt: Date;
   
-  // Stats (for creator dashboard)
+  // Stats (for earner dashboard)
   totalRevenue?: number;
   uniqueBuyers?: number;
 }
@@ -67,7 +69,7 @@ export interface DropPurchase {
   purchaseId: string;
   dropId: string;
   userId: string;
-  creatorIds: string[]; // All creators involved
+  earnerIds: string[]; // All earners involved
   tokensSpent: number;
   createdAt: Date;
   
@@ -76,8 +78,8 @@ export interface DropPurchase {
   
   // Revenue split details
   revenueSplit: {
-    [creatorId: string]: number; // tokens allocated to each creator
-    avalo: number; // platform share
+    [earnerId: string]: number; // tokens allocated to each earner
+    platform: number; // platform share
   };
 }
 
@@ -135,7 +137,7 @@ export interface UpdateDropInput {
 }
 
 export interface ListDropsFilters {
-  creatorId?: string;
+  earnerId?: string;
   type?: DropType;
   tags?: string[];
   is18Plus?: boolean;
@@ -149,8 +151,8 @@ export interface ListDropsFilters {
 export interface DropPublicInfo {
   dropId: string;
   ownerCreatorIds: string[];
-  creatorNames: string[];
-  creatorAvatars: string[];
+  earnerNames: string[];
+  earnerAvatars: string[];
   type: DropType;
   title: string;
   description: string;
@@ -167,6 +169,22 @@ export interface DropPublicInfo {
   contentPreview?: ContentItem[]; // For transparent drops
   lootboxCategories?: string[]; // For lootbox, show categories/rarities
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

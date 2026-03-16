@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 398 - INFLUENCER & PAID TRAFFIC SYNCHRONIZER
  * 
@@ -706,6 +708,20 @@ async function calculateCampaignFraudScore(campaignId: string): Promise<number> 
 
   return count > 0 ? totalFraudScore / count : 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

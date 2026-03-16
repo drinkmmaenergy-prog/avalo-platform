@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 382 — Creator Skill Scoring & Profiling System
- * Automated creator earnings profile and skill tier calculation
+ * Automated earner earnings profile and skill tier calculation
  */
 
 import * as functions from 'firebase-functions';
@@ -16,7 +18,7 @@ import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
 const db = getFirestore();
 
 /**
- * Calculate comprehensive skill score for a creator
+ * Calculate comprehensive skill score for a earner
  * Evaluates performance across all earning activities
  */
 export const pack382_calculateCreatorSkillScore = functions.https.onCall(async (request) => {
@@ -44,7 +46,7 @@ export const pack382_calculateCreatorSkillScore = functions.https.onCall(async (
       // Check if recent profile exists
       if (!forceRecalculate) {
         const existingProfile = await db
-          .collection('creatorEarningProfiles')
+          .collection('earnerEarningProfiles')
           .doc(userId)
           .get();
 
@@ -105,7 +107,7 @@ export const pack382_calculateCreatorSkillScore = functions.https.onCall(async (
       };
 
       await db
-        .collection('creatorEarningProfiles')
+        .collection('earnerEarningProfiles')
         .doc(userId)
         .set(profile, { merge: true });
 
@@ -159,7 +161,7 @@ async function analyzeChatPerformance(userId: string, since: number) {
   // Query chat sessions
   const chatsSnapshot = await db
     .collection('chatSessions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('startedAt', '>=', Timestamp.fromMillis(since))
     .get();
 
@@ -205,7 +207,7 @@ async function analyzeChatPerformance(userId: string, since: number) {
 async function analyzeCallPerformance(userId: string, since: number) {
   const callsSnapshot = await db
     .collection('callSessions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(since))
     .get();
 
@@ -242,7 +244,7 @@ async function analyzeCallPerformance(userId: string, since: number) {
 async function analyzeCalendarPerformance(userId: string, since: number) {
   const eventsSnapshot = await db
     .collection('events')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('startsAt', '>=', Timestamp.fromMillis(since))
     .get();
 
@@ -267,7 +269,7 @@ async function analyzeCalendarPerformance(userId: string, since: number) {
   // Calendar bookings
   const bookingsSnapshot = await db
     .collection('calendarBookings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(since))
     .get();
 
@@ -294,7 +296,7 @@ async function analyzeCalendarPerformance(userId: string, since: number) {
 async function analyzeFinancialMetrics(userId: string, since: number) {
   const transactionsSnapshot = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(since))
     .get();
 
@@ -320,7 +322,7 @@ async function analyzeFinancialMetrics(userId: string, since: number) {
   // Get subscription data
   const subsSnapshot = await db
     .collection('subscriptions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', '==', 'active')
     .get();
 
@@ -343,7 +345,7 @@ async function analyzeUserRetention(userId: string, since: number) {
   // Get paying users from 30+ days ago
   const oldPayments = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', '==', 'payment')
     .where('createdAt', '<', Timestamp.fromMillis(since))
     .get();
@@ -356,7 +358,7 @@ async function analyzeUserRetention(userId: string, since: number) {
   // Check how many returned
   const recentPayments = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('type', '==', 'payment')
     .where('createdAt', '>=', Timestamp.fromMillis(since))
     .get();
@@ -394,19 +396,19 @@ async function gatherActivityStats(userId: string) {
   const [chats, calls, events] = await Promise.all([
     db
       .collection('chatSessions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('startedAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
       .count()
       .get(),
     db
       .collection('callSessions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
       .count()
       .get(),
     db
       .collection('events')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('startsAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
       .count()
       .get(),
@@ -458,7 +460,7 @@ async function detectRiskSignals(userId: string, activityStats: any) {
   // Check refund rate
   const recentTransactions = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
     .get();
 
@@ -483,7 +485,7 @@ async function detectRiskSignals(userId: string, activityStats: any) {
   // Check ratings
   const recentRatings = await db
     .collection('ratings')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(sevenDaysAgo))
     .get();
 
@@ -520,7 +522,7 @@ async function analyzeRegionalPerformance(userId: string) {
 
   const transactions = await db
     .collection('transactions')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
     .get();
 
@@ -706,42 +708,42 @@ function generateQuickRecommendations(profile: CreatorEarningProfile): string[] 
 }
 
 /**
- * Scheduled job: Recalculate all creator profiles daily
+ * Scheduled job: Recalculate all earner profiles daily
  */
 export const pack382_dailySkillScoreUpdate = onSchedule({ schedule: "0 2 * * *", timeZone: "UTC" }, async (event) => {
     console.log('[PACK382] Starting daily skill score update...');
 
-    // Get all creators with recent activity
+    // Get all earners with recent activity
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
     const activeCreators = await db
       .collection('chatSessions')
       .where('startedAt', '>=', Timestamp.fromMillis(thirtyDaysAgo))
-      .select('creatorId')
+      .select('earnerId')
       .get();
 
-    const creatorIds = new Set<string>();
+    const earnerIds = new Set<string>();
     activeCreators.forEach((doc) => {
-      creatorIds.add(doc.data().creatorId);
+      earnerIds.add(doc.data().earnerId);
     });
 
-    console.log(`[PACK382] Found ${creatorIds.size} active creators`);
+    console.log(`[PACK382] Found ${earnerIds.size} active earners`);
 
     // Update in batches
     const batchSize = 50;
-    const creators = Array.from(creatorIds);
+    const earners = Array.from(earnerIds);
 
-    for (let i = 0; i < creators.length; i += batchSize) {
-      const batch = creators.slice(i, i + batchSize);
+    for (let i = 0; i < earners.length; i += batchSize) {
+      const batch = earners.slice(i, i + batchSize);
 
       await Promise.all(
-        batch.map(async (creatorId) => {
+        batch.map(async (earnerId) => {
           try {
             // Trigger recalculation
-            const metrics = await gatherPerformanceMetrics(creatorId);
-            const activityStats = await gatherActivityStats(creatorId);
-            const riskSignals = await detectRiskSignals(creatorId, activityStats);
-            const regionalPerformance = await analyzeRegionalPerformance(creatorId);
+            const metrics = await gatherPerformanceMetrics(earnerId);
+            const activityStats = await gatherActivityStats(earnerId);
+            const riskSignals = await detectRiskSignals(earnerId, activityStats);
+            const regionalPerformance = await analyzeRegionalPerformance(earnerId);
 
             const earningsPotentialScore = calculateEarningsPotential(
               metrics,
@@ -755,8 +757,8 @@ export const pack382_dailySkillScoreUpdate = onSchedule({ schedule: "0 2 * * *",
             );
 
             const profile: CreatorEarningProfile = {
-              profileId: creatorId,
-              userId: creatorId,
+              profileId: earnerId,
+              userId: earnerId,
               skillTier,
               earningsPotentialScore,
               burnoutRiskScore,
@@ -770,23 +772,37 @@ export const pack382_dailySkillScoreUpdate = onSchedule({ schedule: "0 2 * * *",
             };
 
             await db
-              .collection('creatorEarningProfiles')
-              .doc(creatorId)
+              .collection('earnerEarningProfiles')
+              .doc(earnerId)
               .set(profile, { merge: true });
           } catch (error) {
-            console.error(`Error updating creator ${creatorId}:`, error);
+            console.error(`Error updating earner ${earnerId}:`, error);
           }
         })
       );
 
       console.log(
-        `[PACK382] Updated ${Math.min(i + batchSize, creators.length)}/${creators.length} creators`
+        `[PACK382] Updated ${Math.min(i + batchSize, earners.length)}/${earners.length} earners`
       );
     }
 
     console.log('[PACK382] Daily skill score update complete');
     return null;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

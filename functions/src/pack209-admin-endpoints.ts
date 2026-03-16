@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 209: Admin & Moderator Endpoints
  * Dashboard for reviewing complaints, refunds, and trust incidents
@@ -130,7 +132,7 @@ export const admin_getRefundTransactions = onCall(
 
       // Calculate stats
       const totalRefunded = refunds.reduce((sum, r: any) => sum + (r.refundToPayerAmount || 0), 0);
-      const avaloKept = refunds.reduce((sum, r: any) => sum + (r.avaloKeptAmount || 0), 0);
+      const platformKept = refunds.reduce((sum, r: any) => sum + (r.platformKeptAmount || 0), 0);
 
       return {
         ok: true,
@@ -139,7 +141,7 @@ export const admin_getRefundTransactions = onCall(
           total: refunds.length,
           stats: {
             totalRefunded,
-            avaloKept,
+            platformKept,
           },
         },
       };
@@ -153,7 +155,7 @@ export const admin_getRefundTransactions = onCall(
 
     // Calculate stats
     const totalRefunded = refunds.reduce((sum, r: any) => sum + (r.refundToPayerAmount || 0), 0);
-    const avaloKept = refunds.reduce((sum, r: any) => sum + (r.avaloKeptAmount || 0), 0);
+    const platformKept = refunds.reduce((sum, r: any) => sum + (r.platformKeptAmount || 0), 0);
 
     return {
       ok: true,
@@ -162,7 +164,7 @@ export const admin_getRefundTransactions = onCall(
         total: refunds.length,
         stats: {
           totalRefunded,
-          avaloKept,
+          platformKept,
         },
       },
     };
@@ -388,7 +390,7 @@ export const admin_getRefundStatistics = onCall(
     const stats = {
       totalRefunds: refunds.length,
       totalRefundedAmount: refunds.reduce((sum, r: any) => sum + (r.refundToPayerAmount || 0), 0),
-      totalAvaloKept: refunds.reduce((sum, r: any) => sum + (r.avaloKeptAmount || 0), 0),
+      totalAvaloKept: refunds.reduce((sum, r: any) => sum + (r.platformKeptAmount || 0), 0),
       byTrigger: {} as Record<string, number>,
       bySource: {
         meeting: 0,
@@ -589,11 +591,11 @@ export const admin_forceRefund = onCall(
         payerId,
         earnerId,
         originalAmount: refundAmount,
-        earnerShare: refundAmount,
-        avaloCommission: 0,
+        earner: refundAmount,
+        platformCommission: 0,
         refundToPayerAmount: refundAmount,
         earnerKeptAmount: 0,
-        avaloKeptAmount: 0,
+        platformKeptAmount: 0,
         triggeredBy: request.auth.uid,
         automaticRefund: false,
         notes: `Admin override refund: ${reason}`,
@@ -612,6 +614,20 @@ export const admin_forceRefund = onCall(
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

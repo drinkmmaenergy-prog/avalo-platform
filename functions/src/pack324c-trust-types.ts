@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324C — Creator Performance Ranking & Trust Score
  * TypeScript Types and Interfaces
@@ -110,7 +112,7 @@ export interface QualityScoreFactors {
  * Reliability score calculation factors
  */
 export interface ReliabilityScoreFactors {
-  cancelationRate: number;   // Canceled by creator vs total bookings
+  cancelationRate: number;   // Canceled by earner vs total bookings
   noShowRate: number;        // No-shows vs bookings
   consistencyScore: number;  // Regular activity pattern
 }
@@ -153,8 +155,7 @@ export const TRUST_LEVEL_THRESHOLDS = {
  * Component weights for overall trust score
  */
 export const TRUST_SCORE_WEIGHTS = {
-  QUALITY: MONETIZATION_SPLITS.CHAT.avalo,      // 35% - Most important for user experience
-  RELIABILITY: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,  // 30% - Consistency matters
+  RELIABILITY: MONETIZATION_SPLITS.SUBSCRIPTION.platform,  // 30% - Consistency matters
   SAFETY: 0.25,       // 25% - Platform integrity
   PAYOUT: 0.10,       // 10% - Financial integrity
 } as const;
@@ -229,11 +230,11 @@ export interface CreatorRankingResponse {
 }
 
 /**
- * Top creators list response
+ * Top earners list response
  */
 export interface TopCreatorsResponse {
   date: string;
-  creators: CreatorRankingResponse[];
+  earners: CreatorRankingResponse[];
   totalCount: number;
 }
 
@@ -267,7 +268,7 @@ export interface RankingDashboardStats {
 // ============================================================================
 
 /**
- * Filters for creator rankings query
+ * Filters for earner rankings query
  */
 export interface CreatorRankingsFilter {
   date?: string;              // YYYY-MM-DD
@@ -296,13 +297,13 @@ export interface TrustScoresFilter {
 export const TRUST_CONFIG = {
   // Collection names
   COLLECTIONS: {
-    TRUST_SCORES: 'creatorTrustScores',
-    RANKINGS_DAILY: 'creatorRankingsDaily',
+    TRUST_SCORES: 'earnerTrustScores',
+    RANKINGS_DAILY: 'earnerRankingsDaily',
   },
   
   // Calculation schedule
   RECALC_LOOKBACK_DAYS: 30,   // Consider last 30 days of data
-  RANKING_TOP_COUNT: 100,      // Track top 100 creators
+  RANKING_TOP_COUNT: 100,      // Track top 100 earners
   
   // Pagination
   DEFAULT_PAGE_SIZE: 50,
@@ -341,6 +342,22 @@ export const TRUST_LEVEL_BADGES: Record<TrustLevel, string> = {
   HIGH: '⭐',
   ELITE: '👑',
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

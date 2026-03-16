@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Creator AI Companion Service
  * 
@@ -382,3 +383,4 @@ export default {
   calculatePrice,
   RESPONSE_PRICING,
 };
+

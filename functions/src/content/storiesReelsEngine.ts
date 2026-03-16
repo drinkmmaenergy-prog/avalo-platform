@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, increment, onCall } from "../runtime";
@@ -350,7 +352,7 @@ function calculateReelScore(
 
   // Recency (35%)
   const ageHours = (Date.now() - reel.createdAt.toMillis()) / (1000 * 60 * 60);
-  const recencyScore = Math.exp(-ageHours / 24) * MONETIZATION_SPLITS.CHAT.avalo;
+  const recencyScore = Math.exp(-ageHours / 24) * MONETIZATION_SPLITS.CHAT.platform;
   score += recencyScore;
 
   // Relationship (25%)
@@ -363,7 +365,7 @@ function calculateReelScore(
   // Engagement (30%)
   const { views, likes, comments, shares } = reel.stats;
   const engagementValue = views * 0.1 + likes * 1.0 + comments * 2.0 + shares * 3.0;
-  const engagementScore = Math.min(Math.log10(engagementValue + 1) / 3, 1.0) * MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
+  const engagementScore = Math.min(Math.log10(engagementValue + 1) / 3, 1.0) * MONETIZATION_SPLITS.SUBSCRIPTION.platform;
   score += engagementScore;
 
   // Locality (10%)
@@ -425,6 +427,24 @@ async function fetchAuthorsInfo(authorIds: string[]): Promise<Record<string, any
 
   return authorsData;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 284 — Swipe Engine FINAL (Enhanced with PACK 309)
  *
@@ -927,6 +929,20 @@ export const syncSwipeProfiles = onDocumentWritten(
     console.log(`Synced swipeProfile for user: ${userId}`);
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

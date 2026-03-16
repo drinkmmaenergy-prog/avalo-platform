@@ -1,11 +1,13 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 331 — AI Avatar Template Marketplace
  * Create, sell, and use AI visual templates
  * 
  * Revenue Model:
- * - Creator templates: 65/35 split (creator/Avalo)
+ * - Creator templates: 65/35 split (earner/Avalo)
  * - Official Avalo templates: 100% Avalo
- * - No tokenomics drift: Uses existing MONETIZATION_SPLITS.EVENT_TICKET.avalo USD token price
+ * - No tokenomics drift: Uses existing MONETIZATION_SPLITS.EVENT_TICKET.platform USD token price
  */
 
 import { https } from 'firebase-functions/v2';
@@ -247,7 +249,7 @@ export const pack331_createAiAvatarTemplate = https.onCall(
 
 /**
  * Purchase an AI avatar template
- * Handles revenue split: 65/35 (creator/Avalo) or 100% Avalo for official
+ * Handles revenue split: 65/35 (earner/Avalo) or 100% Avalo for official
  */
 export const pack331_purchaseAiAvatarTemplate = https.onCall(
   { region: 'europe-west1', memory: '512MiB' },
@@ -306,16 +308,16 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
       // Calculate revenue split
       const priceTokens = template.priceTokens;
       let ownerEarned = 0;
-      let avaloEarned = 0;
+      let platformEarned = 0;
       
       if (template.isOfficialAvalo) {
         // 100% to Avalo
-        avaloEarned = priceTokens;
+        platformEarned = priceTokens;
         ownerEarned = 0;
       } else {
         // 65/35 split
         ownerEarned = Math.floor(priceTokens * AVATAR_TEMPLATE_REVENUE_SPLIT.CREATOR_SHARE);
-        avaloEarned = priceTokens - ownerEarned;
+        platformEarned = priceTokens - ownerEarned;
       }
       
       // Process payment using wallet service
@@ -324,7 +326,7 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
         amountTokens: priceTokens,
         source: 'DIGITAL_PRODUCT',
         relatedId: templateId,
-        creatorId: template.ownerUserId || undefined,
+        earnerId: template.ownerUserId || undefined,
         contextType: 'MEDIA_PURCHASE',
         contextRef: templateId,
         metadata: {
@@ -365,7 +367,7 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
       
       console.log(
         `[pack331_purchaseAiAvatarTemplate] User ${buyerUserId} purchased template ${templateId} ` +
-        `for ${priceTokens} tokens. Split: Owner=${ownerEarned}, Avalo=${avaloEarned}`
+        `for ${priceTokens} tokens. Split: Owner=${ownerEarned}, Avalo=${platformEarned}`
       );
       
       return {
@@ -373,7 +375,7 @@ export const pack331_purchaseAiAvatarTemplate = https.onCall(
         purchaseId,
         split: {
           ownerEarned,
-          avaloEarned,
+          platformEarned,
         },
       };
     } catch (error: any) {
@@ -421,7 +423,7 @@ export const pack331_listAvatarTemplates = https.onCall(
         query = query.where('isOfficialAvalo', '==', true) as any;
       }
       
-      if (filters.creatorOnly) {
+      if (filters.earnerOnly) {
         query = query.where('isOfficialAvalo', '==', false) as any;
       }
       
@@ -490,7 +492,7 @@ export const pack331_listAvatarTemplates = https.onCall(
 // ============================================================================
 
 /**
- * Get creator's avatar template statistics
+ * Get earner's avatar template statistics
  */
 export const pack331_getCreatorStats = https.onCall(
   { region: 'europe-west1', memory: '512MiB' },
@@ -502,7 +504,7 @@ export const pack331_getCreatorStats = https.onCall(
       
       const userId = request.auth.uid;
       
-      // Get all templates by this creator
+      // Get all templates by this earner
       const templatesQuery = await db
         .collection('aiAvatarTemplates')
         .where('ownerUserId', '==', userId)
@@ -540,7 +542,7 @@ export const pack331_getCreatorStats = https.onCall(
       console.error('[pack331_getCreatorStats] Error:', error);
       return {
         success: false,
-        error: error.message || 'Failed to get creator stats',
+        error: error.message || 'Failed to get earner stats',
       };
     }
   }
@@ -596,6 +598,22 @@ export default {
   pack331_getCreatorStats,
   pack331_trackTemplateUsage,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

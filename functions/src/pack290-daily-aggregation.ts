@@ -1,11 +1,13 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 290 — Daily Analytics Aggregation
- * Pre-aggregates creator analytics for performance
+ * Pre-aggregates earner analytics for performance
  * 
  * Runs nightly to process previous day's transactions
- * Stores results in creatorDailyStats collection
+ * Stores results in earnerDailyStats collection
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -17,7 +19,7 @@ import {
   DEFAULT_AGGREGATION_CONFIG,
   mapTransactionToFeature,
   isEarningTransaction,
-} from './types/pack290-creator-analytics.types';
+} from './types/pack290-earner-analytics.types';
 import { functions, onSchedule } from './runtime';
 
 // ============================================================================
@@ -28,7 +30,7 @@ import { functions, onSchedule } from './runtime';
  * Nightly job to aggregate previous day's transaction data
  * Runs at 2 AM UTC daily
  */
-export const creator_analytics_daily_aggregation = onSchedule(
+export const earner_analytics_daily_aggregation = onSchedule(
   {
     schedule: DEFAULT_AGGREGATION_CONFIG.cronSchedule,
     timeZone: 'UTC',
@@ -226,7 +228,7 @@ async function aggregateUserDay(
   
   // Save to Firestore
   const docId = `${userId}_${dateStr}`;
-  await db.collection('creatorDailyStats').doc(docId).set(stats);
+  await db.collection('earnerDailyStats').doc(docId).set(stats);
 }
 
 /**
@@ -311,6 +313,20 @@ export async function backfillDailyStats(
   
   return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

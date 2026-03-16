@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 128 - Treasury Types (Mobile)
  * Client-side types for treasury system
@@ -201,3 +202,4 @@ export function validateTokenAmount(
 
   return { valid: true };
 }
+

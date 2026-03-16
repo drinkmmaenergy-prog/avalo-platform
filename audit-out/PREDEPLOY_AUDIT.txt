@@ -1,4 +1,0 @@
-AVALO PREDEPLOY AUDIT REPORT
-Timestamp: 2026-03-05T22:25:42
-STEP 1 OK: npm run build
-STEP 2 OK: tsc audit

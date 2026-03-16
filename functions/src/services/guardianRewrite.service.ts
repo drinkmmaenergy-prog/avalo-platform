@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 180: Guardian Message Rewrite Service
  * AI-assisted message rewriting for de-escalation and better communication
@@ -380,6 +382,22 @@ export class GuardianRewriteService {
 
 // Export singleton instance
 export const guardianRewriteService = new GuardianRewriteService();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

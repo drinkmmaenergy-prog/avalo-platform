@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 247 — Token Withdrawal Anti-Fraud & Earnings Unlock System
  * 
@@ -500,12 +502,12 @@ async function detectSuddenPopularitySpike(userId: string): Promise<{ detected: 
   const previous7Days = Timestamp.fromDate(new Date(Date.now() - 14 * 24 * 60 * 60 * 1000));
 
   const recentEarnings = await db.collection('earnings_ledger')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', last7Days)
     .get();
 
   const previousEarnings = await db.collection('earnings_ledger')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('createdAt', '>=', previous7Days)
     .where('createdAt', '<', last7Days)
     .get();
@@ -553,7 +555,7 @@ async function hasQualityInteractions(userId: string): Promise<boolean> {
 
 async function hasQRVerifiedEvents(userId: string): Promise<boolean> {
   const eventsQuery = await db.collection('calendar_events')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('verification.method', '==', 'QR')
     .where('verification.verified', '==', true)
     .limit(3)
@@ -765,7 +767,7 @@ async function validateCallEarnings(userId: string, amount: number): Promise<{ v
 async function validateEventEarnings(userId: string): Promise<{ valid: boolean }> {
   // Check QR/selfie verification for recent events
   const eventsQuery = await db.collection('calendar_events')
-    .where('creatorId', '==', userId)
+    .where('earnerId', '==', userId)
     .where('status', '==', 'completed')
     .orderBy('startTime', 'desc')
     .limit(5)
@@ -992,6 +994,20 @@ export const processPendingReviews = onSchedule(
     return;
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

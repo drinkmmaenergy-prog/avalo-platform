@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 135: Offline Presence Types
  * Type definitions for QR codes, NFC cards, and print materials
@@ -133,7 +135,7 @@ export interface EventPosterBundle {
   eventId: string;
   eventName: string;
   organizer: string;
-  creators: Array<{
+  earners: Array<{
     userId: string;
     displayName: string;
     profilePhoto?: string;
@@ -142,6 +144,22 @@ export interface EventPosterBundle {
   posters: OfflineAsset[];
   createdAt: Date;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

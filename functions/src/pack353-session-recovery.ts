@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 353 — Chat + Call Session Recovery
  * 
@@ -27,8 +29,8 @@ interface SessionData {
   tokensRefunded?: number;
   
   // Avalo commission
-  avaloCommissionRate: number; // e.g., 0.3 for 30%
-  avaloCommission: number;
+  platformCommissionRate: number; // e.g., 0.3 for 30%
+  platformCommission: number;
 }
 
 interface RecoveryConfig {
@@ -412,6 +414,20 @@ export async function cleanupOldRecoveryAttempts(): Promise<void> {
   
   console.log(`Cleaned up ${oldAttempts.size} old recovery attempts`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

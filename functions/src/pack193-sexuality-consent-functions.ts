@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 193 — REVISED v2 — Cloud Functions
  * Backend Logic for Permission-Driven Sexuality System
@@ -752,6 +754,20 @@ export const monitorSexyContent = onDocumentCreated('sexy_content/{contentId}', 
       console.error('Error monitoring sexy content:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

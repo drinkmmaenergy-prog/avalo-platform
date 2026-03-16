@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 175 — Cyberstalking & Location Safety Defender
  * Cloud Functions Endpoints
@@ -443,6 +445,20 @@ export const pack175_admin_getAnalytics = functions.https.onCall(async (request)
 });
 
 console.log('✅ PACK 175 — Cyberstalking & Location Safety Defender initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

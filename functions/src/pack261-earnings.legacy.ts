@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, logger, onSchedule, onDocumentUpdated } from './runtime';
@@ -5,8 +7,8 @@ import { FieldValue, HttpsError, Timestamp, auth, increment, onCall, timestamp, 
 const db = admin.firestore();
 
 // Constants
-const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% platform commission
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% creator earnings
+const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.platform; // 35% platform commission
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner; // 65% earner earnings
 const MIN_PAYOUT_USD = 20;
 
 // Token conversion rates per region (example rates)
@@ -28,7 +30,7 @@ interface EarningSource {
 }
 
 interface EarningRecord {
-  creatorId: string;
+  earnerId: string;
   source: string;
   grossTokens: number;
   commission: number;
@@ -53,16 +55,16 @@ interface EarningSummary {
   lastUpdated: admin.firestore.Timestamp;
 }
 
-// Record earning when a user spends tokens on creator content
+// Record earning when a user spends tokens on earner content
 export const recordEarning = functions.https.onCall(async (request) => {
   const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const { creatorId, source, tokens, feature, metadata } = data;
+  const { earnerId, source, tokens, feature, metadata } = data;
 
-  if (!creatorId || !source || !tokens || !feature) {
+  if (!earnerId || !source || !tokens || !feature) {
     throw new functions.https.HttpsError('invalid-argument', 'Missing required fields');
   }
 
@@ -76,7 +78,7 @@ export const recordEarning = functions.https.onCall(async (request) => {
     const payerData = payerDoc.data();
 
     const earningRecord: EarningRecord = {
-      creatorId,
+      earnerId,
       source,
       grossTokens,
       commission,
@@ -90,22 +92,22 @@ export const recordEarning = functions.https.onCall(async (request) => {
     };
 
     // Write earning record
-    await db.collection('creators').doc(creatorId)
+    await db.collection('earners').doc(earnerId)
       .collection('earnings').add(earningRecord);
 
     // Update income breakdown by feature
-    await db.collection('creators').doc(creatorId)
+    await db.collection('earners').doc(earnerId)
       .collection('incomeBreakdown').doc(source).collection('transactions')
       .add(earningRecord);
 
     // Update earnings summary (trigger aggregation)
-    await updateEarningSummary(creatorId, netTokens);
+    await updateEarningSummary(earnerId, netTokens);
 
     // Update top supporters
-    await updateTopSupporter(creatorId, request.auth.uid, grossTokens);
+    await updateTopSupporter(earnerId, request.auth.uid, grossTokens);
 
     // Check for milestones
-    await checkMilestones(creatorId);
+    await checkMilestones(earnerId);
 
     console.log('Scheduled job result:', { success: true, netTokens });
 
@@ -118,8 +120,8 @@ export const recordEarning = functions.https.onCall(async (request) => {
 });
 
 // Update earnings summary with real-time aggregation
-async function updateEarningSummary(creatorId: string, netTokens: number): Promise<void> {
-  const summaryRef = db.collection('creators').doc(creatorId)
+async function updateEarningSummary(earnerId: string, netTokens: number): Promise<void> {
+  const summaryRef = db.collection('earners').doc(earnerId)
     .collection('earningSummary').doc('current');
 
   await db.runTransaction(async (transaction) => {
@@ -173,8 +175,8 @@ async function updateEarningSummary(creatorId: string, netTokens: number): Promi
 }
 
 // Update top supporters list
-async function updateTopSupporter(creatorId: string, supporterId: string, tokens: number): Promise<void> {
-  const supporterRef = db.collection('creators').doc(creatorId)
+async function updateTopSupporter(earnerId: string, supporterId: string, tokens: number): Promise<void> {
+  const supporterRef = db.collection('earners').doc(earnerId)
     .collection('topSupporters').doc(supporterId);
 
   await db.runTransaction(async (transaction) => {
@@ -204,8 +206,8 @@ async function updateTopSupporter(creatorId: string, supporterId: string, tokens
 }
 
 // Check and record milestones
-async function checkMilestones(creatorId: string): Promise<void> {
-  const summaryDoc = await db.collection('creators').doc(creatorId)
+async function checkMilestones(earnerId: string): Promise<void> {
+  const summaryDoc = await db.collection('earners').doc(earnerId)
     .collection('earningSummary').doc('current').get();
 
   if (!summaryDoc.exists) return;
@@ -243,17 +245,17 @@ async function checkMilestones(creatorId: string): Promise<void> {
 
   // Save milestones and trigger notifications
   for (const milestone of milestones) {
-    await db.collection('creators').doc(creatorId)
+    await db.collection('earners').doc(earnerId)
       .collection('milestones').add(milestone);
 
     // Trigger notification
-    await sendMilestoneNotification(creatorId, milestone);
+    await sendMilestoneNotification(earnerId, milestone);
   }
 }
 
 // Send milestone notification
-async function sendMilestoneNotification(creatorId: string, milestone: any): Promise<void> {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+async function sendMilestoneNotification(earnerId: string, milestone: any): Promise<void> {
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -295,10 +297,10 @@ export const requestPayout = functions.https.onCall(async (request) => {
   }
 
   try {
-    const creatorId = request.auth.uid;
+    const earnerId = request.auth.uid;
 
     // Check KYC status
-    const userDoc = await db.collection('users').doc(creatorId).get();
+    const userDoc = await db.collection('users').doc(earnerId).get();
     if (!userDoc.data()?.kycVerified) {
       throw new functions.https.HttpsError('failed-precondition', 'KYC verification required');
     }
@@ -309,7 +311,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
     }
 
     // Check available balance
-    const summaryDoc = await db.collection('creators').doc(creatorId)
+    const summaryDoc = await db.collection('earners').doc(earnerId)
       .collection('earningSummary').doc('current').get();
 
     const summary = summaryDoc.data() as EarningSummary;
@@ -322,7 +324,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
 
     // Create payout request
     const payoutRequest = {
-      creatorId,
+      earnerId,
       amount,
       currency,
       tokens: requiredTokens,
@@ -337,7 +339,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
     const payoutRef = await db.collection('payoutRequests').add(payoutRequest);
 
     // Deduct from available tokens and add to pending
-    await db.collection('creators').doc(creatorId)
+    await db.collection('earners').doc(earnerId)
       .collection('earningSummary').doc('current').update({
         availableTokens: admin.firestore.FieldValue.increment(-requiredTokens),
         pendingPayout: admin.firestore.FieldValue.increment(amount),
@@ -373,25 +375,25 @@ export const requestPayout = functions.https.onCall(async (request) => {
 
 // Compute analytics (scheduled function - runs daily)
 export const computeAnalytics = onSchedule("0 2 * * *", async (event) => {
-  const creatorsSnapshot = await db.collection('users')
-    .where('role', '==', 'creator').get();
+  const earnersSnapshot = await db.collection('users')
+    .where('role', '==', 'earner').get();
 
-  for (const creatorDoc of creatorsSnapshot.docs) {
-    const creatorId = creatorDoc.id;
-    await computeCreatorAnalytics(creatorId);
-    await generateEarningTips(creatorId);
+  for (const earnerDoc of earnersSnapshot.docs) {
+    const earnerId = earnerDoc.id;
+    await computeCreatorAnalytics(earnerId);
+    await generateEarningTips(earnerId);
   }
 
   return;
 });
 
-// Compute creator analytics
-async function computeCreatorAnalytics(creatorId: string): Promise<void> {
+// Compute earner analytics
+async function computeCreatorAnalytics(earnerId: string): Promise<void> {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   // Get earnings from last 30 days
-  const earningsSnapshot = await db.collection('creators').doc(creatorId)
+  const earningsSnapshot = await db.collection('earners').doc(earnerId)
     .collection('earnings')
     .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(thirtyDaysAgo))
     .get();
@@ -432,7 +434,7 @@ async function computeCreatorAnalytics(creatorId: string): Promise<void> {
     : 0;
 
   // Save analytics
-  await db.collection('creators').doc(creatorId)
+  await db.collection('earners').doc(earnerId)
     .collection('analytics').doc('summary').set({
       ...analytics,
       uniquePayerCount: analytics.uniquePayers.size,
@@ -441,8 +443,8 @@ async function computeCreatorAnalytics(creatorId: string): Promise<void> {
 }
 
 // Generate AI earning tips based on analytics
-async function generateEarningTips(creatorId: string): Promise<void> {
-  const analyticsDoc = await db.collection('creators').doc(creatorId)
+async function generateEarningTips(earnerId: string): Promise<void> {
+  const analyticsDoc = await db.collection('earners').doc(earnerId)
     .collection('analytics').doc('summary').get();
 
   if (!analyticsDoc.exists) return;
@@ -493,7 +495,7 @@ async function generateEarningTips(creatorId: string): Promise<void> {
   // Save tips
   const tipsBatch = db.batch();
   for (const tip of tips) {
-    const tipRef = db.collection('creators').doc(creatorId)
+    const tipRef = db.collection('earners').doc(earnerId)
       .collection('earningTips').doc();
     tipsBatch.set(tipRef, tip);
   }
@@ -508,32 +510,32 @@ export const getEarningsDashboard = functions.https.onCall(async (request) => {
   }
 
   try {
-    const creatorId = request.auth.uid;
+    const earnerId = request.auth.uid;
 
     // Get summary
-    const summaryDoc = await db.collection('creators').doc(creatorId)
+    const summaryDoc = await db.collection('earners').doc(earnerId)
       .collection('earningSummary').doc('current').get();
 
     // Get top supporters (top 10)
-    const topSupportersSnapshot = await db.collection('creators').doc(creatorId)
+    const topSupportersSnapshot = await db.collection('earners').doc(earnerId)
       .collection('topSupporters')
       .orderBy('totalSpent', 'desc')
       .limit(10)
       .get();
 
     // Get recent earnings (last 50 transactions)
-    const recentEarningsSnapshot = await db.collection('creators').doc(creatorId)
+    const recentEarningsSnapshot = await db.collection('earners').doc(earnerId)
       .collection('earnings')
       .orderBy('timestamp', 'desc')
       .limit(50)
       .get();
 
     // Get analytics
-    const analyticsDoc = await db.collection('creators').doc(creatorId)
+    const analyticsDoc = await db.collection('earners').doc(earnerId)
       .collection('analytics').doc('summary').get();
 
     // Get earning tips
-    const tipsSnapshot = await db.collection('creators').doc(creatorId)
+    const tipsSnapshot = await db.collection('earners').doc(earnerId)
       .collection('earningTips')
       .orderBy('priority', 'asc')
       .limit(5)
@@ -555,7 +557,7 @@ export const getEarningsDashboard = functions.https.onCall(async (request) => {
   }
 });
 
-// Notify creator when top supporter is active
+// Notify earner when top supporter is active
 export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presence/status', async (event) => {
   const change = event.data;
   if (!change) return;
@@ -566,17 +568,17 @@ export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presen
     if (newStatus.online && !oldStatus.online) {
       const userId = event.params.userId;
 
-      // Find creators where this user is a top supporter
+      // Find earners where this user is a top supporter
       const topSupporterQuery = await db.collectionGroup('topSupporters')
         .where('supporterId', '==', userId)
         .get();
 
       for (const doc of topSupporterQuery.docs) {
-        const creatorId = doc.ref.parent.parent?.id;
-        if (!creatorId) continue;
+        const earnerId = doc.ref.parent.parent?.id;
+        if (!earnerId) continue;
 
         // Check if they're in top 5
-        const topSupportersSnapshot = await db.collection('creators').doc(creatorId)
+        const topSupportersSnapshot = await db.collection('earners').doc(earnerId)
           .collection('topSupporters')
           .orderBy('totalSpent', 'desc')
           .limit(5)
@@ -585,9 +587,9 @@ export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presen
         const isTopFive = topSupportersSnapshot.docs.some(d => d.id === userId);
         if (!isTopFive) continue;
 
-        // Send notification to creator
-        const creatorDoc = await db.collection('users').doc(creatorId).get();
-        const fcmToken = creatorDoc.data()?.fcmToken;
+        // Send notification to earner
+        const earnerDoc = await db.collection('users').doc(earnerId).get();
+        const fcmToken = earnerDoc.data()?.fcmToken;
 
         if (fcmToken) {
           await admin.messaging().send({
@@ -605,6 +607,22 @@ export const notifyTopSupporterActive = onDocumentUpdated('users/{userId}/presen
       }
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

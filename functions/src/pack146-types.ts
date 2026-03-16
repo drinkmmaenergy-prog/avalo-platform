@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 146 — Avalo Copyright Protection & Digital Rights Enforcement Engine
  * Type Definitions
@@ -165,7 +167,7 @@ export type CopyrightClaimPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export interface CopyrightCase {
   caseId: string;
   
-  // Claimant (original creator)
+  // Claimant (original earner)
   claimantId: string;
   originalContentId: string;
   originalContentHash: string;
@@ -541,7 +543,7 @@ export interface PiracyNetwork {
  * Creator's copyright protection dashboard
  */
 export interface CreatorIPDashboard {
-  creatorId: string;
+  earnerId: string;
   
   // Protected content
   protectedContent: {
@@ -679,6 +681,20 @@ export interface CopyrightNotification {
   
   createdAt: Timestamp;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 389 — Real-Time Threat Detection Engine
  * Processes telemetry from all Avalo systems to identify security threats
@@ -685,4 +686,5 @@ export const runThreatPatternAnalysis = functions.pubsub
     
     console.log('✅ Threat pattern analysis complete');
   });
+
 

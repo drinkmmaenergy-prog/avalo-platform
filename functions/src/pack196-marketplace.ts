@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 196 — AVALO SOCIAL COMMERCE MARKETPLACE
  * Brand Deals • Affiliate Tools • Product Discovery • Zero Body-Selling • Zero Romantic-Selling
@@ -35,7 +37,7 @@ export type OrderStatus =
 
 export interface Product {
   productId: string;
-  creatorId: string;
+  earnerId: string;
   name: string;
   description: string;
   category: ProductCategory;
@@ -57,8 +59,8 @@ export interface ProductOrder {
   buyerId: string;
   sellerId: string;
   priceTokens: number;
-  avaloFee: number;
-  creatorEarnings: number;
+  platformFee: number;
+  earnerEarnings: number;
   status: OrderStatus;
   shippingAddress?: {
     fullName: string;
@@ -77,7 +79,7 @@ export interface ProductOrder {
 
 export interface BrandDeal {
   dealId: string;
-  creatorId: string;
+  earnerId: string;
   brandName: string;
   type: 'sponsored_post' | 'sponsored_stream' | 'product_drop' | 'promo_code' | 'affiliate_link';
   status: 'draft' | 'active' | 'completed';
@@ -238,7 +240,7 @@ export async function uploadProduct(data: {
   stock?: number;
 }): Promise<{ success: boolean; productId?: string; error?: string }> {
   try {
-    // Validate user is a verified creator
+    // Validate user is a verified earner
     const userDoc = await db.collection('users').doc(data.userId).get();
     if (!userDoc.exists) {
       return { success: false, error: 'User not found' };
@@ -246,7 +248,7 @@ export async function uploadProduct(data: {
     
     const userData = userDoc.data();
     if (!userData?.isCreator || !userData?.verified) {
-      return { success: false, error: 'Only verified creators can upload products' };
+      return { success: false, error: 'Only verified earners can upload products' };
     }
     
     // Validate product safety
@@ -258,7 +260,7 @@ export async function uploadProduct(data: {
     // Create product
     const productRef = db.collection('products').doc();
     const product: Omit<Product, 'productId'> = {
-      creatorId: data.userId,
+      earnerId: data.userId,
       name: data.name,
       description: data.description,
       category: data.category,
@@ -327,9 +329,9 @@ export async function purchaseProduct(data: {
       return { success: false, error: 'Insufficient token balance' };
     }
     
-    // Calculate revenue split (65% creator, 35% Avalo)
-    const avaloFee = Math.floor(product.priceTokens * MONETIZATION_SPLITS.CHAT.avalo);
-    const creatorEarnings = product.priceTokens - avaloFee;
+    // Calculate revenue split (65% earner, 35% Avalo)
+    const platformFee = Math.floor(product.priceTokens * MONETIZATION_SPLITS.CHAT.platform);
+    const earnerEarnings = product.priceTokens - platformFee;
     
     // Create order in transaction
     const orderId = `${data.userId}_${data.productId}_${Date.now()}`;
@@ -349,13 +351,13 @@ export async function purchaseProduct(data: {
         lastUpdated: serverTimestamp()
       });
       
-      // Add to creator earnings
-      const creatorWalletRef = db.collection('balances').doc(product.creatorId).collection('wallet').doc('wallet');
-      const creatorWallet = await transaction.get(creatorWalletRef);
-      const creatorBalance = creatorWallet.data()?.tokens || 0;
+      // Add to earner earnings
+      const earnerWalletRef = db.collection('balances').doc(product.earnerId).collection('wallet').doc('wallet');
+      const earnerWallet = await transaction.get(earnerWalletRef);
+      const earnerBalance = earnerWallet.data()?.tokens || 0;
       
-      transaction.update(creatorWalletRef, {
-        tokens: creatorBalance + creatorEarnings,
+      transaction.update(earnerWalletRef, {
+        tokens: earnerBalance + earnerEarnings,
         lastUpdated: serverTimestamp()
       });
       
@@ -363,10 +365,10 @@ export async function purchaseProduct(data: {
       const order: Omit<ProductOrder, 'orderId'> = {
         productId: data.productId,
         buyerId: data.userId,
-        sellerId: product.creatorId,
+        sellerId: product.earnerId,
         priceTokens: product.priceTokens,
-        avaloFee,
-        creatorEarnings,
+        platformFee,
+        earnerEarnings,
         status: 'pending',
         shippingAddress: data.shippingAddress,
         createdAt: serverTimestamp() as Timestamp,
@@ -388,9 +390,9 @@ export async function purchaseProduct(data: {
       const transactionRef = db.collection('transactions').doc();
       transaction.set(transactionRef, {
         senderUid: data.userId,
-        receiverUid: product.creatorId,
+        receiverUid: product.earnerId,
         tokensAmount: product.priceTokens,
-        avaloFee,
+        platformFee,
         transactionType: 'marketplace_purchase',
         productId: data.productId,
         orderId,
@@ -489,22 +491,22 @@ export async function logProductReview(data: {
 // ============================================================================
 
 /**
- * Assign affiliate link to creator
+ * Assign affiliate link to earner
  */
 export async function assignAffiliateLink(data: {
-  creatorId: string;
+  earnerId: string;
   productId: string;
 }): Promise<{ success: boolean; linkId?: string; error?: string }> {
   try {
-    // Validate creator
-    const userDoc = await db.collection('users').doc(data.creatorId).get();
+    // Validate earner
+    const userDoc = await db.collection('users').doc(data.earnerId).get();
     if (!userDoc.exists) {
       return { success: false, error: 'User not found' };
     }
     
     const userData = userDoc.data();
     if (!userData?.isCreator || !userData?.verified) {
-      return { success: false, error: 'Only verified creators can create affiliate links' };
+      return { success: false, error: 'Only verified earners can create affiliate links' };
     }
     
     // Validate product
@@ -520,7 +522,7 @@ export async function assignAffiliateLink(data: {
     
     // Check if link already exists
     const existingLink = await db.collection('affiliate_links')
-      .where('creatorId', '==', data.creatorId)
+      .where('earnerId', '==', data.earnerId)
       .where('productId', '==', data.productId)
       .limit(1)
       .get();
@@ -535,7 +537,7 @@ export async function assignAffiliateLink(data: {
     // Create affiliate link
     const linkRef = db.collection('affiliate_links').doc();
     await linkRef.set({
-      creatorId: data.creatorId,
+      earnerId: data.earnerId,
       productId: data.productId,
       status: 'active',
       clicks: 0,
@@ -563,7 +565,7 @@ export async function assignAffiliateLink(data: {
  * Disclose sponsored content
  */
 export async function discloseSponsoredContent(data: {
-  creatorId: string;
+  earnerId: string;
   dealId: string;
   postId?: string;
   streamId?: string;
@@ -576,7 +578,7 @@ export async function discloseSponsoredContent(data: {
     }
     
     const deal = dealDoc.data();
-    if (deal?.creatorId !== data.creatorId) {
+    if (deal?.earnerId !== data.earnerId) {
       return { success: false, error: 'Unauthorized' };
     }
     
@@ -584,7 +586,7 @@ export async function discloseSponsoredContent(data: {
     const disclosureRef = db.collection('sponsored_disclosures').doc();
     await disclosureRef.set({
       dealId: data.dealId,
-      creatorId: data.creatorId,
+      earnerId: data.earnerId,
       postId: data.postId,
       streamId: data.streamId,
       disclosureText: deal.disclosureText || 'Sponsored by ' + deal.brandName,
@@ -662,8 +664,8 @@ export async function resolveMarketplaceDispute(data: {
         const sellerWallet = await transaction.get(sellerWalletRef);
         const sellerBalance = sellerWallet.data()?.tokens || 0;
         
-        // Calculate what to deduct from seller (they received creatorEarnings)
-        const sellerDeduction = Math.min(refundAmount * MONETIZATION_SPLITS.CHAT.creator, order.creatorEarnings);
+        // Calculate what to deduct from seller (they received earnerEarnings)
+        const sellerDeduction = Math.min(refundAmount * MONETIZATION_SPLITS.CHAT.earner, order.earnerEarnings);
         
         transaction.update(sellerWalletRef, {
           tokens: Math.max(0, sellerBalance - sellerDeduction),
@@ -685,6 +687,22 @@ export async function resolveMarketplaceDispute(data: {
     return { success: false, error: error.message };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

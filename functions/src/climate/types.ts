@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { timestamp } from '../runtime';
 
 export enum ConflictType {
@@ -148,7 +150,7 @@ export interface PositiveRedirect {
 
 export interface ClimateAppeal {
   id: string;
-  creatorId: string;
+  earnerId: string;
   contentId: string;
   caseId: string;
   reason: string;
@@ -169,6 +171,22 @@ export interface ConflictDetectionResult {
   recommendedAction: 'none' | 'monitor' | 'downrank' | 'disable_virality' | 'freeze';
   reasoning: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

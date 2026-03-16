@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 430 — CONTENT ACCESS BY LEGAL STATUS
  * 
@@ -528,6 +530,20 @@ export async function getUserAccessProfile(userId: string): Promise<ContentAcces
 // ─────────────────────────────────────────────────────────────────
 
 export default ContentAccessEngine;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

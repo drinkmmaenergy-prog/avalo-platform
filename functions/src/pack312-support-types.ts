@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 312 — Customer Support Console & Case Management
  * TypeScript Type Definitions
@@ -177,7 +179,7 @@ export interface UserContextSummary {
 
 export interface MeetingContextSummary {
   meetingId: string;
-  creatorId: string;
+  earnerId: string;
   bookerId?: string;
   
   // Time and location (coarse)
@@ -207,7 +209,7 @@ export interface MeetingContextSummary {
 
 export interface EventContextSummary {
   eventId: string;
-  creatorId: string;
+  earnerId: string;
   attendeeIds?: string[];
   
   // Time and location
@@ -241,8 +243,8 @@ export interface TransactionContextSummary {
   toUserId?: string;
   
   // Platform shares
-  avaloShare?: number;
-  creatorShare?: number;
+  platform?: number;
+  earner?: number;
   
   // Related entities
   relatedBookingId?: string;
@@ -418,6 +420,21 @@ export interface PerformSupportActionPayload {
   actionType: SupportActionType;
   actionData?: Record<string, any>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

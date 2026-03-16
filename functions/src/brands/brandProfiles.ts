@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { admin, db, serverTimestamp } from '../init';
 import * as functions from 'firebase-functions';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -310,6 +312,22 @@ export const searchBrands = functions.https.onCall(async (request) => {
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

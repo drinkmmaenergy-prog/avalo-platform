@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Creator Drops Service - Pack 33-7
  * Limited-seat, time-limited monetized bundles for creators
@@ -465,3 +466,4 @@ export async function clearAllData(): Promise<void> {
     console.error('Error clearing drops data:', error);
   }
 }
+

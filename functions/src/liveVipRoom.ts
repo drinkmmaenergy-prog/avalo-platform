@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * LIVE + VIP ROOM 3.0 - COMPLETE IMPLEMENTATION
@@ -18,7 +20,7 @@
  * - Time-based billing (per minute)
  * - Queue system with priority
  * - Priority users (top spenders)
- * - Slow mode for creators
+ * - Slow mode for earners
  * - Exclusive content access
  *
  * @version 1.0.0
@@ -123,7 +125,7 @@ export interface LiveTip {
   // Effects
   triggerEffect?: SpecialEffect;
 
-  // Revenue split (80% creator / 20% platform)
+  // Revenue split (80% earner / 20% platform)
   platformFee: number;
   hostEarnings: number;
 
@@ -162,8 +164,8 @@ export interface LivePoll {
 
 export interface VIPRoom {
   roomId: string;
-  creatorId: string;
-  creatorName: string;
+  earnerId: string;
+  earnerName: string;
 
   // Pricing
   entryFee: number; // tokens
@@ -241,8 +243,8 @@ const EFFECT_THRESHOLDS = {
 };
 
 const LIVE_REVENUE_SPLIT = {
-  platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 20%
-  creator: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80%
+  platform: MONETIZATION_SPLITS.EVENT_TICKET.platform, // 20%
+  earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, // 80%
 };
 
 const VIP_ROOM_DEFAULTS = {
@@ -273,7 +275,7 @@ export const startLiveSession = onCall(
       throw new HttpsError("invalid-argument", "Missing title");
     }
 
-    // Verify creator permissions
+    // Verify earner permissions
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
@@ -724,7 +726,7 @@ export const createVIPRoom = onCall(
       maxCapacity = VIP_ROOM_DEFAULTS.maxCapacity,
     } = request.data;
 
-    // Get creator info
+    // Get earner info
     const userDoc = await db.collection("users").doc(uid).get();
     const userData = userDoc.data();
 
@@ -732,8 +734,8 @@ export const createVIPRoom = onCall(
 
     const room: VIPRoom = {
       roomId,
-      creatorId: uid,
-      creatorName: userData?.profile?.name || "Unknown",
+      earnerId: uid,
+      earnerName: userData?.profile?.name || "Unknown",
       entryFee,
       minuteRate,
       maxCapacity,
@@ -814,17 +816,17 @@ export const enterVIPRoom = onCall(
 
       // Charge entry fee
       const platformFee = Math.floor(room.entryFee * LIVE_REVENUE_SPLIT.platform);
-      const creatorEarnings = room.entryFee - platformFee;
+      const earnerEarnings = room.entryFee - platformFee;
 
       tx.update(userRef, {
         "wallet.balance": FieldValue.increment(-room.entryFee),
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      const creatorRef = db.collection("users").doc(room.creatorId);
-      tx.update(creatorRef, {
-        "wallet.earned": FieldValue.increment(creatorEarnings),
-        "wallet.balance": FieldValue.increment(creatorEarnings),
+      const earnerRef = db.collection("users").doc(room.earnerId);
+      tx.update(earnerRef, {
+        "wallet.earned": FieldValue.increment(earnerEarnings),
+        "wallet.balance": FieldValue.increment(earnerEarnings),
         updatedAt: FieldValue.serverTimestamp(),
       });
 
@@ -853,7 +855,7 @@ export const enterVIPRoom = onCall(
       tx.update(roomRef, {
         currentOccupancy: FieldValue.increment(1),
         totalVisits: FieldValue.increment(1),
-        totalRevenue: FieldValue.increment(creatorEarnings),
+        totalRevenue: FieldValue.increment(earnerEarnings),
         updatedAt: FieldValue.serverTimestamp(),
       });
 
@@ -910,7 +912,7 @@ export const exitVIPRoom = onCall(
       if (additionalCharge > 0) {
         // Charge for time
         const platformFee = Math.floor(additionalCharge * LIVE_REVENUE_SPLIT.platform);
-        const creatorEarnings = additionalCharge - platformFee;
+        const earnerEarnings = additionalCharge - platformFee;
 
         const userRef = db.collection("users").doc(uid);
         tx.update(userRef, {
@@ -918,20 +920,20 @@ export const exitVIPRoom = onCall(
           updatedAt: FieldValue.serverTimestamp(),
         });
 
-        const creatorRef = db.collection("users").doc(vipSession.roomId.split('_')[2]); // Extract creator ID
+        const earnerRef = db.collection("users").doc(vipSession.roomId.split('_')[2]); // Extract earner ID
         const roomDoc = await tx.get(db.collection("vipRooms").doc(vipSession.roomId));
         const room = roomDoc.data() as VIPRoom;
 
-        tx.update(db.collection("users").doc(room.creatorId), {
-          "wallet.earned": FieldValue.increment(creatorEarnings),
-          "wallet.balance": FieldValue.increment(creatorEarnings),
+        tx.update(db.collection("users").doc(room.earnerId), {
+          "wallet.earned": FieldValue.increment(earnerEarnings),
+          "wallet.balance": FieldValue.increment(earnerEarnings),
           updatedAt: FieldValue.serverTimestamp(),
         });
 
         // Update room
         tx.update(db.collection("vipRooms").doc(vipSession.roomId), {
           currentOccupancy: FieldValue.increment(-1),
-          totalRevenue: FieldValue.increment(creatorEarnings),
+          totalRevenue: FieldValue.increment(earnerEarnings),
           avgStayDuration: minutesElapsed,
           updatedAt: FieldValue.serverTimestamp(),
         });
@@ -1005,10 +1007,10 @@ async function convertStreamToProduct(sessionId: string, session: LiveSession): 
   // Create product from recording
   const productId = `prod_stream_${sessionId}`;
 
-  await db.collection("creatorProducts").doc(productId).set({
+  await db.collection("earnerProducts").doc(productId).set({
     productId,
-    creatorId: session.hostId,
-    creatorName: session.hostName,
+    earnerId: session.hostId,
+    earnerName: session.hostName,
     type: "video",
     title: `Live Stream: ${session.title}`,
     description: `Recorded live stream from ${session.startedAt?.toDate().toLocaleDateString()}`,
@@ -1044,6 +1046,22 @@ async function convertStreamToProduct(sessionId: string, session: LiveSession): 
 }
 
 logger.info("✅ Live + VIP Room module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

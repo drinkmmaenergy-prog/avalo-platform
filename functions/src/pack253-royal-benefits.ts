@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 253 — ROYAL BENEFITS INTEGRATION
  * Hooks Royal benefits into existing monetization systems
@@ -14,38 +16,38 @@ import { functions } from './runtime';
  * Standard: 11 words = 1 token
  */
 export async function calculateChatTokens(
-  creatorId: string,
+  earnerId: string,
   message: string
 ): Promise<number> {
-  // Check if creator is Royal
-  const statusDoc = await db.collection('royal_status').doc(creatorId).get();
+  // Check if earner is Royal
+  const statusDoc = await db.collection('royal_status').doc(earnerId).get();
   const isRoyal = statusDoc.exists && statusDoc.data()?.isRoyal === true;
 
   const wordCount = message.trim().split(/\s+/).length;
   
   if (isRoyal) {
-    // Royal creators: 7 words = 1 token
+    // Royal earners: 7 words = 1 token
     return Math.ceil(wordCount / ROYAL_BENEFITS.EARNINGS_RATIO);
   } else {
-    // Standard creators: 11 words = 1 token
+    // Standard earners: 11 words = 1 token
     return Math.ceil(wordCount / 11);
   }
 }
 
 /**
- * Get chat entry price for a creator
- * Royal creators can set custom prices between 100-500 tokens
- * Standard creators have no entry price (free to start)
+ * Get chat entry price for a earner
+ * Royal earners can set custom prices between 100-500 tokens
+ * Standard earners have no entry price (free to start)
  */
-export async function getChatEntryPrice(creatorId: string): Promise<number> {
-  // Check if creator is Royal
-  const statusDoc = await db.collection('royal_status').doc(creatorId).get();
+export async function getChatEntryPrice(earnerId: string): Promise<number> {
+  // Check if earner is Royal
+  const statusDoc = await db.collection('royal_status').doc(earnerId).get();
   if (!statusDoc.exists || !statusDoc.data()?.isRoyal) {
-    return 0; // Standard creators have free chat
+    return 0; // Standard earners have free chat
   }
 
   // Check for custom pricing
-  const pricingDoc = await db.collection('royal_pricing').doc(creatorId).get();
+  const pricingDoc = await db.collection('royal_pricing').doc(earnerId).get();
   if (pricingDoc.exists && pricingDoc.data()?.isActive) {
     return pricingDoc.data()?.chatPrice || 0;
   }
@@ -55,13 +57,13 @@ export async function getChatEntryPrice(creatorId: string): Promise<number> {
 
 /**
  * Apply Royal priority to inbox sorting
- * Royal creators appear first in inboxes
+ * Royal earners appear first in inboxes
  */
 export async function applyInboxPriority(
   chatId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<number> {
-  const statusDoc = await db.collection('royal_status').doc(creatorId).get();
+  const statusDoc = await db.collection('royal_status').doc(earnerId).get();
   const isRoyal = statusDoc.exists && statusDoc.data()?.isRoyal === true;
 
   if (isRoyal) {
@@ -73,7 +75,7 @@ export async function applyInboxPriority(
 
 /**
  * Apply Royal discovery boost to profile ranking
- * Royal creators get top 10% ranking boost
+ * Royal earners get top 10% ranking boost
  */
 export async function applyDiscoveryBoost(
   userId: string,
@@ -140,14 +142,14 @@ export async function getRoyalBadgeData(userId: string): Promise<{
  */
 export async function calculateChatMessageCost(
   chatId: string,
-  creatorId: string,
+  earnerId: string,
   message: string
 ): Promise<{
   tokens: number;
   isRoyalCreator: boolean;
   wordsPerToken: number;
 }> {
-  const statusDoc = await db.collection('royal_status').doc(creatorId).get();
+  const statusDoc = await db.collection('royal_status').doc(earnerId).get();
   const isRoyal = statusDoc.exists && statusDoc.data()?.isRoyal === true;
 
   const wordCount = message.trim().split(/\s+/).length;
@@ -155,7 +157,7 @@ export async function calculateChatMessageCost(
   const tokens = Math.ceil(wordCount / wordsPerToken);
 
   logger.info(`Calculated chat cost for ${chatId}`, {
-    creatorId,
+    earnerId,
     isRoyal,
     wordCount,
     wordsPerToken,
@@ -184,7 +186,7 @@ export async function rankProfileForDiscovery(
   let finalScore = profileScore;
 
   if (isRoyal) {
-    // Royal creators get significant boost to appear in top 10%
+    // Royal earners get significant boost to appear in top 10%
     finalScore = profileScore * 2.5;
     
     logger.info(`Applied Royal discovery boost to profile ${userId}`, {
@@ -198,14 +200,14 @@ export async function rankProfileForDiscovery(
 
 /**
  * Integration with inbox sorting
- * Called when building user's inbox to prioritize Royal creators
+ * Called when building user's inbox to prioritize Royal earners
  */
 export async function sortInboxChats(
-  chats: Array<{ id: string; creatorId: string; lastMessageAt: number }>
-): Promise<Array<{ id: string; creatorId: string; lastMessageAt: number; priority: number }>> {
+  chats: Array<{ id: string; earnerId: string; lastMessageAt: number }>
+): Promise<Array<{ id: string; earnerId: string; lastMessageAt: number; priority: number }>> {
   const chatsWithPriority = await Promise.all(
     chats.map(async (chat) => {
-      const priority = await applyInboxPriority(chat.id, chat.creatorId);
+      const priority = await applyInboxPriority(chat.id, chat.earnerId);
       return { ...chat, priority };
     })
   );
@@ -227,7 +229,7 @@ export async function sortInboxChats(
  */
 export async function validateChatEntry(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   userTokenBalance: number
 ): Promise<{
   canEnter: boolean;
@@ -235,8 +237,8 @@ export async function validateChatEntry(
   isRoyalCreator: boolean;
   reason?: string;
 }> {
-  const entryPrice = await getChatEntryPrice(creatorId);
-  const statusDoc = await db.collection('royal_status').doc(creatorId).get();
+  const entryPrice = await getChatEntryPrice(earnerId);
+  const statusDoc = await db.collection('royal_status').doc(earnerId).get();
   const isRoyal = statusDoc.exists && statusDoc.data()?.isRoyal === true;
 
   if (entryPrice === 0) {
@@ -252,7 +254,7 @@ export async function validateChatEntry(
       canEnter: false,
       requiredTokens: entryPrice,
       isRoyalCreator: isRoyal,
-      reason: `Insufficient tokens. This Royal creator requires ${entryPrice} tokens to start a chat.`,
+      reason: `Insufficient tokens. This Royal earner requires ${entryPrice} tokens to start a chat.`,
     };
   }
 
@@ -265,11 +267,11 @@ export async function validateChatEntry(
 
 /**
  * Process chat entry payment
- * Called when user starts chat with Royal creator with entry price
+ * Called when user starts chat with Royal earner with entry price
  */
 export async function processChatEntryPayment(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   chatId: string
 ): Promise<{
   success: boolean;
@@ -277,7 +279,7 @@ export async function processChatEntryPayment(
   error?: string;
 }> {
   try {
-    const entryPrice = await getChatEntryPrice(creatorId);
+    const entryPrice = await getChatEntryPrice(earnerId);
     
     if (entryPrice === 0) {
       return { success: true, tokensCharged: 0 };
@@ -304,7 +306,7 @@ export async function processChatEntryPayment(
     // Record transaction
     await db.collection('token_transactions').add({
       userId,
-      creatorId,
+      earnerId,
       chatId,
       type: 'chat_entry',
       amount: -entryPrice,
@@ -312,10 +314,10 @@ export async function processChatEntryPayment(
       createdAt: Date.now(),
     });
 
-    // Credit creator (via earnings system)
-    const netCreatorTokens = Math.floor(entryPrice * MONETIZATION_SPLITS.CHAT.creator); // 65% to creator
+    // Credit earner (via earnings system)
+    const netCreatorTokens = Math.floor(entryPrice * MONETIZATION_SPLITS.CHAT.earner); // 65% to earner
     await db.collection('earnings_ledger').add({
-      creatorId,
+      earnerId,
       sourceType: 'CHAT_ENTRY',
       sourceId: chatId,
       fromUserId: userId,
@@ -331,7 +333,7 @@ export async function processChatEntryPayment(
 
     logger.info(`Processed Royal chat entry payment`, {
       userId,
-      creatorId,
+      earnerId,
       chatId,
       entryPrice,
     });
@@ -405,6 +407,22 @@ export async function getRoyalBenefitsSummary(userId: string): Promise<{
     },
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

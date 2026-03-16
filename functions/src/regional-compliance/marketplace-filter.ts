@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 199: Regional Marketplace Filtering
  * Automatic filtering and compliance for marketplace items by region
@@ -134,7 +136,7 @@ export class MarketplaceFilter {
     } else {
       await regionalItemRef.set({
         itemId,
-        creatorId: '',
+        earnerId: '',
         category: '',
         subcategory: '',
         allowedRegions: [],
@@ -174,7 +176,7 @@ export class MarketplaceFilter {
     item: {
       category: string;
       subcategory: string;
-      creatorId: string;
+      earnerId: string;
       hasLicense?: boolean;
       ageVerified?: boolean;
     },
@@ -248,7 +250,7 @@ export class MarketplaceFilter {
 
     const data: RegionalMarketplaceItem = {
       itemId,
-      creatorId: item.creatorId,
+      earnerId: item.earnerId,
       category: item.category,
       subcategory: item.subcategory,
       allowedRegions: validationResult.allowed ? [regionCode] : [],
@@ -285,7 +287,7 @@ export class MarketplaceFilter {
         {
           category: item.category || '',
           subcategory: item.subcategory || '',
-          creatorId: item.creatorId || '',
+          earnerId: item.earnerId || '',
           hasLicense: item.hasLicense,
           ageVerified: item.ageVerified,
         },
@@ -322,7 +324,7 @@ export class MarketplaceFilter {
   }
 
   async getCreatorMarketplaceGuidelines(
-    creatorId: string,
+    earnerId: string,
     regionCode: RegionCode
   ): Promise<{
     allowedCategories: string[];
@@ -438,7 +440,7 @@ export async function validateMarketplaceItem(
   item: {
     category: string;
     subcategory: string;
-    creatorId: string;
+    earnerId: string;
     hasLicense?: boolean;
     ageVerified?: boolean;
   },
@@ -454,7 +456,7 @@ export async function validateMarketplaceItem(
 }
 
 export async function getCreatorMarketplaceGuidelines(
-  creatorId: string,
+  earnerId: string,
   regionCode: RegionCode
 ): Promise<{
   allowedCategories: string[];
@@ -463,8 +465,24 @@ export async function getCreatorMarketplaceGuidelines(
   warnings: string[];
 }> {
   const filter = new MarketplaceFilter();
-  return filter.getCreatorMarketplaceGuidelines(creatorId, regionCode);
+  return filter.getCreatorMarketplaceGuidelines(earnerId, regionCode);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 208 — Chemistry Feed API
  * Firebase Functions for adaptive attraction ranking feed
@@ -365,6 +367,20 @@ async function updateSwipeBehavior(
 }
 
 console.log('✅ PACK 208: Chemistry Feed API loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

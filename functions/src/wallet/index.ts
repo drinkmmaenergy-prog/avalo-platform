@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * WALLET MODULE — Barrel Export
  *
@@ -92,6 +94,23 @@ export {
   MINIMUM_PAYOUT_TOKENS,
   MAX_PAYOUT_RETRIES,
 } from './payoutService';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

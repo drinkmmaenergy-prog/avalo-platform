@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 147 — Advanced Refund & Dispute Resolution System
  * 
@@ -90,7 +92,7 @@ export type DisputeTier =
 export type DisputeOutcome =
   | 'BUYER_WINS_FULL'      // Full refund to buyer
   | 'BUYER_WINS_PARTIAL'   // Partial refund to buyer
-  | 'CREATOR_WINS'         // No refund, creator keeps payment
+  | 'CREATOR_WINS'         // No refund, earner keeps payment
   | 'SPLIT_DECISION'       // Custom split (rare)
   | 'PENDING_EVIDENCE';    // More evidence needed
 
@@ -104,7 +106,7 @@ export type FraudPattern =
   | 'PARTIAL_DELIVERY_SCAM'   // Creator sends partial delivery repeatedly
   | 'EMOTIONAL_BLACKMAIL'     // Threatening negative actions
   | 'ROMANCE_MANIPULATION'    // Claiming romantic expectations
-  | 'COORDINATED_ATTACK'      // Multiple users targeting one creator
+  | 'COORDINATED_ATTACK'      // Multiple users targeting one earner
   | 'ACCOUNT_HOPPING';        // Using multiple accounts for refunds
 
 // ============================================================================
@@ -160,7 +162,7 @@ export interface RefundRequest {
   
   // Parties
   requesterId: string;        // Usually buyer
-  recipientId: string;        // Usually creator
+  recipientId: string;        // Usually earner
   
   // Request details
   reason: RefundReason;
@@ -434,6 +436,20 @@ export function calculateRefundAmount(
       return 0;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

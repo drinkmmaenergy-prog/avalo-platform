@@ -1,16 +1,36 @@
-import {MONETIZATION_SPLITS,MonetizationSurface} from "../config/monetizationSplits"
+type MonetizationSurface=string
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 
 export interface MonetizationResult{
- creatorAmount:number
- avaloAmount:number
+ earnerAmount:number
+ platformAmount:number
 }
 
 export function splitTokens(surface:MonetizationSurface,tokens:number):MonetizationResult{
 
- const split=MONETIZATION_SPLITS[surface]
+ const split=SPLITS[surface]
 
- const creatorAmount=Math.floor(tokens*split.creator)
- const avaloAmount=tokens-creatorAmount
+ const earnerAmount=Math.floor(tokens*split.earner)
+ const platformAmount=tokens-earnerAmount
 
- return{creatorAmount,avaloAmount}
+ return{earnerAmount,platformAmount}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

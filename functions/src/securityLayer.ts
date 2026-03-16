@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * SECURITY LAYER 3.0 - ENTERPRISE-GRADE PROTECTION
@@ -449,7 +451,7 @@ export const detectScreenshot = onCall(
 
     return {
       success: true,
-      warning: "Screenshots are discouraged and may violate content creator rights.",
+      warning: "Screenshots are discouraged and may violate content earner rights.",
     };
   }
 );
@@ -763,6 +765,20 @@ export const checkGlobalRateLimit = onCall(
 );
 
 logger.info("✅ Security Layer 3.0 module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

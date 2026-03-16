@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 294 - Search & Discovery Filters
  * Analytics Events for Discovery System
@@ -129,7 +131,7 @@ export const logDiscoveryOpenCalendar = onCall(
 
 /**
  * Scheduled function to aggregate discovery analytics
- * Runs daily to create insights for creators
+ * Runs daily to create insights for earners
  */
 export const aggregateDiscoveryAnalytics = onCall(
   { region: 'europe-west1' },
@@ -187,15 +189,15 @@ export const aggregateDiscoveryAnalytics = onCall(
         }
       });
 
-      // Write aggregations to creator analytics
+      // Write aggregations to earner analytics
       const batch = db.batch();
       
       Object.entries(aggregation).forEach(([profileId, stats]) => {
-        const analyticsRef = db.collection('creator_analytics_daily')
+        const analyticsRef = db.collection('earner_analytics_daily')
           .doc(`${profileId}_${yesterday.toISOString().split('T')[0]}`);
         
         batch.set(analyticsRef, {
-          creatorId: profileId,
+          earnerId: profileId,
           date: yesterday,
           discoveryViews: stats.views,
           discoveryLikes: stats.likes,
@@ -217,6 +219,20 @@ export const aggregateDiscoveryAnalytics = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

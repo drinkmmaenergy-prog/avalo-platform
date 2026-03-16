@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 253 — ROYAL UPGRADE FUNNEL
- * Performance-based elite creator tier system
+ * Performance-based elite earner tier system
  * Royal = high-demand profiles driving platform monetization
  */
 
@@ -111,7 +113,7 @@ export interface RoyalAnalytics {
 
 export interface RoyalEvent {
   eventId: string;
-  creatorId: string;
+  earnerId: string;
   title: string;
   description: string;
   
@@ -185,6 +187,20 @@ export const ROYAL_NOTIFICATION_THRESHOLDS = {
   PROGRESS_95: 95,
   DECAY_WARNING_DAYS: 14, // Warn 14 days before expiry if <2 metrics
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

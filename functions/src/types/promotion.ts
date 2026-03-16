@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 61: In-App Promotions & Sponsored Placement Engine
  * Types for promotion campaigns, orders, events, and filtering
@@ -198,6 +200,22 @@ export interface PromotionItemResponse {
 export interface FetchPromotionsResponse {
   items: PromotionItemResponse[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

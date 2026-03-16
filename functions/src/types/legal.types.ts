@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 89: Legal & Policy Center - Type Definitions
  * Comprehensive types for legal document management and acceptance tracking
@@ -195,6 +197,22 @@ export interface LegalValidationError {
   }[];
   action: ProtectedAction;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

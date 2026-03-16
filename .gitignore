@@ -100,3 +100,11 @@ shared/
 app-web/.env.local
 app-web/pnpm-lock.yaml
 .env
+
+audit-out/split_scan.txt
+audit-out/tips_split_conflicts.txt
+stripe_secret_clean.txt
+stripe_webhook_secret_clean.txt
+stripe_webhook_secret_cli.txt
+
+audit-out/

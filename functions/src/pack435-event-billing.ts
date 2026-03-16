@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 435 — Global Events Engine: Event Billing & Payment Logic
  * 
@@ -26,7 +28,7 @@ export interface EventPayment {
   
   // Split details
   organizerAmount: number; // 80%
-  avaloAmount: number; // 20%
+  platformAmount: number; // 20%
   ambassadorBonus?: number;
   
   // Payment method
@@ -55,7 +57,7 @@ export interface PayoutSchedule {
   // Amounts
   totalRevenue: number;
   organizerShare: number;
-  avaloCommission: number;
+  platformCommission: number;
   
   // Verification requirements
   requiredVerifications: number;
@@ -140,7 +142,7 @@ export async function bookEventTicket(
     
     // 6. Calculate payment split
     const organizerAmount = Math.floor(ticketPrice * (event.revenueShare.organizerShare / 100));
-    const avaloAmount = ticketPrice - organizerAmount;
+    const platformAmount = ticketPrice - organizerAmount;
     
     // 7. Check ambassador attribution
     let ambassadorId: string | undefined;
@@ -226,7 +228,7 @@ export async function bookEventTicket(
       currency: event.pricing.currency,
       ticketTier,
       organizerAmount,
-      avaloAmount,
+      platformAmount,
       ambassadorBonus,
       paymentMethod,
       walletTransactionId,
@@ -410,13 +412,13 @@ export async function calculateEventPayout(eventId: string): Promise<PayoutSched
     
     let totalRevenue = 0;
     let organizerShare = 0;
-    let avaloCommission = 0;
+    let platformCommission = 0;
     
     paymentsSnapshot.forEach(doc => {
       const payment = doc.data() as EventPayment;
       totalRevenue += payment.amount;
       organizerShare += payment.organizerAmount;
-      avaloCommission += payment.avaloAmount;
+      platformCommission += payment.platformAmount;
     });
     
     // Get verification stats
@@ -462,7 +464,7 @@ export async function calculateEventPayout(eventId: string): Promise<PayoutSched
       organizerId: event.organizerId,
       totalRevenue,
       organizerShare,
-      avaloCommission,
+      platformCommission,
       requiredVerifications,
       completedVerifications,
       verificationRate,
@@ -552,6 +554,20 @@ export default {
   calculateEventPayout,
   releaseOrganizerPayout,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

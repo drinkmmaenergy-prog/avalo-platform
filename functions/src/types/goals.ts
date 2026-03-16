@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Phase 26 - Creator Goals & Support System Types
- * Type definitions for creator funding goals and supporter tracking
+ * Type definitions for earner funding goals and supporter tracking
  * 
  * IMPORTANT: This module only ADDS new goals functionality.
  * It does NOT modify ANY existing monetization logic.
@@ -26,7 +28,7 @@ export type GoalStatus = 'active' | 'completed' | 'cancelled';
  */
 export interface CreatorGoal {
   goalId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Goal details
   title: string;                    // Max 60 chars
@@ -64,15 +66,15 @@ export interface CreatorGoal {
 export interface GoalSupport {
   supportId: string;
   goalId: string;
-  creatorId: string;
+  earnerId: string;
   supporterId: string;
   
   // Transaction details
   amountTokens: number;
   
-  // Revenue split (70% to creator, 30% to Avalo)
-  creatorReceived: number;
-  avaloReceived: number;
+  // Revenue split (70% to earner, 30% to Avalo)
+  earnerReceived: number;
+  platformReceived: number;
   
   // Timestamps
   createdAt: Date;
@@ -85,11 +87,11 @@ export interface GoalSupport {
 }
 
 /**
- * Goal Summary - aggregated data for creator dashboard
+ * Goal Summary - aggregated data for earner dashboard
  */
 export interface GoalSummary {
   goalId: string;
-  creatorId: string;
+  earnerId: string;
   title: string;
   category: GoalCategory;
   targetTokens: number;
@@ -154,8 +156,8 @@ export interface SupportGoalResponse {
   supportId: string;
   goalId: string;
   amountTokens: number;
-  creatorReceived: number;
-  avaloReceived: number;
+  earnerReceived: number;
+  platformReceived: number;
   newBalance: number;               // Supporter's new balance
   goalProgress: {
     currentTokens: number;
@@ -165,17 +167,17 @@ export interface SupportGoalResponse {
 }
 
 /**
- * Request to get creator's goals
+ * Request to get earner's goals
  */
 export interface GetCreatorGoalsQuery {
-  creatorId: string;
+  earnerId: string;
   includeInactive?: boolean;
   limit?: number;
   offset?: number;
 }
 
 /**
- * Response with creator's goals
+ * Response with earner's goals
  */
 export interface GetCreatorGoalsResponse {
   goals: GoalSummary[];
@@ -230,8 +232,8 @@ export const GOAL_CONSTRAINTS = {
   MAX_ACTIVE_GOALS: 3,
   SUPPORT_MIN_TOKENS: 10,
   SUPPORT_MAX_TOKENS: 10000,
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator,              // 70% to creator
-  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,                // 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.earner,              // 70% to earner
+  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.platform,                // 30% to Avalo
 } as const;
 
 /**
@@ -244,6 +246,23 @@ export const GOAL_CATEGORY_METADATA: Record<GoalCategory, { displayName: string;
   content: { displayName: 'Tworzenie treści', icon: '🎬' },
   other: { displayName: 'Inne', icon: '🎯' },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

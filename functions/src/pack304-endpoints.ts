@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 304 — Admin Financial Console & Reconciliation
  * API Endpoints
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -459,7 +461,7 @@ export const pack304_exportMonthlyFinance = onCall(
 );
 
 /**
- * Export creator summary data
+ * Export earner summary data
  */
 export const pack304_exportCreatorSummary = onCall(
   async (request): Promise<ExportCreatorSummaryResponse> => {
@@ -486,7 +488,7 @@ export const pack304_exportCreatorSummary = onCall(
             year,
             month,
             format,
-            exportType: 'creator_summary',
+            exportType: 'earner_summary',
           },
         }
       );
@@ -499,7 +501,7 @@ export const pack304_exportCreatorSummary = onCall(
 
       return;
     } catch (error: any) {
-      logger.error('Error exporting creator summary:', error);
+      logger.error('Error exporting earner summary:', error);
       if (error instanceof HttpsError) {
         throw error;
       }
@@ -649,6 +651,20 @@ export const pack304_cronDailyAggregation = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

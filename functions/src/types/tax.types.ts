@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 129 — Regional Tax, Invoicing & Legal Entity Support
  * Type definitions for automated tax calculation, withholding, and compliance
  * 
  * NON-NEGOTIABLE RULES:
- * - No creator receives higher payout rates because of business entity type
- * - No creator is penalized in ranking because of tax classification
+ * - No earner receives higher payout rates because of business entity type
+ * - No earner is penalized in ranking because of tax classification
  * - No "VIP payout tiers" — payouts remain equal for all
  * - No tax avoidance by switching region or business profile
  * - Taxes are compliance, not monetization
@@ -528,7 +530,7 @@ export interface TaxRemittance {
   exchangeRate: number;                    // Token to fiat rate used
   
   // Affected Users
-  creatorCount: number;
+  earnerCount: number;
   withholdingRecordIds: string[];
   
   // Status
@@ -684,6 +686,22 @@ export function isValidDocumentType(type: string): type is TaxDocumentType {
     'ANNUAL_SUMMARY',
   ].includes(type);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

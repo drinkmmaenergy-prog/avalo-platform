@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 380 — Multi-Language Global Expansion Engine
  * 
@@ -308,7 +310,7 @@ async function getRegionConfig(region: string): Promise<RegionConfig> {
 // ============================================================================
 
 /**
- * Get localized creator materials
+ * Get localized earner materials
  */
 export const getLocalizedCreatorMaterials = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -325,7 +327,7 @@ export const getLocalizedCreatorMaterials = functions.https.onCall(async (reques
 
   try {
     // Get localized materials
-    let query = db.collection('creatorMaterials')
+    let query = db.collection('earnerMaterials')
       .where('language', '==', language)
       .where('region', 'in', [region, 'global'])
       .where('status', '==', 'published') as any;
@@ -342,13 +344,13 @@ export const getLocalizedCreatorMaterials = functions.https.onCall(async (reques
       materials
     };
   } catch (error: any) {
-    console.error('Error getting localized creator materials:', error);
+    console.error('Error getting localized earner materials:', error);
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
 
 /**
- * Create localized creator pitch deck
+ * Create localized earner pitch deck
  */
 export const createLocalizedPitchDeck = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -413,7 +415,7 @@ export const createLocalizedPitchDeck = functions.https.onCall(async (request) =
     return {
       success: true,
       pitchDeckId: pitchDeckRef.id,
-      downloadUrl: `https://avalo.app/pitch-decks/${pitchDeckRef.id}`
+      downloadUrl: `https://platform.app/pitch-decks/${pitchDeckRef.id}`
     };
   } catch (error: any) {
     console.error('Error creating localized pitch deck:', error);
@@ -451,7 +453,7 @@ async function getRegionEarningsData(region: string): Promise<any> {
  * Get localized testimonials
  */
 async function getLocalizedTestimonials(language: string, region: string): Promise<any[]> {
-  const snapshot = await db.collection('creatorTestimonials')
+  const snapshot = await db.collection('earnerTestimonials')
     .where('language', '==', language)
     .where('region', 'in', [region, 'global'])
     .where('approved', '==', true)
@@ -634,7 +636,7 @@ export const getMarketExpansionAnalysis = functions.https.onCall(async (request)
         const opportunityScore = calculateOpportunityScore({
           launchStatus: region.launchStatus,
           userCount: stats.userCount || 0,
-          creatorCount: stats.creatorCount || 0,
+          earnerCount: stats.earnerCount || 0,
           avgEarnings: earnings.avgMonthlyEarnings || 0,
           marketSize: stats.marketSize || 0
         });
@@ -646,7 +648,7 @@ export const getMarketExpansionAnalysis = functions.https.onCall(async (request)
           opportunityScore,
           metrics: {
             userCount: stats.userCount || 0,
-            creatorCount: stats.creatorCount || 0,
+            earnerCount: stats.earnerCount || 0,
             avgEarnings: earnings.avgMonthlyEarnings || 0
           },
           readinessScore: calculateReadinessScore(region)
@@ -674,7 +676,7 @@ export const getMarketExpansionAnalysis = functions.https.onCall(async (request)
 function calculateOpportunityScore(data: {
   launchStatus: string;
   userCount: number;
-  creatorCount: number;
+  earnerCount: number;
   avgEarnings: number;
   marketSize: number;
 }): number {
@@ -716,6 +718,20 @@ function calculateReadinessScore(region: RegionConfig): number {
 
   return score;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

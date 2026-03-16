@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Boost Products (Paid Visibility)
  * 
@@ -7,7 +9,7 @@
  * - Event Boost: Per event listing boost
  * - AI Companion Boost (6h): AI discovery priority
  * 
- * Revenue split: 65% creator / 35% Avalo for all boosts
+ * Revenue split: 65% earner / 35% Avalo for all boosts
  * All paid with tokens via spendTokens()
  */
 
@@ -31,8 +33,8 @@ export interface Pack347Boost {
   type: Pack347BoostType;
   status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
   tokensCharged: number;
-  creatorReceives: number; // 65%
-  avaloReceives: number;   // 35%
+  earnerReceives: number; // 65%
+  platformReceives: number;   // 35%
   createdAt: FirebaseFirestore.Timestamp;
   expiresAt: Date;
   metadata?: {
@@ -71,8 +73,8 @@ const BOOST_PRICING = {
 };
 
 const REVENUE_SPLIT = {
-  creator: MONETIZATION_SPLITS.CHAT.creator,
-  avalo: MONETIZATION_SPLITS.CHAT.avalo
+  earner: MONETIZATION_SPLITS.CHAT.earner,
+  platform: MONETIZATION_SPLITS.CHAT.platform
 };
 
 const MAX_BOOSTS_PER_DAY = 10;
@@ -82,7 +84,7 @@ const MAX_BOOSTS_PER_DAY = 10;
 // ============================================================================
 
 /**
- * Charge tokens and split revenue between creator and Avalo
+ * Charge tokens and split revenue between earner and Avalo
  * Uses atomic transaction for safety
  */
 async function chargeBoostTokens(
@@ -90,9 +92,9 @@ async function chargeBoostTokens(
   tokensAmount: number,
   boostType: Pack347BoostType,
   metadata: any = {}
-): Promise<{ creatorReceives: number; avaloReceives: number }> {
-  const creatorReceives = Math.floor(tokensAmount * REVENUE_SPLIT.creator);
-  const avaloReceives = Math.floor(tokensAmount * REVENUE_SPLIT.avalo);
+): Promise<{ earnerReceives: number; platformReceives: number }> {
+  const earnerReceives = Math.floor(tokensAmount * REVENUE_SPLIT.earner);
+  const platformReceives = Math.floor(tokensAmount * REVENUE_SPLIT.platform);
   
   const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
   
@@ -124,8 +126,8 @@ async function chargeBoostTokens(
     transaction.set(txRef, {
       senderUid: userId,
       receiverUid: userId, // Creator receives their share
-      tokensAmount: creatorReceives,
-      avaloFee: avaloReceives,
+      tokensAmount: earnerReceives,
+      platformFee: platformReceives,
       transactionType: `boost_${boostType.toLowerCase()}`,
       metadata: {
         ...metadata,
@@ -142,7 +144,7 @@ async function chargeBoostTokens(
   // Track fan economy spend (async, non-blocking)
   trackFanSpendAsync(userId, userId, tokensAmount, 'boost').catch(() => {});
   
-  return { creatorReceives, avaloReceives };
+  return { earnerReceives, platformReceives };
 }
 
 /**
@@ -166,7 +168,7 @@ async function trackRoyalSpendAsync(
  */
 async function trackFanSpendAsync(
   fanId: string,
-  creatorId: string,
+  earnerId: string,
   tokens: number,
   source: 'chat' | 'call' | 'meeting' | 'event' | 'boost'
 ): Promise<void> {
@@ -174,7 +176,7 @@ async function trackFanSpendAsync(
     const { trackTokenSpend } = await import('./fanKissEconomy');
     // Map 'boost' to a valid source type for fanKissEconomy
     const validSource = source === 'boost' ? 'event' : source;
-    await trackTokenSpend(fanId, creatorId, tokens, validSource as any);
+    await trackTokenSpend(fanId, earnerId, tokens, validSource as any);
   } catch (error) {
     console.error('[BoostProducts] Fan spend tracking failed:', error);
   }
@@ -263,7 +265,7 @@ export async function createLocalBoost(data: {
   const expiresAt = new Date(now.getTime() + config.durationHours * 60 * 60 * 1000);
   
   // Charge tokens
-  const { creatorReceives, avaloReceives } = await chargeBoostTokens(
+  const { earnerReceives, platformReceives } = await chargeBoostTokens(
     userId,
     config.tokens,
     'LOCAL_BOOST',
@@ -278,8 +280,8 @@ export async function createLocalBoost(data: {
     type: 'LOCAL_BOOST',
     status: 'ACTIVE',
     tokensCharged: config.tokens,
-    creatorReceives,
-    avaloReceives,
+    earnerReceives,
+    platformReceives,
     createdAt: serverTimestamp() as any,
     expiresAt,
     metadata: {
@@ -311,7 +313,7 @@ export async function createGlobalBoost(data: {
   const expiresAt = new Date(now.getTime() + config.durationHours * 60 * 60 * 1000);
   
   // Charge tokens
-  const { creatorReceives, avaloReceives } = await chargeBoostTokens(
+  const { earnerReceives, platformReceives } = await chargeBoostTokens(
     userId,
     config.tokens,
     'GLOBAL_BOOST',
@@ -326,8 +328,8 @@ export async function createGlobalBoost(data: {
     type: 'GLOBAL_BOOST',
     status: 'ACTIVE',
     tokensCharged: config.tokens,
-    creatorReceives,
-    avaloReceives,
+    earnerReceives,
+    platformReceives,
     createdAt: serverTimestamp() as any,
     expiresAt,
     metadata: {
@@ -360,7 +362,7 @@ export async function createEventBoost(data: {
     throw new functions.https.HttpsError('not-found', 'Event not found');
   }
   
-  if (eventSnap.data()?.creatorId !== userId) {
+  if (eventSnap.data()?.earnerId !== userId) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'Event does not belong to user'
@@ -372,7 +374,7 @@ export async function createEventBoost(data: {
   const expiresAt = new Date(now.getTime() + config.durationHours * 60 * 60 * 1000);
   
   // Charge tokens
-  const { creatorReceives, avaloReceives } = await chargeBoostTokens(
+  const { earnerReceives, platformReceives } = await chargeBoostTokens(
     userId,
     config.tokens,
     'EVENT_BOOST',
@@ -387,8 +389,8 @@ export async function createEventBoost(data: {
     type: 'EVENT_BOOST',
     status: 'ACTIVE',
     tokensCharged: config.tokens,
-    creatorReceives,
-    avaloReceives,
+    earnerReceives,
+    platformReceives,
     createdAt: serverTimestamp() as any,
     expiresAt,
     metadata: {
@@ -419,7 +421,7 @@ export async function createAICompanionBoost(data: {
     throw new functions.https.HttpsError('not-found', 'AI Companion not found');
   }
   
-  if (companionSnap.data()?.creatorId !== userId) {
+  if (companionSnap.data()?.earnerId !== userId) {
     throw new functions.https.HttpsError(
       'permission-denied',
       'AI Companion does not belong to user'
@@ -431,7 +433,7 @@ export async function createAICompanionBoost(data: {
   const expiresAt = new Date(now.getTime() + config.durationHours * 60 * 60 * 1000);
   
   // Charge tokens
-  const { creatorReceives, avaloReceives } = await chargeBoostTokens(
+  const { earnerReceives, platformReceives } = await chargeBoostTokens(
     userId,
     config.tokens,
     'AI_COMPANION_BOOST',
@@ -446,8 +448,8 @@ export async function createAICompanionBoost(data: {
     type: 'AI_COMPANION_BOOST',
     status: 'ACTIVE',
     tokensCharged: config.tokens,
-    creatorReceives,
-    avaloReceives,
+    earnerReceives,
+    platformReceives,
     createdAt: serverTimestamp() as any,
     expiresAt,
     metadata: {
@@ -471,7 +473,7 @@ export async function createAICompanionBoost(data: {
 async function updatePromotionScoreAsync(userId: string): Promise<void> {
   try {
     const { calculatePromotionScore } = await import('./pack347-promotion-algorithm');
-    await calculatePromotionScore({ creatorId: userId });
+    await calculatePromotionScore({ earnerId: userId });
   } catch (error) {
     console.error('[BoostProducts] Failed to update promotion score:', error);
   }
@@ -574,12 +576,28 @@ export async function cleanupExpiredPack347Boosts(
  * - Event Boost (24h event listing)
  * - AI Companion Boost (6h AI discovery)
  * 
- * - 65/35 revenue split (creator/Avalo)
+ * - 65/35 revenue split (earner/Avalo)
  * - Token-based payments
  * - Daily limit protection (10 boosts/day)
  * - Integration with promotion algorithm
  * - Royal Club and Fan Economy tracking
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

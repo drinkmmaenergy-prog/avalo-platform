@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 64 — GDPR Data Export & Deletion Center
  * 
@@ -891,8 +893,8 @@ async function gatherPayoutsSummary(userId: string): Promise<any> {
 }
 
 async function gatherAnalyticsSelfView(userId: string): Promise<any> {
-  const creatorEarnings = await db
-    .collection("analytics_creator_earnings")
+  const earnerEarnings = await db
+    .collection("analytics_earner_earnings")
     .doc(userId)
     .get();
 
@@ -902,7 +904,7 @@ async function gatherAnalyticsSelfView(userId: string): Promise<any> {
     .get();
 
   return {
-    creatorEarnings: creatorEarnings.exists ? creatorEarnings.data() : null,
+    earnerEarnings: earnerEarnings.exists ? earnerEarnings.data() : null,
     userSpending: userSpending.exists ? userSpending.data() : null,
   };
 }
@@ -990,14 +992,14 @@ async function deleteDevicesAndSessions(userId: string): Promise<void> {
 }
 
 async function deleteUserAnalytics(userId: string): Promise<void> {
-  const creatorRef = db.collection("analytics_creator_earnings").doc(userId);
+  const earnerRef = db.collection("analytics_earner_earnings").doc(userId);
   const spendingRef = db.collection("analytics_user_spending").doc(userId);
   
-  const creatorSnap = await creatorRef.get();
+  const earnerSnap = await earnerRef.get();
   const spendingSnap = await spendingRef.get();
   
-  if (creatorSnap.exists) {
-    await creatorRef.delete();
+  if (earnerSnap.exists) {
+    await earnerRef.delete();
   }
   
   if (spendingSnap.exists) {
@@ -1072,6 +1074,20 @@ async function markUserDeleted(userId: string): Promise<void> {
     permanent: true,
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

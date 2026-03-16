@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 117: Events, Meetups & Real-World Experiences
  * Backend implementation for safe in-person events system
@@ -5,7 +7,7 @@
  * CRITICAL SAFETY RULES:
  * - SAFE events only (zero NSFW tolerance)
  * - No dating/escort/romantic services
- * - Token-only payments (65% creator / 35% Avalo)
+ * - Token-only payments (65% earner / 35% Avalo)
  * - Background risk screening (PACK 85 integration)
  * - Location privacy until confirmed attendance
  * - No discovery/ranking boosts from events
@@ -50,7 +52,7 @@ async function getUserTrustProfile(userId: string): Promise<TrustProfile | null>
 }
 
 /**
- * Check if user can create events (must be verified creator)
+ * Check if user can create events (must be verified earner)
  */
 async function canCreateEvent(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
@@ -146,7 +148,7 @@ export const createEvent = onCall<{
   if (!canCreate) {
     throw new HttpsError(
       'permission-denied',
-      'Only verified creators can create events'
+      'Only verified earners can create events'
     );
   }
   
@@ -405,12 +407,12 @@ export const cancelEvent = onCall<{
         tokenBalance: increment(attendee.tokensAmount),
       });
       
-      // Deduct from creator (return their earnings)
-      if (attendee.creatorEarnings > 0) {
-        const creatorWalletRef = db.collection('users').doc(attendee.hostUserId)
+      // Deduct from earner (return their earnings)
+      if (attendee.earnerEarnings > 0) {
+        const earnerWalletRef = db.collection('users').doc(attendee.hostUserId)
           .collection('wallet').doc('main');
-        batch.update(creatorWalletRef, {
-          tokenBalance: increment(-attendee.creatorEarnings),
+        batch.update(earnerWalletRef, {
+          tokenBalance: increment(-attendee.earnerEarnings),
         });
       }
       
@@ -598,7 +600,7 @@ export const joinEvent = onCall<{
       hostUserId: event.hostUserId,
       tokensAmount: 0,
       platformFee: 0,
-      creatorEarnings: 0,
+      earnerEarnings: 0,
       status: AttendeeStatus.DENIED,
       riskCheckPassed: false,
       riskCheckReasons: riskCheck.reasons,
@@ -633,13 +635,13 @@ export const joinEvent = onCall<{
     
     // Calculate split
     const platformFee = Math.floor(event.priceTokens * EVENT_CONFIG.platformFeePercentage);
-    const creatorEarnings = event.priceTokens - platformFee;
+    const earnerEarnings = event.priceTokens - platformFee;
     
     // Process payment transaction
     await db.runTransaction(async (transaction) => {
       const buyerWalletRef = db.collection('users').doc(userId)
         .collection('wallet').doc('main');
-      const creatorWalletRef = db.collection('users').doc(event.hostUserId)
+      const earnerWalletRef = db.collection('users').doc(event.hostUserId)
         .collection('wallet').doc('main');
       
       // Deduct from buyer
@@ -647,9 +649,9 @@ export const joinEvent = onCall<{
         tokenBalance: increment(-event.priceTokens),
       });
       
-      // Add to creator
-      transaction.update(creatorWalletRef, {
-        tokenBalance: increment(creatorEarnings),
+      // Add to earner
+      transaction.update(earnerWalletRef, {
+        tokenBalance: increment(earnerEarnings),
       });
       
       // Create transaction record for buyer
@@ -661,19 +663,19 @@ export const joinEvent = onCall<{
         amount: -event.priceTokens,
         description: `Event enrollment: ${event.title}`,
         eventId,
-        creatorId: event.hostUserId,
+        earnerId: event.hostUserId,
         platformFee,
-        creatorEarnings,
+        earnerEarnings,
         createdAt: serverTimestamp(),
       });
       
-      // Create transaction record for creator
-      const creatorTxId = generateId();
-      transaction.set(db.collection('transactions').doc(creatorTxId), {
-        transactionId: creatorTxId,
+      // Create transaction record for earner
+      const earnerTxId = generateId();
+      transaction.set(db.collection('transactions').doc(earnerTxId), {
+        transactionId: earnerTxId,
         userId: event.hostUserId,
         type: 'EVENT_EARNINGS',
-        amount: creatorEarnings,
+        amount: earnerEarnings,
         description: `Event enrollment from ${userData?.displayName || 'Unknown User'}: ${event.title}`,
         eventId,
         buyerId: userId,
@@ -690,7 +692,7 @@ export const joinEvent = onCall<{
   const platformFee = event.priceTokens > 0 
     ? Math.floor(event.priceTokens * EVENT_CONFIG.platformFeePercentage) 
     : 0;
-  const creatorEarnings = event.priceTokens - platformFee;
+  const earnerEarnings = event.priceTokens - platformFee;
   
   const attendee: EventAttendee = {
     attendeeId,
@@ -702,7 +704,7 @@ export const joinEvent = onCall<{
     hostUserId: event.hostUserId,
     tokensAmount: event.priceTokens,
     platformFee,
-    creatorEarnings,
+    earnerEarnings,
     status: AttendeeStatus.CONFIRMED,
     riskCheckPassed: true,
     riskScoreSnapshot: riskCheck.riskScore,
@@ -946,6 +948,20 @@ export const submitEventSafetySurvey = onCall<{
     message: 'Thank you for your feedback',
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

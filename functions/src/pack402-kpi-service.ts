@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 402 — KPI Aggregation Service
  * 
@@ -281,8 +283,8 @@ async function buildRevenueKpi(
     .get();
 
   let tokensSpentTotal = 0;
-  let creatorEarningsTokens = 0;
-  let avaloRevenueTokens = 0;
+  let earnerEarningsTokens = 0;
+  let platformRevenueTokens = 0;
 
   spendSnap.forEach((doc) => {
     const data = doc.data();
@@ -290,11 +292,11 @@ async function buildRevenueKpi(
     tokensSpentTotal += amount;
 
     // Split based on platform fee (typically 70/30)
-    const creatorShare = Math.floor(amount * 0.7);
-    const avaloShare = amount - creatorShare;
+    const earner = Math.floor(amount * 0.7);
+    const platform = amount - earner;
 
-    creatorEarningsTokens += creatorShare;
-    avaloRevenueTokens += avaloShare;
+    earnerEarningsTokens += earner;
+    platformRevenueTokens += platform;
   });
 
   // Payouts
@@ -327,8 +329,8 @@ async function buildRevenueKpi(
     tokenPurchasesCount,
     tokenPurchasedTotal,
     tokensSpentTotal,
-    creatorEarningsTokens,
-    avaloRevenueTokens,
+    earnerEarningsTokens,
+    platformRevenueTokens,
     payoutsRequestedTokens,
     payoutsApprovedTokens,
     payingUsersCount: payingUsers.size,
@@ -526,6 +528,20 @@ export async function backfillDailyKpis(fromDate: string, toDate: string): Promi
 
   console.log(`[PACK 402] Backfill complete: ${dates.length} days processed`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

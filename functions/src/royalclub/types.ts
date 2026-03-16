@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 144 - Royal Club & Loyalty Ecosystem 2.0
  * Type definitions for the luxury loyalty system
@@ -6,7 +8,7 @@
  * - No token discounts or bonuses
  * - No visibility/ranking advantages
  * - No romantic/NSFW positioning
- * - No creator earning boosts
+ * - No earner earning boosts
  */
 
 import { timestamp } from '../runtime';
@@ -307,6 +309,22 @@ export const ALLOWED_CHANNEL_CATEGORIES = [
   'motorsport',
   'premium_hobbies'
 ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

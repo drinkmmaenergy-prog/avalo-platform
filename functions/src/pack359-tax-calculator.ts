@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 359 — Legal Compliance: Tax Calculator
  * 
@@ -40,7 +42,7 @@ export interface CreatorEarningsTax {
   taxableIncome: number;        // Amount subject to tax
   withheldTax: number;          // Tax withheld if applicable
   withholdingRate: number;      // Withholding tax rate
-  netPaidOut: number;           // Final amount to creator
+  netPaidOut: number;           // Final amount to earner
   countryCode: string;
   currency: string;
 }
@@ -48,8 +50,8 @@ export interface CreatorEarningsTax {
 export interface TaxTransaction {
   transactionId: string;
   userId: string;
-  creatorId?: string;
-  type: 'token_purchase' | 'subscription' | 'calendar_booking' | 'ai_chat' | 'video_call' | 'creator_payout';
+  earnerId?: string;
+  type: 'token_purchase' | 'subscription' | 'calendar_booking' | 'ai_chat' | 'video_call' | 'earner_payout';
   taxBreakdown: TaxBreakdown | CreatorEarningsTax;
   timestamp: Date;
   paymentProvider?: string;
@@ -129,14 +131,14 @@ export async function calculateReverseTax(
 // ============================================================================
 
 /**
- * Calculate tax for creator earnings (what creator receives)
+ * Calculate tax for earner earnings (what earner receives)
  */
 export async function calculateCreatorEarningsTax(
-  creatorId: string,
+  earnerId: string,
   grossEarnings: number,
-  platformFeeRate: number = MONETIZATION_SPLITS.EVENT_TICKET.avalo // Default 20% platform fee
+  platformFeeRate: number = MONETIZATION_SPLITS.EVENT_TICKET.platform // Default 20% platform fee
 ): Promise<CreatorEarningsTax> {
-  const { profile } = await getUserJurisdiction(creatorId);
+  const { profile } = await getUserJurisdiction(earnerId);
   
   // Calculate platform fee
   const platformFeeAmount = grossEarnings * platformFeeRate;
@@ -149,7 +151,7 @@ export async function calculateCreatorEarningsTax(
     ? taxableIncome * profile.withholdingTaxRate 
     : 0;
   
-  // Net amount paid out to creator
+  // Net amount paid out to earner
   const netPaidOut = taxableIncome - withheldTax;
   
   const earningsTax: CreatorEarningsTax = {
@@ -209,21 +211,21 @@ export async function calculateSubscriptionTax(
  */
 export async function calculateCalendarBookingTax(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   bookingPrice: number
 ): Promise<{
   consumerTax: TaxBreakdown;
-  creatorEarnings: CreatorEarningsTax;
+  earnerEarnings: CreatorEarningsTax;
 }> {
   // Consumer pays tax on top of booking price
   const consumerTax = await calculateConsumerTax(userId, bookingPrice, 'calendar_booking');
   
   // Creator earnings calculation (from the net amount received by platform)
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, bookingPrice, MONETIZATION_SPLITS.SUBSCRIPTION.avalo); // 30% platform fee for bookings
+  const earnerEarnings = await calculateCreatorEarningsTax(earnerId, bookingPrice, MONETIZATION_SPLITS.SUBSCRIPTION.platform); // 30% platform fee for bookings
   
   return {
     consumerTax,
-    creatorEarnings,
+    earnerEarnings,
   };
 }
 
@@ -232,21 +234,21 @@ export async function calculateCalendarBookingTax(
  */
 export async function calculateAIChatTax(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   tokensSpent: number,
   tokenValue: number
 ): Promise<{
   consumerTax: TaxBreakdown;
-  creatorEarnings: CreatorEarningsTax;
+  earnerEarnings: CreatorEarningsTax;
 }> {
   const chatCost = tokensSpent * tokenValue;
   
   const consumerTax = await calculateConsumerTax(userId, chatCost, 'ai_chat');
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, chatCost, MONETIZATION_SPLITS.EVENT_TICKET.avalo); // 20% platform fee
+  const earnerEarnings = await calculateCreatorEarningsTax(earnerId, chatCost, MONETIZATION_SPLITS.EVENT_TICKET.platform); // 20% platform fee
   
   return {
     consumerTax,
-    creatorEarnings,
+    earnerEarnings,
   };
 }
 
@@ -255,21 +257,21 @@ export async function calculateAIChatTax(
  */
 export async function calculateVideoCallTax(
   userId: string,
-  creatorId: string,
+  earnerId: string,
   callDurationMinutes: number,
   pricePerMinute: number
 ): Promise<{
   consumerTax: TaxBreakdown;
-  creatorEarnings: CreatorEarningsTax;
+  earnerEarnings: CreatorEarningsTax;
 }> {
   const callCost = callDurationMinutes * pricePerMinute;
   
   const consumerTax = await calculateConsumerTax(userId, callCost, 'video_call');
-  const creatorEarnings = await calculateCreatorEarningsTax(creatorId, callCost, MONETIZATION_SPLITS.SUBSCRIPTION.avalo); // 30% platform fee
+  const earnerEarnings = await calculateCreatorEarningsTax(earnerId, callCost, MONETIZATION_SPLITS.SUBSCRIPTION.platform); // 30% platform fee
   
   return {
     consumerTax,
-    creatorEarnings,
+    earnerEarnings,
   };
 }
 
@@ -285,13 +287,13 @@ export async function logTaxTransaction(
   userId: string,
   type: TaxTransaction['type'],
   taxBreakdown: TaxBreakdown | CreatorEarningsTax,
-  creatorId?: string,
+  earnerId?: string,
   paymentProvider?: string
 ): Promise<void> {
   const taxTransaction: TaxTransaction = {
     transactionId,
     userId,
-    creatorId,
+    earnerId,
     type,
     taxBreakdown,
     timestamp: new Date(),
@@ -308,9 +310,9 @@ export async function logTaxTransaction(
   // Update user's tax summary
   await updateUserTaxSummary(userId, taxBreakdown);
   
-  // Update creator's tax summary if applicable
-  if (creatorId && type !== 'token_purchase') {
-    await updateCreatorTaxSummary(creatorId, taxBreakdown as CreatorEarningsTax);
+  // Update earner's tax summary if applicable
+  if (earnerId && type !== 'token_purchase') {
+    await updateCreatorTaxSummary(earnerId, taxBreakdown as CreatorEarningsTax);
   }
 }
 
@@ -340,18 +342,18 @@ async function updateUserTaxSummary(
 }
 
 /**
- * Update creator's running tax summary
+ * Update earner's running tax summary
  */
 async function updateCreatorTaxSummary(
-  creatorId: string,
+  earnerId: string,
   earningsTax: CreatorEarningsTax
 ): Promise<void> {
   const year = new Date().getFullYear();
   const month = new Date().getMonth() + 1;
-  const summaryId = `${creatorId}_${year}_${month}`;
+  const summaryId = `${earnerId}_${year}_${month}`;
   
-  await db.collection('creator_tax_summaries').doc(summaryId).set({
-    creatorId,
+  await db.collection('earner_tax_summaries').doc(summaryId).set({
+    earnerId,
     year,
     month,
     grossEarnings: admin.firestore.FieldValue.increment(earningsTax.grossEarnings),
@@ -463,7 +465,7 @@ export const calculateTax = functions.https.onCall(async (request) => {
 });
 
 /**
- * HTTP endpoint to calculate creator earnings
+ * HTTP endpoint to calculate earner earnings
  */
 export const calculateCreatorEarnings = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -472,16 +474,16 @@ export const calculateCreatorEarnings = functions.https.onCall(async (request) =
   }
   
   const { amount, platformFee } = data;
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   
   if (!amount || amount <= 0) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid amount');
   }
   
   const earningsTax = await calculateCreatorEarningsTax(
-    creatorId,
+    earnerId,
     amount,
-    platformFee || MONETIZATION_SPLITS.EVENT_TICKET.avalo
+    platformFee || MONETIZATION_SPLITS.EVENT_TICKET.platform
   );
   
   return earningsTax;
@@ -523,30 +525,46 @@ export const onCalendarBooking = onDocumentCreated('calendar_bookings/{bookingId
     const bookingId = event.params.bookingId;
     const booking = snap.data();
     
-    const { consumerTax, creatorEarnings } = await calculateCalendarBookingTax(
+    const { consumerTax, earnerEarnings } = await calculateCalendarBookingTax(
       booking.userId,
-      booking.creatorId,
+      booking.earnerId,
       booking.price
     );
     
-    // Log both consumer and creator tax
+    // Log both consumer and earner tax
     await logTaxTransaction(
       bookingId,
       booking.userId,
       'calendar_booking',
       consumerTax,
-      booking.creatorId,
+      booking.earnerId,
       'stripe'
     );
     
     await logTaxTransaction(
-      `${bookingId}_creator`,
-      booking.creatorId,
-      'creator_payout',
-      creatorEarnings,
-      booking.creatorId
+      `${bookingId}_earner`,
+      booking.earnerId,
+      'earner_payout',
+      earnerEarnings,
+      booking.earnerId
     );
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

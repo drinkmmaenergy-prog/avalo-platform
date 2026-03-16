@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 208 — Chemistry Ranking Model
  * Adaptive attraction ranking with multi-signal scoring
@@ -74,7 +76,7 @@ function calculateWeightedScore(signals: ChemistrySignals): number {
   score += signals.completenessScore * 0.10;
 
   // Preferences match (20% weight)
-  score += signals.preferencesMatchScore * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+  score += signals.preferencesMatchScore * MONETIZATION_SPLITS.EVENT_TICKET.platform;
 
   // Behavior match (15% weight)
   score += signals.behaviorMatchScore * 0.15;
@@ -340,6 +342,23 @@ export function sortByChemistry(scores: ChemistryScore[]): ChemistryScore[] {
 }
 
 console.log('✅ PACK 208: Ranking Model module loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

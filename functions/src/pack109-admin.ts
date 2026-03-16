@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 109 — Admin Functions for Partnerships & Talent Management
  * 
@@ -325,7 +327,7 @@ export const admin_createTalentProfile = onCall(
       const talent: TalentProfile = {
         id: talentId,
         partnerId: data.partnerId,
-        avaloUserId: data.avaloUserId,
+        platformUserId: data.platformUserId,
         externalHandles: data.externalHandles || {},
         region: data.region,
         categories: data.categories,
@@ -348,7 +350,7 @@ export const admin_createTalentProfile = onCall(
         after: { 
           region: talent.region,
           status: talent.status,
-          avaloUserId: talent.avaloUserId,
+          platformUserId: talent.platformUserId,
         },
       });
       
@@ -402,7 +404,7 @@ export const admin_updateTalentProfile = onCall(
       };
       
       if (data.partnerId !== undefined) updates.partnerId = data.partnerId;
-      if (data.avaloUserId !== undefined) updates.avaloUserId = data.avaloUserId;
+      if (data.platformUserId !== undefined) updates.platformUserId = data.platformUserId;
       if (data.externalHandles !== undefined) updates.externalHandles = data.externalHandles;
       if (data.region !== undefined) updates.region = data.region;
       if (data.categories !== undefined) updates.categories = data.categories;
@@ -689,6 +691,20 @@ export const admin_getCampaign = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

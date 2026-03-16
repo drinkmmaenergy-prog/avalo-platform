@@ -124,7 +124,7 @@ This file used the old AvaloSDK approach and was conflicting with the new `(auth
 
 **Changes**:
 - Updated to match mobile app expectations
-- Changed region from `europe-west3` to `us-central1`
+- Changed region from `europe-west3` to `europe-west1`
 - Simplified schema for mobile consumption
 - Added pagination support
 
@@ -202,7 +202,7 @@ This file used the old AvaloSDK approach and was conflicting with the new `(auth
 - **`sendAIMessageV1`** - Send message to AI + get response
 
 All functions use:
-- Region: `us-central1`
+- Region: `europe-west1`
 - Authentication required
 - Zod schema validation
 - Mock data ready for production replacement

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324A — Post-Launch KPI Core & Platform Health Monitoring
  * TypeScript Types and Interfaces
@@ -24,7 +26,7 @@ export interface PlatformKpiDaily {
   
   // Revenue Metrics (tokens)
   totalTokensSpent: number;
-  totalTokenRevenueUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo USD
+  totalTokenRevenueUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.platform USD
   
   // Activity Metrics
   totalChats: number;
@@ -75,7 +77,7 @@ export interface CreatorKpiDaily {
   
   // Totals
   totalEarnedTokens: number;
-  totalEarnedUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo USD
+  totalEarnedUSD: number; // tokens * MONETIZATION_SPLITS.EVENT_TICKET.platform USD
   
   // Activity
   sessionsCount: number;
@@ -229,7 +231,7 @@ export const KPI_CONFIG = {
   COLLECTIONS: {
     PLATFORM_DAILY: 'platformKpiDaily',
     PLATFORM_HOURLY: 'platformKpiHourly',
-    CREATOR_DAILY: 'creatorKpiDaily',
+    CREATOR_DAILY: 'earnerKpiDaily',
     SAFETY_DAILY: 'safetyKpiDaily',
   },
   
@@ -239,6 +241,22 @@ export const KPI_CONFIG = {
     DAILY: 365,
   },
 } as const;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

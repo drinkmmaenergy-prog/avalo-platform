@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 423 — Integrations with other engines
  * Connects ratings & NPS to reputation, retention, fraud, and support systems
@@ -185,6 +187,20 @@ export async function onRatingCreated(targetUserId?: string): Promise<void> {
     updateReputationFromRatings(targetUserId).catch(console.error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

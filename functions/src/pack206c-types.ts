@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 206c — Adult Mode Types
  * Romantic & Sexual Conversation System — Consent-Based
@@ -202,6 +204,20 @@ export type AdultModeSettingsCreate = Omit<AdultModeSettings, 'id' | 'createdAt'
 export type AdultModeSettingsUpdate = Partial<Omit<AdultModeSettings, 'id' | 'chatId' | 'user1Id' | 'user2Id'>> & {
   updatedAt?: FieldValue;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

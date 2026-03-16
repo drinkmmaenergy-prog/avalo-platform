@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 29 - Smart Security AI Layer
  *
@@ -89,7 +91,7 @@ export async function calculateFraudRisk(
     // Aggregate risk score (weighted average)
     const riskScore =
       indicators.velocityScore * 0.25 +
-      indicators.deviceRiskScore * MONETIZATION_SPLITS.EVENT_TICKET.avalo +
+      indicators.deviceRiskScore * MONETIZATION_SPLITS.EVENT_TICKET.platform +
       indicators.behavioralScore * 0.25 +
       indicators.networkScore * 0.15 +
       indicators.contentScore * 0.15;
@@ -317,6 +319,22 @@ export async function trainFraudDetectionModel(): Promise<void> {
 
   logger.info("Fraud detection model training scheduled");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

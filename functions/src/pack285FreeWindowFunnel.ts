@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 285 — Chat Free Windows & Funnel
  *
@@ -11,7 +13,7 @@
  * - PACK 267 (global economics & free-messages constants)
  * - PACK 273 (Chat Engine & payer logic)
  *
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -365,8 +367,8 @@ export async function routePack285Tokens(
   earningProfileId: string | null,
   mode: FreeWindowMode
 ): Promise<{
-  creatorShare: number;
-  platformShare: number;
+  earner: number;
+  platform: number;
   earningProfileId: string | null;
 }> {
   
@@ -375,12 +377,12 @@ export async function routePack285Tokens(
   // ====================================================================
   if (mode === 'STANDARD') {
     if (earningProfileId) {
-      const creatorShare = Math.floor(grossTokens * (AVALO_SPLIT_CHAT_CREATOR / 100));
-      const platformShare = grossTokens - creatorShare;
+      const earner = Math.floor(grossTokens * (AVALO_SPLIT_CHAT_CREATOR / 100));
+      const platform = grossTokens - earner;
       
       return {
-        creatorShare,
-        platformShare,
+        earner,
+        platform,
         earningProfileId
       };
     }
@@ -391,8 +393,8 @@ export async function routePack285Tokens(
   // ====================================================================
   if (mode === 'EARN_OFF_AVALO_100') {
     return {
-      creatorShare: 0,
-      platformShare: grossTokens,  // 100% to Avalo
+      earner: 0,
+      platform: grossTokens,  // 100% to Avalo
       earningProfileId: null
     };
   }
@@ -402,16 +404,16 @@ export async function routePack285Tokens(
   // ====================================================================
   if (mode === 'LOW_POP_FREE') {
     return {
-      creatorShare: 0,
-      platformShare: 0,
+      earner: 0,
+      platform: 0,
       earningProfileId: null
     };
   }
   
   // Default: platform gets all
   return {
-    creatorShare: 0,
-    platformShare: grossTokens,
+    earner: 0,
+    platform: grossTokens,
     earningProfileId: null
   };
 }
@@ -583,6 +585,20 @@ export function countWords(text: string): number {
   const words = cleaned.trim().split(/\s+/).filter(w => w.length > 0);
   return words.length;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

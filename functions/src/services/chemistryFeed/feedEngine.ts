@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 208 — Chemistry Feed Engine
  * Main orchestration for adaptive attraction ranking feed
@@ -514,6 +516,22 @@ export function cleanupCache(): void {
 }
 
 console.log('✅ PACK 208: Feed Engine module loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

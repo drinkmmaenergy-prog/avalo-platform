@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK PHASE 3.1 — Payments Module Index
  *
@@ -8,6 +10,22 @@
 
 // Re-export Stripe module
 export * from './stripe';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

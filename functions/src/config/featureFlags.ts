@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Feature Flags Configuration for Avalo
  * 
@@ -36,7 +38,7 @@ export interface FeatureFlagsConfig {
   /** Enable/disable token purchases */
   tokenPurchasesEnabled: boolean;
   
-  /** Enable/disable creator payouts */
+  /** Enable/disable earner payouts */
   payoutsEnabled: boolean;
   
   /** Enable/disable subscription purchases */
@@ -60,11 +62,11 @@ export interface FeatureFlagsConfig {
   // CREATOR/INFLUENCER FLAGS
   // ============================================
   
-  /** Enable/disable all creator features */
-  creatorFeaturesEnabled: boolean;
+  /** Enable/disable all earner features */
+  earnerFeaturesEnabled: boolean;
   
   /** Creator-specific feature toggles */
-  creatorFeatures: {
+  earnerFeatures: {
     aiCompanions: boolean;
     digitalProducts: boolean;
     liveStreaming: boolean;
@@ -75,8 +77,8 @@ export interface FeatureFlagsConfig {
     academy: boolean;
   };
   
-  /** Minimum followers required for creator features */
-  creatorMinFollowers: number;
+  /** Minimum followers required for earner features */
+  earnerMinFollowers: number;
   
   // ============================================
   // CONTENT FLAGS
@@ -227,8 +229,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagsConfig = {
   },
   
   // Creator Features
-  creatorFeaturesEnabled: true,
-  creatorFeatures: {
+  earnerFeaturesEnabled: true,
+  earnerFeatures: {
     aiCompanions: true,
     digitalProducts: true,
     liveStreaming: false, // Enable in wave 2
@@ -238,7 +240,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlagsConfig = {
     analytics: true,
     academy: true,
   },
-  creatorMinFollowers: 100,
+  earnerMinFollowers: 100,
   
   // Content
   nsfwContent: {
@@ -423,17 +425,33 @@ export function getRegionalRestrictions(
 }
 
 /**
- * Check if creator features are available
+ * Check if earner features are available
  */
 export function areCreatorFeaturesAvailable(
   flags: FeatureFlagsConfig,
   followerCount: number = 0
 ): boolean {
   return (
-    flags.creatorFeaturesEnabled &&
-    followerCount >= flags.creatorMinFollowers
+    flags.earnerFeaturesEnabled &&
+    followerCount >= flags.earnerMinFollowers
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 432 — UGC Scaling Engine
  * 
  * Automated system for ingesting, tagging, testing, and rotating
- * User Generated Content (UGC) from creators, influencers, and AI
+ * User Generated Content (UGC) from earners, influencers, and AI
  */
 
 import * as admin from 'firebase-admin';
@@ -22,8 +24,8 @@ export interface UGCCreative {
   url: string;
   text?: string;
   platform: 'meta' | 'tiktok' | 'google' | 'all';
-  source: 'creator' | 'influencer' | 'ai' | 'ugc_platform';
-  creatorId?: string;
+  source: 'earner' | 'influencer' | 'ai' | 'ugc_platform';
+  earnerId?: string;
   country: string;
   emotion: 'romance' | 'excitement' | 'safety' | 'money' | 'social' | 'fun';
   tags: string[];
@@ -56,7 +58,7 @@ export interface UGCCreative {
 
 export interface CreatorSubmission {
   id: string;
-  creatorId: string;
+  earnerId: string;
   creativeType: 'video' | 'image';
   filUSDl: string;
   caption?: string;
@@ -94,19 +96,19 @@ export const submitUGCCreative = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid emotion');
   }
 
-  // Check if user is a creator
+  // Check if user is a earner
   const userDoc = await db.collection('users').doc(request.auth.uid).get();
   if (!userDoc.exists) {
     throw new functions.https.HttpsError('not-found', 'User not found');
   }
 
   const userData = userDoc.data()!;
-  const isCreator = userData.roles?.creator === true || userData.roles?.influencer === true;
+  const isCreator = userData.roles?.earner === true || userData.roles?.influencer === true;
 
   // Create submission
   const submission: Partial<CreatorSubmission> = {
     id: db.collection('ugc_submissions').doc().id,
-    creatorId: request.auth.uid,
+    earnerId: request.auth.uid,
     creativeType: type,
     filUSDl: url,
     caption: caption || text,
@@ -119,7 +121,7 @@ export const submitUGCCreative = functions.https.onCall(async (request) => {
 
   await db.collection('ugc_submissions').doc(submission.id!).set(submission);
 
-  // If creator has high reputation, auto-approve
+  // If earner has high reputation, auto-approve
   if (isCreator && userData.reputation?.score > 85) {
     await autoApproveUGC(submission.id!);
   }
@@ -142,13 +144,13 @@ async function autoApproveUGC(submissionId: string) {
   // Create creative
   const creative: Partial<UGCCreative> = {
     id: db.collection('ua_creatives').doc().id,
-    name: `UGC-${submission.creatorId}-${Date.now()}`,
+    name: `UGC-${submission.earnerId}-${Date.now()}`,
     type: submission.creativeType,
     url: submission.filUSDl,
     text: submission.caption,
     platform: submission.platform as any,
-    source: 'creator',
-    creatorId: submission.creatorId,
+    source: 'earner',
+    earnerId: submission.earnerId,
     country: submission.targetCountry,
     emotion: submission.targetEmotion as any,
     tags: [submission.targetEmotion, submission.targetCountry],
@@ -176,9 +178,9 @@ async function autoApproveUGC(submissionId: string) {
     reviewedBy: 'auto'
   });
 
-  // Pay creator
-  await db.collection('creator_earnings').add({
-    creatorId: submission.creatorId,
+  // Pay earner
+  await db.collection('earner_earnings').add({
+    earnerId: submission.earnerId,
     type: 'ugc_submission',
     amount: 50, // $50 per approved UGC
     currency: 'USD',
@@ -217,9 +219,9 @@ export const reviewUGCSubmission = functions.https.onCall(async (request) => {
       rejectedReason
     });
 
-    // Notify creator
+    // Notify earner
     await db.collection('notifications').add({
-      userId: submission.creatorId,
+      userId: submission.earnerId,
       type: 'ugc_rejected',
       title: 'UGC Submission Rejected',
       body: rejectedReason || 'Your submission did not meet our guidelines',
@@ -335,10 +337,10 @@ export const rotateTopCreatives = onSchedule("every 6 hours", async (event) => {
             updatedAt: admin.firestore.Timestamp.now()
           });
 
-          // Bonus for creator
-          if (creative.creatorId) {
-            await db.collection('creator_earnings').add({
-              creatorId: creative.creatorId,
+          // Bonus for earner
+          if (creative.earnerId) {
+            await db.collection('earner_earnings').add({
+              earnerId: creative.earnerId,
               type: 'ugc_performance_bonus',
               amount: 100, // $100 bonus for winners
               currency: 'USD',
@@ -608,6 +610,20 @@ export const ugcEngine = {
   importFromUGCPlatform,
   getCreativeAnalytics
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

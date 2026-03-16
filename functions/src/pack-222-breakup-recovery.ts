@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 222: Breakup Recovery & Chemistry Restart Engine
  * 
@@ -647,6 +649,20 @@ export function getEmotionalSafetyCopy(phase: RecoveryPhase): { title: string; m
   
   return copy[phase];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

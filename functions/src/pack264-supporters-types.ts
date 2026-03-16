@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 264: TOP SUPPORTERS & VIP RANKINGS
  * Spender Retention Engine - Type Definitions
@@ -31,7 +33,7 @@ export interface SupporterProfile {
   notificationPreferences: {
     rankChanges: boolean;
     nearRankup: boolean;
-    creatorLive: boolean;
+    earnerLive: boolean;
     monthlyReset: boolean;
   };
   createdAt: any; // Timestamp or Date
@@ -41,7 +43,7 @@ export interface SupporterProfile {
 // Supporter Ranking Entry
 export interface SupporterRanking {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   lifetimeTokensSpent: number;
   monthlyTokensSpent: number;
   currentRank: SupporterRank;
@@ -90,7 +92,7 @@ export interface EntranceEffect {
   id: string;
   roomId: string;
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   rank: SupporterRank;
   displayName: string;
   anonymousMode: boolean;
@@ -122,9 +124,9 @@ export interface LifetimeArchiveBadge {
 export interface RankChangeNotification {
   id: string;
   userId: string;
-  creatorId: string;
-  creatorName: string;
-  type: 'rank_up' | 'rank_down' | 'near_rankup' | 'creator_live' | 'reset_warning';
+  earnerId: string;
+  earnerName: string;
+  type: 'rank_up' | 'rank_down' | 'near_rankup' | 'earner_live' | 'reset_warning';
   oldRank: SupporterRank;
   newRank: SupporterRank;
   tokensNeeded?: number;
@@ -136,7 +138,7 @@ export interface RankChangeNotification {
 // Token Spending Event
 export interface TokenSpendingEvent {
   supporterId: string;
-  creatorId: string;
+  earnerId: string;
   amount: number;
   type: 'gift' | 'message' | 'call' | 'ppv' | 'fan_club';
   transactionId: string;
@@ -145,7 +147,7 @@ export interface TokenSpendingEvent {
 
 // Creator Supporter Analytics
 export interface CreatorSupporterAnalytics {
-  creatorId: string;
+  earnerId: string;
   period: string; // 'YYYY-MM'
   totalSupporters: number;
   activeSupporters: number; // spent in current month
@@ -160,9 +162,9 @@ export interface CreatorSupporterAnalytics {
   updatedAt: Date;
 }
 
-// Rank Thresholds (dynamic per creator)
+// Rank Thresholds (dynamic per earner)
 export interface RankThresholds {
-  creatorId: string;
+  earnerId: string;
   top1MinTokens: number;
   top3MinTokens: number;
   top10MinTokens: number;
@@ -247,6 +249,20 @@ export const PERK_MAPPINGS: { [key in SupporterRank]: Partial<SupporterPerks> } 
   },
   [SupporterRank.NONE]: {},
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

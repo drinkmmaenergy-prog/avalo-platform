@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 315 - Push Notifications & Growth Funnels
  * TypeScript types and interfaces
@@ -126,7 +128,7 @@ export interface LocalizedText {
 export interface NotificationData {
   screen?: 'CHAT' | 'PROFILE' | 'CALENDAR' | 'EVENT' | 'WALLET' | 'SAFETY_CENTER' | 'VERIFICATION' | 'SWIPE';
   screenParams?: Record<string, any>;  // { chatId: '...', eventId: '...', etc. }
-  deepLink?: string;                   // e.g., 'avalo://chat/123'
+  deepLink?: string;                   // e.g., 'platform://chat/123'
   imageUrl?: string;                   // Optional notification image
   actionUrl?: string;                  // Optional action URL
 }
@@ -351,6 +353,22 @@ export interface ProcessNotificationResult {
   errors: string[];
   skippedReason?: 'USER_PREFERENCE' | 'QUIET_HOURS' | 'RATE_LIMIT' | 'NO_DEVICES' | 'LEGAL_RESTRICTION';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

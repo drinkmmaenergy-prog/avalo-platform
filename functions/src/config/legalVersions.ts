@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * Legal Document Versions
  * PHASE 30B-3: Legal Acceptance System
@@ -12,6 +14,22 @@ export const LEGAL_VERSIONS = {
   community: 1,
   safety: 1
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

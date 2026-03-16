@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Account Lifecycle Management for Avalo
  *
@@ -444,7 +446,7 @@ export async function checkDeletionBlockers(
   
   const userBookings = pendingBookingsSnap.docs.filter(doc => {
     const booking = doc.data();
-    return booking.bookerId === userId || booking.creatorId === userId;
+    return booking.bookerId === userId || booking.earnerId === userId;
   });
   
   if (userBookings.length > 0) {
@@ -644,6 +646,20 @@ export async function applyTemplatePreferences(
 export {
   // Types are exported via export type declarations above
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

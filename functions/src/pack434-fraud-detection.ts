@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 434 — Global Ambassador Program & Offline Partner Expansion Engine
  * Fraud & Risk Engine Extension
@@ -146,7 +148,7 @@ export class FraudDetectionService {
         'vpn_detected',
         'developer_mode',
       ],
-      threshold: MONETIZATION_SPLITS.CHAT.creator,
+      threshold: MONETIZATION_SPLITS.CHAT.earner,
       weight: 0.7,
     },
   ];
@@ -855,6 +857,22 @@ export function createFraudDetectionService(
 ): FraudDetectionService {
   return new FraudDetectionService(db);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 167 - Avalo Influencer & Affiliate Attribution Network
  * Type definitions for ethical affiliate marketing system
@@ -45,7 +47,7 @@ export type BlockReason =
 // Affiliate Link interface
 export interface AffiliateLink {
   id: string;
-  creatorId: string;
+  earnerId: string;
   productId: string;
   productName: string;
   productDescription: string;
@@ -118,7 +120,7 @@ export interface AffiliateConversion {
 // Affiliate Commission interface
 export interface AffiliateCommission {
   id: string;
-  creatorId: string;
+  earnerId: string;
   conversionId: string;
   affiliateLinkId: string;
   
@@ -146,7 +148,7 @@ export interface AffiliateCommission {
 // Affiliate Banner interface
 export interface AffiliateBanner {
   id: string;
-  creatorId: string;
+  earnerId: string;
   affiliateLinkId: string;
   
   // Banner content
@@ -172,9 +174,9 @@ export interface AffiliateBanner {
   updatedAt: Timestamp;
 }
 
-// Affiliate Analytics interface (aggregated per creator)
+// Affiliate Analytics interface (aggregated per earner)
 export interface AffiliateAnalytics {
-  creatorId: string;
+  earnerId: string;
   
   // Performance metrics
   totalLinks: number;
@@ -215,7 +217,7 @@ export interface AffiliateAnalytics {
 // Blocked Content interface (for AI moderation results)
 export interface BlockedAffiliateContent {
   id: string;
-  creatorId: string;
+  earnerId: string;
   contentType: 'link' | 'banner' | 'description';
   contentId: string;
   
@@ -316,6 +318,22 @@ export interface RevenueSplitValidation {
   referralPercentage: number;
   platformFee: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

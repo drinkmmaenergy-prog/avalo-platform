@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 324C — Creator Daily Ranking Calculation Engine
  * READ-ONLY ranking - does not modify payouts, pricing, or business logic
@@ -19,48 +21,48 @@ import { admin, functions } from './runtime';
 // ============================================================================
 
 /**
- * Generate daily creator rankings for specified date
+ * Generate daily earner rankings for specified date
  * Runs after PACK 324A daily aggregation
  * READ-ONLY - does not modify any business logic
  */
 export async function generateDailyCreatorRanking(date: string): Promise<number> {
-  logger.info(`[PACK 324C] Generating creator rankings for date: ${date}`);
+  logger.info(`[PACK 324C] Generating earner rankings for date: ${date}`);
   
   try {
-    // Get all creator KPIs for the date (from PACK 324A)
-    const creatorsData = await getCreatorKpiForDate(date);
+    // Get all earner KPIs for the date (from PACK 324A)
+    const earnersData = await getCreatorKpiForDate(date);
     
-    if (creatorsData.length === 0) {
-      logger.warn(`[PACK 324C] No creator data found for date: ${date}`);
+    if (earnersData.length === 0) {
+      logger.warn(`[PACK 324C] No earner data found for date: ${date}`);
       return 0;
     }
     
-    // Filter creators meeting minimum requirements
-    const eligibleCreators = creatorsData.filter(creator => 
-      creator.totalSessions >= RANKING_REQUIREMENTS.MIN_SESSIONS &&
-      creator.trustScore >= RANKING_REQUIREMENTS.MIN_TRUST_SCORE
+    // Filter earners meeting minimum requirements
+    const eligibleCreators = earnersData.filter(earner => 
+      earner.totalSessions >= RANKING_REQUIREMENTS.MIN_SESSIONS &&
+      earner.trustScore >= RANKING_REQUIREMENTS.MIN_TRUST_SCORE
     );
     
-    logger.info(`[PACK 324C] ${eligibleCreators.length} eligible creators (from ${creatorsData.length} total)`);
+    logger.info(`[PACK 324C] ${eligibleCreators.length} eligible earners (from ${earnersData.length} total)`);
     
     // Calculate ranking scores
-    const rankedCreators = eligibleCreators.map(creator => ({
-      ...creator,
-      rankingScore: calculateRankingScore(creator),
+    const rankedCreators = eligibleCreators.map(earner => ({
+      ...earner,
+      rankingScore: calculateRankingScore(earner),
     }));
     
     // Sort by ranking score (descending)
     rankedCreators.sort((a, b) => b.rankingScore - a.rankingScore);
     
     // Assign positions
-    const rankings: CreatorRankingDaily[] = rankedCreators.map((creator, index) => ({
+    const rankings: CreatorRankingDaily[] = rankedCreators.map((earner, index) => ({
       date,
-      userId: creator.userId,
-      totalEarnedTokens: creator.totalEarnedTokens,
-      totalSessions: creator.totalSessions,
-      totalCallsMinutes: creator.totalCallsMinutes,
-      averageRating: creator.averageRating,
-      trustScore: creator.trustScore,
+      userId: earner.userId,
+      totalEarnedTokens: earner.totalEarnedTokens,
+      totalSessions: earner.totalSessions,
+      totalCallsMinutes: earner.totalCallsMinutes,
+      averageRating: earner.averageRating,
+      trustScore: earner.trustScore,
       rankPosition: index + 1,
       createdAt: Timestamp.now(),
     }));
@@ -82,7 +84,7 @@ export async function generateDailyCreatorRanking(date: string): Promise<number>
       await batch.commit();
     }
     
-    logger.info(`[PACK 324C] Stored ${rankings.length} creator rankings for date: ${date}`);
+    logger.info(`[PACK 324C] Stored ${rankings.length} earner rankings for date: ${date}`);
     
     return rankings.length;
   } catch (error) {
@@ -105,24 +107,24 @@ interface CreatorRankingData {
 }
 
 /**
- * Get creator KPI data for ranking from PACK 324A
+ * Get earner KPI data for ranking from PACK 324A
  * READ-ONLY - only reads from existing collections
  */
 async function getCreatorKpiForDate(date: string): Promise<CreatorRankingData[]> {
   try {
-    // Get all creator KPIs for the date
+    // Get all earner KPIs for the date
     const kpiSnapshot = await db
-      .collection('creatorKpiDaily')
+      .collection('earnerKpiDaily')
       .where('date', '==', date)
       .get();
     
-    const creators: CreatorRankingData[] = [];
+    const earners: CreatorRankingData[] = [];
     
     for (const doc of kpiSnapshot.docs) {
       const kpiData = doc.data();
       const userId = kpiData.userId;
       
-      // Get trust score for creator
+      // Get trust score for earner
       const trustScoreDoc = await db
         .collection(TRUST_CONFIG.COLLECTIONS.TRUST_SCORES)
         .doc(userId)
@@ -136,7 +138,7 @@ async function getCreatorKpiForDate(date: string): Promise<CreatorRankingData[]>
       // Calculate total call minutes from sessions
       const totalCallsMinutes = await getCreatorCallMinutes(userId, date);
       
-      creators.push({
+      earners.push({
         userId,
         totalEarnedTokens: kpiData.totalEarnedTokens || 0,
         totalSessions: kpiData.sessionsCount || 0,
@@ -146,15 +148,15 @@ async function getCreatorKpiForDate(date: string): Promise<CreatorRankingData[]>
       });
     }
     
-    return creators;
+    return earners;
   } catch (error) {
-    logger.error(`[PACK 324C] Error getting creator KPI data for ${date}:`, error);
+    logger.error(`[PACK 324C] Error getting earner KPI data for ${date}:`, error);
     return [];
   }
 }
 
 /**
- * Get creator average rating for date
+ * Get earner average rating for date
  */
 async function getCreatorAverageRating(userId: string, date: string): Promise<number> {
   try {
@@ -164,7 +166,7 @@ async function getCreatorAverageRating(userId: string, date: string): Promise<nu
     
     const reviewsSnapshot = await db
       .collection('reviews')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(startOfDay))
       .where('createdAt', '<', Timestamp.fromDate(endOfDay))
       .get();
@@ -186,7 +188,7 @@ async function getCreatorAverageRating(userId: string, date: string): Promise<nu
 }
 
 /**
- * Get total call minutes for creator on date
+ * Get total call minutes for earner on date
  */
 async function getCreatorCallMinutes(userId: string, date: string): Promise<number> {
   try {
@@ -197,7 +199,7 @@ async function getCreatorCallMinutes(userId: string, date: string): Promise<numb
     // Voice calls
     const voiceSnapshot = await db
       .collection('aiVoiceCallSessions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(startOfDay))
       .where('createdAt', '<', Timestamp.fromDate(endOfDay))
       .get();
@@ -210,7 +212,7 @@ async function getCreatorCallMinutes(userId: string, date: string): Promise<numb
     // Video calls
     const videoSnapshot = await db
       .collection('aiVideoCallSessions')
-      .where('creatorId', '==', userId)
+      .where('earnerId', '==', userId)
       .where('createdAt', '>=', Timestamp.fromDate(startOfDay))
       .where('createdAt', '<', Timestamp.fromDate(endOfDay))
       .get();
@@ -234,12 +236,12 @@ async function getCreatorCallMinutes(userId: string, date: string): Promise<numb
  * Calculate ranking score using weighted formulas
  * Higher score = better ranking
  */
-function calculateRankingScore(creator: CreatorRankingData): number {
+function calculateRankingScore(earner: CreatorRankingData): number {
   // Normalize each component (0-1 scale)
-  const normalizedTrustScore = creator.trustScore / 100;
-  const normalizedEarnings = normalizeEarnings(creator.totalEarnedTokens);
-  const normalizedSessions = normalizeSessions(creator.totalSessions);
-  const normalizedRating = creator.averageRating / 5.0;
+  const normalizedTrustScore = earner.trustScore / 100;
+  const normalizedEarnings = normalizeEarnings(earner.totalEarnedTokens);
+  const normalizedSessions = normalizeSessions(earner.totalSessions);
+  const normalizedRating = earner.averageRating / 5.0;
   
   // Calculate weighted score
   const score = 
@@ -283,7 +285,7 @@ function normalizeSessions(sessions: number): number {
 // ============================================================================
 
 /**
- * Get top N creators for a specific date
+ * Get top N earners for a specific date
  */
 export async function getTopCreatorsForDate(date: string, limit: number = 100): Promise<CreatorRankingDaily[]> {
   try {
@@ -296,13 +298,13 @@ export async function getTopCreatorsForDate(date: string, limit: number = 100): 
     
     return snapshot.docs.map(doc => doc.data() as CreatorRankingDaily);
   } catch (error) {
-    logger.error(`[PACK 324C] Error getting top creators for ${date}:`, error);
+    logger.error(`[PACK 324C] Error getting top earners for ${date}:`, error);
     return [];
   }
 }
 
 /**
- * Get creator's ranking history
+ * Get earner's ranking history
  */
 export async function getCreatorRankingHistory(
   userId: string,
@@ -326,7 +328,7 @@ export async function getCreatorRankingHistory(
 }
 
 /**
- * Get creator's ranking for specific date
+ * Get earner's ranking for specific date
  */
 export async function getCreatorRankingForDate(userId: string, date: string): Promise<CreatorRankingDaily | null> {
   try {
@@ -346,6 +348,20 @@ export async function getCreatorRankingForDate(userId: string, date: string): Pr
     return null;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

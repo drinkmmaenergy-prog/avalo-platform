@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 385 — Viral Referral & Invite Loop (Anti-Fraud Safe)
  * Manages referral links, attribution, and rewards with fraud protection
@@ -124,7 +126,7 @@ export const pack385_generateReferralLink = functions.https.onCall(async (reques
   return {
     success: true,
     code,
-    url: `https://avalo.app/invite/${code}`
+    url: `https://platform.app/invite/${code}`
   };
 });
 
@@ -503,6 +505,20 @@ export const pack385_unlockReferralRewards = onSchedule("every 24 hours", async 
 
     console.log(`Unlocked ${unlocked} referral rewards`);
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 309 — Swipe & Discovery 18+ Verification Enforcement
  * 
@@ -149,6 +151,20 @@ export function getVerificationErrorMessage(
 }
 
 console.log('✅ PACK 309 — Swipe & Discovery 18+ Verification Enforcement initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 152 - Ambassador Functions
  * Backend operations for Global Ambassadors & City Leaders Program
@@ -149,7 +151,7 @@ export const approveAmbassador = functions.https.onCall(async (request) => {
     complianceSignedAt: new Date(),
     eventsHosted: 0,
     usersOnboarded: 0,
-    creatorsOnboarded: 0,
+    earnersOnboarded: 0,
     totalAttendees: 0,
     averageSatisfactionScore: 0,
     totalTokensEarned: 0,
@@ -246,7 +248,7 @@ export const scheduleAmbassadorEvent = functions.https.onCall(async (request) =>
   }
 
   const eventId = db.collection('ambassador_events').doc().id;
-  const checkInQRCode = `avalo://event-checkin/${eventId}`;
+  const checkInQRCode = `platform://event-checkin/${eventId}`;
 
   const event: AmbassadorEvent = {
     eventId,
@@ -266,7 +268,7 @@ export const scheduleAmbassadorEvent = functions.https.onCall(async (request) =>
     maxAttendees,
     registeredCount: 0,
     attendedCount: 0,
-    safetyRulesUrl: 'https://avalo.app/ambassador-event-safety',
+    safetyRulesUrl: 'https://platform.app/ambassador-event-safety',
     photographyConsentRequired: true,
     ageRestriction: 18,
     status: 'pending_approval',
@@ -633,6 +635,22 @@ export const reportComplianceIncident = functions.https.onCall(async (request) =
 
   return { incidentId, status: 'reported' };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

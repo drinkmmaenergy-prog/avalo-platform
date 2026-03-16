@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 350 - Unified Subscriptions v2
  * 
@@ -69,7 +71,6 @@ export interface SubscriptionProductConfig {
 
 /**
  * Defines what perks each tier gets
- * IMPORTANT: No changes to revenue splits or token pricing
  */
 export const SUBSCRIPTION_PERKS = {
   FREE: {
@@ -97,7 +98,7 @@ export const SUBSCRIPTION_PERKS = {
     voiceDiscountPercent: 0,   // No discounts on calls/chat
     videoDiscountPercent: 0,
     chatWordBucket: 11,
-    hasAdvancedAnalytics: true,  // Advanced creator tools
+    hasAdvancedAnalytics: true,  // Advanced earner tools
     hasAdsDashboard: false,
   },
   BUSINESS: {
@@ -516,6 +517,21 @@ export async function getUserSubscriptionDetails(
     return null;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

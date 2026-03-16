@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 92 — Unified Notification & Messaging Engine
  * TypeScript Type Definitions
@@ -5,7 +7,7 @@
  * NON-NEGOTIABLE RULES:
  * - No free tokens, no bonuses, no discounts
  * - Do not change token price per unit
- * - Do not change revenue split (65% creator / 35% Avalo)
+ * - Do not change revenue split (65% earner / 35% Avalo)
  * - Notifications inform about earnings, never guarantee future income
  * - Legal/trust/enforcement notifications must be clear, neutral, compliant
  */
@@ -114,6 +116,20 @@ export interface NotificationTemplate {
   deepLink?: (params: Record<string, any>) => string;
   category: NotificationCategory;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

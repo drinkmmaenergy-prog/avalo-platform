@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 173 — Avalo Global Abuse Firewall
  * API Endpoints
@@ -313,7 +315,7 @@ export const getCreatorShieldSettings = onCall<
 
     try {
       const settingsDoc = await db
-        .collection('creator_shield_settings')
+        .collection('earner_shield_settings')
         .doc(userId)
         .get();
 
@@ -336,7 +338,7 @@ export const getCreatorShieldSettings = onCall<
         };
 
         await db
-          .collection('creator_shield_settings')
+          .collection('earner_shield_settings')
           .doc(userId)
           .set(defaultSettings);
 
@@ -368,7 +370,7 @@ export const updateCreatorShieldSettings = onCall<
 
     try {
       await db
-        .collection('creator_shield_settings')
+        .collection('earner_shield_settings')
         .doc(userId)
         .set(
           {
@@ -617,6 +619,20 @@ async function recommendShieldMode(userId: string): Promise<void> {
   // Send notification (integrate with notification system)
   logger.info('Shield mode recommended', { userId });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

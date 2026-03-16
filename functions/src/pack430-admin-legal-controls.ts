@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 430 — ADMIN LEGAL CONTROL PANEL
  * 
@@ -522,6 +524,20 @@ export async function adminExportComplianceReport(
 // ─────────────────────────────────────────────────────────────────
 
 export default AdminLegalControls;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, Timestamp, serverTimestamp, onSchedule } from '../runtime';
@@ -99,9 +101,9 @@ export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", time
       // Calculate platform share based on revenue splits
       // Chat/Calls/AI: 35% platform share
       // Calendar/Events: 20% platform share
-      const platformShareTokens = Math.round(
-        (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * MONETIZATION_SPLITS.CHAT.avalo +
-        (tokensSpentCalendar + tokensSpentEvents) * MONETIZATION_SPLITS.EVENT_TICKET.avalo
+      const platformTokens = Math.round(
+        (tokensSpentChat + tokensSpentCalls + tokensSpentAI) * MONETIZATION_SPLITS.CHAT.platform +
+        (tokensSpentCalendar + tokensSpentEvents) * MONETIZATION_SPLITS.EVENT_TICKET.platform
       );
 
       // 4. Safety Metrics
@@ -151,7 +153,7 @@ export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", time
           tokensSpentCalendar,
           tokensSpentEvents,
           tokensSpentAI,
-          platformShareTokens
+          platformTokens
         },
         safety: {
           verificationsCompleted: verificationsSnapshot.size,
@@ -174,6 +176,23 @@ export const aggregateInvestorMetrics = onSchedule({ schedule: "0 0 * * *", time
       throw error;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

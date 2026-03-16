@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 120 — Multi-Sided Brand Partnerships & Sponsored Challenges
  * Backend Functions for Brand Campaign Operations
@@ -615,6 +617,20 @@ export const getCampaignPerformance = functions.https.onCall(async (request) => 
 );
 
 console.log('✅ PACK 120 - Brand Campaigns Functions Loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

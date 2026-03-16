@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * AI Auto-Pricing Engine
  * PACK 33-8: Dynamic price optimization for creators
@@ -719,3 +720,4 @@ export default {
   AVALO_COMMISSION,
   CREATOR_SHARE,
 };
+

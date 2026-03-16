@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 258 — SUPPORTER ANALYTICS CLOUD FUNCTIONS
  * Automated functions for tracking, notifications, and retention
@@ -32,11 +34,11 @@ export const onTokenSpending = onDocumentCreated('walletTransactions/{transactio
     }
 
     const supporterId = transaction.userId;
-    const creatorId = transaction.recipientId || transaction.metadata?.creatorId;
+    const earnerId = transaction.recipientId || transaction.metadata?.earnerId;
     const tokensSpent = Math.abs(transaction.amount);
     
-    if (!creatorId) {
-      functions.logger.warn('No creator ID found in transaction', { transactionId: snap.id });
+    if (!earnerId) {
+      functions.logger.warn('No earner ID found in transaction', { transactionId: snap.id });
       return;
     }
 
@@ -45,7 +47,7 @@ export const onTokenSpending = onDocumentCreated('walletTransactions/{transactio
     const transactionSource = validSources.includes(source) ? source : 'gift';
 
     try {
-      await trackTokenSpending(supporterId, creatorId, tokensSpent, {
+      await trackTokenSpending(supporterId, earnerId, tokensSpent, {
         source: transactionSource as any,
         metadata: {
           transactionId: snap.id,
@@ -56,7 +58,7 @@ export const onTokenSpending = onDocumentCreated('walletTransactions/{transactio
 
       functions.logger.info('Tracked token spending', {
         supporterId,
-        creatorId,
+        earnerId,
         tokensSpent,
         source: transactionSource,
       });
@@ -69,7 +71,7 @@ export const onTokenSpending = onDocumentCreated('walletTransactions/{transactio
   });
 
 /**
- * Send notification when creator views supporter's profile
+ * Send notification when earner views supporter's profile
  */
 export const onCreatorViewsProfile = onDocumentCreated('profileViews/{viewId}', async (event) => {
   const snap = event.data;
@@ -78,25 +80,25 @@ export const onCreatorViewsProfile = onDocumentCreated('profileViews/{viewId}', 
     const viewerId = view.viewerId;
     const profileId = view.profileId;
 
-    // Check if viewer is a creator (has earnOnChat enabled)
+    // Check if viewer is a earner (has earnOnChat enabled)
     const viewerDoc = await snap.ref.firestore.collection('users').doc(viewerId).get();
     if (!viewerDoc.exists) return;
 
     const viewerData = viewerDoc.data();
     if (!viewerData?.earnOnChat) {
-      return; // Only send notification if viewer is a creator
+      return; // Only send notification if viewer is a earner
     }
 
     try {
       await sendEmotionalNotification(
         profileId,
         viewerId,
-        'creator_viewed_profile'
+        'earner_viewed_profile'
       );
 
-      functions.logger.info('Sent creator viewed profile notification', {
+      functions.logger.info('Sent earner viewed profile notification', {
         supporterId: profileId,
-        creatorId: viewerId,
+        earnerId: viewerId,
       });
 
       return;
@@ -107,21 +109,21 @@ export const onCreatorViewsProfile = onDocumentCreated('profileViews/{viewId}', 
   });
 
 /**
- * Send notification when creator comes online
+ * Send notification when earner comes online
  */
 export const onCreatorOnlineStatus = onDocumentUpdated('userPresence/{userId}', async (event) => {
   const change = event.data;
   if (!change) return;
     const before = change.before.data();
     const after = change.after.data();
-    const creatorId = event.params.userId;
+    const earnerId = event.params.userId;
 
     // Check if user just came online
     if (before.status !== 'online' && after.status === 'online') {
-      // Get creator's top supporters
+      // Get earner's top supporters
       const fanLevelsSnapshot = await change.after.ref.firestore
         .collection('fanLevels')
-        .where('creatorId', '==', creatorId)
+        .where('earnerId', '==', earnerId)
         .where('level', '>=', 3) // Only notify Big Fan and above
         .orderBy('level', 'desc')
         .limit(10)
@@ -134,16 +136,16 @@ export const onCreatorOnlineStatus = onDocumentUpdated('userPresence/{userId}', 
         notifications.push(
           sendEmotionalNotification(
             fanData.supporterId,
-            creatorId,
-            'creator_online'
+            earnerId,
+            'earner_online'
           )
         );
       }
 
       await Promise.allSettled(notifications);
 
-      functions.logger.info('Sent creator online notifications', {
-        creatorId,
+      functions.logger.info('Sent earner online notifications', {
+        earnerId,
         notificationCount: notifications.length,
       });
     }
@@ -152,18 +154,18 @@ export const onCreatorOnlineStatus = onDocumentUpdated('userPresence/{userId}', 
   });
 
 /**
- * Send notification when creator posts new story
+ * Send notification when earner posts new story
  */
 export const onNewStory = onDocumentCreated('stories/{storyId}', async (event) => {
   const snap = event.data;
   if (!snap) return;
     const story = snap.data();
-    const creatorId = story.userId;
+    const earnerId = story.userId;
 
-    // Get creator's top supporters (L3+)
+    // Get earner's top supporters (L3+)
     const fanLevelsSnapshot = await snap.ref.firestore
       .collection('fanLevels')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('level', '>=', 3)
       .orderBy('level', 'desc')
       .limit(20)
@@ -176,8 +178,8 @@ export const onNewStory = onDocumentCreated('stories/{storyId}', async (event) =
       notifications.push(
         sendEmotionalNotification(
           fanData.supporterId,
-          creatorId,
-          'creator_new_story'
+          earnerId,
+          'earner_new_story'
         )
       );
     }
@@ -185,7 +187,7 @@ export const onNewStory = onDocumentCreated('stories/{storyId}', async (event) =
     await Promise.allSettled(notifications);
 
     functions.logger.info('Sent new story notifications', {
-      creatorId,
+      earnerId,
       storyId: snap.id,
       notificationCount: notifications.length,
     });
@@ -194,18 +196,18 @@ export const onNewStory = onDocumentCreated('stories/{storyId}', async (event) =
   });
 
 /**
- * Send notification when creator posts paid media
+ * Send notification when earner posts paid media
  */
 export const onNewPaidMedia = onDocumentCreated('paidMedia/{mediaId}', async (event) => {
   const snap = event.data;
   if (!snap) return;
     const media = snap.data();
-    const creatorId = media.creatorId;
+    const earnerId = media.earnerId;
 
-    // Get creator's top supporters (L3+)
+    // Get earner's top supporters (L3+)
     const fanLevelsSnapshot = await snap.ref.firestore
       .collection('fanLevels')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('level', '>=', 3)
       .orderBy('level', 'desc')
       .limit(20)
@@ -218,8 +220,8 @@ export const onNewPaidMedia = onDocumentCreated('paidMedia/{mediaId}', async (ev
       notifications.push(
         sendEmotionalNotification(
           fanData.supporterId,
-          creatorId,
-          'creator_new_media'
+          earnerId,
+          'earner_new_media'
         )
       );
     }
@@ -227,7 +229,7 @@ export const onNewPaidMedia = onDocumentCreated('paidMedia/{mediaId}', async (ev
     await Promise.allSettled(notifications);
 
     functions.logger.info('Sent new media notifications', {
-      creatorId,
+      earnerId,
       mediaId: snap.id,
       notificationCount: notifications.length,
     });
@@ -312,7 +314,7 @@ export const getSupporterAnalytics = functions.https.onCall(async (request) => {
 });
 
 /**
- * Get fan level with a specific creator (callable from client)
+ * Get fan level with a specific earner (callable from client)
  */
 export const getFanLevel = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -321,14 +323,14 @@ export const getFanLevel = functions.https.onCall(async (request) => {
   }
 
   const supporterId = request.auth.uid;
-  const { creatorId } = data;
+  const { earnerId } = data;
 
-  if (!creatorId) {
-    throw new functions.https.HttpsError('invalid-argument', 'creatorId is required');
+  if (!earnerId) {
+    throw new functions.https.HttpsError('invalid-argument', 'earnerId is required');
   }
 
   try {
-    const levelId = `${supporterId}_${creatorId}`;
+    const levelId = `${supporterId}_${earnerId}`;
     const fanLevelDoc = await db
       .collection('fanLevels')
       .doc(levelId)
@@ -340,7 +342,7 @@ export const getFanLevel = functions.https.onCall(async (request) => {
 
     return fanLevelDoc.data();
   } catch (error) {
-    functions.logger.error('Error getting fan level', { error, supporterId, creatorId });
+    functions.logger.error('Error getting fan level', { error, supporterId, earnerId });
     throw new functions.https.HttpsError('internal', 'Failed to get fan level');
   }
 });
@@ -392,6 +394,20 @@ export const markNotificationRead = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to mark notification as read');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 432 — Google Ads Connector
  * 
@@ -374,7 +376,7 @@ export const syncGoogleCampaign = functions.https.onCall(async (request) => {
       geoTargets: [campaign.country],
       languages: ['en'],
       startDate: new Date().toISOString().split('T')[0].replace(/-/g, ''),
-      appId: 'com.avalo.app',
+      appId: 'com.platform.app',
       appStore: 'GOOGLE_APP_STORE'
     };
 
@@ -655,6 +657,20 @@ export const googleConnector = {
   syncGoogleStats,
   trackGoogleConversion
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

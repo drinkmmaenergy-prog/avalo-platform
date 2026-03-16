@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Service
  * 
  * Core service for earnings dashboard and statement generation
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -26,7 +28,7 @@ import {
   getCurrentMonthKey,
   getMonthDateRange,
   TOKEN_TOKEN_PAYOUT_USD,
-} from './types/pack303-creator-earnings.types';
+} from './types/pack303-earner-earnings.types';
 import { aggregateUserMonthlyEarnings } from './pack303-aggregation';
 import { admin, timestamp } from './runtime';
 
@@ -50,12 +52,12 @@ export async function getEarningsDashboard(
     
     // Get or create monthly earnings document
     const docId = generateMonthlyDocId(userId, targetYear, targetMonth);
-    let earningsDoc = await db.collection('creatorEarningsMonthly').doc(docId).get();
+    let earningsDoc = await db.collection('earnerEarningsMonthly').doc(docId).get();
     
     // If doesn't exist, trigger aggregation
     if (!earningsDoc.exists) {
       await aggregateUserMonthlyEarnings(userId, targetYear, targetMonth);
-      earningsDoc = await db.collection('creatorEarningsMonthly').doc(docId).get();
+      earningsDoc = await db.collection('earnerEarningsMonthly').doc(docId).get();
     }
     
     const earnings = earningsDoc.data() as CreatorEarningsMonthly;
@@ -94,31 +96,31 @@ export async function getEarningsDashboard(
           source: 'CHAT',
           tokensEarned: earnings?.tokensEarnedChat || 0,
           tokensRefunded: earnings?.tokensRefundedChat || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * MONETIZATION_SPLITS.CHAT.creator),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedChat || 0) * MONETIZATION_SPLITS.CHAT.earner),
         },
         {
           source: 'CALLS',
           tokensEarned: earnings?.tokensEarnedCalls || 0,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalls || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalls || 0) * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'CALENDAR',
           tokensEarned: earnings?.tokensEarnedCalendar || 0,
           tokensRefunded: earnings?.tokensRefundedCalendar || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalendar || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedCalendar || 0) * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'EVENTS',
           tokensEarned: earnings?.tokensEarnedEvents || 0,
           tokensRefunded: earnings?.tokensRefundedEvents || 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedEvents || 0) * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedEvents || 0) * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'OTHER',
           tokensEarned: earnings?.tokensEarnedOther || 0,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * MONETIZATION_SPLITS.CHAT.creator),
+          tokensCreatorShare: Math.floor((earnings?.tokensEarnedOther || 0) * MONETIZATION_SPLITS.CHAT.earner),
         },
       ],
       totalNetTokens: earnings?.tokensNetEarned || 0,
@@ -208,12 +210,12 @@ export async function getMonthlyStatement(
     
     // Get monthly earnings document
     const docId = generateMonthlyDocId(userId, year, month);
-    let earningsDoc = await db.collection('creatorEarningsMonthly').doc(docId).get();
+    let earningsDoc = await db.collection('earnerEarningsMonthly').doc(docId).get();
     
     // If doesn't exist, trigger aggregation
     if (!earningsDoc.exists) {
       await aggregateUserMonthlyEarnings(userId, year, month);
-      earningsDoc = await db.collection('creatorEarningsMonthly').doc(docId).get();
+      earningsDoc = await db.collection('earnerEarningsMonthly').doc(docId).get();
     }
     
     if (!earningsDoc.exists) {
@@ -245,31 +247,31 @@ export async function getMonthlyStatement(
           source: 'CHAT',
           tokensEarned: earnings.tokensEarnedChat,
           tokensRefunded: earnings.tokensRefundedChat,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * MONETIZATION_SPLITS.CHAT.creator),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedChat * MONETIZATION_SPLITS.CHAT.earner),
         },
         {
           source: 'CALLS',
           tokensEarned: earnings.tokensEarnedCalls,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalls * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalls * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'CALENDAR',
           tokensEarned: earnings.tokensEarnedCalendar,
           tokensRefunded: earnings.tokensRefundedCalendar,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalendar * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedCalendar * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'EVENTS',
           tokensEarned: earnings.tokensEarnedEvents,
           tokensRefunded: earnings.tokensRefundedEvents,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedEvents * MONETIZATION_SPLITS.EVENT_TICKET.creator),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedEvents * MONETIZATION_SPLITS.EVENT_TICKET.earner),
         },
         {
           source: 'OTHER',
           tokensEarned: earnings.tokensEarnedOther,
           tokensRefunded: 0,
-          tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * MONETIZATION_SPLITS.CHAT.creator),
+          tokensCreatorShare: Math.floor(earnings.tokensEarnedOther * MONETIZATION_SPLITS.CHAT.earner),
         },
       ],
       
@@ -421,7 +423,7 @@ export async function getAvailableEarningsMonths(
   userId: string
 ): Promise<Array<{ year: number; month: number }>> {
   try {
-    const earningsQuery = await db.collection('creatorEarningsMonthly')
+    const earningsQuery = await db.collection('earnerEarningsMonthly')
       .where('userId', '==', userId)
       .orderBy('year', 'desc')
       .orderBy('month', 'desc')
@@ -440,6 +442,22 @@ export async function getAvailableEarningsMonths(
     return [];
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

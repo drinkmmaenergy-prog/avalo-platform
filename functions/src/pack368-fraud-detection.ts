@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 368 — Viral Referral & Invite Engine
  * Fraud Detection & Prevention Engine
@@ -160,7 +162,7 @@ export class ReferralFraudDetector {
         referralId: referral.id,
         signalType: 'proxy_vpn',
         riskLevel: 'medium',
-        confidence: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+        confidence: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
         details: {
           ipAddress: referral.ipAddress,
         },
@@ -302,7 +304,7 @@ export class ReferralFraudDetector {
         referralId: referral.id,
         signalType: 'emulator',
         riskLevel: 'high',
-        confidence: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+        confidence: MONETIZATION_SPLITS.EVENT_TICKET.earner,
         details: {
           userAgent: referral.userAgent,
         },
@@ -459,6 +461,22 @@ export class ReferralFraudDetector {
     return false;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

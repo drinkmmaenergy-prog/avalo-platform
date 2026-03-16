@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 143 - Safety Validation Middleware
  * Enforces ethical guidelines for CRM Business Suite
@@ -242,6 +244,20 @@ export class CRMSafetyValidator {
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

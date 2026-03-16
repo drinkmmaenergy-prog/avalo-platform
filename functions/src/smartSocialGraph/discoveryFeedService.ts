@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Discovery Feed Service
  * Multi-Persona Personalization (User Controlled)
@@ -242,7 +244,7 @@ export async function getSmartSocialGraphFeed(
       ? [category]
       : MODE_CATEGORY_MAP[mode];
     
-    // Fetch candidate creators
+    // Fetch candidate earners
     const candidates = await fetchCandidateCreators(
       targetCategories,
       language || interests.languages[0],
@@ -251,7 +253,7 @@ export async function getSmartSocialGraphFeed(
       limit * 3 // Fetch more to account for filtering
     );
     
-    logger.info(`Found ${candidates.length} candidate creators`);
+    logger.info(`Found ${candidates.length} candidate earners`);
     
     // Score and rank candidates
     const scoredCandidates = await scoreCandidates(userId, candidates);
@@ -271,15 +273,15 @@ export async function getSmartSocialGraphFeed(
     // Take top N candidates
     const topCandidates = prioritizedCandidates.slice(0, limit);
     
-    // Build creator cards
+    // Build earner cards
     const items: CreatorCard[] = [];
     for (const candidate of topCandidates) {
-      const card = await buildCreatorCard(candidate.creatorId);
+      const card = await buildCreatorCard(candidate.earnerId);
       if (card) {
         items.push(card);
         
         // Record impression (for shadow density tracking)
-        await recordCreatorImpression(candidate.creatorId, userId, 'FEED');
+        await recordCreatorImpression(candidate.earnerId, userId, 'FEED');
       }
     }
     
@@ -293,7 +295,7 @@ export async function getSmartSocialGraphFeed(
     // Determine pagination
     const hasMore = candidates.length >= limit * 3;
     const nextCursor = hasMore && items.length > 0
-      ? items[items.length - 1].creatorId
+      ? items[items.length - 1].earnerId
       : undefined;
     
     logger.info(
@@ -316,7 +318,7 @@ export async function getSmartSocialGraphFeed(
 }
 
 /**
- * Fetch candidate creators from database
+ * Fetch candidate earners from database
  */
 async function fetchCandidateCreators(
   categories: DiscoveryCategory[],
@@ -326,14 +328,14 @@ async function fetchCandidateCreators(
   limit: number
 ): Promise<string[]> {
   try {
-    // Query creator relevance scores
+    // Query earner relevance scores
     let query = db
-      .collection('creator_relevance_scores')
+      .collection('earner_relevance_scores')
       .where('primaryCategory', 'in', categories)
       .orderBy('contentFreshness', 'desc');
     
     if (cursor) {
-      const cursorDoc = await db.collection('creator_relevance_scores').doc(cursor).get();
+      const cursorDoc = await db.collection('earner_relevance_scores').doc(cursor).get();
       if (cursorDoc.exists) {
         query = query.startAfter(cursorDoc);
       }
@@ -343,7 +345,7 @@ async function fetchCandidateCreators(
     
     return snapshot.docs.map(doc => doc.id);
   } catch (error) {
-    logger.error('Error fetching candidate creators:', error);
+    logger.error('Error fetching candidate earners:', error);
     return [];
   }
 }
@@ -353,26 +355,26 @@ async function fetchCandidateCreators(
  */
 async function scoreCandidates(
   viewerId: string,
-  creatorIds: string[]
-): Promise<Array<{ creatorId: string; score: number }>> {
-  const scored: Array<{ creatorId: string; score: number }> = [];
+  earnerIds: string[]
+): Promise<Array<{ earnerId: string; score: number }>> {
+  const scored: Array<{ earnerId: string; score: number }> = [];
   
-  for (const creatorId of creatorIds) {
+  for (const earnerId of earnerIds) {
     try {
       // Skip self
-      if (creatorId === viewerId) {
+      if (earnerId === viewerId) {
         continue;
       }
       
       // Calculate relevance score
-      const discoveryScore = await calculateRelevanceScore(viewerId, creatorId);
+      const discoveryScore = await calculateRelevanceScore(viewerId, earnerId);
       
       scored.push({
-        creatorId,
+        earnerId,
         score: discoveryScore.finalScore,
       });
     } catch (error) {
-      logger.error(`Error scoring creator ${creatorId}:`, error);
+      logger.error(`Error scoring earner ${earnerId}:`, error);
     }
   }
   
@@ -383,38 +385,38 @@ async function scoreCandidates(
 }
 
 /**
- * Build creator card (NO appearance metrics)
+ * Build earner card (NO appearance metrics)
  */
-async function buildCreatorCard(creatorId: string): Promise<CreatorCard | null> {
+async function buildCreatorCard(earnerId: string): Promise<CreatorCard | null> {
   try {
-    const [creatorDoc, relevanceDoc] = await Promise.all([
-      db.collection('users').doc(creatorId).get(),
-      db.collection('creator_relevance_scores').doc(creatorId).get(),
+    const [earnerDoc, relevanceDoc] = await Promise.all([
+      db.collection('users').doc(earnerId).get(),
+      db.collection('earner_relevance_scores').doc(earnerId).get(),
     ]);
     
-    if (!creatorDoc.exists || !relevanceDoc.exists) {
+    if (!earnerDoc.exists || !relevanceDoc.exists) {
       return null;
     }
     
-    const creator = creatorDoc.data();
+    const earner = earnerDoc.data();
     const relevance = relevanceDoc.data();
     
     const card: CreatorCard = {
-      creatorId,
-      displayName: creator?.displayName || 'Anonymous',
+      earnerId,
+      displayName: earner?.displayName || 'Anonymous',
       primaryCategory: relevance?.primaryCategory || 'ENTERTAINMENT',
-      expertise: creator?.profile?.skills || [],
-      contentType: creator?.profile?.contentType || 'mixed',
+      expertise: earner?.profile?.skills || [],
+      contentType: earner?.profile?.contentType || 'mixed',
       recentActivity: relevance?.lastCalculated?.toDate?.()?.toISOString() || new Date().toISOString(),
       contentQuality: relevance?.retentionQuality || 70,
       safetyRating: relevance?.safetyScore || 70,
-      thumbnailUrl: creator?.profile?.coverImage,
-      bio: creator?.bio,
+      thumbnailUrl: earner?.profile?.coverImage,
+      bio: earner?.bio,
     };
     
     return card;
   } catch (error) {
-    logger.error(`Error building creator card for ${creatorId}:`, error);
+    logger.error(`Error building earner card for ${earnerId}:`, error);
     return null;
   }
 }
@@ -435,10 +437,10 @@ function generateFeedExplanation(
     LOCAL_EVENTS: 'local events and community activities',
   };
   
-  let explanation = `Showing ${itemCount} creators based on your interest in ${modeDescriptions[mode]}.`;
+  let explanation = `Showing ${itemCount} earners based on your interest in ${modeDescriptions[mode]}.`;
   
   if (diversityAchieved) {
-    explanation += ' We\'ve included creators from multiple categories for variety.';
+    explanation += ' We\'ve included earners from multiple categories for variety.';
   }
   
   explanation += ' Rankings are based on content relevance, not appearance or popularity.';
@@ -461,24 +463,24 @@ export async function getTopicRecommendations(
   try {
     logger.info(`Getting recommendations for topic: ${topic}`);
     
-    // Search for creators with matching expertise/tags
+    // Search for earners with matching expertise/tags
     const snapshot = await db
       .collection('users')
       .where('profile.skills', 'array-contains', topic)
-      .where('roles.creator', '==', true)
+      .where('roles.earner', '==', true)
       .limit(limit * 2)
       .get();
     
-    const creatorIds = snapshot.docs.map(doc => doc.id);
+    const earnerIds = snapshot.docs.map(doc => doc.id);
     
     // Score and rank
-    const scored = await scoreCandidates(userId, creatorIds);
+    const scored = await scoreCandidates(userId, earnerIds);
     const topScored = scored.slice(0, limit);
     
     // Build cards
     const cards: CreatorCard[] = [];
     for (const candidate of topScored) {
-      const card = await buildCreatorCard(candidate.creatorId);
+      const card = await buildCreatorCard(candidate.earnerId);
       if (card) {
         cards.push(card);
       }
@@ -530,7 +532,7 @@ export async function getFollowRecommendations(
     // Build cards
     const cards: CreatorCard[] = [];
     for (const candidate of topScored) {
-      const card = await buildCreatorCard(candidate.creatorId);
+      const card = await buildCreatorCard(candidate.earnerId);
       if (card) {
         cards.push(card);
       }
@@ -546,6 +548,22 @@ export async function getFollowRecommendations(
 }
 
 logger.info('✅ Discovery Feed Service initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

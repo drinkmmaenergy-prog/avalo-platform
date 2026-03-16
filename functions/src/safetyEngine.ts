@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 280 - Panic & Live Safety Engine
  * Core business logic for panic button, live tracking, and trusted contacts
@@ -429,7 +431,7 @@ async function sendPanicNotifications(params: {
   const userData = userDoc.data();
 
   const userName = userData?.displayName || userData?.nickname || 'User';
-  const userProfilUSDl = `https://avalo.app/profile/${userId}`;
+  const userProfilUSDl = `https://platform.app/profile/${userId}`;
 
   // Build notification payload
   const payload: PanicNotificationPayload = {
@@ -459,7 +461,7 @@ async function sendPanicNotifications(params: {
       const partnerData = partnerDoc.data();
       payload.meetingPartner = {
         name: partnerData?.displayName || partnerData?.nickname || 'Unknown',
-        profilUSDl: `https://avalo.app/profile/${partnerId}`,
+        profilUSDl: `https://platform.app/profile/${partnerId}`,
       };
     }
   }
@@ -650,6 +652,20 @@ export async function getRecentPanicEvents(limit: number = 50): Promise<PanicEve
 
   return snapshot.docs.map((doc) => doc.data() as PanicEvent);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

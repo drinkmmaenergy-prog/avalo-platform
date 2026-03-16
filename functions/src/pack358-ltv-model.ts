@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 358 — LTV Model Per Segment
  * 
@@ -232,14 +234,14 @@ class LTVModelEngine {
     const churnRates: Record<UserSegment, number> = {
       NEW: 0.45,        // 45% churn (high)
       ACTIVE: 0.15,     // 15% churn (low)
-      DORMANT: MONETIZATION_SPLITS.SUBSCRIPTION.creator,    // 70% churn (very high)
+      DORMANT: MONETIZATION_SPLITS.SUBSCRIPTION.earner,    // 70% churn (very high)
       CHURN_RISK: 0.60, // 60% churn (high)
       RETURNING: 0.25,  // 25% churn (medium)
       ROYAL: 0.05,      // 5% churn (very low)
       VIP: 0.03,        // 3% churn (extremely low)
     };
 
-    return churnRates[segment] || MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
+    return churnRates[segment] || MONETIZATION_SPLITS.SUBSCRIPTION.platform;
   }
 
   /**
@@ -667,6 +669,22 @@ export const getLTVTrends = onCall(
       throw new HttpsError('internal', 'Failed to fetch LTV trends');
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

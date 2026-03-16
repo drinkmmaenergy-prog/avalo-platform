@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 183 — Dynamic Scaler
  * Auto-scaling logic based on real-time load
@@ -36,14 +38,14 @@ const SCALING_THRESHOLDS = {
     maxInstances: 20,
   },
   AI: {
-    scaleUpAt: MONETIZATION_SPLITS.EVENT_TICKET.creator,
-    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    scaleUpAt: MONETIZATION_SPLITS.EVENT_TICKET.earner,
+    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
     minInstances: 3,
     maxInstances: 30,
   },
   FEED: {
-    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
-    scaleDownAt: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
+    scaleDownAt: MONETIZATION_SPLITS.EVENT_TICKET.platform,
     minInstances: 2,
     maxInstances: 15,
   },
@@ -55,12 +57,12 @@ const SCALING_THRESHOLDS = {
   },
   PAYMENTS: {
     scaleUpAt: 0.75,
-    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+    scaleDownAt: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
     minInstances: 2,
     maxInstances: 10,
   },
   MEDIA: {
-    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.creator,
+    scaleUpAt: MONETIZATION_SPLITS.SUBSCRIPTION.earner,
     scaleDownAt: 0.25,
     minInstances: 2,
     maxInstances: 15,
@@ -347,6 +349,22 @@ export const autoScaleSystem = onSchedule("every 5 minutes", async (event) => {
 
     return;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

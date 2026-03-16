@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 217 — Avalo Live Arena Monetization
  * Real-time social rooms with gifts, queue system, and paid 1:1 chat transitions
@@ -95,7 +97,7 @@ export interface GiftData {
   giftType: GiftType;
   cost: number;
   hostEarning: number;
-  avaloEarning: number;
+  platformEarning: number;
   createdAt: Timestamp;
 }
 
@@ -635,7 +637,7 @@ export async function sendGift(
     
     // Calculate revenue split (65% host, 35% Avalo)
     const hostEarning = Math.floor(giftConfig.cost * (ARENA_CONFIG.HOST_CUT_PERCENT / 100));
-    const avaloEarning = giftConfig.cost - hostEarning;
+    const platformEarning = giftConfig.cost - hostEarning;
     
     // Create gift record
     const giftRef = db.collection('arena_gifts').doc();
@@ -647,7 +649,7 @@ export async function sendGift(
       giftType,
       cost: giftConfig.cost,
       hostEarning,
-      avaloEarning,
+      platformEarning,
       createdAt: Timestamp.now(),
     };
     
@@ -1429,6 +1431,20 @@ export async function expirePriorityMessages(): Promise<number> {
   
   return expiredCount;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

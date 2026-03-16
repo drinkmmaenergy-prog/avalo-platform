@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { HttpsError, Timestamp, auth, onCall, timestamp, onSchedule } from './runtime';
@@ -14,11 +16,11 @@ export interface EarningsNotification {
 
 // Send notification for large gift received
 export const notifyLargeGift = async (
-  creatorId: string,
+  earnerId: string,
   amount: number,
   payerId: string
 ): Promise<void> => {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -31,7 +33,7 @@ export const notifyLargeGift = async (
       type: 'large_gift',
       amount: amount.toString(),
       payerId,
-      navigateTo: '/creator/earnings',
+      navigateTo: '/earner/earnings',
     },
     priority: 'high',
   };
@@ -40,7 +42,7 @@ export const notifyLargeGift = async (
 
   // Store in notification history
   await db.collection('notifications').add({
-    userId: creatorId,
+    userId: earnerId,
     ...notification,
     timestamp: admin.firestore.Timestamp.now(),
     read: false,
@@ -49,12 +51,12 @@ export const notifyLargeGift = async (
 
 // Send notification for record-breaking earnings
 export const notifyRecordBreaking = async (
-  creatorId: string,
+  earnerId: string,
   recordType: 'day' | 'week' | 'month',
   amount: number,
   previousRecord: number
 ): Promise<void> => {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -90,7 +92,7 @@ export const notifyRecordBreaking = async (
       recordType,
       amount: amount.toString(),
       previousRecord: previousRecord.toString(),
-      navigateTo: '/creator/earnings',
+      navigateTo: '/earner/earnings',
     },
     priority: 'high',
   };
@@ -99,14 +101,14 @@ export const notifyRecordBreaking = async (
 
   // Store in notification history
   await db.collection('notifications').add({
-    userId: creatorId,
+    userId: earnerId,
     ...notification,
     timestamp: admin.firestore.Timestamp.now(),
     read: false,
   });
 
   // Create celebratory in-app notification
-  await db.collection('creators').doc(creatorId).collection('celebrations').add({
+  await db.collection('earners').doc(earnerId).collection('celebrations').add({
     type: recordType,
     amount,
     previousRecord,
@@ -117,14 +119,14 @@ export const notifyRecordBreaking = async (
 
 // Send notification for payout status
 export const notifyPayoutStatus = async (
-  creatorId: string,
+  earnerId: string,
   status: 'initiated' | 'processing' | 'completed' | 'failed',
   amount: number,
   currency: string,
   payoutId: string,
   errorMessage?: string
 ): Promise<void> => {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -164,7 +166,7 @@ export const notifyPayoutStatus = async (
       amount: amount.toString(),
       currency,
       payoutId,
-      navigateTo: '/creator/earnings/payout-center',
+      navigateTo: '/earner/earnings/payout-center',
     },
     priority,
   };
@@ -173,7 +175,7 @@ export const notifyPayoutStatus = async (
 
   // Store in notification history
   await db.collection('notifications').add({
-    userId: creatorId,
+    userId: earnerId,
     ...notification,
     timestamp: admin.firestore.Timestamp.now(),
     read: false,
@@ -182,12 +184,12 @@ export const notifyPayoutStatus = async (
 
 // Send notification when VIP supporter comes online
 export const notifyVIPActive = async (
-  creatorId: string,
+  earnerId: string,
   supporterId: string,
   supporterName: string,
   totalSpent: number
 ): Promise<void> => {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -210,7 +212,7 @@ export const notifyVIPActive = async (
 
   // Store in notification history
   await db.collection('notifications').add({
-    userId: creatorId,
+    userId: earnerId,
     ...notification,
     timestamp: admin.firestore.Timestamp.now(),
     read: false,
@@ -219,18 +221,18 @@ export const notifyVIPActive = async (
 
 // Send weekly earnings summary
 export const sendWeeklySummary = onSchedule("0 9 * * 1", async (event) => {
-    const creatorsSnapshot = await db.collection('users')
-      .where('role', '==', 'creator')
+    const earnersSnapshot = await db.collection('users')
+      .where('role', '==', 'earner')
       .get();
 
-    for (const creatorDoc of creatorsSnapshot.docs) {
-      const creatorId = creatorDoc.id;
-      const fcmToken = creatorDoc.data().fcmToken;
+    for (const earnerDoc of earnersSnapshot.docs) {
+      const earnerId = earnerDoc.id;
+      const fcmToken = earnerDoc.data().fcmToken;
 
       if (!fcmToken) continue;
 
       // Get last week's earnings
-      const summaryDoc = await db.collection('creators').doc(creatorId)
+      const summaryDoc = await db.collection('earners').doc(earnerId)
         .collection('earningSummary').doc('current').get();
 
       if (!summaryDoc.exists) continue;
@@ -247,7 +249,7 @@ export const sendWeeklySummary = onSchedule("0 9 * * 1", async (event) => {
         data: {
           type: 'weekly_summary',
           amount: weekTokens.toString(),
-          navigateTo: '/creator/earnings',
+          navigateTo: '/earner/earnings',
         },
         priority: 'normal',
       };
@@ -260,13 +262,13 @@ export const sendWeeklySummary = onSchedule("0 9 * * 1", async (event) => {
 
 // Send milestone approaching notification
 export const notifyMilestoneApproaching = async (
-  creatorId: string,
+  earnerId: string,
   milestoneType: 'day' | 'week' | 'month',
   current: number,
   target: number,
   remaining: number
 ): Promise<void> => {
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const fcmToken = userDoc.data()?.fcmToken;
 
   if (!fcmToken) return;
@@ -283,7 +285,7 @@ export const notifyMilestoneApproaching = async (
       current: current.toString(),
       target: target.toString(),
       remaining: remaining.toString(),
-      navigateTo: '/creator/earnings',
+      navigateTo: '/earner/earnings',
     },
     priority: 'normal',
   };
@@ -337,18 +339,18 @@ export const batchNotifyCreators = functions.https.onCall(async (request) => {
 
   const { title, body, targetType, targetValue } = data;
 
-  let query = db.collection('users').where('role', '==', 'creator');
+  let query = db.collection('users').where('role', '==', 'earner');
 
   // Apply filters if specified
   if (targetType && targetValue) {
     switch (targetType) {
       case 'highEarners':
-        // Target creators with earnings above threshold
+        // Target earners with earnings above threshold
         const threshold = parseInt(targetValue);
-        const creatorsSnapshot = await query.get();
+        const earnersSnapshot = await query.get();
         
-        for (const doc of creatorsSnapshot.docs) {
-          const summaryDoc = await db.collection('creators').doc(doc.id)
+        for (const doc of earnersSnapshot.docs) {
+          const summaryDoc = await db.collection('earners').doc(doc.id)
             .collection('earningSummary').doc('current').get();
           
           const summary = summaryDoc.data();
@@ -361,7 +363,7 @@ export const batchNotifyCreators = functions.https.onCall(async (request) => {
                 body,
                 data: {
                   type: 'admin_broadcast',
-                  navigateTo: '/creator/earnings',
+                  navigateTo: '/earner/earnings',
                 },
                 priority: 'normal',
               });
@@ -388,7 +390,7 @@ export const batchNotifyCreators = functions.https.onCall(async (request) => {
         body,
         data: {
           type: 'admin_broadcast',
-          navigateTo: '/creator/earnings',
+          navigateTo: '/earner/earnings',
         },
         priority: 'normal',
       });
@@ -429,6 +431,20 @@ export const getUnreadCount = functions.https.onCall(async (request) => {
 
   return { count: snapshot.size };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

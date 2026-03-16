@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import { db } from '../init';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -38,7 +40,7 @@ export interface CreatorMarketplaceFilters {
 
 interface RelationshipStatus {
   viewerBlockedCreator: boolean;
-  creatorBlockedViewer: boolean;
+  earnerBlockedViewer: boolean;
 }
 
 // ============================================================================
@@ -109,7 +111,7 @@ async function getUserPersonalizationProfile(userId: string): Promise<any> {
 }
 
 function calculatePersonalizationScore(
-  creator: CreatorProfile,
+  earner: CreatorProfile,
   viewerProfile: any
 ): number {
   if (!viewerProfile) return 0;
@@ -117,16 +119,16 @@ function calculatePersonalizationScore(
   let score = 0;
   
   // Language match
-  if (viewerProfile.preferredLanguages && creator.languages) {
+  if (viewerProfile.preferredLanguages && earner.languages) {
     const languageMatch = viewerProfile.preferredLanguages.some((lang: string) =>
-      creator.languages.includes(lang)
+      earner.languages.includes(lang)
     );
     if (languageMatch) score += 10;
   }
   
   // Country match
-  if (viewerProfile.location?.country && creator.mainLocationCountry) {
-    if (viewerProfile.location.country === creator.mainLocationCountry) {
+  if (viewerProfile.location?.country && earner.mainLocationCountry) {
+    if (viewerProfile.location.country === earner.mainLocationCountry) {
       score += 8;
     }
   }
@@ -140,7 +142,7 @@ function calculatePersonalizationScore(
 }
 
 // ============================================================================
-// ENDPOINT: GET /creator/marketplace
+// ENDPOINT: GET /earner/marketplace
 // ============================================================================
 
 export const getCreatorMarketplace = functions.https.onCall(async (request) => {
@@ -163,7 +165,7 @@ export const getCreatorMarketplace = functions.https.onCall(async (request) => {
     const viewerProfile = await getUserPersonalizationProfile(viewerId);
     
     // Build query
-    let query = db.collection('creator_profiles')
+    let query = db.collection('earner_profiles')
       .where('earnsFromChat', '==', true)
       .limit(limit + 1); // +1 for pagination cursor
     
@@ -182,7 +184,7 @@ export const getCreatorMarketplace = functions.https.onCall(async (request) => {
     
     // Apply cursor
     if (cursor) {
-      const cursorDoc = await db.collection('creator_profiles').doc(cursor).get();
+      const cursorDoc = await db.collection('earner_profiles').doc(cursor).get();
       if (cursorDoc.exists) {
         query = query.startAfter(cursorDoc);
       }
@@ -191,63 +193,63 @@ export const getCreatorMarketplace = functions.https.onCall(async (request) => {
     const snapshot = await query.get();
     
     // Process results
-    const creators: any[] = [];
+    const earners: any[] = [];
     const trustChecks: Promise<any>[] = [];
     
     snapshot.forEach(doc => {
-      const creator = doc.data() as CreatorProfile;
-      trustChecks.push(getTrustEngineStatus(creator.userId));
-      creators.push(creator);
+      const earner = doc.data() as CreatorProfile;
+      trustChecks.push(getTrustEngineStatus(earner.userId));
+      earners.push(earner);
     });
     
     const trustStatuses = await Promise.all(trustChecks);
     
-    // Filter and rank creators
-    const filteredCreators = creators
-      .map((creator, index) => ({
-        ...creator,
+    // Filter and rank earners
+    const filteredCreators = earners
+      .map((earner, index) => ({
+        ...earner,
         trustStatus: trustStatuses[index],
       }))
-      .filter(creator => {
+      .filter(earner => {
         // Filter blocked users
-        if (viewerBlockedUsers.has(creator.userId)) return false;
-        if (usersBlockingViewer.has(creator.userId)) return false;
+        if (viewerBlockedUsers.has(earner.userId)) return false;
+        if (usersBlockingViewer.has(earner.userId)) return false;
         
         // Filter users not allowed to earn
-        if (!creator.trustStatus.earnModeAllowed) return false;
+        if (!earner.trustStatus.earnModeAllowed) return false;
         
         // Filter extreme high-risk
-        if (creator.trustStatus.isHighRisk && 
-            creator.trustStatus.riskFlags.includes('SCAM_SUSPECT')) {
+        if (earner.trustStatus.isHighRisk && 
+            earner.trustStatus.riskFlags.includes('SCAM_SUSPECT')) {
           return false;
         }
         
         // Apply price filters
         if (filters.minPriceTokens !== undefined && 
-            creator.baseMessageTokenCost < filters.minPriceTokens) {
+            earner.baseMessageTokenCost < filters.minPriceTokens) {
           return false;
         }
         
         if (filters.maxPriceTokens !== undefined && 
-            creator.baseMessageTokenCost > filters.maxPriceTokens) {
+            earner.baseMessageTokenCost > filters.maxPriceTokens) {
           return false;
         }
         
         return true;
       })
-      .map(creator => {
+      .map(earner => {
         // Calculate personalization score
-        const personalizationScore = calculatePersonalizationScore(creator, viewerProfile);
+        const personalizationScore = calculatePersonalizationScore(earner, viewerProfile);
         
         // Calculate royal boost
         let royalBoost = 0;
-        if (creator.royalTier === 'ROYAL_PLATINUM') royalBoost = 3;
-        else if (creator.royalTier === 'ROYAL_GOLD') royalBoost = 2;
-        else if (creator.royalTier === 'ROYAL_SILVER') royalBoost = 1;
+        if (earner.royalTier === 'ROYAL_PLATINUM') royalBoost = 3;
+        else if (earner.royalTier === 'ROYAL_GOLD') royalBoost = 2;
+        else if (earner.royalTier === 'ROYAL_SILVER') royalBoost = 1;
         
         return {
-          ...creator,
-          rankingScore: personalizationScore + royalBoost + (creator.trustStatus.trustScore / 10),
+          ...earner,
+          rankingScore: personalizationScore + royalBoost + (earner.trustStatus.trustScore / 10),
         };
       })
       .sort((a, b) => b.rankingScore - a.rankingScore);
@@ -259,34 +261,34 @@ export const getCreatorMarketplace = functions.https.onCall(async (request) => {
     
     // Format response
     const response = {
-      items: items.map(creator => ({
-        userId: creator.userId,
-        displayName: creator.displayName,
-        avatarUrl: creator.avatarUrl,
-        shortBio: creator.shortBio,
-        languages: creator.languages,
-        mainLocationCity: creator.mainLocationCity,
-        mainLocationCountry: creator.mainLocationCountry,
-        earnsFromChat: creator.earnsFromChat,
-        baseMessageTokenCost: creator.baseMessageTokenCost,
-        ppmMediaFromTokens: creator.ppmMediaFromTokens,
-        royalTier: creator.royalTier,
-        trustScore: creator.trustStatus.trustScore,
-        isHighRisk: creator.trustStatus.isHighRisk,
-        lastActiveAt: creator.lastActiveAt.toMillis(),
+      items: items.map(earner => ({
+        userId: earner.userId,
+        displayName: earner.displayName,
+        avatarUrl: earner.avatarUrl,
+        shortBio: earner.shortBio,
+        languages: earner.languages,
+        mainLocationCity: earner.mainLocationCity,
+        mainLocationCountry: earner.mainLocationCountry,
+        earnsFromChat: earner.earnsFromChat,
+        baseMessageTokenCost: earner.baseMessageTokenCost,
+        ppmMediaFromTokens: earner.ppmMediaFromTokens,
+        royalTier: earner.royalTier,
+        trustScore: earner.trustStatus.trustScore,
+        isHighRisk: earner.trustStatus.isHighRisk,
+        lastActiveAt: earner.lastActiveAt.toMillis(),
       })),
       nextCursor,
     };
     
     return response;
   } catch (error) {
-    console.error('Error fetching creator marketplace:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to fetch creator marketplace');
+    console.error('Error fetching earner marketplace:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to fetch earner marketplace');
   }
 });
 
 // ============================================================================
-// ENDPOINT: GET /creator/profile
+// ENDPOINT: GET /earner/profile
 // ============================================================================
 
 export const getCreatorProfile = functions.https.onCall(async (request) => {
@@ -296,64 +298,80 @@ export const getCreatorProfile = functions.https.onCall(async (request) => {
   }
   
   const viewerId = request.auth.uid;
-  const creatorId = data.creatorId;
+  const earnerId = data.earnerId;
   
-  if (!creatorId) {
-    throw new functions.https.HttpsError('invalid-argument', 'creatorId is required');
+  if (!earnerId) {
+    throw new functions.https.HttpsError('invalid-argument', 'earnerId is required');
   }
   
   try {
-    // Get creator profile
-    const creatorDoc = await db.collection('creator_profiles').doc(creatorId).get();
+    // Get earner profile
+    const earnerDoc = await db.collection('earner_profiles').doc(earnerId).get();
     
-    if (!creatorDoc.exists) {
+    if (!earnerDoc.exists) {
       throw new functions.https.HttpsError('not-found', 'Creator profile not found');
     }
     
-    const creator = creatorDoc.data() as CreatorProfile;
+    const earner = earnerDoc.data() as CreatorProfile;
     
     // Check relationship status
     const viewerBlockedUsers = await getUserBlockList(viewerId);
     const usersBlockingViewer = await getUsersThatBlockedUser(viewerId);
     
     const relationship: RelationshipStatus = {
-      viewerBlockedCreator: viewerBlockedUsers.has(creatorId),
-      creatorBlockedViewer: usersBlockingViewer.has(creatorId),
+      viewerBlockedCreator: viewerBlockedUsers.has(earnerId),
+      earnerBlockedViewer: usersBlockingViewer.has(earnerId),
     };
     
     // Get trust status
-    const trustStatus = await getTrustEngineStatus(creatorId);
+    const trustStatus = await getTrustEngineStatus(earnerId);
     
     // Format response
     const response = {
-      creator: {
-        userId: creator.userId,
-        displayName: creator.displayName,
-        avatarUrl: creator.avatarUrl,
-        shortBio: creator.shortBio,
-        languages: creator.languages,
-        mainLocationCity: creator.mainLocationCity,
-        mainLocationCountry: creator.mainLocationCountry,
-        earnsFromChat: creator.earnsFromChat,
-        baseMessageTokenCost: creator.baseMessageTokenCost,
-        ppmMediaFromTokens: creator.ppmMediaFromTokens,
-        royalTier: creator.royalTier,
+      earner: {
+        userId: earner.userId,
+        displayName: earner.displayName,
+        avatarUrl: earner.avatarUrl,
+        shortBio: earner.shortBio,
+        languages: earner.languages,
+        mainLocationCity: earner.mainLocationCity,
+        mainLocationCountry: earner.mainLocationCountry,
+        earnsFromChat: earner.earnsFromChat,
+        baseMessageTokenCost: earner.baseMessageTokenCost,
+        ppmMediaFromTokens: earner.ppmMediaFromTokens,
+        royalTier: earner.royalTier,
         trustScore: trustStatus.trustScore,
         isHighRisk: trustStatus.isHighRisk,
-        lastActiveAt: creator.lastActiveAt.toMillis(),
+        lastActiveAt: earner.lastActiveAt.toMillis(),
       },
       relationship,
     };
     
     return response;
   } catch (error) {
-    console.error('Error fetching creator profile:', error);
+    console.error('Error fetching earner profile:', error);
     if (error instanceof functions.https.HttpsError) {
       throw error;
     }
-    throw new functions.https.HttpsError('internal', 'Failed to fetch creator profile');
+    throw new functions.https.HttpsError('internal', 'Failed to fetch earner profile');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

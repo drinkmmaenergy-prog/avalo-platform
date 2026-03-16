@@ -1,7 +1,9 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 347 — Growth Engine: Creator Promotion Algorithm
  * 
- * Calculates creator promotion score for:
+ * Calculates earner promotion score for:
  * - Discovery cards
  * - Search results
  * - Feed exposure
@@ -10,7 +12,7 @@
  * 
  * Score Formula:
  * promotionScore =
- *   (engagementRate * MONETIZATION_SPLITS.CHAT.avalo)
+ *   (engagementRate * MONETIZATION_SPLITS.CHAT.platform)
  * + (earningsVelocity * 0.25)
  * + (lowRefundRateBonus * 0.10)
  * + (ratingScore * 0.15)
@@ -26,7 +28,7 @@ import { HttpsError, Timestamp } from './runtime';
 // ============================================================================
 
 export interface PromotionScore {
-  creatorId: string;
+  earnerId: string;
   totalScore: number;
   engagementRate: number;
   earningsVelocity: number;
@@ -34,7 +36,7 @@ export interface PromotionScore {
   ratingScore: number;
   viralConversion: number;
   breakdown: {
-    engagement: number;      // MONETIZATION_SPLITS.CHAT.avalo weight
+    engagement: number;      // MONETIZATION_SPLITS.CHAT.platform weight
     earnings: number;         // 0.25 weight
     refund: number;           // 0.10 weight
     rating: number;           // 0.15 weight
@@ -63,7 +65,7 @@ export interface PromotionConfig {
 
 const DEFAULT_CONFIG: PromotionConfig = {
   weights: {
-    engagement: MONETIZATION_SPLITS.CHAT.avalo,
+    engagement: MONETIZATION_SPLITS.CHAT.platform,
     earnings: 0.25,
     refund: 0.10,
     rating: 0.15,
@@ -80,28 +82,28 @@ const SCORE_CACHE_HOURS = 1; // Scores are cached for 1 hour
 // ============================================================================
 
 /**
- * Calculate engagement rate for creator
+ * Calculate engagement rate for earner
  * Based on: messages received, calls accepted, bookings made
  */
 async function calculateEngagementRate(
-  creatorId: string,
+  earnerId: string,
   timeWindowHours: number
 ): Promise<number> {
   const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000);
   
   // Count interactions (chats, calls, bookings)
   const chatsQuery = await db.collection('chats')
-    .where('participants', 'array-contains', creatorId)
+    .where('participants', 'array-contains', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
   const callsQuery = await db.collection('calls')
-    .where('participants', 'array-contains', creatorId)
+    .where('participants', 'array-contains', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
   const bookingsQuery = await db.collection('bookings')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
@@ -109,7 +111,7 @@ async function calculateEngagementRate(
   
   // Get profile views for same period
   const profileViewsSnap = await db.collection('profile_views')
-    .where('viewedUserId', '==', creatorId)
+    .where('viewedUserId', '==', earnerId)
     .where('viewedAt', '>=', cutoffTime)
     .get();
   
@@ -124,18 +126,18 @@ async function calculateEngagementRate(
 }
 
 /**
- * Calculate earnings velocity for creator
+ * Calculate earnings velocity for earner
  * Based on: tokens earned per day in time window
  */
 async function calculateEarningsVelocity(
-  creatorId: string,
+  earnerId: string,
   timeWindowHours: number
 ): Promise<number> {
   const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000);
   
   // Get earnings transactions
   const earningsQuery = await db.collection('transactions')
-    .where('receiverUid', '==', creatorId)
+    .where('receiverUid', '==', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .where('transactionType', 'in', ['chat', 'call', 'booking', 'tip'])
     .get();
@@ -158,14 +160,14 @@ async function calculateEarningsVelocity(
  * Lower refunds = higher score
  */
 async function calculateLowRefundRateBonus(
-  creatorId: string,
+  earnerId: string,
   timeWindowHours: number
 ): Promise<number> {
   const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000);
   
   // Get total transactions
   const transactionsQuery = await db.collection('transactions')
-    .where('receiverUid', '==', creatorId)
+    .where('receiverUid', '==', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
@@ -175,7 +177,7 @@ async function calculateLowRefundRateBonus(
   
   // Get refunds
   const refundsQuery = await db.collection('transactions')
-    .where('senderUid', '==', creatorId)
+    .where('senderUid', '==', earnerId)
     .where('transactionType', '==', 'refund')
     .where('createdAt', '>=', cutoffTime)
     .get();
@@ -196,20 +198,20 @@ async function calculateLowRefundRateBonus(
  * Based on user ratings/reviews
  */
 async function calculateRatingScore(
-  creatorId: string,
+  earnerId: string,
   timeWindowHours: number
 ): Promise<number> {
   const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000);
   
   // Get ratings
   const ratingsQuery = await db.collection('ratings')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('createdAt', '>=', cutoffTime)
     .get();
   
   if (ratingsQuery.size === 0) {
-    // Check if creator has overall rating in profile
-    const profileSnap = await db.collection('users').doc(creatorId).get();
+    // Check if earner has overall rating in profile
+    const profileSnap = await db.collection('users').doc(earnerId).get();
     const overallRating = profileSnap.data()?.stats?.rating || 0;
     return (overallRating / 5) * 100;
   }
@@ -231,13 +233,13 @@ async function calculateRatingScore(
  * Based on viral invite conversion rate
  */
 async function calculateViralConversion(
-  creatorId: string,
+  earnerId: string,
   timeWindowHours: number
 ): Promise<number> {
   const cutoffTime = new Date(Date.now() - timeWindowHours * 60 * 60 * 1000);
   
   // Check if viral stats exist
-  const viralStatsSnap = await db.collection('viral_stats').doc(creatorId).get();
+  const viralStatsSnap = await db.collection('viral_stats').doc(earnerId).get();
   
   if (!viralStatsSnap.exists) {
     return 0; // No viral activity yet
@@ -253,24 +255,24 @@ async function calculateViralConversion(
 }
 
 /**
- * Calculate complete promotion score for creator
+ * Calculate complete promotion score for earner
  */
 export async function calculatePromotionScore(data: {
-  creatorId: string;
+  earnerId: string;
   config?: Partial<PromotionConfig>;
 }): Promise<{ success: boolean; score: PromotionScore }> {
-  const { creatorId, config: userConfig } = data;
+  const { earnerId, config: userConfig } = data;
   
   const config = { ...DEFAULT_CONFIG, ...userConfig };
   
-  // Validate creator exists
-  const creatorSnap = await db.collection('users').doc(creatorId).get();
-  if (!creatorSnap.exists) {
+  // Validate earner exists
+  const earnerSnap = await db.collection('users').doc(earnerId).get();
+  if (!earnerSnap.exists) {
     throw new functions.https.HttpsError('not-found', 'Creator not found');
   }
   
   // Check if cached score is still valid
-  const cachedScoreSnap = await db.collection('promotion_scores').doc(creatorId).get();
+  const cachedScoreSnap = await db.collection('promotion_scores').doc(earnerId).get();
   if (cachedScoreSnap.exists) {
     const cached = cachedScoreSnap.data() as PromotionScore;
     const expiresAt = cached.expiresAt instanceof Date 
@@ -283,11 +285,11 @@ export async function calculatePromotionScore(data: {
   }
   
   // Calculate all components
-  const engagementRate = await calculateEngagementRate(creatorId, config.timeWindowHours);
-  const earningsVelocity = await calculateEarningsVelocity(creatorId, config.timeWindowHours);
-  const lowRefundRateBonus = await calculateLowRefundRateBonus(creatorId, config.timeWindowHours);
-  const ratingScore = await calculateRatingScore(creatorId, config.timeWindowHours);
-  const viralConversion = await calculateViralConversion(creatorId, config.timeWindowHours);
+  const engagementRate = await calculateEngagementRate(earnerId, config.timeWindowHours);
+  const earningsVelocity = await calculateEarningsVelocity(earnerId, config.timeWindowHours);
+  const lowRefundRateBonus = await calculateLowRefundRateBonus(earnerId, config.timeWindowHours);
+  const ratingScore = await calculateRatingScore(earnerId, config.timeWindowHours);
+  const viralConversion = await calculateViralConversion(earnerId, config.timeWindowHours);
   
   // Calculate weighted scores
   const breakdown = {
@@ -309,7 +311,7 @@ export async function calculatePromotionScore(data: {
   const expiresAt = new Date(now.getTime() + SCORE_CACHE_HOURS * 60 * 60 * 1000);
   
   const score: PromotionScore = {
-    creatorId,
+    earnerId,
     totalScore,
     engagementRate,
     earningsVelocity,
@@ -322,7 +324,7 @@ export async function calculatePromotionScore(data: {
   };
   
   // Save score to database
-  await db.collection('promotion_scores').doc(creatorId).set(score);
+  await db.collection('promotion_scores').doc(earnerId).set(score);
   
   // Update global ranking (async, non-blocking)
   updateGlobalRankings().catch(err => 
@@ -337,7 +339,7 @@ export async function calculatePromotionScore(data: {
 // ============================================================================
 
 /**
- * Update global creator rankings based on promotion scores
+ * Update global earner rankings based on promotion scores
  * Should be called after score calculations
  */
 async function updateGlobalRankings(): Promise<void> {
@@ -347,7 +349,7 @@ async function updateGlobalRankings(): Promise<void> {
     .where('expiresAt', '>', now)
     .orderBy('expiresAt')
     .orderBy('totalScore', 'desc')
-    .limit(1000) // Top 1000 creators
+    .limit(1000) // Top 1000 earners
     .get();
   
   if (scoresQuery.empty) return;
@@ -365,7 +367,7 @@ async function updateGlobalRankings(): Promise<void> {
 }
 
 /**
- * Get top creators by promotion score
+ * Get top earners by promotion score
  * Used for discovery feed and featured carousels
  */
 export async function getTopCreators(data: {
@@ -387,14 +389,14 @@ export async function getTopCreators(data: {
   
   const scores = snapshot.docs
     .map(doc => doc.data() as PromotionScore)
-    .filter(score => !excludeCreatorIds.includes(score.creatorId))
+    .filter(score => !excludeCreatorIds.includes(score.earnerId))
     .slice(0, limit);
   
   return scores;
 }
 
 /**
- * Get creators for local discovery (filtered by location)
+ * Get earners for local discovery (filtered by location)
  */
 export async function getLocalTopCreators(data: {
   userLocation: { lat: number; lng: number };
@@ -403,22 +405,22 @@ export async function getLocalTopCreators(data: {
 }): Promise<PromotionScore[]> {
   const { userLocation, radiusKm, limit = 20 } = data;
   
-  // Get creators in location radius
+  // Get earners in location radius
   // Note: This requires geohash indexing in production
-  const creatorsQuery = await db.collection('users')
+  const earnersQuery = await db.collection('users')
     .where('modes.earnFromChat', '==', true)
     .limit(200) // Pre-filter
     .get();
   
-  const nearbyCreatorIds = creatorsQuery.docs
+  const nearbyCreatorIds = earnersQuery.docs
     .filter(doc => {
-      const creatorLocation = doc.data().location;
-      if (!creatorLocation?.lat || !creatorLocation?.lng) return false;
+      const earnerLocation = doc.data().location;
+      if (!earnerLocation?.lat || !earnerLocation?.lng) return false;
       
       // Simple distance calculation (Haversine formula would be better)
       const distance = Math.sqrt(
-        Math.pow(creatorLocation.lat - userLocation.lat, 2) +
-        Math.pow(creatorLocation.lng - userLocation.lng, 2)
+        Math.pow(earnerLocation.lat - userLocation.lat, 2) +
+        Math.pow(earnerLocation.lng - userLocation.lng, 2)
       ) * 111; // Rough km conversion
       
       return distance <= radiusKm;
@@ -429,7 +431,7 @@ export async function getLocalTopCreators(data: {
     return [];
   }
   
-  // Get promotion scores for nearby creators
+  // Get promotion scores for nearby earners
   const now = new Date();
   
   // Firestore 'in' query limit is 30, so we need to batch
@@ -443,7 +445,7 @@ export async function getLocalTopCreators(data: {
   const allScores: PromotionScore[] = [];
   for (const batch of batches) {
     const scoresQuery = await db.collection('promotion_scores')
-      .where('creatorId', 'in', batch)
+      .where('earnerId', 'in', batch)
       .where('expiresAt', '>', now)
       .get();
     
@@ -463,7 +465,7 @@ export async function searchCreatorsRanked(data: {
   query: string;
   limit?: number;
 }): Promise<{
-  creatorId: string;
+  earnerId: string;
   score: PromotionScore;
   profile: any;
 }[]> {
@@ -476,9 +478,9 @@ export async function searchCreatorsRanked(data: {
     .limit(100)
     .get();
   
-  const creatorIds = usersQuery.docs.map(doc => doc.id);
+  const earnerIds = usersQuery.docs.map(doc => doc.id);
   
-  if (creatorIds.length === 0) {
+  if (earnerIds.length === 0) {
     return [];
   }
   
@@ -486,20 +488,20 @@ export async function searchCreatorsRanked(data: {
   const now = new Date();
   const batchSize = 30;
   const batches = [];
-  for (let i = 0; i < creatorIds.length; i += batchSize) {
-    const batch = creatorIds.slice(i, i + batchSize);
+  for (let i = 0; i < earnerIds.length; i += batchSize) {
+    const batch = earnerIds.slice(i, i + batchSize);
     batches.push(batch);
   }
   
   const results: {
-    creatorId: string;
+    earnerId: string;
     score: PromotionScore;
     profile: any;
   }[] = [];
   
   for (const batch of batches) {
     const scoresQuery = await db.collection('promotion_scores')
-      .where('creatorId', 'in', batch)
+      .where('earnerId', 'in', batch)
       .where('expiresAt', '>', now)
       .get();
     
@@ -512,7 +514,7 @@ export async function searchCreatorsRanked(data: {
         const score = scoresMap.get(userDoc.id);
         if (score) {
           results.push({
-            creatorId: userDoc.id,
+            earnerId: userDoc.id,
             score,
             profile: userDoc.data()
           });
@@ -532,30 +534,30 @@ export async function searchCreatorsRanked(data: {
 // ============================================================================
 
 /**
- * Recalculate promotion scores for all active creators
+ * Recalculate promotion scores for all active earners
  * Should be called by Cloud Scheduler (hourly)
  */
 export async function recalculateAllPromotionScores(
   batchSize: number = 100
 ): Promise<{ success: boolean; processed: number }> {
-  // Get all creators with earnOnChat enabled
-  const creatorsQuery = await db.collection('users')
+  // Get all earners with earnOnChat enabled
+  const earnersQuery = await db.collection('users')
     .where('modes.earnFromChat', '==', true)
     .limit(batchSize)
     .get();
   
-  if (creatorsQuery.empty) {
+  if (earnersQuery.empty) {
     return { success: true, processed: 0 };
   }
   
   let processed = 0;
   
-  for (const creatorDoc of creatorsQuery.docs) {
+  for (const earnerDoc of earnersQuery.docs) {
     try {
-      await calculatePromotionScore({ creatorId: creatorDoc.id });
+      await calculatePromotionScore({ earnerId: earnerDoc.id });
       processed++;
     } catch (error) {
-      console.error(`Failed to calculate score for ${creatorDoc.id}:`, error);
+      console.error(`Failed to calculate score for ${earnerDoc.id}:`, error);
     }
   }
   
@@ -600,6 +602,22 @@ export async function cleanExpiredPromotionScores(
  * - Search result ranking
  * - Integration with discovery feed and featured carousels
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Health Check — Minimal Gen2 Boot Verification
  *
@@ -37,6 +39,20 @@ export const healthCheck = onRequest({}, (req, res) => {
     region: process.env.FUNCTION_REGION || 'europe-west1',
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

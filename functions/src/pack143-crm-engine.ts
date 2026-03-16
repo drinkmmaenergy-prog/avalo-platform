@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 143 - CRM Engine
  * Core business logic for CRM operations
@@ -20,13 +22,13 @@ import { CRMSafetyValidator } from './pack143-safety-validator';
 
 export class CRMEngine {
   static async createOrUpdateContact(
-    creatorId: string,
+    earnerId: string,
     userId: string,
     userData: { displayName: string; avatar: string }
   ): Promise<CRMContact> {
     const contactRef = db
       .collection('crm_contacts')
-      .doc(`${creatorId}_${userId}`);
+      .doc(`${earnerId}_${userId}`);
 
     const existingContact = await contactRef.get();
 
@@ -39,7 +41,7 @@ export class CRMEngine {
     }
 
     const newContact: Omit<CRMContact, 'id'> = {
-      creatorId,
+      earnerId,
       userId,
       displayName: userData.displayName,
       avatar: userData.avatar,
@@ -60,7 +62,7 @@ export class CRMEngine {
   }
 
   static async assignLabel(
-    creatorId: string,
+    earnerId: string,
     userId: string,
     labelName: string
   ): Promise<void> {
@@ -71,7 +73,7 @@ export class CRMEngine {
 
     const contactRef = db
       .collection('crm_contacts')
-      .doc(`${creatorId}_${userId}`);
+      .doc(`${earnerId}_${userId}`);
 
     const contact = await contactRef.get();
     if (!contact.exists) {
@@ -92,38 +94,38 @@ export class CRMEngine {
       updatedAt: serverTimestamp(),
     });
 
-    await this.updateLabelCount(creatorId, labelName, 1);
+    await this.updateLabelCount(earnerId, labelName, 1);
   }
 
   static async removeLabel(
-    creatorId: string,
+    earnerId: string,
     userId: string,
     labelName: string
   ): Promise<void> {
     const contactRef = db
       .collection('crm_contacts')
-      .doc(`${creatorId}_${userId}`);
+      .doc(`${earnerId}_${userId}`);
 
     await contactRef.update({
       labels: arrayRemove(labelName),
       updatedAt: serverTimestamp(),
     });
 
-    await this.updateLabelCount(creatorId, labelName, -1);
+    await this.updateLabelCount(earnerId, labelName, -1);
   }
 
   private static async updateLabelCount(
-    creatorId: string,
+    earnerId: string,
     labelName: string,
     delta: number
   ): Promise<void> {
     const labelRef = db
       .collection('contact_labels')
-      .doc(`${creatorId}_${labelName}`);
+      .doc(`${earnerId}_${labelName}`);
 
     await labelRef.set(
       {
-        creatorId,
+        earnerId,
         name: labelName,
         contactCount: increment(delta),
         updatedAt: serverTimestamp(),
@@ -133,7 +135,7 @@ export class CRMEngine {
   }
 
   static async recordPurchase(
-    creatorId: string,
+    earnerId: string,
     userId: string,
     purchase: {
       productId: string;
@@ -150,7 +152,7 @@ export class CRMEngine {
 
     const contactRef = db
       .collection('crm_contacts')
-      .doc(`${creatorId}_${userId}`);
+      .doc(`${earnerId}_${userId}`);
 
     await contactRef.update({
       totalSpent: increment(purchase.amount),
@@ -170,7 +172,7 @@ export class CRMEngine {
   }
 
   static async createSegment(
-    creatorId: string,
+    earnerId: string,
     name: string,
     description: string,
     filters: SegmentFilters
@@ -183,7 +185,7 @@ export class CRMEngine {
     const segmentRef = db.collection('crm_segments').doc();
 
     const segment: Omit<CRMSegment, 'id'> = {
-      creatorId,
+      earnerId,
       name,
       description,
       filters,
@@ -194,19 +196,19 @@ export class CRMEngine {
 
     await segmentRef.set(segment);
 
-    const contactCount = await this.calculateSegmentSize(creatorId, filters);
+    const contactCount = await this.calculateSegmentSize(earnerId, filters);
     await segmentRef.update({ contactCount });
 
     return { ...segment, id: segmentRef.id, contactCount } as CRMSegment;
   }
 
   static async calculateSegmentSize(
-    creatorId: string,
+    earnerId: string,
     filters: SegmentFilters
   ): Promise<number> {
     let query: any = db
       .collection('crm_contacts')
-      .where('creatorId', '==', creatorId);
+      .where('earnerId', '==', earnerId);
 
     if (filters.labels && filters.labels.length > 0) {
       query = query.where('labels', 'array-contains-any', filters.labels);
@@ -229,7 +231,7 @@ export class CRMEngine {
   }
 
   static async createFunnel(
-    creatorId: string,
+    earnerId: string,
     funnelData: {
       name: string;
       description: string;
@@ -249,7 +251,7 @@ export class CRMEngine {
     const funnelRef = db.collection('crm_funnels').doc();
 
     const funnel: Omit<CRMFunnel, 'id'> = {
-      creatorId,
+      earnerId,
       name: funnelData.name,
       description: funnelData.description,
       status: 'active',
@@ -293,7 +295,7 @@ export class CRMEngine {
     await enrollmentRef.set({
       funnelId,
       userId,
-      creatorId: funnel.data()?.creatorId,
+      earnerId: funnel.data()?.earnerId,
       currentStep: 0,
       status: 'active',
       enrolledAt: serverTimestamp(),
@@ -308,7 +310,7 @@ export class CRMEngine {
   }
 
   static async createBroadcast(
-    creatorId: string,
+    earnerId: string,
     broadcastData: {
       segmentId: string;
       subject: string;
@@ -332,7 +334,7 @@ export class CRMEngine {
       .doc(broadcastData.segmentId)
       .get();
 
-    if (!segment.exists || segment.data()?.creatorId !== creatorId) {
+    if (!segment.exists || segment.data()?.earnerId !== earnerId) {
       throw new Error('Segment not found or access denied');
     }
 
@@ -344,7 +346,7 @@ export class CRMEngine {
     const broadcastRef = db.collection('crm_broadcasts').doc();
 
     const broadcast: Omit<CRMBroadcast, 'id'> = {
-      creatorId,
+      earnerId,
       segmentId: broadcastData.segmentId,
       subject: broadcastData.subject,
       content: broadcastData.content,
@@ -385,7 +387,7 @@ export class CRMEngine {
     const segment = await db.collection('crm_segments').doc(data.segmentId).get();
     const filters = segment.data()?.filters || {};
 
-    const contacts = await this.getSegmentContacts(data.creatorId, filters);
+    const contacts = await this.getSegmentContacts(data.earnerId, filters);
 
     let deliveredCount = 0;
     const batch = db.batch();
@@ -399,7 +401,7 @@ export class CRMEngine {
       batch.set(messageRef, {
         broadcastId,
         userId: contact.userId,
-        creatorId: data.creatorId,
+        earnerId: data.earnerId,
         subject: data.subject,
         content: data.content,
         status: 'delivered',
@@ -421,12 +423,12 @@ export class CRMEngine {
   }
 
   private static async getSegmentContacts(
-    creatorId: string,
+    earnerId: string,
     filters: SegmentFilters
   ): Promise<CRMContact[]> {
     let query: any = db
       .collection('crm_contacts')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .limit(MAX_BROADCAST_SIZE);
 
     if (filters.labels && filters.labels.length > 0) {
@@ -438,12 +440,12 @@ export class CRMEngine {
   }
 
   static async optOutBroadcasts(
-    creatorId: string,
+    earnerId: string,
     userId: string
   ): Promise<void> {
     const contactRef = db
       .collection('crm_contacts')
-      .doc(`${creatorId}_${userId}`);
+      .doc(`${earnerId}_${userId}`);
 
     await contactRef.update({
       optedOutBroadcasts: true,
@@ -452,7 +454,7 @@ export class CRMEngine {
   }
 
   static async getAnalytics(
-    creatorId: string,
+    earnerId: string,
     period: 'day' | 'week' | 'month' | 'year'
   ): Promise<CRMAnalytics> {
     const now = new Date();
@@ -475,7 +477,7 @@ export class CRMEngine {
 
     const contacts = await db
       .collection('crm_contacts')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .get();
 
     const totalContacts = contacts.size;
@@ -493,7 +495,7 @@ export class CRMEngine {
     });
 
     const analytics: CRMAnalytics = {
-      creatorId,
+      earnerId,
       period,
       periodStart: timestamp.fromDate(periodStart) as any,
       periodEnd: serverTimestamp() as any,
@@ -513,6 +515,20 @@ export class CRMEngine {
     return analytics;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

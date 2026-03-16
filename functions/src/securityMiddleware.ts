@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO SECURITY MIDDLEWARE
@@ -36,13 +38,13 @@ import { getAuth } from 'firebase-admin/auth';
 // ============================================================================
 
 const ALLOWED_ORIGINS = [
-  "https://avalo-c8c46.web.app",
-  "https://avalo-c8c46.firebaseapp.com",
-  "https://admin.avalo.app",
-  "https://avalo.app",
+  "https://platform-c8c46.web.app",
+  "https://platform-c8c46.firebaseapp.com",
+  "https://admin.platform.app",
+  "https://platform.app",
   // Mobile origins (Expo/React Native)
   /^exp:\/\/.*/,
-  /^avalo:\/\/.*/,
+  /^platform:\/\/.*/,
   // Local development
   "http://localhost:3000",
   "http://localhost:5000",
@@ -325,8 +327,8 @@ export async function performSecurityCheck(
 
   // 4. Validate HMAC signature (for sensitive operations)
   if (options.requireHMAC) {
-    const signature = request.headers["x-avalo-signature"] as string;
-    const timestamp = request.headers["x-avalo-timestamp"] as string;
+    const signature = request.headers["x-platform-signature"] as string;
+    const timestamp = request.headers["x-platform-timestamp"] as string;
     const body = JSON.stringify(request.body);
 
     const hmacCheck = await validateHMAC(signature, timestamp, body);
@@ -439,6 +441,20 @@ export default {
   getClientIP,
   logSecurityEvent,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

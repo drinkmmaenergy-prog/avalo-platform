@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 199: Regional Rules Data Structures
  * Predefined compliance rules for each region
@@ -1087,6 +1089,22 @@ export const REGIONAL_RULES: Record<RegionCode, RegionalRule> = {
     uxAdaptations: [],
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

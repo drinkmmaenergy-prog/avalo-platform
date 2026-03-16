@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PHASE 26 - Realtime Engine v2
  *
@@ -153,7 +155,7 @@ export const subscribeToRealtimeEventsV1 = onCall(
 
       // Return WebSocket URL for Cloud Run service
       // In production, this would be the Cloud Run WebSocket endpoint
-      const wsUrl = `wss://realtime.avalo.app/ws?connectionId=${connectionId}&token=${connectionId}`;
+      const wsUrl = `wss://realtime.platform.app/ws?connectionId=${connectionId}&token=${connectionId}`;
 
       logger.info(`Realtime subscription created: ${connectionId} for ${uid}`);
 
@@ -450,6 +452,20 @@ export async function broadcastToUsers(
   const promises = userIds.map((userId) => broadcastToUser(userId, event));
   await Promise.all(promises);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

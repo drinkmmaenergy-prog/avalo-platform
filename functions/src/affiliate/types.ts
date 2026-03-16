@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 131: Global Affiliate / Influencer Referral Engine
  * Types and interfaces for affiliate system
@@ -313,6 +315,22 @@ export const PAYOUT_CONFIG = {
   payoutProcessingDays: 30, // Days after referral verification
   batchPayoutSchedule: 'weekly', // When payouts are processed
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

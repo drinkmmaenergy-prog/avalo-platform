@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 75 - Call Billing Engine
  * 
  * Handles per-minute billing for voice & video calls
- * Charges caller, pays creator (earner) with 65/35 split
+ * Charges caller, pays earner (earner) with 65/35 split
  * 
  * NO FREE CALLS - all calls are paid, insufficient funds = graceful termination
  */
@@ -29,8 +31,8 @@ interface CallSession {
  * Revenue split constants (65/35)
  * Matches existing platform split for PPM/chat
  */
-const EARNER_SPLIT = MONETIZATION_SPLITS.CHAT.creator;  // 65% to callee (creator/earner)
-const AVALO_SPLIT = MONETIZATION_SPLITS.CHAT.avalo;   // 35% to Avalo
+const EARNER_SPLIT = MONETIZATION_SPLITS.CHAT.earner;  // 65% to callee (earner/earner)
+const AVALO_SPLIT = MONETIZATION_SPLITS.CHAT.platform;   // 35% to Avalo
 
 /**
  * Bill a completed call session
@@ -118,7 +120,7 @@ export async function billCall(callId: string): Promise<void> {
 
         // Calculate earnings split
         const earnerAmount = Math.floor(requiredTokens * EARNER_SPLIT);
-        const avaloAmount = requiredTokens - earnerAmount;
+        const platformAmount = requiredTokens - earnerAmount;
 
         // Credit callee's earnings wallet
         const calleeWalletRef = db.collection('user_wallets').doc(callData.calleeUserId);
@@ -157,7 +159,7 @@ export async function billCall(callId: string): Promise<void> {
               billedMinutes,
               tokensCharged: requiredTokens,
               earnerAmount,
-              avaloAmount
+              platformAmount
             }
           }
         });
@@ -303,6 +305,22 @@ export async function checkCallBalance(
     };
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

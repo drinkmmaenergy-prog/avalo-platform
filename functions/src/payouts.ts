@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 56 — Payout APIs
  *
@@ -237,8 +239,8 @@ async function fetchEligibilityContext(userId: string): Promise<PayoutEligibilit
         riskScore: 0,
       };
 
-  // Fetch creator earnings
-  const earningsDoc = await db.collection("creator_earnings").doc(userId).get();
+  // Fetch earner earnings
+  const earningsDoc = await db.collection("earner_earnings").doc(userId).get();
   const earningsData = earningsDoc.data();
 
   // Calculate withdrawable tokens
@@ -251,7 +253,7 @@ async function fetchEligibilityContext(userId: string): Promise<PayoutEligibilit
     ageVerified,
     enforcement,
     aml,
-    creatorEarnings: {
+    earnerEarnings: {
       totalTokensEarnedAllTime,
       withdrawableTokens: Math.max(0, withdrawableTokens),
     },
@@ -304,8 +306,8 @@ export async function getPayoutState(userId: string) {
     eligibility,
     account,
     earnings: {
-      totalTokensEarnedAllTime: eligibilityContext.creatorEarnings.totalTokensEarnedAllTime,
-      withdrawableTokens: eligibilityContext.creatorEarnings.withdrawableTokens,
+      totalTokensEarnedAllTime: eligibilityContext.earnerEarnings.totalTokensEarnedAllTime,
+      withdrawableTokens: eligibilityContext.earnerEarnings.withdrawableTokens,
     },
   };
 }
@@ -391,7 +393,7 @@ export async function setupPayoutAccount(params: {
       // Create new Stripe Connect account
       const stripeResult = await createOrUpdateStripeAccount({
         userId,
-        email: userData?.email || `${userId}@avalo.app`,
+        email: userData?.email || `${userId}@platform.app`,
         country: userCountry,
       });
 
@@ -404,8 +406,8 @@ export async function setupPayoutAccount(params: {
       // Create onboarding link
       const linkResult = await createStripeOnboardingLink({
         accountId: stripeResult.accountId,
-        refreshUrl: "https://avalo.app/payouts/setup",
-        returnUrl: "https://avalo.app/payouts/complete",
+        refreshUrl: "https://platform.app/payouts/setup",
+        returnUrl: "https://platform.app/payouts/complete",
       });
 
       onboardingUrl = linkResult.url;
@@ -423,8 +425,8 @@ export async function setupPayoutAccount(params: {
       if (statusResult.onboardingStatus !== "COMPLETE") {
         const linkResult = await createStripeOnboardingLink({
           accountId: stripeAccountId,
-          refreshUrl: "https://avalo.app/payouts/setup",
-          returnUrl: "https://avalo.app/payouts/complete",
+          refreshUrl: "https://platform.app/payouts/setup",
+          returnUrl: "https://platform.app/payouts/complete",
         });
 
         onboardingUrl = linkResult.url;
@@ -488,7 +490,7 @@ export async function requestPayout(params: {
   }
 
   // Check sufficient balance
-  if (tokensRequested > eligibilityContext.creatorEarnings.withdrawableTokens) {
+  if (tokensRequested > eligibilityContext.earnerEarnings.withdrawableTokens) {
     throw new functions.https.HttpsError(
       "failed-precondition",
       "Insufficient withdrawable tokens"
@@ -568,8 +570,8 @@ export async function requestPayout(params: {
 
   await db.collection("payout_requests").doc(requestId).set(requestData);
 
-  // Update creator earnings - reserve tokens
-  await db.collection("creator_earnings").doc(userId).update({
+  // Update earner earnings - reserve tokens
+  await db.collection("earner_earnings").doc(userId).update({
     tokensPaidOut: admin.firestore.FieldValue.increment(tokensRequested),
     updatedAt: admin.firestore.Timestamp.now(),
   });
@@ -687,6 +689,20 @@ export async function getPendingWithdrawals(userIdOrLimit?: string | number): Pr
   // TODO: Implement
   return [];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

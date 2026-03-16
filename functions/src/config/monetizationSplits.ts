@@ -1,30 +1,170 @@
-export type MonetizationSurface =
- | "CHAT"
- | "CALL"
- | "VIDEO_CALL"
- | "TIPS"
- | "UNLOCK_MEDIA"
- | "LIVE_GIFTS"
- | "EVENT_TICKET"
- | "CALENDAR_MEETING"
- | "SUBSCRIPTION"
+/**
+ * =====================================================
+ * AVALO MONETIZATION SPLITS
+ * =====================================================
+ *
+ * Canonical economic configuration used across:
+ *
+ * - Chat billing
+ * - Calls
+ * - Video calls
+ * - Tips
+ * - Media unlock
+ * - Live gifts
+ * - Event tickets
+ * - Calendar meetings
+ * - Subscriptions
+ *
+ * Platform model:
+ * Earners receive percentage of tokens
+ * Platform retains treasury share
+ *
+ * All values expressed as fractions (0-1)
+ * =====================================================
+ */
 
-export interface MonetizationSplit{
- creator:number
- avalo:number
+
+/**
+ * Legacy compatibility structure
+ * Some older modules still reference earner / platform
+ */
+
+export const MONETIZATION_SPLITS = {
+
+  CHAT: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  CALL: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  VIDEO_CALL: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  TIPS: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  UNLOCK_MEDIA: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  LIVE_GIFTS: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  EVENT_TICKET: {
+    earner: 0.80,
+    platform: 0.20
+  },
+
+  CALENDAR_MEETING: {
+    earner: 0.80,
+    platform: 0.20
+  },
+
+  SUBSCRIPTION: {
+    earner: 0.70,
+    platform: 0.30
+  }
+
 }
 
-export const MONETIZATION_SPLITS:Record<MonetizationSurface,MonetizationSplit>={
- CHAT:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
- CALL:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
- VIDEO_CALL:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
- TIPS:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
- UNLOCK_MEDIA:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
- LIVE_GIFTS:{creator:MONETIZATION_SPLITS.CHAT.creator,avalo:MONETIZATION_SPLITS.CHAT.avalo},
 
- EVENT_TICKET:{creator:0.80,avalo:0.20},
- CALENDAR_MEETING:{creator:0.80,avalo:0.20},
+/**
+ * =====================================================
+ * NEW STANDARD SPLIT MODEL
+ * =====================================================
+ *
+ * Used by all new economic engines:
+ *
+ * - Wallet Engine
+ * - Escrow Engine
+ * - Chat Billing
+ * - Creator payouts
+ *
+ * earner   → person receiving tokens
+ * platform → Avalo treasury
+ */
 
- SUBSCRIPTION:{creator:0.70,avalo:0.30}
+export const SPLITS = {
+
+  CHAT: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  CALL: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  VIDEO_CALL: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  TIPS: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  UNLOCK_MEDIA: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  LIVE_GIFTS: {
+    earner: 0.65,
+    platform: 0.35
+  },
+
+  EVENT_TICKET: {
+    earner: 0.80,
+    platform: 0.20
+  },
+
+  CALENDAR_MEETING: {
+    earner: 0.80,
+    platform: 0.20
+  },
+
+  SUBSCRIPTION: {
+    earner: 0.70,
+    platform: 0.30
+  }
+
+}
+
+
+/**
+ * =====================================================
+ * TYPE HELPERS
+ * =====================================================
+ */
+
+export type MonetizationType =
+  | "CHAT"
+  | "CALL"
+  | "VIDEO_CALL"
+  | "TIPS"
+  | "UNLOCK_MEDIA"
+  | "LIVE_GIFTS"
+  | "EVENT_TICKET"
+  | "CALENDAR_MEETING"
+  | "SUBSCRIPTION"
+
+
+export type SplitStructure = {
+  earner: number
+  platform: number
 }
 

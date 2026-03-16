@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 98 — IN-APP HELP CENTER
  * Seed initial help categories and articles
@@ -77,7 +79,7 @@ export const seedHelpContent = functions.https.onCall(async (request) => {
     // Create placeholder articles
     const articles = [
       {
-        slug: 'how-avalo-works',
+        slug: 'how-platform-works',
         categorySlug: 'getting-started',
         title: 'How Avalo Works',
         content: `# How Avalo Works
@@ -87,7 +89,7 @@ Avalo is a platform that connects adults who want to build real connections and,
 ## Core Features
 
 - **Profiles & Discovery**: Create a clear profile, choose your preferences, and appear in discovery feeds based on compatibility, safety and activity.
-- **Token Economy**: Some actions use tokens: unlocking content, gifts, or premium messages. Avalo keeps 35%, creators receive 65% of eligible earnings.
+- **Token Economy**: Some actions use tokens: unlocking content, gifts, or premium messages. Avalo keeps 35%, earners receive 65% of eligible earnings.
 - **Safety & Verification**: Every user must be 18+, we use verification, risk scoring, reports and enforcement to keep interactions as safe as possible.
 - **Privacy & Control**: You choose what you share. You can control visibility, manage devices, enable extra security and review your data rights.
 
@@ -107,7 +109,7 @@ Learn more by exploring other help articles in this center.`,
 
 When users engage with your content or time through paid features, you earn tokens. Avalo operates on a transparent 65/35 revenue split:
 
-- **65%** goes to creators
+- **65%** goes to earners
 - **35%** goes to Avalo (platform fee)
 
 ## What You Can Earn From
@@ -293,7 +295,7 @@ Content availability may be restricted based on:
 
 ## Creator Responsibility
 
-As a creator, you are responsible for:
+As a earner, you are responsible for:
 
 - Accurately classifying your content
 - Understanding and following local laws
@@ -403,7 +405,7 @@ Under GDPR and similar regulations, you have the right to:
         platform: 'MOBILE',
       },
       {
-        slug: 'creator-analytics-guide',
+        slug: 'earner-analytics-guide',
         categorySlug: 'content-and-monetization',
         title: 'Creator Analytics Guide',
         content: `# Creator Analytics Guide
@@ -450,7 +452,7 @@ See which of your content pieces performed best:
 - Earnings are never guaranteed
 - Use analytics to inform your strategy, not as promises`,
         language: 'en',
-        tags: ['analytics', 'creators', 'earnings', 'insights'],
+        tags: ['analytics', 'earners', 'earnings', 'insights'],
         isFeatured: false,
         platform: 'MOBILE',
       },
@@ -488,6 +490,20 @@ See which of your content pieces performed best:
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 433 — Influencer Marketplace & Creator Deal Automation Engine
  * Part 3: Tracking & Attribution System
@@ -5,7 +7,7 @@
  * Features:
  * - Creator → Install tracking
  * - Install → Chat → Wallet Spend tracking
- * - One creator per user lifetime rule
+ * - One earner per user lifetime rule
  * - One attribution path only (no re-attribution)
  * - Anti-double-attribution lock
  */
@@ -24,7 +26,7 @@ import { admin, auth, functions, timestamp } from './runtime';
 export interface CreatorAttribution {
   id: string;
   userId: string;
-  creatorId: string;
+  earnerId: string;
   dealId: string;
   
   // Traffic source
@@ -47,7 +49,7 @@ export interface CreatorAttribution {
   // Monetization
   isPaidUser: boolean;
   lifetimeRevenue: number;
-  lifetimePayout: number; // To creator
+  lifetimePayout: number; // To earner
   
   // Status
   locked: boolean; // Once locked, cannot be changed
@@ -71,7 +73,7 @@ export interface AttributionEvent {
 export interface UserAttributionLock {
   userId: string;
   attributionId: string;
-  creatorId: string;
+  earnerId: string;
   lockedAt: Timestamp;
   permanent: boolean;
 }
@@ -81,8 +83,8 @@ export interface UserAttributionLock {
 // ============================================================================
 
 /**
- * Create attribution when user installs from creator link
- * This is the entry point for all creator tracking
+ * Create attribution when user installs from earner link
+ * This is the entry point for all earner tracking
  */
 export const createAttribution = onCall(
   { region: 'europe-west1' },
@@ -107,9 +109,9 @@ export const createAttribution = onCall(
     try {
       const userId = request.auth.uid;
 
-      // CRITICAL: Check if user already has an attribution (one creator per lifetime)
+      // CRITICAL: Check if user already has an attribution (one earner per lifetime)
       const existingAttribution = await db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('userId', '==', userId)
         .limit(1)
         .get();
@@ -117,7 +119,7 @@ export const createAttribution = onCall(
       if (!existingAttribution.empty) {
         const existing = existingAttribution.docs[0].data() as CreatorAttribution;
         
-        logger.warn(`User ${userId} already attributed to creator ${existing.creatorId}`);
+        logger.warn(`User ${userId} already attributed to earner ${existing.earnerId}`);
         
         return {
           attributionId: existingAttribution.docs[0].id,
@@ -125,7 +127,7 @@ export const createAttribution = onCall(
         };
       }
 
-      // Look up traffic source to find creator and deal
+      // Look up traffic source to find earner and deal
       const trafficSourceQuery = await db
         .collection('traffic_sources')
         .where('fingerprint', '==', fingerprint)
@@ -137,18 +139,18 @@ export const createAttribution = onCall(
       }
 
       const trafficSource = trafficSourceQuery.docs[0].data();
-      const creatorId = trafficSource.creatorId;
+      const earnerId = trafficSource.earnerId;
 
-      // Find active deal for this creator
+      // Find active deal for this earner
       const activeDealQuery = await db
-        .collection('creator_deals')
-        .where('creatorId', '==', creatorId)
+        .collection('earner_deals')
+        .where('earnerId', '==', earnerId)
         .where('status', '==', 'ACTIVE')
         .limit(1)
         .get();
 
       if (activeDealQuery.empty) {
-        throw new HttpsError('not-found', 'No active deal found for this creator');
+        throw new HttpsError('not-found', 'No active deal found for this earner');
       }
 
       const deal = activeDealQuery.docs[0].data();
@@ -174,7 +176,7 @@ export const createAttribution = onCall(
         today.setHours(0, 0, 0, 0);
         
         const todayInstalls = await db
-          .collection('creator_attributions')
+          .collection('earner_attributions')
           .where('dealId', '==', dealId)
           .where('installedAt', '>=', Timestamp.fromDate(today))
           .count()
@@ -193,7 +195,7 @@ export const createAttribution = onCall(
       // Create attribution
       const attribution: Omit<CreatorAttribution, 'id'> = {
         userId,
-        creatorId,
+        earnerId,
         dealId,
         fingerprint,
         source,
@@ -213,13 +215,13 @@ export const createAttribution = onCall(
         updatedAt: Timestamp.now(),
       };
 
-      const attributionRef = await db.collection('creator_attributions').add(attribution);
+      const attributionRef = await db.collection('earner_attributions').add(attribution);
 
       // Create attribution lock
       const lock: UserAttributionLock = {
         userId,
         attributionId: attributionRef.id,
-        creatorId,
+        earnerId,
         lockedAt: Timestamp.now(),
         permanent: true,
       };
@@ -235,20 +237,20 @@ export const createAttribution = onCall(
       });
 
       // Update deal stats
-      await db.collection('creator_deals').doc(dealId).update({
+      await db.collection('earner_deals').doc(dealId).update({
         'stats.totalInstalls': increment(1),
         updatedAt: Timestamp.now(),
       });
 
-      // Update creator stats
-      await db.collection('creator_profiles').doc(creatorId).update({
+      // Update earner stats
+      await db.collection('earner_profiles').doc(earnerId).update({
         'stats.totalInstalls': increment(1),
         updatedAt: Timestamp.now(),
       });
 
       logger.info(`Attribution created: ${attributionRef.id}`, {
         userId,
-        creatorId,
+        earnerId,
         dealId,
         source,
       });
@@ -286,7 +288,7 @@ export const trackFirstChat = onCall(
     try {
       // Find user's attribution
       const attributionQuery = await db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('userId', '==', userId)
         .limit(1)
         .get();
@@ -349,7 +351,7 @@ export const trackFirstPurchase = onCall(
     try {
       // Find user's attribution
       const attributionQuery = await db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('userId', '==', userId)
         .limit(1)
         .get();
@@ -388,7 +390,7 @@ export const trackFirstPurchase = onCall(
       });
 
       // Update deal stats
-      const dealRef = db.collection('creator_deals').doc(attribution.dealId);
+      const dealRef = db.collection('earner_deals').doc(attribution.dealId);
       const dealUpdates: any = {
         'stats.totalRevenue': increment(amount),
         updatedAt: Timestamp.now(),
@@ -400,9 +402,9 @@ export const trackFirstPurchase = onCall(
 
       await dealRef.update(dealUpdates);
 
-      // Update creator stats
+      // Update earner stats
       if (isFirstPurchase) {
-        await db.collection('creator_profiles').doc(attribution.creatorId).update({
+        await db.collection('earner_profiles').doc(attribution.earnerId).update({
           'stats.totalRevenue': increment(amount),
           updatedAt: Timestamp.now(),
         });
@@ -445,7 +447,7 @@ export const getUserAttribution = onCall(
 
     try {
       const attributionQuery = await db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('userId', '==', userId)
         .limit(1)
         .get();
@@ -483,7 +485,7 @@ export const getDealAttributions = onCall(
 
     try {
       let query: FirebaseFirestore.Query = db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('dealId', '==', dealId)
         .orderBy('createdAt', 'desc');
 
@@ -541,7 +543,7 @@ async function recordAttributionEvent(params: {
  */
 export const checkAttributionLock = onCall(
   { region: 'europe-west1' },
-  async (request): Promise<{ locked: boolean; creatorId?: string }> => {
+  async (request): Promise<{ locked: boolean; earnerId?: string }> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
@@ -562,7 +564,7 @@ export const checkAttributionLock = onCall(
 
       return {
         locked: true,
-        creatorId: lock.creatorId,
+        earnerId: lock.earnerId,
       };
     } catch (error: any) {
       logger.error('Error checking attribution lock', error);
@@ -599,7 +601,7 @@ export const onWalletTransactionCreated = onDocumentCreated(
 
       // Find user's attribution
       const attributionQuery = await db
-        .collection('creator_attributions')
+        .collection('earner_attributions')
         .where('userId', '==', userId)
         .limit(1)
         .get();
@@ -638,7 +640,7 @@ export const onWalletTransactionCreated = onDocumentCreated(
       });
 
       // Update deal stats
-      const dealRef = db.collection('creator_deals').doc(attribution.dealId);
+      const dealRef = db.collection('earner_deals').doc(attribution.dealId);
       const dealUpdates: any = {
         'stats.totalRevenue': increment(amount),
         updatedAt: Timestamp.now(),
@@ -659,6 +661,20 @@ export const onWalletTransactionCreated = onDocumentCreated(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

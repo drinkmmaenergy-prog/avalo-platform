@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 193 — REVISED v2 — Permission-Driven Sexuality System
  * Core TypeScript Implementation
@@ -534,6 +536,20 @@ export const SEVERITY_THRESHOLDS = {
   major: 3,
   critical: 5
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

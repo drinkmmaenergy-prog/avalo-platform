@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 345 — Launch-Ready System Audit & Missing Gaps Scan
  * 
@@ -138,8 +140,8 @@ export interface AuditRunLog {
  */
 export interface RevenueSplitConfig {
   feature: 'chat' | 'voice' | 'video' | 'calendar' | 'events' | 'tips' | 'gifts';
-  creatorShare: number; // percentage (0-100)
-  platformShare: number; // percentage (0-100)
+  earner: number; // percentage (0-100)
+  platform: number; // percentage (0-100)
   verified: boolean;
   verifiedAt?: Timestamp;
 }
@@ -150,44 +152,44 @@ export interface RevenueSplitConfig {
 export const EXPECTED_REVENUE_SPLITS: Record<string, RevenueSplitConfig> = {
   chat: {
     feature: 'chat',
-    creatorShare: 65,
-    platformShare: 35,
+    earner: 65,
+    platform: 35,
     verified: false
   },
   voice: {
     feature: 'voice',
-    creatorShare: 65,
-    platformShare: 35,
+    earner: 65,
+    platform: 35,
     verified: false
   },
   video: {
     feature: 'video',
-    creatorShare: 65,
-    platformShare: 35,
+    earner: 65,
+    platform: 35,
     verified: false
   },
   calendar: {
     feature: 'calendar',
-    creatorShare: 80,
-    platformShare: 20,
+    earner: 80,
+    platform: 20,
     verified: false
   },
   events: {
     feature: 'events',
-    creatorShare: 80,
-    platformShare: 20,
+    earner: 80,
+    platform: 20,
     verified: false
   },
   tips: {
     feature: 'tips',
-    creatorShare: 90,
-    platformShare: 10,
+    earner: 90,
+    platform: 10,
     verified: false
   },
   gifts: {
     feature: 'gifts',
-    creatorShare: 90,
-    platformShare: 10,
+    earner: 90,
+    platform: 10,
     verified: false
   }
 };
@@ -348,7 +350,7 @@ export const REFUND_POLICY_CHECKS: RefundPolicyCheck[] = [
   {
     feature: 'calendar',
     policyName: 'mismatch_selfie_refund',
-    description: 'User gets full refund if creator fails selfie verification at meeting',
+    description: 'User gets full refund if earner fails selfie verification at meeting',
     implemented: false
   },
   {
@@ -359,14 +361,14 @@ export const REFUND_POLICY_CHECKS: RefundPolicyCheck[] = [
   },
   {
     feature: 'calendar',
-    policyName: 'creator_cancel_full_refund',
+    policyName: 'earner_cancel_full_refund',
     description: 'Creator cancellation = full refund including Avalo fee',
     implemented: false
   },
   {
     feature: 'events',
-    policyName: 'creator_cancel_event_refund',
-    description: 'Event cancelled by creator = full ticket refund',
+    policyName: 'earner_cancel_event_refund',
+    description: 'Event cancelled by earner = full ticket refund',
     implemented: false
   }
 ];
@@ -379,6 +381,20 @@ export function isLaunchReadinessStatus(obj: any): obj is LaunchReadinessStatus 
 export function isCountryLaunchConfig(obj: any): obj is CountryLaunchConfig {
   return obj && typeof obj === 'object' && 'countryCode' in obj && 'enabled' in obj;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

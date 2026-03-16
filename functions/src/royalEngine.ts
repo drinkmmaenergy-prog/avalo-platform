@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 50 — Royal Club Engine
  * High-Spender Retention & VIP Layer
@@ -484,6 +486,20 @@ export async function recomputeAllMemberships(batchSize: number = 100): Promise<
 }
 
 console.log('✅ Royal Engine initialized - PACK 50');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

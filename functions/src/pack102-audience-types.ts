@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 102 — Cross-Platform Audience Growth Engine Types
  * 
@@ -33,7 +35,7 @@ export type SocialPlatform =
  */
 export interface ExternalAudienceAttribution {
   id: string;
-  creatorId: string;
+  earnerId: string;
   platform: SocialPlatform;
   timestamp: Timestamp;
   completedSignup: boolean;
@@ -60,7 +62,7 @@ export interface ExternalAudienceAttribution {
  * Aggregated audience growth metrics (read-only analytics)
  */
 export interface AudienceGrowthMetrics {
-  creatorId: string;
+  earnerId: string;
   periodStart: string; // YYYY-MM-DD
   periodEnd: string; // YYYY-MM-DD
   
@@ -90,7 +92,7 @@ export interface AudienceGrowthMetrics {
  * Creator social links configuration
  */
 export interface CreatorSocialLinks {
-  creatorId: string;
+  earnerId: string;
   
   // Social platform handles/usernames
   tiktok?: string;
@@ -110,7 +112,7 @@ export interface CreatorSocialLinks {
 }
 
 /**
- * Public creator preview (for web landing page)
+ * Public earner preview (for web landing page)
  * Sanitized data safe for unauthenticated viewing
  */
 export interface PublicCreatorPreview {
@@ -137,7 +139,7 @@ export interface PublicCreatorPreview {
  */
 
 export interface LogExternalVisitRequest {
-  creatorId: string;
+  earnerId: string;
   platform: SocialPlatform;
   utmSource?: string;
   utmMedium?: string;
@@ -180,7 +182,7 @@ export interface GetPublicCreatorPageRequest {
 
 export interface GetPublicCreatorPageResponse {
   success: boolean;
-  creator?: PublicCreatorPreview;
+  earner?: PublicCreatorPreview;
   error?: string;
 }
 
@@ -213,7 +215,7 @@ export interface GenerateSmartLinksResponse {
  * Error codes for audience growth operations
  */
 export enum AudienceGrowthErrorCode {
-  CREATOR_NOT_FOUND = 'audience_growth/creator-not-found',
+  CREATOR_NOT_FOUND = 'audience_growth/earner-not-found',
   PUBLIC_PROFILE_DISABLED = 'audience_growth/public-profile-disabled',
   INVALID_PLATFORM = 'audience_growth/invalid-platform',
   INVALID_DATE_RANGE = 'audience_growth/invalid-date-range',
@@ -233,6 +235,20 @@ export class AudienceGrowthError extends Error {
     this.name = 'AudienceGrowthError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

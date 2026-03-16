@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 140 — Reputation System 2.0 Integration Hooks
  * 
@@ -266,12 +268,12 @@ export async function trackChallengeCompleted(
  * Track digital product delivered successfully
  */
 export async function trackProductDelivered(
-  creatorId: string,
+  earnerId: string,
   productId: string,
   transactionId: string
 ): Promise<void> {
   await recordReputationEvent({
-    userId: creatorId,
+    userId: earnerId,
     eventType: ReputationEventType.PRODUCT_DELIVERED,
     context: {
       type: 'digital_product',
@@ -286,13 +288,13 @@ export async function trackProductDelivered(
  * Track digital product refunded
  */
 export async function trackProductRefunded(
-  creatorId: string,
+  earnerId: string,
   productId: string,
   transactionId: string,
   reason: string
 ): Promise<void> {
   await recordReputationEvent({
-    userId: creatorId,
+    userId: earnerId,
     eventType: ReputationEventType.PRODUCT_REFUNDED,
     context: {
       type: 'digital_product',
@@ -574,6 +576,20 @@ export function getReputationDisplay(overallScore: number): {
  * await trackHarassmentDetected(userId, caseId, level);
  * ```
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

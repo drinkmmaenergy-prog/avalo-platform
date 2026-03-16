@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 287: Chat Media Monetization
  * 
@@ -63,8 +65,8 @@ export interface MediaBilling {
   mode: BillingMode;
   priceTokens: number;
   chargedTokens: number;
-  platformShareTokens: number;
-  earnerShareTokens: number;
+  platformTokens: number;
+  earnerTokens: number;
   paidByUserId: string | null;
   refundable: boolean;
 }
@@ -201,25 +203,25 @@ export async function calculateMediaBilling(
   const priceTokens = getMediaPrice(mediaType);
   
   // Calculate split based on earner status
-  let platformShareTokens: number;
-  let earnerShareTokens: number;
+  let platformTokens: number;
+  let earnerTokens: number;
   
   if (earnerId === null) {
     // earnOff mode: 100% to Avalo (EARN_OFF_AVALO_100)
-    platformShareTokens = priceTokens;
-    earnerShareTokens = 0;
+    platformTokens = priceTokens;
+    earnerTokens = 0;
   } else {
     // earnOn mode: 65% earner / 35% platform
-    platformShareTokens = Math.floor(priceTokens * MEDIA_REVENUE_SPLIT.platformPercent / 100);
-    earnerShareTokens = priceTokens - platformShareTokens;
+    platformTokens = Math.floor(priceTokens * MEDIA_REVENUE_SPLIT.platformPercent / 100);
+    earnerTokens = priceTokens - platformTokens;
   }
   
   return {
     mode: 'PAID',
     priceTokens,
     chargedTokens: priceTokens,
-    platformShareTokens,
-    earnerShareTokens,
+    platformTokens,
+    earnerTokens,
     paidByUserId: payerId,
     refundable: false  // Media is non-refundable
   };
@@ -277,18 +279,18 @@ export async function processMediaBilling(
         chatId,
         messageId,
         purpose: 'media_message',
-        platformShare: billing.platformShareTokens,
-        earnerShare: billing.earnerShareTokens
+        platform: billing.platformTokens,
+        earner: billing.earnerTokens
       },
       createdAt: serverTimestamp()
     });
     
     // Credit earner if exists
-    if (earnerId && billing.earnerShareTokens > 0) {
+    if (earnerId && billing.earnerTokens > 0) {
       const earnerWalletRef = db.collection('users').doc(earnerId).collection('wallet').doc('current');
       transaction.update(earnerWalletRef, {
-        balance: increment(billing.earnerShareTokens),
-        earned: increment(billing.earnerShareTokens)
+        balance: increment(billing.earnerTokens),
+        earned: increment(billing.earnerTokens)
       });
       
       // Record earner transaction
@@ -296,7 +298,7 @@ export async function processMediaBilling(
       transaction.set(earnerTxRef, {
         userId: earnerId,
         type: 'chat_media_earned',
-        amount: billing.earnerShareTokens,
+        amount: billing.earnerTokens,
         metadata: {
           chatId,
           messageId,
@@ -312,7 +314,7 @@ export async function processMediaBilling(
     transaction.set(platformTxRef, {
       userId: 'platform',
       type: 'platform_fee',
-      amount: billing.platformShareTokens,
+      amount: billing.platformTokens,
       metadata: {
         chatId,
         messageId,
@@ -671,6 +673,20 @@ export function validateMediaLimits(
   
   return { valid: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

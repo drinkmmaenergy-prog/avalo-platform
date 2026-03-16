@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 167 - Avalo Influencer & Affiliate Attribution Network
  * Cloud Functions for ethical affiliate marketing
@@ -71,7 +73,7 @@ export const createAffiliateLink = functions.https.onCall(async (request) => {
 
       if (!safetyCheck.isAllowed) {
         await logBlockedContent(db, {
-          creatorId: userId,
+          earnerId: userId,
           contentType: 'link',
           contentId: data.productId,
           blockedText: data.productDescription,
@@ -96,7 +98,7 @@ export const createAffiliateLink = functions.https.onCall(async (request) => {
 
       // Create affiliate link
       const linkData: Omit<AffiliateLink, 'id'> = {
-        creatorId: userId,
+        earnerId: userId,
         productId: data.productId,
         productName: data.productName,
         productDescription: data.productDescription,
@@ -105,7 +107,7 @@ export const createAffiliateLink = functions.https.onCall(async (request) => {
         referralPercentage,
         platformFee,
         shortCode,
-        fullUrl: `https://avalo.app/a/${shortCode}`,
+        fullUrl: `https://platform.app/a/${shortCode}`,
         isActive: true,
         totalClicks: 0,
         totalConversions: 0,
@@ -190,13 +192,13 @@ export const trackAffiliateConversion = functions.https.onCall(async (request) =
       // Get seller information
       const productDoc = await db.collection('products').doc(data.productId).get();
       const sellerId = productDoc.exists
-        ? (productDoc.data()?.creatorId as string)
-        : link.creatorId;
+        ? (productDoc.data()?.earnerId as string)
+        : link.earnerId;
 
       // Create conversion record
       const conversionData: Omit<AffiliateConversion, 'id'> = {
         affiliateLinkId: data.affiliateLinkId,
-        referrerId: link.creatorId,
+        referrerId: link.earnerId,
         sellerId,
         buyerId,
         productId: data.productId,
@@ -231,7 +233,7 @@ export const trackAffiliateConversion = functions.https.onCall(async (request) =
       if (link.referralPercentage > 0) {
         await assignCommissionInternal(
           conversionRef.id,
-          link.creatorId,
+          link.earnerId,
           data.affiliateLinkId,
           referrerEarnings,
           data.currency
@@ -258,7 +260,7 @@ export const trackAffiliateConversion = functions.https.onCall(async (request) =
  */
 async function assignCommissionInternal(
   conversionId: string,
-  creatorId: string,
+  earnerId: string,
   affiliateLinkId: string,
   amount: number,
   currency: string
@@ -268,7 +270,7 @@ async function assignCommissionInternal(
   eligibleDate.setDate(eligibleDate.getDate() + 30);
 
   const commissionData: Omit<AffiliateCommission, 'id'> = {
-    creatorId,
+    earnerId,
     conversionId,
     affiliateLinkId,
     amount,
@@ -285,7 +287,7 @@ async function assignCommissionInternal(
     .add(commissionData);
 
   // Update analytics
-  await updateAnalytics(creatorId);
+  await updateAnalytics(earnerId);
 
   return commissionRef.id;
 }
@@ -355,7 +357,7 @@ export const withdrawAffiliateEarnings = functions.https.onCall(async (request) 
       const now = Timestamp.now();
       const commissionsSnapshot = await db
         .collection('affiliate_commissions')
-        .where('creatorId', '==', userId)
+        .where('earnerId', '==', userId)
         .where('status', '==', 'pending')
         .where('isPaid', '==', false)
         .where('eligibleForPayoutAt', '<=', now)
@@ -384,7 +386,7 @@ export const withdrawAffiliateEarnings = functions.https.onCall(async (request) 
 
       // Create withdrawal request
       const withdrawalRef = await db.collection('affiliate_withdrawals').add({
-        creatorId: userId,
+        earnerId: userId,
         amount: data.amount,
         payoutMethod: data.payoutMethod,
         status: 'processing',
@@ -458,7 +460,7 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
 
       const link = linkDoc.data() as AffiliateLink;
 
-      if (link.creatorId !== userId) {
+      if (link.earnerId !== userId) {
         throw new functions.https.HttpsError(
           'permission-denied',
           'You do not own this affiliate link'
@@ -473,7 +475,7 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
 
       if (!safetyCheck.isAllowed) {
         await logBlockedContent(db, {
-          creatorId: userId,
+          earnerId: userId,
           contentType: 'banner',
           contentId: data.affiliateLinkId,
           blockedText: data.text,
@@ -489,7 +491,7 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
 
       // Create banner
       const bannerData: Omit<AffiliateBanner, 'id'> = {
-        creatorId: userId,
+        earnerId: userId,
         affiliateLinkId: data.affiliateLinkId,
         text: data.text,
         imageUrl: data.imageUrl,
@@ -510,7 +512,7 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
       return {
         success: true,
         bannerId: bannerRef.id,
-        bannerUrl: `https://avalo.app/banners/${bannerRef.id}`,
+        bannerUrl: `https://platform.app/banners/${bannerRef.id}`,
       };
     } catch (error: any) {
       console.error('Error generating banner:', error);
@@ -523,14 +525,14 @@ export const generateAffiliateBanner = functions.https.onCall(async (request) =>
 );
 
 /**
- * Update analytics for a creator
+ * Update analytics for a earner
  */
-async function updateAnalytics(creatorId: string): Promise<void> {
+async function updateAnalytics(earnerId: string): Promise<void> {
   try {
     // Get all affiliate links
     const linksSnapshot = await db
       .collection('affiliate_links')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .get();
 
     let totalLinks = 0;
@@ -551,7 +553,7 @@ async function updateAnalytics(creatorId: string): Promise<void> {
     // Get commissions
     const commissionsSnapshot = await db
       .collection('affiliate_commissions')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .get();
 
     let totalCommissions = 0;
@@ -571,7 +573,7 @@ async function updateAnalytics(creatorId: string): Promise<void> {
     const conversionRate = totalClicks > 0 ? totalConversions / totalClicks : 0;
 
     const analyticsData: Partial<AffiliateAnalytics> = {
-      creatorId,
+      earnerId,
       totalLinks,
       activeLinks,
       totalClicks,
@@ -589,7 +591,7 @@ async function updateAnalytics(creatorId: string): Promise<void> {
 
     await db
       .collection('affiliate_analytics')
-      .doc(creatorId)
+      .doc(earnerId)
       .set(analyticsData, { merge: true });
   } catch (error) {
     console.error('Error updating analytics:', error);
@@ -600,22 +602,22 @@ async function updateAnalytics(creatorId: string): Promise<void> {
  * Scheduled function to update all analytics daily
  */
 export const updateAllAffiliateAnalytics = onSchedule("every 24 hours", async (event) => {
-    const creatorsSnapshot = await db
+    const earnersSnapshot = await db
       .collection('affiliate_links')
-      .select('creatorId')
+      .select('earnerId')
       .get();
 
     const uniqueCreators = new Set<string>();
-    creatorsSnapshot.forEach((doc) => {
-      uniqueCreators.add(doc.data().creatorId);
+    earnersSnapshot.forEach((doc) => {
+      uniqueCreators.add(doc.data().earnerId);
     });
 
-    const promises = Array.from(uniqueCreators).map((creatorId) =>
-      updateAnalytics(creatorId)
+    const promises = Array.from(uniqueCreators).map((earnerId) =>
+      updateAnalytics(earnerId)
     );
 
     await Promise.all(promises);
-    console.log(`Updated analytics for ${uniqueCreators.size} creators`);
+    console.log(`Updated analytics for ${uniqueCreators.size} earners`);
   });
 
 /**
@@ -656,12 +658,26 @@ export const trackAffiliateClick = onRequest({}, async (req, res) => {
     });
 
     // Redirect to product
-    res.redirect(`https://avalo.app/products/${link.productId}?ref=${shortCode}`);
+    res.redirect(`https://platform.app/products/${link.productId}?ref=${shortCode}`);
   } catch (error) {
     console.error('Error tracking click:', error);
     res.status(500).send('Internal error');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

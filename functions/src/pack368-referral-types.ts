@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 368 — Viral Referral & Invite Engine
  * Type definitions for referral system
@@ -188,6 +190,20 @@ export interface ReferralAnalytics {
   attributionBreakdown: Record<string, number>;
   countryBreakdown: Record<string, number>;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

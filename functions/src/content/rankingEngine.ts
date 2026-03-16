@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { HttpsError, Timestamp, auth, onCall } from "../runtime";
@@ -29,9 +31,9 @@ interface RankingWeights {
 }
 
 const DEFAULT_WEIGHTS: RankingWeights = {
-  recency: MONETIZATION_SPLITS.CHAT.avalo,
-  relationship: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
-  engagement: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  recency: MONETIZATION_SPLITS.CHAT.platform,
+  relationship: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
+  engagement: MONETIZATION_SPLITS.EVENT_TICKET.platform,
   locality: 0.10,
   tierBoost: 0.03,
   risk: 0.02
@@ -182,8 +184,8 @@ async function getUserRelationships(userId: string): Promise<{
       doc.data().participants.filter((uid: string) => uid !== userId)
     )),
     followers: new Set(followers.docs.map(doc => doc.data().followedId)),
-    calendarBookings: new Set(bookings.docs.map(doc => doc.data().creatorId)),
-    eventAttendees: new Set(events.docs.map(doc => doc.data().creatorId))
+    calendarBookings: new Set(bookings.docs.map(doc => doc.data().earnerId)),
+    eventAttendees: new Set(events.docs.map(doc => doc.data().earnerId))
   };
 }
 
@@ -427,7 +429,7 @@ function calculateLocalityScore(contentLocation: any, userLocation: any): number
 }
 
 /**
- * Tier boost: small boost for premium creators
+ * Tier boost: small boost for premium earners
  */
 function calculateTierBoost(tier?: string): number {
   switch (tier) {
@@ -526,6 +528,24 @@ async function hydrateContentItems(items: FeedItem[]): Promise<any[]> {
 
   return results;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

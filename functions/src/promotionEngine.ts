@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 61: Promotion Engine - Core filtering and eligibility logic
  * Determines which promotions can be shown to a viewer
@@ -125,8 +127,8 @@ export function selectPromotions(
 }
 
 /**
- * Check if a campaign owner (creator) is eligible to run promotions
- * Must check: age, enforcement status, creator earning capability
+ * Check if a campaign owner (earner) is eligible to run promotions
+ * Must check: age, enforcement status, earner earning capability
  */
 export interface CampaignOwnerEligibility {
   eligible: boolean;
@@ -155,7 +157,7 @@ export function checkCampaignOwnerEligibility(
     };
   }
 
-  // Must be able to earn (creator status)
+  // Must be able to earn (earner status)
   if (earningStatus === 'EARN_DISABLED') {
     return {
       eligible: false,
@@ -163,16 +165,30 @@ export function checkCampaignOwnerEligibility(
     };
   }
 
-  // Must be a creator
+  // Must be a earner
   if (!isCreator) {
     return {
       eligible: false,
-      reason: 'Only creators can run promotion campaigns'
+      reason: 'Only earners can run promotion campaigns'
     };
   }
 
   return { eligible: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

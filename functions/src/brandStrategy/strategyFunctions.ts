@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { db, serverTimestamp } from '../init';
 import {
   AIStrategyProfile,
@@ -26,17 +28,17 @@ import {
 import { functions, timestamp } from '../runtime';
 
 /**
- * Generate a comprehensive brand strategy profile for a creator
+ * Generate a comprehensive brand strategy profile for a earner
  */
 export async function generateStrategyProfile(
   request: GenerateStrategyProfileRequest
 ): Promise<AIStrategyProfile> {
-  const { creatorId, personalBrand, professionalGoals, boundaries } = request;
+  const { earnerId, personalBrand, professionalGoals, boundaries } = request;
 
   // Build default safe profile
   const profile: AIStrategyProfile = {
     id: db.collection('ai_strategy_profiles').doc().id,
-    creatorId,
+    earnerId,
     createdAt: new Date(),
     updatedAt: new Date(),
     
@@ -68,7 +70,7 @@ export async function generateStrategyProfile(
     
     professionalGoals: {
       timeline: professionalGoals?.timeline || 'medium_term',
-      targetRole: professionalGoals?.targetRole || 'hybrid_creator',
+      targetRole: professionalGoals?.targetRole || 'hybrid_earner',
       milestones: professionalGoals?.milestones || [
         'Build consistent content schedule',
         'Grow engaged audience',
@@ -206,7 +208,7 @@ export async function generateContentCalendar(
   const plan: ContentStrategyPlan = {
     id: db.collection('content_strategy_plans').doc().id,
     profileId,
-    creatorId: profile.creatorId,
+    earnerId: profile.earnerId,
     createdAt: new Date(),
     updatedAt: new Date(),
     
@@ -251,7 +253,7 @@ export async function generateContentCalendar(
 }
 
 /**
- * Generate a career roadmap for a creator
+ * Generate a career roadmap for a earner
  */
 export async function generateRoadmap(
   request: GenerateRoadmapRequest
@@ -268,7 +270,7 @@ export async function generateRoadmap(
   const phases: RoadmapPhase[] = [];
 
   // Generate phases based on career path
-  if (careerPath === 'full_time_creator') {
+  if (careerPath === 'full_time_earner') {
     phases.push(
       createPhase('Foundation', 1, '0-3 months', 'Build content foundation and audience', [
         createMilestone('Launch consistent posting schedule', 'Post 5x per week for 4 consecutive weeks'),
@@ -347,7 +349,7 @@ export async function generateRoadmap(
   const roadmap: BrandRoadmap = {
     id: db.collection('brand_roadmaps').doc().id,
     profileId,
-    creatorId: profile.creatorId,
+    earnerId: profile.earnerId,
     createdAt: new Date(),
     updatedAt: new Date(),
     careerPath,
@@ -387,7 +389,7 @@ export async function updateStrategyWithAnalytics(
     const insight: StrategyInsight = {
       id: db.collection('strategy_insights').doc().id,
       profileId,
-      creatorId: '',
+      earnerId: '',
       createdAt: new Date(),
       type: 'topic_performance',
       category: topTopic.topic,
@@ -416,7 +418,7 @@ export async function updateStrategyWithAnalytics(
     const insight: StrategyInsight = {
       id: db.collection('strategy_insights').doc().id,
       profileId,
-      creatorId: '',
+      earnerId: '',
       createdAt: new Date(),
       type: 'posting_time',
       category: 'scheduling',
@@ -601,6 +603,22 @@ function generateCareerOutcomes(
 
   return baseOutcomes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

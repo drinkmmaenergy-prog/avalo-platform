@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Smart Social Graph Cloud Functions
  * Export all callable functions for client access
@@ -293,8 +295,8 @@ export const getEthicalFollowRecommendations = functions.https.onCall(async (req
 // ============================================================================
 
 /**
- * Manually refresh creator relevance score
- * For creators who want to update their discovery profile
+ * Manually refresh earner relevance score
+ * For earners who want to update their discovery profile
  */
 export const refreshCreatorScore = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -307,26 +309,26 @@ export const refreshCreatorScore = functions.https.onCall(async (request) => {
       }
       
       const userId = request.auth.uid;
-      const creatorId = data.creatorId || userId;
+      const earnerId = data.earnerId || userId;
       
       // Users can only refresh their own score
-      if (creatorId !== userId) {
+      if (earnerId !== userId) {
         throw new functions.https.HttpsError(
           'permission-denied',
-          'Can only refresh your own creator score'
+          'Can only refresh your own earner score'
         );
       }
       
-      logger.info(`Refreshing creator score for ${creatorId}`);
+      logger.info(`Refreshing earner score for ${earnerId}`);
       
-      await updateCreatorRelevanceScore(creatorId);
+      await updateCreatorRelevanceScore(earnerId);
       
       return {
         success: true,
         message: 'Creator score refreshed successfully',
       };
     } catch (error: any) {
-      logger.error('Error refreshing creator score:', error);
+      logger.error('Error refreshing earner score:', error);
       
       if (error instanceof functions.https.HttpsError) {
         throw error;
@@ -334,7 +336,7 @@ export const refreshCreatorScore = functions.https.onCall(async (request) => {
       
       throw new functions.https.HttpsError(
         'internal',
-        error.message || 'Failed to refresh creator score'
+        error.message || 'Failed to refresh earner score'
       );
     }
   }
@@ -369,18 +371,18 @@ export const scanContentForFlirtManipulation = functions.https.onCall(async (req
         );
       }
       
-      const { contentId, creatorId, caption, title, thumbnailUrl } = data;
+      const { contentId, earnerId, caption, title, thumbnailUrl } = data;
       
-      if (!contentId || !creatorId) {
+      if (!contentId || !earnerId) {
         throw new functions.https.HttpsError(
           'invalid-argument',
-          'contentId and creatorId are required'
+          'contentId and earnerId are required'
         );
       }
       
       logger.info(`Scanning content ${contentId} for flirt manipulation`);
       
-      const flags = await detectFlirtManipulation(contentId, creatorId, {
+      const flags = await detectFlirtManipulation(contentId, earnerId, {
         caption,
         title,
         thumbnailUrl,
@@ -452,6 +454,22 @@ export const getShadowDensityStats_Admin = functions.https.onCall(async (request
 );
 
 logger.info('✅ Smart Social Graph Cloud Functions initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

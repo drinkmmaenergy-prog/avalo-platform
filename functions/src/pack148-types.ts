@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 148 - Avalo Blockchain Token Ledger
  * Type definitions for transparent, immutable transaction recording
@@ -80,8 +82,8 @@ export interface LedgerTransaction {
   status: TransactionStatus;
   
   // Revenue split (recorded, not modified)
-  platformShare: number;             // 35% (recorded for audit)
-  creatorShare: number;              // 65% (recorded for audit)
+  platform: number;             // 35% (recorded for audit)
+  earner: number;              // 65% (recorded for audit)
   
   // Blockchain proof
   blockchainTimestamp: Timestamp;
@@ -287,9 +289,9 @@ export interface TaxSummary {
 
 export interface LedgerStats {
   userId: string;
-  role: 'creator' | 'user' | 'both';
+  role: 'earner' | 'user' | 'both';
   
-  // As creator (receiver)
+  // As earner (receiver)
   asCreator?: {
     totalEarned: number;
     totalTransactions: number;
@@ -438,8 +440,8 @@ export function isValidExportType(type: string): type is ExportType {
 // Constants
 // ===========================
 
-export const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.avalo;  // 35%
-export const CREATOR_SHARE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.creator; // 65%
+export const PLATFORM_FEE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.platform;  // 35%
+export const CREATOR_SHARE_PERCENTAGE = MONETIZATION_SPLITS.CHAT.earner; // 65%
 
 export const EXPORT_EXPIRY_HOURS = 24;
 export const MAX_EXPORT_DOWNLOADS = 3;
@@ -485,6 +487,22 @@ export class ExportError extends Error {
     this.name = 'ExportError';
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

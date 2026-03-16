@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 113 — Full Ecosystem API Gateway
  * Webhook System
@@ -543,19 +545,19 @@ export const onNewFollower = onDocumentCreated(
       return;
     }
 
-    const creatorId = follow.followedUserId;
+    const earnerId = follow.followedUserId;
 
-    // Find all active subscriptions for this creator
+    // Find all active subscriptions for this earner
     const subscriptions = await db
       .collection('webhook_subscriptions')
-      .where('userId', '==', creatorId)
+      .where('userId', '==', earnerId)
       .where('eventType', '==', 'NEW_FOLLOWER')
       .where('active', '==', true)
       .get();
 
     const payload = {
       event: 'follower.new',
-      userId: creatorId,
+      userId: earnerId,
       followerId: follow.followerUserId,
       followedAt: follow.createdAt,
     };
@@ -601,6 +603,20 @@ export const cleanupOldWebhookDeliveries = onSchedule(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

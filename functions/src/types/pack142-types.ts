@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 142 — Avalo Anti-Catfish & Identity Authenticity Engine
  * Type Definitions
@@ -663,6 +665,22 @@ export function getVerificationMessage(
     ? IDENTITY_MESSAGES[key] 
     : IDENTITY_MESSAGES.LIVENESS_REQUIRED;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

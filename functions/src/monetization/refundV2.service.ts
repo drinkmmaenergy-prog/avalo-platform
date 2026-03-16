@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * REFUND V2 SERVICE — Canonical Refund Logic
  *
@@ -66,7 +68,7 @@ const CALENDAR_FULL_REFUND_REASONS: readonly RefundReason[] = [
  *   - Ledger entry required for each refund.
  *
  * The refund credits the FULL original amount back to the buyer.
- * Both the creator's share and Avalo's share are reversed.
+ * Both the earner's share and Avalo's share are reversed.
  *
  * @param request — CalendarRefundRequest
  * @returns RefundResult
@@ -219,6 +221,22 @@ export function denyRoyalRefund(): RefundResult {
 export function isRefundable(feature: string): boolean {
   return feature === 'CALENDAR_BOOK' || feature === 'CALL_BILL';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

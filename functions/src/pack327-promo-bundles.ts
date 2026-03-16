@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ============================================================================
  * PACK 327 — Creator Promo Bundles
  * ============================================================================
  * Subscriptions + Boosts + Tokens in One Purchase
  * 
- * Revenue Model: 100% Avalo (NO creator split on bundles)
+ * Revenue Model: 100% Avalo (NO earner split on bundles)
  * Integrates with:
  * - PACK 277: Wallet & Token Store
  * - PACK 107: VIP/Royal Subscriptions
@@ -759,6 +761,20 @@ function calculateAge(dateOfBirth: any): number {
 }
 
 logger.info('✅ PACK 327 - Creator Promo Bundles loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

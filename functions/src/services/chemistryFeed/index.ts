@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 208 — Chemistry Feed AI
  * Main export module for adaptive attraction ranking
@@ -14,6 +16,22 @@ export { calculateChemistryScore } from './rankingModel';
 export { calculatePhotoAttractivenessScore } from './signalsAesthetic';
 
 console.log('✅ PACK 208: Chemistry Feed AI loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

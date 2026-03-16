@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 349 - Ad Engine, Brand Campaigns & Sponsored Content Control
  * Types and interfaces for token-based advertising system
@@ -9,7 +11,7 @@ import { admin, timestamp } from './runtime';
 /**
  * Ad Type Definitions
  */
-export type AdType = 'feed' | 'discovery' | 'event' | 'creator' | 'ai';
+export type AdType = 'feed' | 'discovery' | 'event' | 'earner' | 'ai';
 export type AdStatus = 'draft' | 'active' | 'paused' | 'expired' | 'rejected';
 
 /**
@@ -135,7 +137,7 @@ export interface SponsoredCreatorProfile {
   // Sponsorship terms
   startAt: Timestamp;
   endAt?: Timestamp;
-  commissionRate: number; // Default 65% creator, 35% Avalo
+  commissionRate: number; // Default 65% earner, 35% Avalo
   minimumGuarantee?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -151,7 +153,7 @@ export interface AdPlacement {
   adId: string;
   campaignId?: string;
   userId: string; // viewer
-  surface: 'feed' | 'discovery' | 'event' | 'creator' | 'ai';
+  surface: 'feed' | 'discovery' | 'event' | 'earner' | 'ai';
   position: number;
   shown: boolean;
   clicked: boolean;
@@ -296,8 +298,8 @@ export const AD_CONSTANTS = {
   VIOLATION_THRESHOLD_SUSPEND: 3,
   VIOLATION_THRESHOLD_BAN: 5,
   REPORT_THRESHOLD_AUTO_PAUSE: 10,
-  CREATOR_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
-  AVALO_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  CREATOR_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.earner, // 65% to earner
+  AVALO_COMMISSION_RATE: MONETIZATION_SPLITS.CHAT.platform, // 35% to Avalo
   AD_FEED_FREQUENCY: 10, // show ad every N posts
   AD_DISCOVERY_FREQUENCY: 12,
 } as const;
@@ -356,6 +358,22 @@ export interface AdSafetyCheckResult {
     ageInappropriate: boolean;
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

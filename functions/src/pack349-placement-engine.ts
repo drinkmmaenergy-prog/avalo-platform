@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 349 - Ad Placement Engine
  * Injects ads into various surfaces (Feed, Discovery, Events, Creator, AI)
@@ -57,22 +59,22 @@ export class AdPlacementEngine {
   }
 
   /**
-   * Get sponsored creator badge/ad
+   * Get sponsored earner badge/ad
    */
   static async getAdForCreator(
     userId: string,
     countryCode: string,
-    creatorId: string
+    earnerId: string
   ): Promise<AvaloAd | null> {
-    // Check if creator has sponsorship
-    const creatorProfile = await db
+    // Check if earner has sponsorship
+    const earnerProfile = await db
       .collection('sponsoredCreators')
-      .doc(creatorId)
+      .doc(earnerId)
       .get();
 
-    if (creatorProfile.exists && creatorProfile.data()?.isActive) {
-      // Return creator's sponsorship ad
-      const campaignId = creatorProfile.data()?.campaignId;
+    if (earnerProfile.exists && earnerProfile.data()?.isActive) {
+      // Return earner's sponsorship ad
+      const campaignId = earnerProfile.data()?.campaignId;
       if (campaignId) {
         const campaign = await db.collection('brandCampaigns').doc(campaignId).get();
         if (campaign.exists) {
@@ -89,8 +91,8 @@ export class AdPlacementEngine {
       }
     }
 
-    // Otherwise, show regular creator-type ad
-    return this.getEligibleAd(userId, countryCode, 'creator');
+    // Otherwise, show regular earner-type ad
+    return this.getEligibleAd(userId, countryCode, 'earner');
   }
 
   /**
@@ -470,6 +472,20 @@ export class AdPlacementEngine {
     return !AD_EXCLUSION_SURFACES.includes(surface as any);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

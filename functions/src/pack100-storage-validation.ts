@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 100 — Storage Validation & Media Upload Safety
  * 
@@ -492,6 +494,20 @@ export function getMaxFileSize(mimeType: string): number {
   const mediaType = getMediaType(mimeType);
   return MAX_FILE_SIZES[mediaType] || 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

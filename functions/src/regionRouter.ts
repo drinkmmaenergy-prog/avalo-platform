@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 
 /**
  * Region Router Module
@@ -354,6 +356,20 @@ export const VALID_REGIONS: AvaloRegionCode[] = ["EU", "US", "ASIA", "OTHER"];
  * 30 days cooldown period in milliseconds
  */
 export const REGION_CHANGE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

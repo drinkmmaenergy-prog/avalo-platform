@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 109 — Campaign Attribution Tracking & Analytics
  * 
@@ -160,11 +162,11 @@ export const handleCampaignSmartLink = onRequest(
       const talentData = talentDoc.data() as TalentProfile;
       
       // Generate deep link to app
-      let deepLink = 'https://avalo.app';
+      let deepLink = 'https://platform.app';
       
-      if (talentData?.avaloUserId) {
+      if (talentData?.platformUserId) {
         // Deep link to talent's profile in app
-        deepLink = `avalo://profile/${talentData.avaloUserId}?ref=campaign_${campaignSlug}`;
+        deepLink = `platform://profile/${talentData.platformUserId}?ref=campaign_${campaignSlug}`;
       }
       
       // Redirect to app store or web landing page
@@ -173,17 +175,17 @@ export const handleCampaignSmartLink = onRequest(
       if (userAgent.includes('android')) {
         // Redirect to Play Store with fallback to web
         res.redirect(
-          `https://play.google.com/store/apps/details?id=app.avalo&referrer=campaign_${campaignSlug}_talent_${talentId}`
+          `https://play.google.com/store/apps/details?id=app.platform&referrer=campaign_${campaignSlug}_talent_${talentId}`
         );
       } else if (userAgent.includes('iphone') || userAgent.includes('ipad')) {
         // Redirect to App Store with fallback to web
         res.redirect(
-          `https://apps.apple.com/app/avalo/id123456789?pt=campaign_${campaignSlug}&ct=talent_${talentId}`
+          `https://apps.apple.com/app/platform/id123456789?pt=campaign_${campaignSlug}&ct=talent_${talentId}`
         );
       } else {
         // Redirect to web landing page with campaign context
         res.redirect(
-          `https://avalo.app/join?campaign=${campaignSlug}&talent=${talentId}&utm_source=${utmSource || 'campaign'}&utm_medium=${utmMedium || 'web'}`
+          `https://platform.app/join?campaign=${campaignSlug}&talent=${talentId}&utm_source=${utmSource || 'campaign'}&utm_medium=${utmMedium || 'web'}`
         );
       }
     } catch (error: any) {
@@ -239,7 +241,7 @@ export const logCampaignVisit = onCall(
         id: eventId,
         campaignId: campaignDoc.id,
         talentId: data.talentId,
-        avaloUserId: request.auth?.uid,
+        platformUserId: request.auth?.uid,
         eventType: 'VISIT',
         occurredAt: serverTimestamp(),
         platform: data.platform,
@@ -255,9 +257,9 @@ export const logCampaignVisit = onCall(
       const talentDoc = await db.collection('talent_profiles').doc(data.talentId).get();
       const talentData = talentDoc.data() as TalentProfile;
       
-      let deepLink = 'avalo://home';
-      if (talentData?.avaloUserId) {
-        deepLink = `avalo://profile/${talentData.avaloUserId}?ref=campaign_${data.campaignSlug}`;
+      let deepLink = 'platform://home';
+      if (talentData?.platformUserId) {
+        deepLink = `platform://profile/${talentData.platformUserId}?ref=campaign_${data.campaignSlug}`;
       }
       
       return {
@@ -292,7 +294,7 @@ export async function logCampaignSignup(
       id: eventId,
       campaignId,
       talentId,
-      avaloUserId: userId,
+      platformUserId: userId,
       eventType: 'SIGNUP',
       occurredAt: serverTimestamp(),
       region,
@@ -316,13 +318,13 @@ export async function logCampaignSignup(
  */
 export async function logCampaignFollow(
   userId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<void> {
   try {
-    // Check if this creator is a talent in any active campaigns
+    // Check if this earner is a talent in any active campaigns
     const talentDoc = await db
       .collection('talent_profiles')
-      .where('avaloUserId', '==', creatorId)
+      .where('platformUserId', '==', earnerId)
       .limit(1)
       .get();
     
@@ -346,7 +348,7 @@ export async function logCampaignFollow(
         id: eventId,
         campaignId: campaignDoc.id,
         talentId,
-        avaloUserId: userId,
+        platformUserId: userId,
         eventType: 'FOLLOW',
         occurredAt: serverTimestamp(),
       };
@@ -370,13 +372,13 @@ export async function logCampaignFollow(
  */
 export async function logCampaignFirstPaidInteraction(
   userId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<void> {
   try {
-    // Check if this creator is a talent in any active campaigns
+    // Check if this earner is a talent in any active campaigns
     const talentDoc = await db
       .collection('talent_profiles')
-      .where('avaloUserId', '==', creatorId)
+      .where('platformUserId', '==', earnerId)
       .limit(1)
       .get();
     
@@ -390,7 +392,7 @@ export async function logCampaignFirstPaidInteraction(
     const existingEvent = await db
       .collection('campaign_attribution_events')
       .where('talentId', '==', talentId)
-      .where('avaloUserId', '==', userId)
+      .where('platformUserId', '==', userId)
       .where('eventType', '==', 'FIRST_PAID_INTERACTION')
       .limit(1)
       .get();
@@ -413,7 +415,7 @@ export async function logCampaignFirstPaidInteraction(
         id: eventId,
         campaignId: campaignDoc.id,
         talentId,
-        avaloUserId: userId,
+        platformUserId: userId,
         eventType: 'FIRST_PAID_INTERACTION',
         occurredAt: serverTimestamp(),
       };
@@ -668,7 +670,7 @@ export const admin_getCampaignPerformance = onCall(
 // ============================================================================
 
 /**
- * Get campaigns for creator (if they are a talent)
+ * Get campaigns for earner (if they are a talent)
  */
 export const getCreatorCampaigns = onCall(
   { region: 'europe-west1' },
@@ -683,7 +685,7 @@ export const getCreatorCampaigns = onCall(
       // Check if user is a talent
       const talentQuery = await db
         .collection('talent_profiles')
-        .where('avaloUserId', '==', userId)
+        .where('platformUserId', '==', userId)
         .limit(1)
         .get();
       
@@ -739,7 +741,7 @@ export const getCreatorCampaigns = onCall(
         });
         
         // Generate smart links
-        const baseURL = 'https://avalo.app/c/';
+        const baseURL = 'https://platform.app/c/';
         const smartLinks = {
           web: `${baseURL}${campaign.slug}?t=${talentId}`,
           tiktok: `${baseURL}${campaign.slug}?t=${talentId}&utm_source=tiktok`,
@@ -770,11 +772,25 @@ export const getCreatorCampaigns = onCall(
         campaigns,
       };
     } catch (error: any) {
-      logger.error('Error getting creator campaigns', error);
+      logger.error('Error getting earner campaigns', error);
       throw new HttpsError('internal', error.message);
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

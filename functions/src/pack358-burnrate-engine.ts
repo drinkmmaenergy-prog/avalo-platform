@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 358 — Burn Rate Calculation Engine
  * 
@@ -242,10 +244,10 @@ class BurnRateEngine {
   private async calculatePaymentProcessingCost(year: number, month: number): Promise<number> {
     const revenue = await this.getMonthlyRevenue(year, month);
     
-    // Stripe fees: 2.9% + MONETIZATION_SPLITS.SUBSCRIPTION.avalo USD per transaction
+    // Stripe fees: 2.9% + MONETIZATION_SPLITS.SUBSCRIPTION.platform USD per transaction
     const stripePercentageFee = 0.029;
     const transactions = await this.getMonthlyTransactionCount(year, month);
-    const stripeFixedFee = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
+    const stripeFixedFee = MONETIZATION_SPLITS.SUBSCRIPTION.platform;
 
     return revenue * stripePercentageFee + transactions * stripeFixedFee;
   }
@@ -269,7 +271,7 @@ class BurnRateEngine {
       const iapRevenueUSD = data.iapRevenueUSD || 0;
       
       // Apple/Google take 15-30% (assume 20% average after small business program)
-      const storeFeePercentage = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+      const storeFeePercentage = MONETIZATION_SPLITS.EVENT_TICKET.platform;
       return iapRevenueUSD * storeFeePercentage;
     }
 
@@ -642,6 +644,22 @@ export const getBurnRateHistory = onCall(
       throw new HttpsError('internal', 'Failed to fetch history');
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

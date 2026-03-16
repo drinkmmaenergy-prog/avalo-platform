@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Payment Provider Integrations (Phase 11)
  *
@@ -277,7 +279,7 @@ async function createP24Session(
       amount: amountGroszy,
       currency: "USD",
       description: `${tokens} Avalo Tokens`,
-      email: "user@avalo.app", // Should get from user profile
+      email: "user@platform.app", // Should get from user profile
       country: "PL",
       language: "pl",
       urlReturn: `${process.env.WEB_URL}/wallet?payment=success`,
@@ -339,7 +341,7 @@ async function createPayUSession(
       currencyCode: currency,
       totalAmount: Math.round(amount * 100), // Convert to smallest unit
       buyer: {
-        email: "user@avalo.app", // Should get from user profile
+        email: "user@platform.app", // Should get from user profile
         language: "pl",
       },
       products: [
@@ -589,6 +591,20 @@ async function creditUserTokens(userId: string, tokens: number, transactionId: s
 
   console.log(`Credited ${tokens} tokens to user ${userId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

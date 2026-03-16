@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 128 - Treasury Audit & Reporting System
  * Complete audit trail and integrity verification
@@ -50,8 +52,8 @@ export const treasury_generateAuditReport = https.onCall(
 
       // Get all vault balances
       const userWallets = await db.collection('user_token_wallets').get();
-      const creatorVaults = await db.collection('creator_vaults').get();
-      const avaloVault = await db.collection('avalo_revenue_vault').doc('platform').get();
+      const earnerVaults = await db.collection('earner_vaults').get();
+      const platformVault = await db.collection('platform_revenue_vault').doc('platform').get();
       const hotWallet = await db.collection('treasury_hot_wallet').doc('hot_wallet').get();
       const coldWallet = await db.collection('treasury_cold_wallet').doc('cold_wallet').get();
 
@@ -61,7 +63,7 @@ export const treasury_generateAuditReport = https.onCall(
         0
       );
 
-      const totalCreatorTokens = creatorVaults.docs.reduce(
+      const totalCreatorTokens = earnerVaults.docs.reduce(
         (sum, doc) => {
           const vault = doc.data() as CreatorVault;
           return sum + (vault.availableTokens || 0) + (vault.lockedTokens || 0);
@@ -69,8 +71,8 @@ export const treasury_generateAuditReport = https.onCall(
         0
       );
 
-      const totalAvaloRevenue = avaloVault.exists
-        ? ((avaloVault.data() as AvaloRevenueVault)?.availableRevenue || 0)
+      const totalAvaloRevenue = platformVault.exists
+        ? ((platformVault.data() as AvaloRevenueVault)?.availableRevenue || 0)
         : 0;
 
       const hotWalletBalance = hotWallet.exists
@@ -182,8 +184,8 @@ export const treasury_dailyReconciliation = scheduler.onSchedule(
         logger.error('CRITICAL: Treasury integrity check failed', {
           issues: integrity.issues,
           userTotal: integrity.userTotal,
-          creatorTotal: integrity.creatorTotal,
-          avaloTotal: integrity.avaloTotal,
+          earnerTotal: integrity.earnerTotal,
+          platformTotal: integrity.platformTotal,
         });
 
         if (AUDIT_POLICY.REAL_TIME_ALERTS) {
@@ -212,8 +214,8 @@ export const treasury_dailyReconciliation = scheduler.onSchedule(
         },
         summary: {
           totalUserTokens: integrity.userTotal,
-          totalCreatorTokens: integrity.creatorTotal,
-          totalAvaloRevenue: integrity.avaloTotal,
+          totalCreatorTokens: integrity.earnerTotal,
+          totalAvaloRevenue: integrity.platformTotal,
           hotWalletBalance: 0, // Would fetch from hot wallet
           coldWalletBalance: 0, // Would fetch from cold wallet
           totalSupply: integrity.grandTotal,
@@ -325,10 +327,10 @@ export const treasury_getStatistics = https.onCall(
 
     try {
       // Get current balances
-      const [userWallets, creatorVaults, avaloVault, hotWallet, coldWallet] = await Promise.all([
+      const [userWallets, earnerVaults, platformVault, hotWallet, coldWallet] = await Promise.all([
         db.collection('user_token_wallets').get(),
-        db.collection('creator_vaults').get(),
-        db.collection('avalo_revenue_vault').doc('platform').get(),
+        db.collection('earner_vaults').get(),
+        db.collection('platform_revenue_vault').doc('platform').get(),
         db.collection('treasury_hot_wallet').doc('hot_wallet').get(),
         db.collection('treasury_cold_wallet').doc('cold_wallet').get(),
       ]);
@@ -339,18 +341,18 @@ export const treasury_getStatistics = https.onCall(
         0
       );
 
-      const totalCreatorAvailable = creatorVaults.docs.reduce(
+      const totalCreatorAvailable = earnerVaults.docs.reduce(
         (sum, doc) => sum + ((doc.data() as CreatorVault).availableTokens || 0),
         0
       );
 
-      const totalCreatorLocked = creatorVaults.docs.reduce(
+      const totalCreatorLocked = earnerVaults.docs.reduce(
         (sum, doc) => sum + ((doc.data() as CreatorVault).lockedTokens || 0),
         0
       );
 
-      const totalAvaloRevenue = avaloVault.exists
-        ? ((avaloVault.data() as AvaloRevenueVault)?.availableRevenue || 0)
+      const totalAvaloRevenue = platformVault.exists
+        ? ((platformVault.data() as AvaloRevenueVault)?.availableRevenue || 0)
         : 0;
 
       const hotWalletBalance = hotWallet.exists
@@ -387,7 +389,7 @@ export const treasury_getStatistics = https.onCall(
         },
         counts: {
           totalUsers: userWallets.size,
-          totalCreators: creatorVaults.size,
+          totalCreators: earnerVaults.size,
         },
         last24h,
         timestamp: new Date().toISOString(),
@@ -424,6 +426,20 @@ export async function checkAndAlertAnomalies(
     logger.error('Failed to create alert', { error, context });
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

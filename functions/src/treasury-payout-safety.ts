@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 128 - Payout Safety Layer
  * Multi-check validation before payout release
@@ -177,7 +179,7 @@ async function checkFraudScore(userId: string): Promise<{ passed: boolean; score
  */
 async function checkBalance(userId: string, requestedAmount: number): Promise<boolean> {
   try {
-    const vaultDoc = await db.collection('creator_vaults').doc(userId).get();
+    const vaultDoc = await db.collection('earner_vaults').doc(userId).get();
     
     if (!vaultDoc.exists) {
       return false;
@@ -305,7 +307,7 @@ export const treasury_requestPayout = https.onCall<RequestPayoutRequest>(
 
       // Lock tokens and create payout request (atomic transaction)
       const payoutRequestId = await db.runTransaction(async (transaction) => {
-        const vaultRef = db.collection('creator_vaults').doc(userId);
+        const vaultRef = db.collection('earner_vaults').doc(userId);
         const vaultSnap = await transaction.get(vaultRef);
         const vault = vaultSnap.data() as CreatorVault;
 
@@ -411,7 +413,7 @@ export const treasury_processPayout = https.onCall<ProcessPayoutRequest>(
       if (approved) {
         // APPROVED: Release tokens from locked to paid
         await db.runTransaction(async (transaction) => {
-          const vaultRef = db.collection('creator_vaults').doc(userId);
+          const vaultRef = db.collection('earner_vaults').doc(userId);
           const vaultSnap = await transaction.get(vaultRef);
           const vault = vaultSnap.data() as CreatorVault;
 
@@ -464,7 +466,7 @@ export const treasury_processPayout = https.onCall<ProcessPayoutRequest>(
       } else {
         // REJECTED: Return locked tokens to available
         await db.runTransaction(async (transaction) => {
-          const vaultRef = db.collection('creator_vaults').doc(userId);
+          const vaultRef = db.collection('earner_vaults').doc(userId);
           const vaultSnap = await transaction.get(vaultRef);
           const vault = vaultSnap.data() as CreatorVault;
 
@@ -550,6 +552,20 @@ export const treasury_checkPayoutEligibility = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

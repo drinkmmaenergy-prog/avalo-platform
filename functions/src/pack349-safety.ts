@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 349 - Ad Safety & Compliance Gate
  * Validates all ads before going live
@@ -306,6 +308,20 @@ export class AdSafetyGate {
     return result.violations.join('; ');
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

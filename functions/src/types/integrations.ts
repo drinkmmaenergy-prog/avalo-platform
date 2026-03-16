@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 150: Avalo Cross-App API & Partner Integrations Hub
  * Type definitions for partner integrations and API access control
@@ -111,7 +113,7 @@ export interface APIPartnerProfile {
 export interface APIIntegration {
   integrationId: string;
   partnerId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Integration details
   integrationName: string;
@@ -145,7 +147,7 @@ export interface APIAccessLog {
   logId: string;
   partnerId: string;
   integrationId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Request details
   endpoint: string;
@@ -206,7 +208,7 @@ export interface IntegrationRiskCase {
 
 export interface AnonymizedDataset {
   datasetId: string;
-  creatorId: string;
+  earnerId: string;
   partnerId: string;
   
   // Data type
@@ -235,7 +237,7 @@ export interface AnonymizedDataset {
 export interface IntegrationRequest {
   requestId: string;
   partnerId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Request details
   integrationName: string;
@@ -283,7 +285,7 @@ export interface PartnerSecurityAgreement {
 export interface IntegrationConsent {
   consentId: string;
   integrationId: string;
-  creatorId: string;
+  earnerId: string;
   
   // Permissions
   permissions: DataPermissionType[];
@@ -396,6 +398,22 @@ export const DEFAULT_RATE_LIMITS = {
     requestsPerDay: 20000
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 440: Creator Revenue Integrity & Payout Freezing Framework
  * Integration Tests
@@ -22,7 +24,7 @@ let statusAPI: CreatorPayoutStatusAPI;
 let complianceOrchestrator: ComplianceEscalationOrchestrator;
 
 // Test data
-const TEST_CREATOR_ID = 'test_creator_123';
+const TEST_CREATOR_ID = 'test_earner_123';
 const TEST_PAYOUT_AMOUNT = 1000;
 
 beforeEach(async () => {
@@ -42,7 +44,7 @@ beforeEach(async () => {
   statusAPI = new CreatorPayoutStatusAPI(db);
   complianceOrchestrator = new ComplianceEscalationOrchestrator(db);
   
-  // Setup test creator
+  // Setup test earner
   await db.collection('users').doc(TEST_CREATOR_ID).set({
     createdAt: Timestamp.fromMillis(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago
     kyc_verified: true
@@ -55,7 +57,7 @@ afterEach(async () => {
   
   const collections = [
     'users',
-    'creator_revenue_integrity',
+    'earner_revenue_integrity',
     'payout_escrow',
     'payout_freezes',
     'payout_status_transparency',
@@ -74,11 +76,11 @@ afterEach(async () => {
 });
 
 describe('PACK 440: Creator Revenue Integrity Score', () => {
-  it('should calculate integrity score for new creator', async () => {
+  it('should calculate integrity score for new earner', async () => {
     const score = await integrityService.calculateScore(TEST_CREATOR_ID);
     
     expect(score).toBeDefined();
-    expect(score.creatorId).toBe(TEST_CREATOR_ID);
+    expect(score.earnerId).toBe(TEST_CREATOR_ID);
     expect(score.score).toBeGreaterThanOrEqual(0);
     expect(score.score).toBeLessThanOrEqual(1000);
     expect(score.riskLevel).toMatch(/LOW|MEDIUM|HIGH|CRITICAL/);
@@ -130,7 +132,7 @@ describe('PACK 440: Creator Revenue Integrity Score', () => {
     });
     
     await db.collection('refunds').add({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: 50,
       createdAt: Timestamp.now()
     });
@@ -152,7 +154,7 @@ describe('PACK 440: Creator Revenue Integrity Score', () => {
     });
     
     await db.collection('chargebacks').add({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: 30,
       createdAt: Timestamp.now()
     });
@@ -166,11 +168,11 @@ describe('PACK 440: Creator Revenue Integrity Score', () => {
 
 describe('PACK 440: Intelligent Payout Escrow', () => {
   it('should create escrow with correct period based on score', async () => {
-    // Create high-quality creator profile
+    // Create high-quality earner profile
     await integrityService.calculateScore(TEST_CREATOR_ID);
     
     const escrow = await escrowService.createPayoutEscrow({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: TEST_PAYOUT_AMOUNT,
       currency: 'USD',
       revenueBreakdown: {
@@ -181,16 +183,16 @@ describe('PACK 440: Intelligent Payout Escrow', () => {
     });
     
     expect(escrow).toBeDefined();
-    expect(escrow.creatorId).toBe(TEST_CREATOR_ID);
+    expect(escrow.earnerId).toBe(TEST_CREATOR_ID);
     expect(escrow.amount).toBe(TEST_PAYOUT_AMOUNT);
     expect(escrow.status).toBe('IN_ESCROW');
     expect(escrow.escrowPeriod.cooldownHours).toBeGreaterThan(0);
   });
   
-  it('should extend escrow for high-risk creators', async () => {
+  it('should extend escrow for high-risk earners', async () => {
     // Create high-risk profile with chargebacks
     await db.collection('chargebacks').add({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: 500,
       createdAt: Timestamp.now()
     });
@@ -198,7 +200,7 @@ describe('PACK 440: Intelligent Payout Escrow', () => {
     await integrityService.calculateScore(TEST_CREATOR_ID);
     
     const escrow = await escrowService.createPayoutEscrow({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: TEST_PAYOUT_AMOUNT,
       currency: 'USD',
       revenueBreakdown: {
@@ -214,7 +216,7 @@ describe('PACK 440: Intelligent Payout Escrow', () => {
   
   it('should run compliance checks', async () => {
     const escrow = await escrowService.createPayoutEscrow({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: TEST_PAYOUT_AMOUNT,
       currency: 'USD',
       revenueBreakdown: {
@@ -241,7 +243,7 @@ describe('PACK 440: Progressive Freeze Controller', () => {
       TEST_PAYOUT_AMOUNT
     );
     
-    // Should not freeze for clean creator
+    // Should not freeze for clean earner
     expect(freezeEval).toBeNull();
   });
   
@@ -249,7 +251,7 @@ describe('PACK 440: Progressive Freeze Controller', () => {
     // Create chargeback spike
     for (let i = 0; i < 5; i++) {
       await db.collection('chargebacks').add({
-        creatorId: TEST_CREATOR_ID,
+        earnerId: TEST_CREATOR_ID,
         amount: 100,
         createdAt: Timestamp.now()
       });
@@ -301,11 +303,11 @@ describe('PACK 440: Progressive Freeze Controller', () => {
 });
 
 describe('PACK 440: Creator Payout Status API', () => {
-  it('should generate payout status for creator', async () => {
+  it('should generate payout status for earner', async () => {
     const status = await statusAPI.generateStatus(TEST_CREATOR_ID);
     
     expect(status).toBeDefined();
-    expect(status.creatorId).toBe(TEST_CREATOR_ID);
+    expect(status.earnerId).toBe(TEST_CREATOR_ID);
     expect(status.currentStatus).toMatch(/NORMAL|DELAYED|FROZEN|UNDER_REVIEW/);
     expect(status.integrityScoreTier).toMatch(/GOLD|SILVER|BRONZE|PROBATION/);
   });
@@ -332,7 +334,7 @@ describe('PACK 440: Creator Payout Status API', () => {
 describe('PACK 440: Compliance Escalation Orchestrator', () => {
   it('should create escalation case', async () => {
     const escalation = await complianceOrchestrator.createEscalation({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       type: 'HIGH_RISK_SCORE',
       severity: 'HIGH',
       description: 'Test escalation',
@@ -347,7 +349,7 @@ describe('PACK 440: Compliance Escalation Orchestrator', () => {
   
   it('should resolve case', async () => {
     const escalation = await complianceOrchestrator.createEscalation({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       type: 'HIGH_RISK_SCORE',
       severity: 'LOW',
       description: 'Test',
@@ -368,7 +370,7 @@ describe('PACK 440: Compliance Escalation Orchestrator', () => {
 
 describe('PACK 440: End-to-End Flow', () => {
   it('should process complete payout flow', async () => {
-    // 1. Create creator profile with transactions
+    // 1. Create earner profile with transactions
     await db.collection('transactions').add({
       recipientId: TEST_CREATOR_ID,
       amount: 500,
@@ -384,7 +386,7 @@ describe('PACK 440: End-to-End Flow', () => {
     
     // 3. Create payout escrow
     const escrow = await escrowService.createPayoutEscrow({
-      creatorId: TEST_CREATOR_ID,
+      earnerId: TEST_CREATOR_ID,
       amount: 500,
       currency: 'USD',
       revenueBreakdown: {
@@ -401,7 +403,7 @@ describe('PACK 440: End-to-End Flow', () => {
       escrow.payoutId,
       500
     );
-    // Should not freeze for clean creator
+    // Should not freeze for clean earner
     expect(freezeEval).toBeNull();
     
     // 5. Generate status
@@ -421,17 +423,33 @@ describe('PACK 440: Performance Tests', () => {
   });
   
   it('should handle batch score updates', async () => {
-    const creatorIds = Array.from({ length: 10 }, (_, i) => `creator_${i}`);
+    const earnerIds = Array.from({ length: 10 }, (_, i) => `earner_${i}`);
     
     const start = Date.now();
     await Promise.all(
-      creatorIds.map(id => integrityService.calculateScore(id).catch(() => null))
+      earnerIds.map(id => integrityService.calculateScore(id).catch(() => null))
     );
     const duration = Date.now() - start;
     
     expect(duration).toBeLessThan(15000); // Should complete within 15 seconds
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

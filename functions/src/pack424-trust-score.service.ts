@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 424 — Store Trust Score Calculator
  * Calculates overall reputation health score
@@ -45,7 +47,7 @@ export class TrustScoreService {
 
     // Weight the components
     const weights = {
-      avgRating: MONETIZATION_SPLITS.CHAT.avalo,
+      avgRating: MONETIZATION_SPLITS.CHAT.platform,
       sentiment: 0.25,
       velocity: 0.15,
       fakeRatio: 0.15,
@@ -252,7 +254,7 @@ export class TrustScoreService {
    */
   getHealthStatus(score: number): 'excellent' | 'good' | 'fair' | 'poor' | 'critical' {
     if (score >= 0.85) return 'excellent';
-    if (score >= MONETIZATION_SPLITS.SUBSCRIPTION.creator) return 'good';
+    if (score >= MONETIZATION_SPLITS.SUBSCRIPTION.earner) return 'good';
     if (score >= 0.55) return 'fair';
     if (score >= 0.40) return 'poor';
     return 'critical';
@@ -321,6 +323,22 @@ export const getTrustScore = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', 'Failed to get trust score');
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

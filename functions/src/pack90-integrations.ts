@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 90 — Integration Examples
  * 
@@ -33,7 +35,7 @@ import { functions, increment } from './runtime';
 /**
  * Example: Add to chat billing function in chatMonetization.ts
  * 
- * Location: After successful escrow deduction in processMessageBilling()
+ * Location: After successful escrow deduction in shimProcessMessageBilling()
  */
 export async function example_chatBillingIntegration(
   payerId: string,
@@ -104,7 +106,7 @@ export async function example_giftIntegration(
  */
 export async function example_premiumStoryIntegration(
   buyerId: string,
-  creatorId: string,
+  earnerId: string,
   storyId: string,
   tokens: number
 ): Promise<void> {
@@ -115,7 +117,7 @@ export async function example_premiumStoryIntegration(
     await logBusinessEvent({
       eventType: 'PREMIUM_STORY_PURCHASED',
       actorUserId: buyerId,
-      subjectUserId: creatorId,
+      subjectUserId: earnerId,
       relatedId: storyId,
       metadata: {
         tokens,
@@ -126,7 +128,7 @@ export async function example_premiumStoryIntegration(
     
     await logPaymentEvent(
       buyerId,
-      creatorId,
+      earnerId,
       tokens,
       'premium_story',
       storyId
@@ -700,6 +702,20 @@ export async function example_timeoutLoggingIntegration(
  * 6. Always increment metrics after events:
  *    await incrementMetric('METRIC_KEY');
  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

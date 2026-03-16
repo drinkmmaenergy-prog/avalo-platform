@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 352 — Daily KPI Aggregator
  * 
@@ -64,7 +66,7 @@ export const aggregateDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: 
 
       console.log(`Successfully aggregated KPIs for ${dateString}`);
 
-      // Also aggregate creator metrics for the day
+      // Also aggregate earner metrics for the day
       await aggregateCreatorMetrics(dateString);
 
       logger.info('Scheduler completed', { success: true, date: dateString }); return;
@@ -286,7 +288,7 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += chatTokens;
         revenueByVertical.chat += chatTokens;
         // Platform takes 35% (from 65/35 split)
-        totalPlatformRevenueTokens += chatTokens * MONETIZATION_SPLITS.CHAT.avalo;
+        totalPlatformRevenueTokens += chatTokens * MONETIZATION_SPLITS.CHAT.platform;
         break;
 
       case KpiEventType.VOICE_CALL_STARTED:
@@ -294,7 +296,7 @@ async function aggregateMonetizationMetrics(
         const voiceTokens = context.tokensCharged || 0;
         totalTokensBurned += voiceTokens;
         revenueByVertical.voiceCalls += voiceTokens;
-        totalPlatformRevenueTokens += voiceTokens * MONETIZATION_SPLITS.CHAT.avalo;
+        totalPlatformRevenueTokens += voiceTokens * MONETIZATION_SPLITS.CHAT.platform;
         break;
 
       case KpiEventType.VIDEO_CALL_STARTED:
@@ -302,7 +304,7 @@ async function aggregateMonetizationMetrics(
         const videoTokens = context.tokensCharged || 0;
         totalTokensBurned += videoTokens;
         revenueByVertical.videoCalls += videoTokens;
-        totalPlatformRevenueTokens += videoTokens * MONETIZATION_SPLITS.CHAT.avalo;
+        totalPlatformRevenueTokens += videoTokens * MONETIZATION_SPLITS.CHAT.platform;
         break;
 
       case KpiEventType.CALENDAR_BOOKING_CREATED:
@@ -311,7 +313,7 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += calendarTokens;
         revenueByVertical.calendar += calendarTokens;
         // Platform takes 20% (from 80/20 split)
-        totalPlatformRevenueTokens += calendarTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+        totalPlatformRevenueTokens += calendarTokens * MONETIZATION_SPLITS.EVENT_TICKET.platform;
         break;
 
       case KpiEventType.EVENT_TICKET_PURCHASED:
@@ -319,14 +321,14 @@ async function aggregateMonetizationMetrics(
         totalTokensBurned += eventTokens;
         revenueByVertical.events += eventTokens;
         // Platform takes 20%
-        totalPlatformRevenueTokens += eventTokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+        totalPlatformRevenueTokens += eventTokens * MONETIZATION_SPLITS.EVENT_TICKET.platform;
         break;
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         const aiTokens = context.tokensCharged || 0;
         totalTokensBurned += aiTokens;
         revenueByVertical.aiCompanion += aiTokens;
-        totalPlatformRevenueTokens += aiTokens * MONETIZATION_SPLITS.CHAT.avalo; // Assuming 65/35 split
+        totalPlatformRevenueTokens += aiTokens * MONETIZATION_SPLITS.CHAT.platform; // Assuming 65/35 split
         break;
 
       case KpiEventType.PAYOUT_REQUESTED:
@@ -485,20 +487,20 @@ async function aggregateSafetyMetrics(date: string): Promise<DailySafetyMetrics>
 // ============================================================================
 
 /**
- * Aggregate metrics for all active creators on a given date
+ * Aggregate metrics for all active earners on a given date
  */
 async function aggregateCreatorMetrics(date: string): Promise<void> {
   const { startTimestamp, endTimestamp } = getDateRange(date);
 
-  // Get all events with tokens earned by creators
+  // Get all events with tokens earned by earners
   const eventsSnapshot = await db
     .collection('kpiEvents')
     .where('createdAt', '>=', startTimestamp)
     .where('createdAt', '<', endTimestamp)
     .get();
 
-  // Group events by creator
-  const creatorEvents = new Map<
+  // Group events by earner
+  const earnerEvents = new Map<
     string,
     Array<{ eventType: string; context: any; userId: string }>
   >();
@@ -507,24 +509,24 @@ async function aggregateCreatorMetrics(date: string): Promise<void> {
     const event = doc.data();
     const context = event.context as any;
 
-    // Determine creator ID from context
-    let creatorId: string | null = null;
+    // Determine earner ID from context
+    let earnerId: string | null = null;
 
-    if (context.creatorId) {
-      creatorId = context.creatorId;
+    if (context.earnerId) {
+      earnerId = context.earnerId;
     } else if (context.organizerId) {
-      creatorId = context.organizerId;
+      earnerId = context.organizerId;
     } else if (context.participantIds && context.participantIds.length > 1) {
-      // For calls/chats, creator is typically the second participant
-      // This is a simplification; real implementation would need proper creator identification
-      creatorId = context.participantIds[1];
+      // For calls/chats, earner is typically the second participant
+      // This is a simplification; real implementation would need proper earner identification
+      earnerId = context.participantIds[1];
     }
 
-    if (creatorId) {
-      if (!creatorEvents.has(creatorId)) {
-        creatorEvents.set(creatorId, []);
+    if (earnerId) {
+      if (!earnerEvents.has(earnerId)) {
+        earnerEvents.set(earnerId, []);
       }
-      creatorEvents.get(creatorId)!.push({
+      earnerEvents.get(earnerId)!.push({
         eventType: event.eventType,
         context,
         userId: event.userId,
@@ -532,13 +534,13 @@ async function aggregateCreatorMetrics(date: string): Promise<void> {
     }
   });
 
-  // Process each creator's metrics
+  // Process each earner's metrics
   const batch = db.batch();
 
-  for (const [creatorId, events] of Array.from(creatorEvents.entries())) {
-    const metrics = computeCreatorMetrics(creatorId, date, events);
-    const docId = `${creatorId}_${date}`;
-    const docRef = db.collection('creatorDailyMetrics').doc(docId);
+  for (const [earnerId, events] of Array.from(earnerEvents.entries())) {
+    const metrics = computeCreatorMetrics(earnerId, date, events);
+    const docId = `${earnerId}_${date}`;
+    const docRef = db.collection('earnerDailyMetrics').doc(docId);
 
     batch.set(
       docRef,
@@ -552,14 +554,14 @@ async function aggregateCreatorMetrics(date: string): Promise<void> {
   }
 
   await batch.commit();
-  console.log(`Aggregated metrics for ${creatorEvents.size} creators on ${date}`);
+  console.log(`Aggregated metrics for ${earnerEvents.size} earners on ${date}`);
 }
 
 /**
- * Compute metrics for a single creator
+ * Compute metrics for a single earner
  */
 function computeCreatorMetrics(
-  creatorId: string,
+  earnerId: string,
   date: string,
   events: Array<{ eventType: string; context: any; userId: string }>
 ): any {
@@ -594,7 +596,7 @@ function computeCreatorMetrics(
       case KpiEventType.CHAT_PAID_ENDED:
         chatSessionsPaid++;
         // Creator gets 65%
-        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const chatEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedChat += chatEarnings;
         tokensEarned += chatEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -602,7 +604,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.VOICE_CALL_ENDED:
         voiceCallsPaid++;
-        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const voiceEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedVoiceCalls += voiceEarnings;
         tokensEarned += voiceEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -610,7 +612,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.VIDEO_CALL_ENDED:
         videoCallsPaid++;
-        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const videoEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedVideoCalls += videoEarnings;
         tokensEarned += videoEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -619,7 +621,7 @@ function computeCreatorMetrics(
       case KpiEventType.CALENDAR_BOOKING_COMPLETED:
         calendarBookings++;
         // Creator gets 80%
-        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator;
+        const calendarEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.earner;
         tokensEarnedCalendar += calendarEarnings;
         tokensEarned += calendarEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -628,7 +630,7 @@ function computeCreatorMetrics(
       case KpiEventType.EVENT_TICKET_PURCHASED:
         eventTicketsSold++;
         // Organizer gets 80%
-        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.creator;
+        const eventEarnings = tokens * MONETIZATION_SPLITS.EVENT_TICKET.earner;
         tokensEarnedEvents += eventEarnings;
         tokensEarned += eventEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -636,7 +638,7 @@ function computeCreatorMetrics(
 
       case KpiEventType.AI_COMPANION_PAID_MESSAGE:
         aiCompanionSessions++;
-        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.creator;
+        const aiEarnings = tokens * MONETIZATION_SPLITS.CHAT.earner;
         tokensEarnedAI += aiEarnings;
         tokensEarned += aiEarnings;
         if (userId) uniquePayingUsers.add(userId);
@@ -658,7 +660,7 @@ function computeCreatorMetrics(
   const returningPayersCount = 0;
 
   return {
-    creatorId,
+    earnerId,
     date,
     tokensEarned,
     tokensEarnedChat,
@@ -724,6 +726,22 @@ function getDateRange(
     endTimestamp: admin.firestore.Timestamp.fromDate(endDate),
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

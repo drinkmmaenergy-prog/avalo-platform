@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 195 — REVISED v2
  * Chemistry-Based Discovery Matching Algorithm
@@ -80,8 +82,8 @@ interface SpamDetectionResult {
 const CHEMISTRY_WEIGHTS: ChemistryWeights = {
   mutualSwipes: 0.25,           // 25% - Strong signal of mutual interest
   profileViewTime: 0.15,         // 15% - Time spent indicates genuine interest
-  photoAttractiveness: MONETIZATION_SPLITS.EVENT_TICKET.avalo,     // 20% - User engagement with photos
-  conversationIntensity: MONETIZATION_SPLITS.EVENT_TICKET.avalo,   // 20% - Reply speed & length
+  photoAttractiveness: MONETIZATION_SPLITS.EVENT_TICKET.platform,     // 20% - User engagement with photos
+  conversationIntensity: MONETIZATION_SPLITS.EVENT_TICKET.platform,   // 20% - Reply speed & length
   sharedVibeTags: 0.10,          // 10% - Common interests/vibes
   passportInterestSimilarity: 0.10, // 10% - Location/travel interests
 };
@@ -781,6 +783,22 @@ export async function calculateChemistryScoresForFeed(
 }
 
 console.log('✅ PACK 195 — Chemistry-Based Matching Engine initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

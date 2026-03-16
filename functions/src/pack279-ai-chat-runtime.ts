@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 279A — AI Chat Runtime + Token Billing Integration
  * Real-time OpenAI/Claude API calls with token billing via wallet
@@ -81,8 +83,8 @@ const WORDS_PER_BUCKET_ROYAL = 7;
 const TOKENS_PER_BUCKET = 100;
 
 // Revenue splits
-const AVALO_ONLY_SPLIT = { creator: 0, avalo: 1.0 };      // 100% Avalo
-const USER_AI_SPLIT = { creator: MONETIZATION_SPLITS.CHAT.creator, avalo: MONETIZATION_SPLITS.CHAT.avalo };     // 65/35 split
+const AVALO_ONLY_SPLIT = { earner: 0, platform: 1.0 };      // 100% Avalo
+const USER_AI_SPLIT = { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform };     // 65/35 split
 
 const MIN_AGE = 18;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -413,7 +415,7 @@ export const pack279_aiChatSendMessage = https.onCall(
         amountTokens: tokensCharged,
         source: 'CHAT', // Using existing CHAT source type
         relatedId: sessionId,
-        creatorId: earnerUserId || undefined,
+        earnerId: earnerUserId || undefined,
         metadata: {
           sessionId,
           companionId: session.companionId,
@@ -517,6 +519,22 @@ export const pack279_aiChatSendMessage = https.onCall(
 export default {
   pack279_aiChatSendMessage,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

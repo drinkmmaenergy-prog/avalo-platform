@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 274 - Calendar Engine
  * Core business logic for 1:1 calendar bookings system
@@ -65,12 +67,12 @@ export function calculateRefundPolicy(
  */
 export function calculatePaymentSplit(priceTokens: number): {
   hostShare: number;
-  avaloShare: number;
+  platform: number;
 } {
-  const avaloShare = Math.floor(priceTokens * (AVALO_FEE_PERCENT / 100));
-  const hostShare = priceTokens - avaloShare;
+  const platform = Math.floor(priceTokens * (AVALO_FEE_PERCENT / 100));
+  const hostShare = priceTokens - platform;
 
-  return { hostShare, avaloShare };
+  return { hostShare, platform };
 }
 
 /**
@@ -228,7 +230,7 @@ export async function createBooking(request: CreateBookingRequest): Promise<Cale
   }
 
   // Calculate payment split
-  const { hostShare, avaloShare } = calculatePaymentSplit(priceTokens);
+  const { hostShare, platform } = calculatePaymentSplit(priceTokens);
 
   // Generate QR code
   const qrCode = generateQRCode(bookingId);
@@ -246,7 +248,7 @@ export async function createBooking(request: CreateBookingRequest): Promise<Cale
     payment: {
       totalTokensPaid: priceTokens,
       userShareTokens: hostShare,
-      avaloShareTokens: avaloShare,
+      platformTokens: platform,
       refundedUserTokens: 0,
       refundedAvaloTokens: 0,
     },
@@ -334,7 +336,7 @@ export async function cancelBookingByGuest(
   // else: no refund (refundAmount = 0)
 
   // Avalo keeps its fee unless full refund
-  const avaloRefund = 0; // Guest cancellation never refunds Avalo fee
+  const platformRefund = 0; // Guest cancellation never refunds Avalo fee
 
   // Update booking
   const updatedBooking: CalendarBooking = {
@@ -343,7 +345,7 @@ export async function cancelBookingByGuest(
     payment: {
       ...booking.payment,
       refundedUserTokens: refundAmount,
-      refundedAvaloTokens: avaloRefund,
+      refundedAvaloTokens: platformRefund,
     },
     timestamps: {
       ...booking.timestamps,
@@ -408,7 +410,7 @@ export async function cancelBookingByHost(
 
   // Host cancellation = FULL REFUND including Avalo fee
   const fullRefund = booking.payment.totalTokensPaid;
-  const avaloFeeRefund = booking.payment.avaloShareTokens;
+  const platformFeeRefund = booking.payment.platformTokens;
 
   // Update booking
   const updatedBooking: CalendarBooking = {
@@ -417,7 +419,7 @@ export async function cancelBookingByHost(
     payment: {
       ...booking.payment,
       refundedUserTokens: fullRefund,
-      refundedAvaloTokens: avaloFeeRefund,
+      refundedAvaloTokens: platformFeeRefund,
     },
     timestamps: {
       ...booking.timestamps,
@@ -537,7 +539,7 @@ export async function reportMismatch(request: MismatchReportRequest): Promise<Ca
 
   // Full refund including Avalo fee
   const fullRefund = booking.payment.totalTokensPaid;
-  const avaloFeeRefund = booking.payment.avaloShareTokens;
+  const platformFeeRefund = booking.payment.platformTokens;
 
   // Update booking
   const updatedBooking: CalendarBooking = {
@@ -546,7 +548,7 @@ export async function reportMismatch(request: MismatchReportRequest): Promise<Ca
     payment: {
       ...booking.payment,
       refundedUserTokens: fullRefund,
-      refundedAvaloTokens: avaloFeeRefund,
+      refundedAvaloTokens: platformFeeRefund,
     },
     safety: {
       ...booking.safety,
@@ -803,6 +805,20 @@ export async function onMismatchReported(
     createdAt: FieldValue.serverTimestamp(),
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * AVALO COMPLETE PAYMENT SYSTEM INTEGRATION
@@ -106,8 +108,8 @@ export interface Transaction {
   splits?: {
     platformFee: number;
     platformFeePercent: number;
-    creatorAmount: number;
-    creatorPercent: number;
+    earnerAmount: number;
+    earnerPercent: number;
   };
   balanceBefore: number;
   balanceAfter: number;
@@ -159,8 +161,8 @@ export interface EscrowRecord {
 
 export interface Settlement {
   settlementId: string;
-  creatorId: string;
-  creatorEmail: string;
+  earnerId: string;
+  earnerEmail: string;
   periodStart: Timestamp;
   periodEnd: Timestamp;
   periodLabel: string;
@@ -537,7 +539,7 @@ export const validateAppleReceipt = onCall(
         throw new HttpsError("invalid-argument", "Invalid receipt");
       }
 
-      // Extract token amount from product ID (e.g., "avalo.tokens.standard.500")
+      // Extract token amount from product ID (e.g., "platform.tokens.standard.500")
       const tokens = extractTokensFromProductId(productId);
 
       // Credit user atomically
@@ -749,8 +751,8 @@ export const initiateChat = onCall(
           splits: {
             platformFee,
             platformFeePercent: PLATFORM_FEE_PERCENT,
-            creatorAmount: escrowAmount,
-            creatorPercent: 100 - PLATFORM_FEE_PERCENT,
+            earnerAmount: escrowAmount,
+            earnerPercent: 100 - PLATFORM_FEE_PERCENT,
           },
           status: "completed",
           balanceBefore: 0,
@@ -833,12 +835,12 @@ export const releaseEscrowIncremental = onCall(
           updatedAt: FieldValue.serverTimestamp(),
         });
 
-        // Credit creator
-        const creatorWalletRef = db.collection("users").doc(userId).collection("wallet").doc("main");
-        const creatorWalletSnap = await tx.get(creatorWalletRef);
-        const creatorBalance = creatorWalletSnap.exists ? ((creatorWalletSnap.data() as UserWallet).balance || 0) : 0;
+        // Credit earner
+        const earnerWalletRef = db.collection("users").doc(userId).collection("wallet").doc("main");
+        const earnerWalletSnap = await tx.get(earnerWalletRef);
+        const earnerBalance = earnerWalletSnap.exists ? ((earnerWalletSnap.data() as UserWallet).balance || 0) : 0;
 
-        tx.update(creatorWalletRef, {
+        tx.update(earnerWalletRef, {
           balance: FieldValue.increment(tokensToRelease),
           earnedBalance: FieldValue.increment(tokensToRelease),
           totalEarnings: FieldValue.increment(tokensToRelease),
@@ -857,8 +859,8 @@ export const releaseEscrowIncremental = onCall(
           relatedChatId: chatId,
           escrowStatus: "released",
           status: "completed",
-          balanceBefore: creatorBalance,
-          balanceAfter: creatorBalance + tokensToRelease,
+          balanceBefore: earnerBalance,
+          balanceAfter: earnerBalance + tokensToRelease,
           description: `Earned ${tokensToRelease} tokens from chat`,
           metadata: {},
           createdAt: Timestamp.now(),
@@ -948,10 +950,10 @@ export const autoRefundInactiveEscrows = onSchedule(
 // ============================================================================
 
 const VAT_RATES: Record<string, number> = {
-  AT: MONETIZATION_SPLITS.EVENT_TICKET.avalo, BE: 0.21, BG: MONETIZATION_SPLITS.EVENT_TICKET.avalo, HR: 0.25, CY: 0.19, CZ: 0.21, DK: 0.25, EE: 0.22,
-  FI: 0.255, FR: MONETIZATION_SPLITS.EVENT_TICKET.avalo, DE: 0.19, GR: 0.24, HU: 0.27, IE: 0.23, IT: 0.22, LV: 0.21,
-  LT: 0.21, LU: 0.17, MT: 0.18, NL: 0.21, PL: 0.23, PT: 0.23, RO: 0.19, SK: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
-  SI: 0.22, ES: 0.21, SE: 0.25, GB: MONETIZATION_SPLITS.EVENT_TICKET.avalo, US: 0.00, CA: 0.00, AU: 0.10, NZ: 0.15,
+  AT: MONETIZATION_SPLITS.EVENT_TICKET.platform, BE: 0.21, BG: MONETIZATION_SPLITS.EVENT_TICKET.platform, HR: 0.25, CY: 0.19, CZ: 0.21, DK: 0.25, EE: 0.22,
+  FI: 0.255, FR: MONETIZATION_SPLITS.EVENT_TICKET.platform, DE: 0.19, GR: 0.24, HU: 0.27, IE: 0.23, IT: 0.22, LV: 0.21,
+  LT: 0.21, LU: 0.17, MT: 0.18, NL: 0.21, PL: 0.23, PT: 0.23, RO: 0.19, SK: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  SI: 0.22, ES: 0.21, SE: 0.25, GB: MONETIZATION_SPLITS.EVENT_TICKET.platform, US: 0.00, CA: 0.00, AU: 0.10, NZ: 0.15,
   JP: 0.10, IN: 0.18,
 };
 
@@ -992,17 +994,17 @@ export const generateMonthlySettlements = onSchedule(
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const creatorsSnap = await db.collection("users")
+    const earnersSnap = await db.collection("users")
       .where("isCreator", "==", true)
       .get();
 
-    for (const creatorDoc of creatorsSnap.docs) {
-      const creatorId = creatorDoc.id;
-      const creatorData = creatorDoc.data();
+    for (const earnerDoc of earnersSnap.docs) {
+      const earnerId = earnerDoc.id;
+      const earnerData = earnerDoc.data();
 
       // Sum earnings for the month
       const earningsSnap = await db.collection("transactions")
-        .where("userId", "==", creatorId)
+        .where("userId", "==", earnerId)
         .where("type", "==", "earning")
         .where("createdAt", ">=", Timestamp.fromDate(lastMonth))
         .where("createdAt", "<", Timestamp.fromDate(thisMonth))
@@ -1024,15 +1026,15 @@ export const generateMonthlySettlements = onSchedule(
       const fiatAmount = totalTokens * settlementRate;
 
       // Get VAT rate
-      const country = creatorData.location?.country || "PL";
+      const country = earnerData.location?.country || "PL";
       const vatCalc = calculateVAT(fiatAmount, country);
 
       // Create settlement record
       const settlementRef = db.collection("settlements").doc();
       const settlement: Settlement = {
         settlementId: settlementRef.id,
-        creatorId,
-        creatorEmail: creatorData.email,
+        earnerId,
+        earnerEmail: earnerData.email,
         periodStart: Timestamp.fromDate(lastMonth),
         periodEnd: Timestamp.fromDate(thisMonth),
         periodLabel: `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, "0")}`,
@@ -1053,13 +1055,21 @@ export const generateMonthlySettlements = onSchedule(
 
       await settlementRef.set(settlement);
 
-      logger.info(`Settlement created for ${creatorId}: ${vatCalc.grossAmount} USD`);
+      logger.info(`Settlement created for ${earnerId}: ${vatCalc.grossAmount} USD`);
     }
   }
 );
 
 /**
  * Get user wallet balance
+ *
+ * Reads from the canonical top-level `wallets/{uid}` collection
+ * (written by pack288-web-stripe webhook on checkout.session.completed).
+ *
+ * Falls back to legacy `users/{uid}/wallet/main` subcollection for
+ * backward compatibility when the top-level doc does not exist yet.
+ *
+ * Returns: { balance, tokensBalance, tokenBalance, pendingBalance, earnedBalance, totalDeposits, totalEarnings }
  */
 export const getWalletBalance = onCall(
   { region: "europe-west1" },
@@ -1070,30 +1080,50 @@ export const getWalletBalance = onCall(
     }
 
     try {
-      const walletSnap = await db.collection("users").doc(userId).collection("wallet").doc("main").get();
+      // Primary: read from canonical top-level wallets collection (pack288 webhook writes here)
+      const canonicalSnap = await db.collection("wallets").doc(userId).get();
 
-      if (!walletSnap.exists) {
-        console.log('Scheduled job result:', {
-          balance: 0,
+      if (canonicalSnap.exists) {
+        const data = canonicalSnap.data()!;
+        const balance = data.tokensBalance ?? 0;
+        return {
+          balance,
+          tokensBalance: balance,
+          tokenBalance: balance,
           pendingBalance: 0,
-          earnedBalance: 0,
-          totalDeposits: 0,
-          totalEarnings: 0,
-        });
-
-        return;
+          earnedBalance: data.lifetimeEarnedTokens ?? 0,
+          totalDeposits: data.lifetimePurchasedTokens ?? 0,
+          totalEarnings: data.lifetimeEarnedTokens ?? 0,
+        };
       }
 
-      const wallet = walletSnap.data() as UserWallet;
-      console.log('Scheduled job result:', {
-        balance: wallet.balance || 0,
-        pendingBalance: wallet.pendingBalance || 0,
-        earnedBalance: wallet.earnedBalance || 0,
-        totalDeposits: wallet.totalDeposits || 0,
-        totalEarnings: wallet.totalEarnings || 0,
-      });
+      // Fallback: legacy users/{uid}/wallet/main subcollection
+      const legacySnap = await db.collection("users").doc(userId).collection("wallet").doc("main").get();
 
-      return;
+      if (legacySnap.exists) {
+        const wallet = legacySnap.data() as UserWallet;
+        const balance = wallet.balance || 0;
+        return {
+          balance,
+          tokensBalance: balance,
+          tokenBalance: balance,
+          pendingBalance: wallet.pendingBalance || 0,
+          earnedBalance: wallet.earnedBalance || 0,
+          totalDeposits: wallet.totalDeposits || 0,
+          totalEarnings: wallet.totalEarnings || 0,
+        };
+      }
+
+      // No wallet found — return zero balance
+      return {
+        balance: 0,
+        tokensBalance: 0,
+        tokenBalance: 0,
+        pendingBalance: 0,
+        earnedBalance: 0,
+        totalDeposits: 0,
+        totalEarnings: 0,
+      };
     } catch (error: any) {
       logger.error("Error getting wallet balance:", error);
       throw new HttpsError("internal", `Failed to get balance: ${error.message}`);
@@ -1150,15 +1180,15 @@ export const createCalendarBooking = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
-    const { creatorId, slotId, startTime, endTime, tokens } = request.data as {
-      creatorId: string;
+    const { earnerId, slotId, startTime, endTime, tokens } = request.data as {
+      earnerId: string;
       slotId: string;
       startTime: number;
       endTime: number;
       tokens: number;
     };
 
-    if (!creatorId || !slotId || !tokens) {
+    if (!earnerId || !slotId || !tokens) {
       throw new HttpsError("invalid-argument", "Missing required fields");
     }
 
@@ -1182,7 +1212,7 @@ export const createCalendarBooking = onCall(
         tx.set(bookingRef, {
           bookingId: bookingRef.id,
           userId,
-          creatorId,
+          earnerId,
           slotId,
           startTime: Timestamp.fromMillis(startTime),
           endTime: Timestamp.fromMillis(endTime),
@@ -1196,7 +1226,7 @@ export const createCalendarBooking = onCall(
         const escrow: EscrowRecord = {
           escrowId: `esc_${bookingRef.id}`,
           payerId: userId,
-          recipientId: creatorId,
+          recipientId: earnerId,
           type: "booking",
           relatedId: bookingRef.id,
           totalTokens: tokens,
@@ -1226,7 +1256,7 @@ export const createCalendarBooking = onCall(
           type: "spending",
           subtype: "calendar_fee",
           tokens: -tokens,
-          relatedUserId: creatorId,
+          relatedUserId: earnerId,
           relatedBookingId: bookingRef.id,
           status: "completed",
           balanceBefore: currentBalance,
@@ -1244,13 +1274,13 @@ export const createCalendarBooking = onCall(
           type: "earning",
           subtype: "calendar_fee",
           tokens: platformFee,
-          relatedUserId: creatorId,
+          relatedUserId: earnerId,
           relatedBookingId: bookingRef.id,
           splits: {
             platformFee,
             platformFeePercent: PLATFORM_FEE_PERCENT,
-            creatorAmount: escrowAmount,
-            creatorPercent: 100 - PLATFORM_FEE_PERCENT,
+            earnerAmount: escrowAmount,
+            earnerPercent: 100 - PLATFORM_FEE_PERCENT,
           },
           status: "completed",
           balanceBefore: 0,
@@ -1264,7 +1294,7 @@ export const createCalendarBooking = onCall(
         const escrowTxRef = db.collection("transactions").doc(`tx_booking_escrow_${bookingRef.id}`);
         tx.set(escrowTxRef, {
           txId: `tx_booking_escrow_${bookingRef.id}`,
-          userId: creatorId,
+          userId: earnerId,
           type: "escrow_hold",
           subtype: "calendar_fee",
           tokens: escrowAmount,
@@ -1317,7 +1347,7 @@ export const completeCalendarBooking = onCall(
 
       const booking = bookingDoc.data()!;
 
-      if (booking.creatorId !== userId) {
+      if (booking.earnerId !== userId) {
         throw new HttpsError("permission-denied", "Not authorized");
       }
 
@@ -1342,10 +1372,10 @@ export const completeCalendarBooking = onCall(
           completedAt: FieldValue.serverTimestamp(),
         });
 
-        // Credit creator
+        // Credit earner
         const walletRef = db.collection("users").doc(userId).collection("wallet").doc("main");
         const walletSnap = await tx.get(walletRef);
-        const creatorBalance = walletSnap.exists ? ((walletSnap.data() as UserWallet).balance || 0) : 0;
+        const earnerBalance = walletSnap.exists ? ((walletSnap.data() as UserWallet).balance || 0) : 0;
 
         tx.update(walletRef, {
           balance: FieldValue.increment(escrow.availableTokens),
@@ -1365,8 +1395,8 @@ export const completeCalendarBooking = onCall(
           relatedUserId: escrow.payerId,
           relatedBookingId: bookingId,
           status: "completed",
-          balanceBefore: creatorBalance,
-          balanceAfter: creatorBalance + escrow.availableTokens,
+          balanceBefore: earnerBalance,
+          balanceAfter: earnerBalance + escrow.availableTokens,
           description: `Earned ${escrow.availableTokens} tokens from booking`,
           metadata: {},
           createdAt: Timestamp.now(),
@@ -1471,7 +1501,7 @@ export const cancelCalendarBooking = onCall(
             type: "refund",
             subtype: "calendar_fee",
             tokens: refundAmount,
-            relatedUserId: booking.creatorId,
+            relatedUserId: booking.earnerId,
             relatedBookingId: bookingId,
             status: "completed",
             balanceBefore: userBalance,
@@ -1507,7 +1537,7 @@ export const cancelCalendarBooking = onCall(
 // ============================================================================
 
 /**
- * Request payout for creator earnings
+ * Request payout for earner earnings
  */
 export const requestPayout = onCall(
   { region: "europe-west1" },
@@ -1536,7 +1566,7 @@ export const requestPayout = onCall(
 
       const settlement = settlementDoc.data() as Settlement;
 
-      if (settlement.creatorId !== userId) {
+      if (settlement.earnerId !== userId) {
         throw new HttpsError("permission-denied", "Not authorized");
       }
 
@@ -1658,7 +1688,7 @@ async function processCryptoPayout(
 }
 
 /**
- * Get creator settlements
+ * Get earner settlements
  */
 export const getCreatorSettlements = onCall(
   { region: "europe-west1" },
@@ -1672,7 +1702,7 @@ export const getCreatorSettlements = onCall(
 
     try {
       const settlementsSnap = await db.collection("settlements")
-        .where("creatorId", "==", userId)
+        .where("earnerId", "==", userId)
         .orderBy("periodStart", "desc")
         .limit(limit)
         .get();
@@ -1729,6 +1759,22 @@ export const getPendingSettlements = onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 129 — Tax Calculation Engine
  * Automated tax calculation and withholding for payouts
  * 
  * NON-NEGOTIABLE RULES:
  * - No manipulation of 65/35 split
- * - Taxes apply AFTER creator earnings are calculated
+ * - Taxes apply AFTER earner earnings are calculated
  * - No bonuses or reductions based on tax status
  * - All calculations are audit-proof
  */
@@ -573,6 +575,20 @@ export const tax_getWithholdingRecords = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

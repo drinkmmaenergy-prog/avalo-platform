@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../config/monetizationSplits";
+
 /**
  * PACK 169 - Governance Middleware Tests
  * Validate ethical notification safeguards
@@ -52,7 +54,7 @@ describe('NotificationGovernance', () => {
     test('should block guilt-inducing messages', () => {
       const result = governance.checkNotification({
         title: 'Where are you?',
-        body: "You haven't supported your creator this week",
+        body: "You haven't supported your earner this week",
         category: 'content',
       });
 
@@ -64,7 +66,7 @@ describe('NotificationGovernance', () => {
     test('should block "if you care" messages', () => {
       const result = governance.checkNotification({
         title: 'Support',
-        body: 'If you care about your creator, come back now',
+        body: 'If you care about your earner, come back now',
         category: 'digital_products',
       });
 
@@ -273,6 +275,22 @@ describe('NotificationGovernance', () => {
     });
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 202 - Referral Utilities
  * 
@@ -91,7 +93,7 @@ export async function getAmbassadorByReferralCode(code: string): Promise<any | n
 export async function trackReferralSignup(
   referralCode: string,
   newUserId: string,
-  userType: 'creator' | 'user'
+  userType: 'earner' | 'user'
 ): Promise<string | null> {
   const ambassador = await getAmbassadorByReferralCode(referralCode);
   
@@ -208,6 +210,22 @@ export async function getReferralStats(ambassadorId: string): Promise<{
     totalCommission
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

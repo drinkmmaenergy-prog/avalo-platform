@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 387: Global PR, Reputation Intelligence & Crisis Response Engine
  * Review & Store Crisis Shield (Integration with PACK 384)
@@ -195,19 +197,19 @@ export const pack387_getStoreReplyMacro = functions.https.onCall(async (request)
     const macros = {
       safety: {
         title: 'Safety Response',
-        content: `Thank you for bringing this to our attention. User safety is our top priority. We've escalated your concern to our safety team who will investigate immediately. If you need immediate assistance, please contact our 24/7 support at support@avalo.app.`,
+        content: `Thank you for bringing this to our attention. User safety is our top priority. We've escalated your concern to our safety team who will investigate immediately. If you need immediate assistance, please contact our 24/7 support at support@platform.app.`,
       },
       fraud: {
         title: 'Fraud Allegation Response',
-        content: `We take fraud allegations very seriously. Our security team investigates all reports thoroughly. If you've experienced unauthorized charges, please contact our billing support immediately at billing@avalo.app. We're committed to protecting our community.`,
+        content: `We take fraud allegations very seriously. Our security team investigates all reports thoroughly. If you've experienced unauthorized charges, please contact our billing support immediately at billing@platform.app. We're committed to protecting our community.`,
       },
       billing: {
         title: 'Billing Issue Response',
-        content: `We understand your frustration with the billing issue. Our billing team is here to help resolve this quickly. Please reach out to billing@avalo.app with your account details, and we'll work to resolve this within 24 hours.`,
+        content: `We understand your frustration with the billing issue. Our billing team is here to help resolve this quickly. Please reach out to billing@platform.app with your account details, and we'll work to resolve this within 24 hours.`,
       },
       moderation: {
         title: 'Content Moderation Response',
-        content: `Thank you for your feedback. Our moderation team works hard to maintain a safe and positive environment. If you believe content was incorrectly moderated, please contact appeals@avalo.app with details. We review all appeals carefully.`,
+        content: `Thank you for your feedback. Our moderation team works hard to maintain a safe and positive environment. If you believe content was incorrectly moderated, please contact appeals@platform.app with details. We review all appeals carefully.`,
       },
     };
 
@@ -301,6 +303,20 @@ export const pack387_analyzeRatingTrends = onSchedule("every 6 hours", async (ev
       return null;
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 283 — Discovery & People Browser (Free, Nearby Grid, Visitors)
  * 
@@ -550,6 +552,20 @@ export const syncUserToDiscoveryPresence = onDocumentWritten('users/{userId}', a
   });
 
 console.log('✅ PACK 283 — Discovery & People Browser initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

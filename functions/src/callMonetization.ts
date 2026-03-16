@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Call Monetization Logic for Avalo
  * 
@@ -75,14 +77,14 @@ export interface CallRoles {
 const CALL_CONFIG = {
   VOICE: {
     BASE_COST: 10,                    // Base cost for standard users
-    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,               // 30% discount for VIP
+    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.platform,               // 30% discount for VIP
     ROYAL_DISCOUNT: 0.50,             // 50% discount for Royal
     AVALO_CUT_PERCENT: 20,
     EARNER_CUT_PERCENT: 80,
   },
   VIDEO: {
     BASE_COST: 20,                    // Base cost for standard users
-    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,               // 30% discount for VIP
+    VIP_DISCOUNT: MONETIZATION_SPLITS.SUBSCRIPTION.platform,               // 30% discount for VIP
     ROYAL_DISCOUNT: 0.50,             // 50% discount for Royal
     AVALO_CUT_PERCENT: 20,
     EARNER_CUT_PERCENT: 80,
@@ -427,7 +429,7 @@ export async function endCall(params: {
   durationMinutes: number;
   totalTokens: number;
   earnerReceived: number;
-  avaloReceived: number;
+  platformReceived: number;
 }> {
   
   const { callId, endedBy, deviceId, ipHash } = params;
@@ -459,7 +461,7 @@ export async function endCall(params: {
   const earnerReceived = call.earnerId
     ? Math.floor(totalTokens * (config.EARNER_CUT_PERCENT / 100))
     : 0;
-  const avaloReceived = totalTokens - earnerReceived;
+  const platformReceived = totalTokens - earnerReceived;
   
   // Process transaction
   await db.runTransaction(async (transaction) => {
@@ -520,12 +522,12 @@ export async function endCall(params: {
     });
     
     // Record Avalo revenue transaction
-    if (avaloReceived > 0) {
-      const avaloTxRef = db.collection('transactions').doc(generateId());
-      transaction.set(avaloTxRef, {
-        userId: 'avalo_platform',
+    if (platformReceived > 0) {
+      const platformTxRef = db.collection('transactions').doc(generateId());
+      transaction.set(platformTxRef, {
+        userId: 'platform_platform',
         type: 'call_fee',
-        amount: avaloReceived,
+        amount: platformReceived,
         metadata: {
           callId,
           callType: call.callType,
@@ -536,7 +538,7 @@ export async function endCall(params: {
     }
   });
   
-  logger.info(`Call ended: ${callId} - Duration: ${durationMinutes}min, Cost: ${totalTokens} tokens, Earner: ${earnerReceived}, Avalo: ${avaloReceived}`);
+  logger.info(`Call ended: ${callId} - Duration: ${durationMinutes}min, Cost: ${totalTokens} tokens, Earner: ${earnerReceived}, Avalo: ${platformReceived}`);
   
   // Phase 8: Record risk event (async, non-blocking)
   try {
@@ -578,7 +580,7 @@ export async function endCall(params: {
     durationMinutes,
     totalTokens,
     earnerReceived,
-    avaloReceived
+    platformReceived
   };
 }
 
@@ -699,6 +701,22 @@ export async function checkCallBalance(params: {
     pricePerMinute
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface CalendarEvent {
     id: string;
     title: string;
@@ -13,6 +15,23 @@ export interface CalendarSlot {
     available: boolean;
 }
 export type CalendarEventType = 'MEETING' | 'CALL' | 'DATE' | 'OTHER';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

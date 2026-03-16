@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 114 — Safety & Enforcement for Agency System
- * Protects creators from exploitation and abuse
+ * Protects earners from exploitation and abuse
  * 
  * ENFORCEMENT RULES:
  * - Detect forced linkage attempts
@@ -33,9 +35,9 @@ import { admin, functions, onSchedule } from './runtime';
 /**
  * Detect forced linkage patterns
  * Red flags:
- * - Multiple requests to same creator
+ * - Multiple requests to same earner
  * - High rejection rate
- * - Requests to creators who blocked sender
+ * - Requests to earners who blocked sender
  */
 export async function detectForcedLinkage(agencyId: string): Promise<AgencyViolation | null> {
   const last24Hours = Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
@@ -61,7 +63,7 @@ export async function detectForcedLinkage(agencyId: string): Promise<AgencyViola
   // Red flag: >80% rejection rate with >10 requests
   if (rejectionRate > 0.8 && totalRequests > 10) {
     const affectedCreatorIds = Array.from(
-      new Set(requestsSnapshot.docs.map((doc) => doc.data().creatorUserId))
+      new Set(requestsSnapshot.docs.map((doc) => doc.data().earnerUserId))
     );
 
     const violation: AgencyViolation = {
@@ -74,7 +76,7 @@ export async function detectForcedLinkage(agencyId: string): Promise<AgencyViola
       description: `High rejection rate detected: ${(rejectionRate * 100).toFixed(1)}% of ${totalRequests} requests rejected in 24h`,
       status: 'DETECTED',
       agencySuspended: false,
-      creatorProtectionApplied: false,
+      earnerProtectionApplied: false,
       criminalReferral: false,
       detectedAt: Timestamp.now(),
     };
@@ -106,7 +108,7 @@ export async function detectUnsolicitedRequests(agencyId: string): Promise<Agenc
 
   if (totalRequests > 50) {
     const affectedCreatorIds = Array.from(
-      new Set(requestsSnapshot.docs.map((doc) => doc.data().creatorUserId))
+      new Set(requestsSnapshot.docs.map((doc) => doc.data().earnerUserId))
     );
 
     const violation: AgencyViolation = {
@@ -116,10 +118,10 @@ export async function detectUnsolicitedRequests(agencyId: string): Promise<Agenc
       severity: 'MEDIUM',
       affectedCreatorIds,
       evidenceRefs: requestsSnapshot.docs.slice(0, 100).map((doc) => doc.id),
-      description: `Mass request spam detected: ${totalRequests} requests in 24h to ${affectedCreatorIds.length} creators`,
+      description: `Mass request spam detected: ${totalRequests} requests in 24h to ${affectedCreatorIds.length} earners`,
       status: 'DETECTED',
       agencySuspended: false,
-      creatorProtectionApplied: false,
+      earnerProtectionApplied: false,
       criminalReferral: false,
       detectedAt: Timestamp.now(),
     };
@@ -171,7 +173,7 @@ export async function detectSuspiciousPayouts(agencyId: string): Promise<AgencyV
       description: `High payout failure rate: ${(failureRate * 100).toFixed(1)}% of ${totalPayouts} payouts failed in 7 days`,
       status: 'DETECTED',
       agencySuspended: false,
-      creatorProtectionApplied: false,
+      earnerProtectionApplied: false,
       criminalReferral: false,
       detectedAt: Timestamp.now(),
     };
@@ -188,11 +190,11 @@ export async function detectSuspiciousPayouts(agencyId: string): Promise<AgencyV
 
 /**
  * Detect excessive percentage claims
- * Red flag: Agency taking >40% of creator earnings
+ * Red flag: Agency taking >40% of earner earnings
  */
 export async function detectExcessivePercentage(agencyId: string): Promise<AgencyViolation | null> {
   const linksSnapshot = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
     .where('status', '==', 'ACTIVE')
     .get();
@@ -202,7 +204,7 @@ export async function detectExcessivePercentage(agencyId: string): Promise<Agenc
   );
 
   if (excessiveLinks.length > 0) {
-    const affectedCreatorIds = excessiveLinks.map((doc) => doc.data().creatorUserId);
+    const affectedCreatorIds = excessiveLinks.map((doc) => doc.data().earnerUserId);
 
     const violation: AgencyViolation = {
       violationId: generateId(),
@@ -211,10 +213,10 @@ export async function detectExcessivePercentage(agencyId: string): Promise<Agenc
       severity: 'CRITICAL',
       affectedCreatorIds,
       evidenceRefs: excessiveLinks.map((doc) => doc.id),
-      description: `Excessive percentage detected: ${excessiveLinks.length} creators with >${DEFAULT_AGENCY_RULES.maxPercentage}% agency cut`,
+      description: `Excessive percentage detected: ${excessiveLinks.length} earners with >${DEFAULT_AGENCY_RULES.maxPercentage}% agency cut`,
       status: 'DETECTED',
       agencySuspended: false,
-      creatorProtectionApplied: false,
+      earnerProtectionApplied: false,
       criminalReferral: false,
       detectedAt: Timestamp.now(),
     };
@@ -235,7 +237,7 @@ export async function detectExcessivePercentage(agencyId: string): Promise<Agenc
  */
 export async function detectMinorExploitation(agencyId: string): Promise<AgencyViolation | null> {
   const linksSnapshot = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
     .where('status', '==', 'ACTIVE')
     .get();
@@ -244,12 +246,12 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
     return;
   }
 
-  const creatorIds = linksSnapshot.docs.map((doc) => doc.data().creatorUserId);
+  const earnerIds = linksSnapshot.docs.map((doc) => doc.data().earnerUserId);
   const minorCreators: string[] = [];
 
-  // Check each creator's age
-  for (const creatorId of creatorIds) {
-    const userDoc = await db.collection('users').doc(creatorId).get();
+  // Check each earner's age
+  for (const earnerId of earnerIds) {
+    const userDoc = await db.collection('users').doc(earnerId).get();
     if (userDoc.exists) {
       const userData = userDoc.data();
       if (userData.dateOfBirth) {
@@ -257,7 +259,7 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
         const age = Math.floor((Date.now() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
         
         if (age < 18) {
-          minorCreators.push(creatorId);
+          minorCreators.push(earnerId);
         }
       }
     }
@@ -271,10 +273,10 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
       severity: 'CRITICAL',
       affectedCreatorIds: minorCreators,
       evidenceRefs: [],
-      description: `Minor exploitation detected: ${minorCreators.length} linked creators are under 18`,
+      description: `Minor exploitation detected: ${minorCreators.length} linked earners are under 18`,
       status: 'CONFIRMED',
       agencySuspended: true,
-      creatorProtectionApplied: true,
+      earnerProtectionApplied: true,
       criminalReferral: true,
       detectedAt: Timestamp.now(),
     };
@@ -289,7 +291,7 @@ export async function detectMinorExploitation(agencyId: string): Promise<AgencyV
     // Immediately suspend agency
     await updateAgencyStatus(agencyId, 'BLOCKED', 'Minor exploitation detected', 'SYSTEM');
 
-    // Remove all links and protect creators
+    // Remove all links and protect earners
     await protectAffectedCreators(minorCreators, agencyId);
 
     return violation;
@@ -345,7 +347,7 @@ export async function processViolation(violation: AgencyViolation): Promise<void
   if (protectCreators && affectedCreatorIds.length > 0) {
     await protectAffectedCreators(affectedCreatorIds, agencyId);
     await db.collection('agency_violations').doc(violationId).update({
-      creatorProtectionApplied: true,
+      earnerProtectionApplied: true,
     });
   }
 
@@ -369,16 +371,16 @@ export async function processViolation(violation: AgencyViolation): Promise<void
 }
 
 /**
- * Protect affected creators
+ * Protect affected earners
  */
-async function protectAffectedCreators(creatorIds: string[], agencyId: string): Promise<void> {
+async function protectAffectedCreators(earnerIds: string[], agencyId: string): Promise<void> {
   const batch = db.batch();
 
-  for (const creatorId of creatorIds) {
+  for (const earnerId of earnerIds) {
     // Find and suspend all links
     const linksSnapshot = await db
-      .collection('creator_agency_links')
-      .where('creatorUserId', '==', creatorId)
+      .collection('earner_agency_links')
+      .where('earnerUserId', '==', earnerId)
       .where('agencyId', '==', agencyId)
       .where('status', 'in', ['ACTIVE', 'PENDING'])
       .get();
@@ -391,12 +393,12 @@ async function protectAffectedCreators(creatorIds: string[], agencyId: string): 
       });
     });
 
-    // TODO: Send notification to creator
+    // TODO: Send notification to earner
   }
 
   await batch.commit();
 
-  logger.info('Creators protected', { creatorIds, agencyId });
+  logger.info('Creators protected', { earnerIds, agencyId });
 }
 
 // ============================================================================
@@ -419,7 +421,7 @@ export const runDailyAgencySafetyScan = onSchedule(
     try {
       // Get all active agencies
       const agenciesSnapshot = await db
-        .collection('creator_agency_accounts')
+        .collection('earner_agency_accounts')
         .where('status', '==', 'ACTIVE')
         .get();
 
@@ -482,14 +484,14 @@ export async function blockAgencyForViolation(
   // Update agency status
   await updateAgencyStatus(agencyId, 'BLOCKED', reason, adminId);
 
-  // Get all linked creators
+  // Get all linked earners
   const linksSnapshot = await db
-    .collection('creator_agency_links')
+    .collection('earner_agency_links')
     .where('agencyId', '==', agencyId)
     .where('status', 'in', ['ACTIVE', 'PENDING'])
     .get();
 
-  const affectedCreatorIds = linksSnapshot.docs.map((doc) => doc.data().creatorUserId);
+  const affectedCreatorIds = linksSnapshot.docs.map((doc) => doc.data().earnerUserId);
 
   // Create violation record
   const violation: AgencyViolation = {
@@ -502,7 +504,7 @@ export async function blockAgencyForViolation(
     description: reason,
     status: 'CONFIRMED',
     agencySuspended: true,
-    creatorProtectionApplied: true,
+    earnerProtectionApplied: true,
     criminalReferral,
     detectedAt: Timestamp.now(),
     resolvedBy: adminId,
@@ -510,7 +512,7 @@ export async function blockAgencyForViolation(
 
   await db.collection('agency_violations').add(violation);
 
-  // Protect all creators
+  // Protect all earners
   await protectAffectedCreators(affectedCreatorIds, agencyId);
 
   logger.warn('Agency blocked by admin', {
@@ -537,6 +539,20 @@ export async function getAgencyViolationHistory(
 
   return violationsSnapshot.docs.map((doc) => doc.data() as AgencyViolation);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

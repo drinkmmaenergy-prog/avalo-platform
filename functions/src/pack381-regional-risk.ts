@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 381 — Regional Expansion Engine
  * Regional Risk Engine
@@ -59,7 +61,7 @@ export interface RegionalRiskProfile {
   };
   
   // Creator Monetization Trust
-  creatorTrust: {
+  earnerTrust: {
     minTrustScore: number; // minimum to enable monetization
     minAccountAge: number; // days
     minFollowers: number;
@@ -273,15 +275,15 @@ export const pack381_calculateRegionalRiskScore = functions.https.onCall(async (
       autoBlock: finalScore >= riskProfile.thresholds.autoBlockScore,
     };
 
-    // Calculate creator monetization trust score
+    // Calculate earner monetization trust score
     const accountAgeDays = userData?.createdAt
       ? Math.floor((Date.now() - new Date(userData.createdAt).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
 
-    const creatorTrustScore = Math.max(0, 100 - finalScore);
+    const earnerTrustScore = Math.max(0, 100 - finalScore);
     const monetizationEligible =
-      creatorTrustScore >= riskProfile.creatorTrust.minTrustScore &&
-      accountAgeDays >= riskProfile.creatorTrust.minAccountAge &&
+      earnerTrustScore >= riskProfile.earnerTrust.minTrustScore &&
+      accountAgeDays >= riskProfile.earnerTrust.minAccountAge &&
       !recommendedLimits.autoBlock;
 
     // Store the calculated risk score
@@ -303,7 +305,7 @@ export const pack381_calculateRegionalRiskScore = functions.https.onCall(async (
       riskScore: finalScore,
       riskLevel,
       recommendedLimits,
-      creatorTrustScore,
+      earnerTrustScore,
       monetizationEligible,
       breakdown: {
         baseFraudScore,
@@ -556,6 +558,20 @@ export const pack381_getRegionalRiskStats = functions.https.onCall(async (reques
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

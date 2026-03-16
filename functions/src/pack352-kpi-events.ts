@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 352 — KPI Event Logging
  * 
@@ -184,7 +186,7 @@ export async function logSignupEvent(
 export async function logChatPaidStarted(
   chatId: string,
   userId: string,
-  creatorId: string,
+  earnerId: string,
   tokensCharged: number
 ): Promise<void> {
   await pack352_logKpiEvent({
@@ -192,7 +194,7 @@ export async function logChatPaidStarted(
     eventType: KpiEventType.CHAT_PAID_STARTED,
     context: {
       chatId,
-      participantIds: [userId, creatorId],
+      participantIds: [userId, earnerId],
       isPaid: true,
       tokensCharged,
     },
@@ -202,7 +204,7 @@ export async function logChatPaidStarted(
 export async function logCallEvent(
   callId: string,
   userId: string,
-  creatorId: string,
+  earnerId: string,
   callType: 'voice' | 'video',
   eventType: 'started' | 'ended',
   durationSeconds: number = 0,
@@ -222,7 +224,7 @@ export async function logCallEvent(
     eventType: kpiEventType,
     context: {
       callId,
-      participantIds: [userId, creatorId],
+      participantIds: [userId, earnerId],
       callType,
       durationSeconds,
       tokensCharged,
@@ -233,7 +235,7 @@ export async function logCallEvent(
 export async function logCalendarBooking(
   bookingId: string,
   userId: string,
-  creatorId: string,
+  earnerId: string,
   eventType: 'created' | 'cancelled' | 'completed',
   tokensCharged: number,
   durationMinutes: number
@@ -250,7 +252,7 @@ export async function logCalendarBooking(
     eventType: kpiEventType,
     context: {
       bookingId,
-      creatorId,
+      earnerId,
       tokensCharged,
       durationMinutes,
     },
@@ -455,7 +457,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  *    
  *    
  *    // When paid chat starts:
- *    await logChatPaidStarted(chatId, userId, creatorId, tokensCharged);
+ *    await logChatPaidStarted(chatId, userId, earnerId, tokensCharged);
  *    ```
  * 
  * 2. Voice/Video Calls:
@@ -463,10 +465,10 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  *    
  *    
  *    // When call starts:
- *    await logCallEvent(callId, userId, creatorId, 'voice', 'started');
+ *    await logCallEvent(callId, userId, earnerId, 'voice', 'started');
  *    
  *    // When call ends:
- *    await logCallEvent(callId, userId, creatorId, 'voice', 'ended', durationSeconds, tokensCharged);
+ *    await logCallEvent(callId, userId, earnerId, 'voice', 'ended', durationSeconds, tokensCharged);
  *    ```
  * 
  * 3. Calendar Bookings:
@@ -474,7 +476,7 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
  *    
  *    
  *    // When booking created:
- *    await logCalendarBooking(bookingId, userId, creatorId, 'created', tokensCharged, durationMinutes);
+ *    await logCalendarBooking(bookingId, userId, earnerId, 'created', tokensCharged, durationMinutes);
  *    ```
  * 
  * 4. Wallet/Token Purchases (PACK 277):
@@ -521,6 +523,20 @@ async function publishToAggregator(event: KpiEvent): Promise<void> {
 
 // Named exports already declared above with 'export async function'
 // No need for additional export statement
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

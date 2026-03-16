@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 65 — Admin & Ops Console API
  * Internal admin endpoints for user management, enforcement, AML, disputes, payouts, and more
@@ -505,8 +507,8 @@ export const adminPayoutsDecision = onRequest({}, async (req, res) => {
 
     // If rejected, return tokens to user
     if (decision === 'REJECT' && payoutData) {
-      await db.collection('creator_earnings').doc(payoutData.userId).update({
-        tokensPaidOut: db.collection('creator_earnings').doc(payoutData.userId).get().then(doc => {
+      await db.collection('earner_earnings').doc(payoutData.userId).update({
+        tokensPaidOut: db.collection('earner_earnings').doc(payoutData.userId).get().then(doc => {
           const current = doc.data()?.tokensPaidOut || 0;
           return Math.max(0, current - (payoutData.tokensRequested || 0));
         }),
@@ -737,6 +739,20 @@ export const adminAuditSearch = onRequest({}, async (req, res) => {
     }
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

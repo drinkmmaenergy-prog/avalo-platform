@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * WALLET SERVICE — Unified Wallet Mutations
  *
@@ -171,7 +173,7 @@ export async function transactTokens(
   }
   if (params.split.creatorTokens + params.split.avaloTokens !== params.amountTokens) {
     throw new Error(
-      `[WalletService] split mismatch: creator(${params.split.creatorTokens}) + avalo(${params.split.avaloTokens}) ≠ total(${params.amountTokens})`,
+      `[WalletService] split mismatch: earner(${params.split.creatorTokens}) + platform(${params.split.avaloTokens}) ≠ total(${params.amountTokens})`,
     );
   }
   if (!params.idempotencyKey || params.idempotencyKey.trim().length === 0) {
@@ -530,6 +532,23 @@ export async function getPlatformBalance(): Promise<number> {
   if (!snap.exists) return 0;
   return (snap.data() as WalletDocument).balance;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

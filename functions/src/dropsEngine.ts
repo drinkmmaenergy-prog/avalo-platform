@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 15: Drops Marketplace Engine
  * Core business logic for drops creation, management, and purchases
@@ -36,7 +38,7 @@ const DROP_CONSTANTS = {
   MAX_TITLE_LENGTH: 100,
   MAX_DESCRIPTION_LENGTH: 1000,
   MAX_TAGS: 10,
-  CREATOR_SHARE_PERCENTAGE: 70, // 70% to creators
+  CREATOR_SHARE_PERCENTAGE: 70, // 70% to earners
   AVALO_SHARE_PERCENTAGE: 30, // 30% to Avalo
   RANKING_POINTS_PER_TOKEN: 1, // For ranking system
 };
@@ -62,10 +64,10 @@ const logger = {
 
 /**
  * Create a new drop
- * Only creators with appropriate status can create drops
+ * Only earners with appropriate status can create drops
  */
 export async function createDrop(
-  creatorId: string,
+  earnerId: string,
   data: CreateDropInput
 ): Promise<Drop> {
   // Phase 30A: TrustShield 2.0 - Content Moderation for drop description
@@ -74,34 +76,34 @@ export async function createDrop(
     
     // Check title
     const titleModeration = await moderateText({
-      userId: creatorId,
+      userId: earnerId,
       text: data.title,
       source: 'drop_description',
     });
     
     if (titleModeration.actions.includes('BLOCK_CONTENT')) {
-      await logModerationIncident({ userId: creatorId, text: data.title, source: 'drop_description' }, titleModeration);
+      await logModerationIncident({ userId: earnerId, text: data.title, source: 'drop_description' }, titleModeration);
       throw new HttpsError('failed-precondition', 'CONTENT_BLOCKED_POLICY_VIOLATION');
     }
     
     if (titleModeration.actions.includes('ALLOW_AND_LOG') || titleModeration.actions.includes('FLAG_FOR_REVIEW')) {
-      logModerationIncident({ userId: creatorId, text: data.title, source: 'drop_description' }, titleModeration).catch(() => {});
+      logModerationIncident({ userId: earnerId, text: data.title, source: 'drop_description' }, titleModeration).catch(() => {});
     }
     
     // Check description
     const descModeration = await moderateText({
-      userId: creatorId,
+      userId: earnerId,
       text: data.description,
       source: 'drop_description',
     });
     
     if (descModeration.actions.includes('BLOCK_CONTENT')) {
-      await logModerationIncident({ userId: creatorId, text: data.description, source: 'drop_description' }, descModeration);
+      await logModerationIncident({ userId: earnerId, text: data.description, source: 'drop_description' }, descModeration);
       throw new HttpsError('failed-precondition', 'CONTENT_BLOCKED_POLICY_VIOLATION');
     }
     
     if (descModeration.actions.includes('ALLOW_AND_LOG') || descModeration.actions.includes('FLAG_FOR_REVIEW')) {
-      logModerationIncident({ userId: creatorId, text: data.description, source: 'drop_description' }, descModeration).catch(() => {});
+      logModerationIncident({ userId: earnerId, text: data.description, source: 'drop_description' }, descModeration).catch(() => {});
     }
   } catch (error: any) {
     // If it's our policy error, re-throw it
@@ -112,18 +114,18 @@ export async function createDrop(
     logger.error('Content moderation check failed:', error);
   }
   
-  // Validate creator eligibility
-  const creatorRef = db.collection('users').doc(creatorId);
-  const creatorSnap = await creatorRef.get();
+  // Validate earner eligibility
+  const earnerRef = db.collection('users').doc(earnerId);
+  const earnerSnap = await earnerRef.get();
   
-  if (!creatorSnap.exists) {
+  if (!earnerSnap.exists) {
     throw new HttpsError('not-found', 'Creator not found');
   }
   
-  const creatorData = creatorSnap.data();
+  const earnerData = earnerSnap.data();
   
-  // Check if creator can earn (similar to other monetization features)
-  if (!creatorData?.modes?.earnFromChat && !creatorData?.earnOnChat) {
+  // Check if earner can earn (similar to other monetization features)
+  if (!earnerData?.modes?.earnFromChat && !earnerData?.earnOnChat) {
     throw new HttpsError(
       'permission-denied',
       'Creator must enable earnings to create drops'
@@ -148,10 +150,10 @@ export async function createDrop(
     validateLootboxPool(data.lootboxPool);
   }
   
-  // Determine owner creator IDs
+  // Determine owner earner IDs
   const ownerCreatorIds = data.type === 'COOP_DROP' && data.coopCreatorIds
-    ? [creatorId, ...data.coopCreatorIds]
-    : [creatorId];
+    ? [earnerId, ...data.coopCreatorIds]
+    : [earnerId];
   
   // Create drop document
   const dropId = generateId();
@@ -253,7 +255,7 @@ function validateCoopConfiguration(
   coopShares?: CoopCreatorShare[]
 ): void {
   if (!coopCreatorIds || coopCreatorIds.length === 0) {
-    throw new HttpsError('invalid-argument', 'COOP drop requires at least one co-creator');
+    throw new HttpsError('invalid-argument', 'COOP drop requires at least one co-earner');
   }
   
   if (!coopShares || coopShares.length === 0) {
@@ -266,13 +268,13 @@ function validateCoopConfiguration(
     throw new HttpsError('invalid-argument', 'COOP shares must sum to 100%');
   }
   
-  // Validate all creator IDs in shares exist in coopCreatorIds (plus main creator)
+  // Validate all earner IDs in shares exist in coopCreatorIds (plus main earner)
   const allCreatorIds = new Set(coopCreatorIds);
   for (const share of coopShares) {
-    if (!allCreatorIds.has(share.creatorId)) {
+    if (!allCreatorIds.has(share.earnerId)) {
       throw new HttpsError(
         'invalid-argument',
-        `Share specified for unknown creator ${share.creatorId}`
+        `Share specified for unknown earner ${share.earnerId}`
       );
     }
   }
@@ -326,11 +328,11 @@ function validateLootboxPool(pool?: LootboxPool): void {
 
 /**
  * Update an existing drop
- * Only the owner creator(s) can update
+ * Only the owner earner(s) can update
  */
 export async function updateDrop(
   dropId: string,
-  creatorId: string,
+  earnerId: string,
   updates: UpdateDropInput
 ): Promise<void> {
   const dropRef = db.collection('drops').doc(dropId);
@@ -342,8 +344,8 @@ export async function updateDrop(
   
   const drop = dropSnap.data() as Drop;
   
-  // Verify creator is owner
-  if (!drop.ownerCreatorIds.includes(creatorId)) {
+  // Verify earner is owner
+  if (!drop.ownerCreatorIds.includes(earnerId)) {
     throw new HttpsError('permission-denied', 'Only drop owners can update');
   }
   
@@ -419,7 +421,7 @@ export async function updateDrop(
  */
 export async function disableDrop(
   dropId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<void> {
   const dropRef = db.collection('drops').doc(dropId);
   const dropSnap = await dropRef.get();
@@ -430,8 +432,8 @@ export async function disableDrop(
   
   const drop = dropSnap.data() as Drop;
   
-  // Verify creator is owner
-  if (!drop.ownerCreatorIds.includes(creatorId)) {
+  // Verify earner is owner
+  if (!drop.ownerCreatorIds.includes(earnerId)) {
     throw new HttpsError('permission-denied', 'Only drop owners can disable');
   }
   
@@ -457,16 +459,16 @@ export async function getDropPublicInfo(dropId: string): Promise<DropPublicInfo>
   
   const drop = dropSnap.data() as Drop;
   
-  // Get creator names and avatars
-  const creatorNames: string[] = [];
-  const creatorAvatars: string[] = [];
+  // Get earner names and avatars
+  const earnerNames: string[] = [];
+  const earnerAvatars: string[] = [];
   
-  for (const creatorId of drop.ownerCreatorIds) {
-    const creatorSnap = await db.collection('users').doc(creatorId).get();
-    if (creatorSnap.exists) {
-      const creatorData = creatorSnap.data();
-      creatorNames.push(creatorData?.displayName || creatorData?.name || 'Unknown');
-      creatorAvatars.push(creatorData?.avatar || creatorData?.profilePicture || '');
+  for (const earnerId of drop.ownerCreatorIds) {
+    const earnerSnap = await db.collection('users').doc(earnerId).get();
+    if (earnerSnap.exists) {
+      const earnerData = earnerSnap.data();
+      earnerNames.push(earnerData?.displayName || earnerData?.name || 'Unknown');
+      earnerAvatars.push(earnerData?.avatar || earnerData?.profilePicture || '');
     }
   }
   
@@ -508,8 +510,8 @@ export async function getDropPublicInfo(dropId: string): Promise<DropPublicInfo>
   return {
     dropId: drop.dropId,
     ownerCreatorIds: drop.ownerCreatorIds,
-    creatorNames,
-    creatorAvatars,
+    earnerNames,
+    earnerAvatars,
     type: drop.type,
     title: drop.title,
     description: drop.description,
@@ -541,8 +543,8 @@ export async function listPublicDrops(filters: ListDropsFilters): Promise<DropPu
     query = query.where('isActive', '==', true);
   }
   
-  if (filters.creatorId) {
-    query = query.where('ownerCreatorIds', 'array-contains', filters.creatorId);
+  if (filters.earnerId) {
+    query = query.where('ownerCreatorIds', 'array-contains', filters.earnerId);
   }
   
   if (filters.type) {
@@ -680,21 +682,21 @@ export async function purchaseDrop(
   }
   
   // Calculate revenue split
-  const avaloShare = Math.ceil(drop.priceTokens * (DROP_CONSTANTS.AVALO_SHARE_PERCENTAGE / 100));
-  const creatorPoolShare = drop.priceTokens - avaloShare;
+  const platform = Math.ceil(drop.priceTokens * (DROP_CONSTANTS.AVALO_SHARE_PERCENTAGE / 100));
+  const earnerPoolShare = drop.priceTokens - platform;
   
-  const revenueSplit: { [creatorId: string]: number; avalo: number } = {
-    avalo: avaloShare,
+  const revenueSplit: { [earnerId: string]: number; platform: number } = {
+    platform: platform,
   };
   
-  // Split creator share among co-creators for COOP drops
+  // Split earner share among co-earners for COOP drops
   if (drop.type === 'COOP_DROP' && drop.coopShares) {
     for (const share of drop.coopShares) {
-      revenueSplit[share.creatorId] = Math.floor(creatorPoolShare * (share.sharePercentage / 100));
+      revenueSplit[share.earnerId] = Math.floor(earnerPoolShare * (share.sharePercentage / 100));
     }
   } else {
-    // Single creator gets all creator share
-    revenueSplit[drop.ownerCreatorIds[0]] = creatorPoolShare;
+    // Single earner gets all earner share
+    revenueSplit[drop.ownerCreatorIds[0]] = earnerPoolShare;
   }
   
   // For LOOTBOX: perform random roll
@@ -711,7 +713,7 @@ export async function purchaseDrop(
     purchaseId,
     dropId: drop.dropId,
     userId,
-    creatorIds: drop.ownerCreatorIds,
+    earnerIds: drop.ownerCreatorIds,
     tokensSpent: drop.priceTokens,
     createdAt: new Date(),
     resolvedContentItems,
@@ -725,14 +727,14 @@ export async function purchaseDrop(
       spent: increment(drop.priceTokens),
     });
     
-    // Credit tokens to each creator
-    for (const creatorId of drop.ownerCreatorIds) {
-      const creatorShare = revenueSplit[creatorId] || 0;
-      if (creatorShare > 0) {
-        const creatorWalletRef = db.collection('users').doc(creatorId).collection('wallet').doc('current');
-        transaction.update(creatorWalletRef, {
-          balance: increment(creatorShare),
-          earned: increment(creatorShare),
+    // Credit tokens to each earner
+    for (const earnerId of drop.ownerCreatorIds) {
+      const earner = revenueSplit[earnerId] || 0;
+      if (earner > 0) {
+        const earnerWalletRef = db.collection('users').doc(earnerId).collection('wallet').doc('current');
+        transaction.update(earnerWalletRef, {
+          balance: increment(earner),
+          earned: increment(earner),
         });
       }
     }
@@ -762,16 +764,16 @@ export async function purchaseDrop(
     );
   });
   
-  // Record ranking actions for each creator (async, non-blocking)
-  for (const creatorId of drop.ownerCreatorIds) {
-    const creatorTokens = revenueSplit[creatorId] || 0;
-    if (creatorTokens > 0) {
+  // Record ranking actions for each earner (async, non-blocking)
+  for (const earnerId of drop.ownerCreatorIds) {
+    const earnerTokens = revenueSplit[earnerId] || 0;
+    if (earnerTokens > 0) {
       recordRankingAction({
         type: 'content_purchase',
-        creatorId,
+        earnerId,
         payerId: userId,
-        tokensAmount: creatorTokens,
-        points: creatorTokens * DROP_CONSTANTS.RANKING_POINTS_PER_TOKEN,
+        tokensAmount: earnerTokens,
+        points: earnerTokens * DROP_CONSTANTS.RANKING_POINTS_PER_TOKEN,
         timestamp: new Date(),
       }).catch(err => logger.error('Error recording ranking action:', err));
     }
@@ -786,7 +788,7 @@ export async function purchaseDrop(
       tokensSpent: drop.priceTokens,
       deviceId,
       ipHash,
-      creatorIds: drop.ownerCreatorIds,
+      earnerIds: drop.ownerCreatorIds,
     },
   }).then(() => {
     // Evaluate risk
@@ -848,16 +850,30 @@ export async function getUserOwnedDrops(userId: string): Promise<DropPublicInfo[
 // ============================================================================
 
 /**
- * Get creator's drops with stats
+ * Get earner's drops with stats
  */
-export async function getCreatorDrops(creatorId: string): Promise<Drop[]> {
+export async function getCreatorDrops(earnerId: string): Promise<Drop[]> {
   const dropsSnapshot = await db
     .collection('drops')
-    .where('ownerCreatorIds', 'array-contains', creatorId)
+    .where('ownerCreatorIds', 'array-contains', earnerId)
     .get();
   
   return dropsSnapshot.docs.map(doc => doc.data() as Drop);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

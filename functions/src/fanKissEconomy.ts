@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 220 - Fan & Kiss Economy Engine
  * 
@@ -45,7 +47,7 @@ export interface FanMilestone {
 export interface FanStatus {
   fanId: string;
   suitorId: string;  // The fan
-  creatorId: string; // The person being supported
+  earnerId: string; // The person being supported
   currentLevel: KissLevel;
   totalTokensSpent: number;
   lastActivityAt: any; // Timestamp
@@ -61,7 +63,7 @@ export interface FanStatus {
 }
 
 export interface FanRanking {
-  creatorId: string;
+  earnerId: string;
   rankings: {
     eternalFans: string[];      // User IDs
     royalFans: string[];        // Kiss Level 4
@@ -76,7 +78,7 @@ export interface FanRanking {
 export interface EmotionProgressionEvent {
   eventId: string;
   suitorId: string;
-  creatorId: string;
+  earnerId: string;
   eventType: 'chemistry_rising' | 'shared_interests' | 'perfect_timing' | 'vibe_match';
   triggeredBy: 'chat' | 'call' | 'meeting' | 'milestone';
   metadata: any;
@@ -138,19 +140,19 @@ export const FAN_MILESTONES: Record<KissLevel, FanMilestone> = {
 // ============================================================================
 
 /**
- * Track tokens spent by a suitor on a creator for fan milestone progression.
+ * Track tokens spent by a suitor on a earner for fan milestone progression.
  * This is called after successful chat/call/meeting payments.
  * 
  * IMPORTANT: This is cumulative tracking - adds to total, checks for level ups.
  * 
  * @param suitorId - The fan/payer
- * @param creatorId - The earner
+ * @param earnerId - The earner
  * @param tokensSpent - Amount of tokens spent in this transaction
  * @param source - Where tokens were spent ('chat' | 'call' | 'meeting' | 'event')
  */
 export async function trackTokenSpend(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   tokensSpent: number,
   source: 'chat' | 'call' | 'meeting' | 'event'
 ): Promise<{ 
@@ -161,7 +163,7 @@ export async function trackTokenSpend(
 }> {
   
   // Don't track if spending on self (shouldn't happen, but safety check)
-  if (suitorId === creatorId) {
+  if (suitorId === earnerId) {
     return {
       previousLevel: 'NONE',
       totalTokens: 0,
@@ -169,7 +171,7 @@ export async function trackTokenSpend(
     };
   }
 
-  const fanId = `${suitorId}_${creatorId}`;
+  const fanId = `${suitorId}_${earnerId}`;
   const fanRef = db.collection('fan_status').doc(fanId);
   
   let result: {
@@ -194,7 +196,7 @@ export async function trackTokenSpend(
       const fanStatus: Partial<FanStatus> = {
         fanId,
         suitorId,
-        creatorId,
+        earnerId,
         currentLevel: newLevel,
         totalTokensSpent: newTotal,
         lastActivityAt: serverTimestamp(),
@@ -216,7 +218,7 @@ export async function trackTokenSpend(
       
       // Log milestone achievement
       if (newLevel !== 'NONE') {
-        await logMilestoneAchievement(suitorId, creatorId, newLevel, newTotal, source);
+        await logMilestoneAchievement(suitorId, earnerId, newLevel, newTotal, source);
       }
       
     } else {
@@ -240,10 +242,10 @@ export async function trackTokenSpend(
         result.newLevel = newLevel;
         
         // Log milestone achievement
-        await logMilestoneAchievement(suitorId, creatorId, newLevel, newTotal, source);
+        await logMilestoneAchievement(suitorId, earnerId, newLevel, newTotal, source);
         
         // Trigger emotional progression event
-        await triggerEmotionEvent(suitorId, creatorId, 'chemistry_rising', 'milestone', {
+        await triggerEmotionEvent(suitorId, earnerId, 'chemistry_rising', 'milestone', {
           newLevel,
           previousLevel,
           totalTokens: newTotal
@@ -257,7 +259,7 @@ export async function trackTokenSpend(
   });
   
   // Update fan rankings asynchronously (non-blocking)
-  updateFanRankingsAsync(creatorId).catch(err => 
+  updateFanRankingsAsync(earnerId).catch(err => 
     logger.error('Failed to update fan rankings:', err)
   );
   
@@ -281,7 +283,7 @@ function calculateFanLevel(totalTokens: number): KissLevel {
  */
 async function logMilestoneAchievement(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   level: KissLevel,
   totalTokens: number,
   source: string
@@ -289,7 +291,7 @@ async function logMilestoneAchievement(
   const logRef = db.collection('fan_milestone_logs').doc(generateId());
   await logRef.set({
     suitorId,
-    creatorId,
+    earnerId,
     level,
     totalTokens,
     source,
@@ -297,7 +299,7 @@ async function logMilestoneAchievement(
     createdAt: serverTimestamp()
   });
   
-  logger.info(`Fan milestone achieved: ${suitorId} → ${creatorId} reached ${level} (${totalTokens} tokens)`);
+  logger.info(`Fan milestone achieved: ${suitorId} → ${earnerId} reached ${level} (${totalTokens} tokens)`);
 }
 
 // ============================================================================
@@ -305,13 +307,13 @@ async function logMilestoneAchievement(
 // ============================================================================
 
 /**
- * Update fan rankings for a creator
- * This organizes all fans by their level for the creator's view
+ * Update fan rankings for a earner
+ * This organizes all fans by their level for the earner's view
  */
-export async function updateFanRankings(creatorId: string): Promise<void> {
-  // Get all fans for this creator
+export async function updateFanRankings(earnerId: string): Promise<void> {
+  // Get all fans for this earner
   const fansSnap = await db.collection('fan_status')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .get();
   
   const rankings: FanRanking['rankings'] = {
@@ -352,7 +354,7 @@ export async function updateFanRankings(creatorId: string): Promise<void> {
   const sortByTokens = async (userIds: string[]) => {
     const fanPromises = userIds.map(async (uid) => {
       const fanDoc = await db.collection('fan_status')
-        .doc(`${uid}_${creatorId}`)
+        .doc(`${uid}_${earnerId}`)
         .get();
       return {
         userId: uid,
@@ -372,9 +374,9 @@ export async function updateFanRankings(creatorId: string): Promise<void> {
   rankings.level1Fans = await sortByTokens(rankings.level1Fans);
   
   // Save rankings
-  const rankingRef = db.collection('fan_rankings').doc(creatorId);
+  const rankingRef = db.collection('fan_rankings').doc(earnerId);
   await rankingRef.set({
-    creatorId,
+    earnerId,
     rankings,
     updatedAt: serverTimestamp()
   });
@@ -383,19 +385,19 @@ export async function updateFanRankings(creatorId: string): Promise<void> {
 /**
  * Async wrapper for updating fan rankings (non-blocking)
  */
-async function updateFanRankingsAsync(creatorId: string): Promise<void> {
+async function updateFanRankingsAsync(earnerId: string): Promise<void> {
   try {
-    await updateFanRankings(creatorId);
+    await updateFanRankings(earnerId);
   } catch (error) {
-    logger.error(`Failed to update fan rankings for ${creatorId}:`, error);
+    logger.error(`Failed to update fan rankings for ${earnerId}:`, error);
   }
 }
 
 /**
- * Get fan rankings for a creator (for their view)
+ * Get fan rankings for a earner (for their view)
  */
-export async function getFanRankings(creatorId: string): Promise<FanRanking | null> {
-  const rankingSnap = await db.collection('fan_rankings').doc(creatorId).get();
+export async function getFanRankings(earnerId: string): Promise<FanRanking | null> {
+  const rankingSnap = await db.collection('fan_rankings').doc(earnerId).get();
   
   if (!rankingSnap.exists) {
     return null;
@@ -414,7 +416,7 @@ export async function getFanRankings(creatorId: string): Promise<FanRanking | nu
  */
 export async function triggerEmotionEvent(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   eventType: EmotionProgressionEvent['eventType'],
   triggeredBy: EmotionProgressionEvent['triggeredBy'],
   metadata: any
@@ -425,14 +427,14 @@ export async function triggerEmotionEvent(
   await eventRef.set({
     eventId,
     suitorId,
-    creatorId,
+    earnerId,
     eventType,
     triggeredBy,
     metadata,
     createdAt: serverTimestamp()
   });
   
-  logger.info(`Emotion event triggered: ${eventType} for ${suitorId} → ${creatorId}`);
+  logger.info(`Emotion event triggered: ${eventType} for ${suitorId} → ${earnerId}`);
 }
 
 /**
@@ -440,12 +442,12 @@ export async function triggerEmotionEvent(
  */
 export async function getRecentEmotionEvents(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   limit: number = 10
 ): Promise<EmotionProgressionEvent[]> {
   const eventsSnap = await db.collection('emotion_progression_events')
     .where('suitorId', '==', suitorId)
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('createdAt', 'desc')
     .limit(limit)
     .get();
@@ -462,9 +464,9 @@ export async function getRecentEmotionEvents(
  */
 export async function getFanStatus(
   suitorId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<FanStatus | null> {
-  const fanId = `${suitorId}_${creatorId}`;
+  const fanId = `${suitorId}_${earnerId}`;
   const fanSnap = await db.collection('fan_status').doc(fanId).get();
   
   if (!fanSnap.exists) {
@@ -475,14 +477,14 @@ export async function getFanStatus(
 }
 
 /**
- * Check if user is a fan of creator at minimum level
+ * Check if user is a fan of earner at minimum level
  */
 export async function isFanOfLevel(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   minLevel: KissLevel
 ): Promise<boolean> {
-  const fanStatus = await getFanStatus(suitorId, creatorId);
+  const fanStatus = await getFanStatus(suitorId, earnerId);
   
   if (!fanStatus) return false;
   
@@ -494,14 +496,14 @@ export async function isFanOfLevel(
 }
 
 /**
- * Get all fans of a creator
+ * Get all fans of a earner
  */
 export async function getCreatorFans(
-  creatorId: string,
+  earnerId: string,
   minLevel?: KissLevel
 ): Promise<FanStatus[]> {
   let query = db.collection('fan_status')
-    .where('creatorId', '==', creatorId);
+    .where('earnerId', '==', earnerId);
   
   if (minLevel && minLevel !== 'NONE') {
     // Filter by level (need to handle this differently as we can't do >= on strings)
@@ -589,10 +591,10 @@ export function getFanRewards(level: KissLevel): FanReward[] {
  */
 export async function hasFanReward(
   suitorId: string,
-  creatorId: string,
+  earnerId: string,
   rewardType: FanReward['rewardType']
 ): Promise<boolean> {
-  const fanStatus = await getFanStatus(suitorId, creatorId);
+  const fanStatus = await getFanStatus(suitorId, earnerId);
   
   if (!fanStatus || fanStatus.currentLevel === 'NONE') {
     return false;
@@ -607,9 +609,9 @@ export async function hasFanReward(
 // ============================================================================
 
 /**
- * Get fan statistics for a creator
+ * Get fan statistics for a earner
  */
-export async function getCreatorFanStats(creatorId: string): Promise<{
+export async function getCreatorFanStats(earnerId: string): Promise<{
   totalFans: number;
   eternalFans: number;
   royalFans: number;
@@ -618,7 +620,7 @@ export async function getCreatorFanStats(creatorId: string): Promise<{
   level1Fans: number;
   totalTokensReceived: number;
 }> {
-  const fans = await getCreatorFans(creatorId);
+  const fans = await getCreatorFans(earnerId);
   
   const stats = {
     totalFans: fans.length,
@@ -651,6 +653,20 @@ export async function getUserFanshipStats(suitorId: string): Promise<{
     totalTokensSpent: fanships.reduce((sum, f) => sum + (f.totalTokensSpent || 0), 0)
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

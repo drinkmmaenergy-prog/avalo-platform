@@ -1,12 +1,14 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 354 — INFLUENCER ACQUISITION & CREATOR ONBOARDING ENGINE
  * ========================================================================
- * Production-ready creator growth and high-value acquisition pipeline
+ * Production-ready earner growth and high-value acquisition pipeline
  *
  * Features:
  * - Creator application & verification flow
- * - Multi-tier creator classification
+ * - Multi-tier earner classification
  * - Regional rollout management
  * - Fraud-resistant onboarding
  * - KPI tracking & analytics
@@ -156,7 +158,7 @@ export interface RegionalInfluencerProgram {
 
 export interface InfluencerKPISnapshot {
   snapshotId: string;
-  creatorId: string;
+  earnerId: string;
   date: string; // YYYY-MM-DD format
 
   // Daily metrics
@@ -226,11 +228,11 @@ export const TIER_CONFIG = {
 
 // Original economy rules — revenue splits UNCHANGED, payout rate from economyConfig
 export const ECONOMY_RULES = {
-  chat: { creatorShare: MONETIZATION_SPLITS.CHAT.creator, avaloShare: MONETIZATION_SPLITS.CHAT.avalo },
-  calls: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  calendar: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  events: { creatorShare: MONETIZATION_SPLITS.EVENT_TICKET.creator, avaloShare: MONETIZATION_SPLITS.EVENT_TICKET.avalo },
-  tips: { creatorShare: 0.90, avaloShare: 0.10 },
+  chat: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  calls: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  calendar: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  events: { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
+  tips: { earner: 0.90, platform: 0.10 },
   tokenPayoutRate: TOKEN_PAYOUT_USD, // derived from TOKEN_PAYOUT_USD (0.03 USD)
 } as const;
 
@@ -375,7 +377,7 @@ export async function updateApplicationStatus(
 
   await appRef.update(updateData);
 
-  // If approved, create creator profile
+  // If approved, create earner profile
   if (newStatus === InfluencerApplicationStatus.APPROVED) {
     await activateCreatorProfile(
       application.userId,
@@ -391,7 +393,7 @@ export async function updateApplicationStatus(
 }
 
 /**
- * Activate creator profile after approval
+ * Activate earner profile after approval
  */
 async function activateCreatorProfile(
   userId: string,
@@ -419,14 +421,14 @@ async function activateCreatorProfile(
     updatedAt: Timestamp.now(),
   };
 
-  await db.collection('creatorProfiles').doc(userId).set(profile);
+  await db.collection('earnerProfiles').doc(userId).set(profile);
 
-  // Update user document with creator flag
+  // Update user document with earner flag
   await db
     .collection('users')
     .doc(userId)
     .update({
-      'roles.creator': true,
+      'roles.earner': true,
       'verification.status': 'approved',
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -439,10 +441,10 @@ async function activateCreatorProfile(
 // ============================================================================
 
 /**
- * Get creator profile
+ * Get earner profile
  */
 export async function getCreatorProfile(userId: string): Promise<CreatorProfile | null> {
-  const doc = await db.collection('creatorProfiles').doc(userId).get();
+  const doc = await db.collection('earnerProfiles').doc(userId).get();
 
   if (!doc.exists) {
     return null;
@@ -452,13 +454,13 @@ export async function getCreatorProfile(userId: string): Promise<CreatorProfile 
 }
 
 /**
- * Update creator tier (admin only)
+ * Update earner tier (admin only)
  */
 export async function updateCreatorTier(
   userId: string,
   newTier: CreatorTier
 ): Promise<void> {
-  const profileRef = db.collection('creatorProfiles').doc(userId);
+  const profileRef = db.collection('earnerProfiles').doc(userId);
   const tierConfig = TIER_CONFIG[newTier];
 
   await profileRef.update({
@@ -471,7 +473,7 @@ export async function updateCreatorTier(
 }
 
 /**
- * Toggle creator capability
+ * Toggle earner capability
  */
 export async function toggleCreatorCapability(
   userId: string,
@@ -479,7 +481,7 @@ export async function toggleCreatorCapability(
   enabled: boolean
 ): Promise<void> {
   await db
-    .collection('creatorProfiles')
+    .collection('earnerProfiles')
     .doc(userId)
     .update({
       [`capabilities.${capability}`]: enabled,
@@ -490,7 +492,7 @@ export async function toggleCreatorCapability(
 }
 
 /**
- * Flag creator for investigation
+ * Flag earner for investigation
  */
 export async function flagCreatorForInvestigation(
   userId: string,
@@ -512,7 +514,7 @@ export async function flagCreatorForInvestigation(
   }
 
   // Freeze wallet
-  await db.collection('creatorProfiles').doc(userId).update({
+  await db.collection('earnerProfiles').doc(userId).update({
     walletFrozen: true,
     updatedAt: Timestamp.now(),
   });
@@ -521,7 +523,7 @@ export async function flagCreatorForInvestigation(
 }
 
 /**
- * Check and auto-flag creators based on safety thresholds
+ * Check and auto-flag earners based on safety thresholds
  */
 export async function checkCreatorSafetyThresholds(userId: string): Promise<void> {
   const profile = await getCreatorProfile(userId);
@@ -605,7 +607,7 @@ export async function getRegionalProgram(
 }
 
 /**
- * Update regional program creator count
+ * Update regional program earner count
  */
 export async function updateRegionalProgramMetrics(countryCode: string): Promise<void> {
   const program = await getRegionalProgram(countryCode);
@@ -614,14 +616,14 @@ export async function updateRegionalProgramMetrics(countryCode: string): Promise
     return;
   }
 
-  // Count active creators in this region
-  const creatorsSnapshot = await db
+  // Count active earners in this region
+  const earnersSnapshot = await db
     .collection('influencerApplications')
     .where('country', '==', countryCode.toUpperCase())
     .where('status', '==', InfluencerApplicationStatus.APPROVED)
     .get();
 
-  const currentCreators = creatorsSnapshot.size;
+  const currentCreators = earnersSnapshot.size;
   const targetReached = currentCreators >= program.minimumCreatorsTarget;
 
   await db
@@ -634,7 +636,7 @@ export async function updateRegionalProgramMetrics(countryCode: string): Promise
     });
 
   logger.info(
-    `Regional program ${program.programId} updated: ${currentCreators}/${program.minimumCreatorsTarget} creators`
+    `Regional program ${program.programId} updated: ${currentCreators}/${program.minimumCreatorsTarget} earners`
   );
 }
 
@@ -643,10 +645,10 @@ export async function updateRegionalProgramMetrics(countryCode: string): Promise
 // ============================================================================
 
 /**
- * Record daily KPI snapshot for creator
+ * Record daily KPI snapshot for earner
  */
 export async function recordCreatorKPISnapshot(
-  creatorId: string,
+  earnerId: string,
   metrics: {
     dailyChats: number;
     tokensEarned: number;
@@ -659,11 +661,11 @@ export async function recordCreatorKPISnapshot(
   }
 ): Promise<string> {
   const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const snapshotId = `kpi_${creatorId}_${date.replace(/-/g, '')}`;
+  const snapshotId = `kpi_${earnerId}_${date.replace(/-/g, '')}`;
 
   const snapshot: InfluencerKPISnapshot = {
     snapshotId,
-    creatorId,
+    earnerId,
     date,
     ...metrics,
     createdAt: Timestamp.now(),
@@ -671,22 +673,22 @@ export async function recordCreatorKPISnapshot(
 
   await db.collection('influencerKPISnapshots').doc(snapshotId).set(snapshot);
 
-  logger.info(`KPI snapshot recorded for creator ${creatorId} on ${date}`);
+  logger.info(`KPI snapshot recorded for earner ${earnerId} on ${date}`);
 
   return snapshotId;
 }
 
 /**
- * Get creator KPIs for date range
+ * Get earner KPIs for date range
  */
 export async function getCreatorKPIs(
-  creatorId: string,
+  earnerId: string,
   startDate: string,
   endDate: string
 ): Promise<InfluencerKPISnapshot[]> {
   const snapshot = await db
     .collection('influencerKPISnapshots')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('date', '>=', startDate)
     .where('date', '<=', endDate)
     .orderBy('date', 'desc')
@@ -696,7 +698,7 @@ export async function getCreatorKPIs(
 }
 
 /**
- * Calculate creator risk score
+ * Calculate earner risk score
  */
 export async function calculateCreatorRiskScore(userId: string): Promise<number> {
   const profile = await getCreatorProfile(userId);
@@ -740,7 +742,7 @@ export async function calculateCreatorRiskScore(userId: string): Promise<number>
 }
 
 /**
- * Update creator risk flags
+ * Update earner risk flags
  */
 export async function updateCreatorRiskFlags(userId: string): Promise<void> {
   const riskScore = await calculateCreatorRiskScore(userId);
@@ -783,12 +785,28 @@ export async function updateCreatorRiskFlags(userId: string): Promise<void> {
     }
   }
 
-  await db.collection('creatorRiskFlags').doc(userId).set(flags);
+  await db.collection('earnerRiskFlags').doc(userId).set(flags);
 
-  logger.info(`Risk flags updated for creator ${userId}: score ${riskScore}`);
+  logger.info(`Risk flags updated for earner ${userId}: score ${riskScore}`);
 }
 
 logger.info('✅ PACK 354 Influencer Service loaded successfully');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

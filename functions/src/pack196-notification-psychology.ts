@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 196 — PUSH NOTIFICATION PSYCHOLOGY — REVISED v2
  * Desire, Urgency, Ego Reward
@@ -391,6 +393,20 @@ export const PACK_196_CONFIG = {
     ],
   },
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

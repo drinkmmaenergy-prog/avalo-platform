@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 382 — AI Earnings Optimizer
  * Automated earnings optimization suggestions
@@ -18,7 +20,7 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 const db = getFirestore();
 
 /**
- * Generate AI-powered earnings optimizations for a creator
+ * Generate AI-powered earnings optimizations for a earner
  */
 export const pack382_generateEarningsOptimizations = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -41,9 +43,9 @@ export const pack382_generateEarningsOptimizations = functions.https.onCall(asyn
     }
 
     try {
-      // Get creator profile
+      // Get earner profile
       const profileDoc = await db
-        .collection('creatorEarningProfiles')
+        .collection('earnerEarningProfiles')
         .doc(userId)
         .get();
 
@@ -529,6 +531,20 @@ export const pack382_markOptimizationApplied = functions.https.onCall(async (req
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

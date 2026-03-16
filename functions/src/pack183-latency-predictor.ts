@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 183 — Latency Predictor
  * Predictive analytics for load spikes and latency issues
@@ -333,6 +335,20 @@ export function isApproachingPeak(minutesAhead: number = 30): boolean {
   
   return getPeakHours().includes(futureHour);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Firebase Admin Initialization
  * Single source of truth for Firestore, Auth, and Storage instances
@@ -73,6 +75,20 @@ export const generateId = (): string => db.collection("_").doc().id;
 // ✅ Diagnostics log
 // --------------------------
 console.log("🔥 Firebase Admin initialized successfully with Firestore, Auth, and Storage.");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 346 — Post-Launch KPI Engine Types
  * Global Analytics · Revenue Control · Safety Intelligence · Churn & Fraud Monitoring
@@ -93,7 +95,7 @@ export type AbuseAutoAction =
 export interface AbuseSignal {
   id?: string;
   userId?: string;
-  creatorId?: string;
+  earnerId?: string;
   type: AbuseSignalType;
   severity: AbuseSignalSeverity;
   detectedAt: Timestamp | FieldValue;
@@ -116,7 +118,7 @@ export interface AbuseSignal {
 // ============================================================================
 
 export interface CreatorKPI {
-  creatorId: string;
+  earnerId: string;
 
   // Engagement metrics
   totalChats: number;
@@ -261,7 +263,7 @@ export interface KPIThreshold {
   
   // Safety thresholds
   panicTriggerThreshold: number; // Per day
-  mismatchReportThreshold: number; // Per day per creator
+  mismatchReportThreshold: number; // Per day per earner
   
   // Abuse detection
   tokenDrainVelocity: number; // Tokens per hour
@@ -310,7 +312,7 @@ export interface KPIDashboardData {
   hourly: HourlyMetrics[];
   
   topCreators: Array<{
-    creatorId: string;
+    earnerId: string;
     earnings: number;
     rating: number;
   }>;
@@ -331,7 +333,7 @@ export interface KPIDashboardData {
 
 export interface BigQueryExport {
   exportId: string;
-  dataType: "daily_kpi" | "abuse_signals" | "creator_kpi" | "churn";
+  dataType: "daily_kpi" | "abuse_signals" | "earner_kpi" | "churn";
   dateRange: {
     start: string;
     end: string;
@@ -341,6 +343,20 @@ export interface BigQueryExport {
   status: "pending" | "completed" | "failed";
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

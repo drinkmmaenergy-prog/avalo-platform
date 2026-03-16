@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 209: Event Refund & Complaint Extensions
  * Extends events.ts with unified refund policies, complaints, and voluntary refunds
@@ -81,8 +83,8 @@ export const cancelEventWithRefunds = onCall(
         const refundCalc = await calculateEventRefund({
           eventId,
           priceTokens: attendee.tokensAmount,
-          organizerShareTokens: attendee.creatorEarnings, // 80%
-          avaloCommission: attendee.platformFee, // 20%
+          organizerShareTokens: attendee.earnerEarnings, // 80%
+          platformCommission: attendee.platformFee, // 20%
           cancelledBy: 'organizer',
           reason,
         });
@@ -131,11 +133,11 @@ export const cancelEventWithRefunds = onCall(
               payerId: attendee.userId,
               earnerId: organizerId,
               originalAmount: attendee.tokensAmount,
-              earnerShare: attendee.creatorEarnings,
-              avaloCommission: attendee.platformFee,
+              earner: attendee.earnerEarnings,
+              platformCommission: attendee.platformFee,
               refundToPayerAmount: refundAmount,
               earnerKeptAmount: 0,
-              avaloKeptAmount: attendee.platformFee,
+              platformKeptAmount: attendee.platformFee,
               triggeredBy: organizerId,
               automaticRefund: false,
               notes: reason || 'Organizer cancelled event',
@@ -331,8 +333,8 @@ export const leaveEventWithPack209 = onCall(
     const refundCalc = await calculateEventRefund({
       eventId,
       priceTokens: attendee.tokensAmount,
-      organizerShareTokens: attendee.creatorEarnings,
-      avaloCommission: attendee.platformFee,
+      organizerShareTokens: attendee.earnerEarnings,
+      platformCommission: attendee.platformFee,
       cancelledBy: 'participant',
     });
 
@@ -359,11 +361,11 @@ export const leaveEventWithPack209 = onCall(
         payerId: userId,
         earnerId: event.hostUserId,
         originalAmount: attendee.tokensAmount,
-        earnerShare: attendee.creatorEarnings,
-        avaloCommission: attendee.platformFee,
+        earner: attendee.earnerEarnings,
+        platformCommission: attendee.platformFee,
         refundToPayerAmount: 0,
-        earnerKeptAmount: attendee.creatorEarnings,
-        avaloKeptAmount: attendee.platformFee,
+        earnerKeptAmount: attendee.earnerEarnings,
+        platformKeptAmount: attendee.platformFee,
         triggeredBy: userId,
         automaticRefund: false,
         notes: 'Participant cancelled - no refunds per policy',
@@ -385,6 +387,20 @@ export const leaveEventWithPack209 = onCall(
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

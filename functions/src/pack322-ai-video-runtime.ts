@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 322 — AI Video Session Runtime + Per-Minute Billing
  * Real-time AI companion video sessions with per-minute token billing
@@ -378,12 +380,12 @@ async function processTickBilling(sessionId: string): Promise<TickBillingRespons
   // ========================================================================
   
   let contextType: 'AI_SESSION' | 'AVALO_ONLY_VIDEO';
-  let creatorId: string | undefined = undefined;
+  let earnerId: string | undefined = undefined;
   
   if (!session.isAvaloAI && session.ownerUserId) {
-    // User-owned AI: creator earns 65%
+    // User-owned AI: earner earns 65%
     contextType = 'AI_SESSION';
-    creatorId = session.ownerUserId;
+    earnerId = session.ownerUserId;
   } else {
     // Avalo AI: 100% Avalo via AVALO_ONLY_VIDEO
     contextType = 'AVALO_ONLY_VIDEO';
@@ -399,7 +401,7 @@ async function processTickBilling(sessionId: string): Promise<TickBillingRespons
       amountTokens: tokensToCharge,
       source: 'CALL', // Use CALL source for video sessions
       relatedId: sessionId,
-      creatorId,
+      earnerId,
       contextType,
       contextRef: session.contextRef,
       metadata: {
@@ -578,6 +580,21 @@ export default {
   pack322_aiVideoTickBilling,
   pack322_aiVideoEndSession,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

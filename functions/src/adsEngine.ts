@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Ads Engine - Phase 18
  * Sponsored Ads & Brand Placements (S4 Hybrid Model)
@@ -669,6 +671,20 @@ export default {
   registerClick,
   ADS_CONFIG,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

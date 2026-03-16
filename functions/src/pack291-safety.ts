@@ -1,8 +1,10 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 291 — AI Assist Safety & Validation
  * Ensures all AI-generated content is compliant and safe
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -378,6 +380,20 @@ export function generateSafeFallback(type: string): string {
 
   return fallbacks[type] || 'Continue focusing on quality engagement and consistent activity.';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

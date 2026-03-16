@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 395 - KYC/KYB Verification & Payout Compliance
- * Handles creator verification, sanctions checks, and payout compliance
+ * Handles earner verification, sanctions checks, and payout compliance
  */
 
 import * as functions from 'firebase-functions';
@@ -109,7 +111,7 @@ export const submitKYCLevel1 = functions.https.onCall(async (request) => {
   }
   
   // Check if already verified
-  const existingDoc = await db.collection('creatorVerification').doc(userId).get();
+  const existingDoc = await db.collection('earnerVerification').doc(userId).get();
   if (existingDoc.exists && existingDoc.data()?.status === 'approved') {
     throw new functions.https.HttpsError('already-exists', 'Already verified');
   }
@@ -129,10 +131,10 @@ export const submitKYCLevel1 = functions.https.onCall(async (request) => {
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   };
   
-  await db.collection('creatorVerification').doc(userId).set(verificationData);
+  await db.collection('earnerVerification').doc(userId).set(verificationData);
   
   // Create tax status record
-  await db.collection('creatorTaxStatus').doc(userId).set({
+  await db.collection('earnerTaxStatus').doc(userId).set({
     userId,
     taxResidency,
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
@@ -172,13 +174,13 @@ export const submitKYCLevel2 = functions.https.onCall(async (request) => {
   }
   
   // Check if Level 1 is approved
-  const level1Doc = await db.collection('creatorVerification').doc(userId).get();
+  const level1Doc = await db.collection('earnerVerification').doc(userId).get();
   if (!level1Doc.exists || level1Doc.data()?.status !== 'approved') {
     throw new functions.https.HttpsError('failed-precondition', 'KYC Level 1 must be approved first');
   }
   
   // Update verification to Level 2
-  await db.collection('creatorVerification').doc(userId).update({
+  await db.collection('earnerVerification').doc(userId).update({
     level: 'level2',
     status: 'pending',
     addressProofUrl,
@@ -225,7 +227,7 @@ export const submitKYB = functions.https.onCall(async (request) => {
   }
   
   // Create KYB record
-  await db.collection('creatorKYB').doc(userId).set({
+  await db.collection('earnerKYB').doc(userId).set({
     userId,
     companyName,
     companyRegistration,
@@ -241,7 +243,7 @@ export const submitKYB = functions.https.onCall(async (request) => {
   });
   
   // Update verification to KYB level
-  await db.collection('creatorVerification').doc(userId).set({
+  await db.collection('earnerVerification').doc(userId).set({
     userId,
     level: 'kyb',
     status: 'pending',
@@ -250,7 +252,7 @@ export const submitKYB = functions.https.onCall(async (request) => {
   }, { merge: true });
   
   // Update tax status
-  await db.collection('creatorTaxStatus').doc(userId).update({
+  await db.collection('earnerTaxStatus').doc(userId).update({
     isBusinessEntity: true,
     companyTaxId: taxId,
     vatNumber,
@@ -330,8 +332,8 @@ async function createComplianceFlag(
   severity: 'low' | 'medium' | 'high' | 'critical',
   reason: string
 ): Promise<void> {
-  await db.collection('creatorComplianceFlags').add({
-    creatorId: userId,
+  await db.collection('earnerComplianceFlags').add({
+    earnerId: userId,
     type,
     severity,
     reason,
@@ -379,7 +381,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
   
-  const creatorId = request.auth.uid;
+  const earnerId = request.auth.uid;
   const { amount, paymentMethod } = data;
   
   if (!amount || !paymentMethod) {
@@ -387,7 +389,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   }
   
   // Check verification status
-  const verificationDoc = await db.collection('creatorVerification').doc(creatorId).get();
+  const verificationDoc = await db.collection('earnerVerification').doc(earnerId).get();
   if (!verificationDoc.exists || verificationDoc.data()?.status !== 'approved') {
     throw new functions.https.HttpsError('permission-denied', 'Creator must be verified first');
   }
@@ -396,7 +398,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   const verificationLevel = verification.level || 'level1';
   
   // Check if earnings are frozen
-  const userDoc = await db.collection('users').doc(creatorId).get();
+  const userDoc = await db.collection('users').doc(earnerId).get();
   const user = userDoc.data()!;
   
   if (user.earningsFrozen) {
@@ -415,7 +417,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayPayoutsQuery = await db.collection('payoutRequests')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', 'in', ['pending', 'processing', 'completed'])
     .where('createdAt', '>=', today)
     .get();
@@ -432,7 +434,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   // Check monthly limit
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const monthPayoutsQuery = await db.collection('payoutRequests')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .where('status', 'in', ['pending', 'processing', 'completed'])
     .where('createdAt', '>=', monthStart)
     .get();
@@ -456,7 +458,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   
   // Velocity check (PACK 302 integration)
   const recentPayouts = await db.collection('payoutRequests')
-    .where('creatorId', '==', creatorId)
+    .where('earnerId', '==', earnerId)
     .orderBy('createdAt', 'desc')
     .limit(5)
     .get();
@@ -468,13 +470,13 @@ export const requestPayout = functions.https.onCall(async (request) => {
     
     if (hoursDiff < 24) {
       // More than 5 payouts in 24 hours - suspicious
-      await createComplianceFlag(creatorId, 'high_velocity_payouts', 'medium', 'More than 5 payouts in 24 hours');
+      await createComplianceFlag(earnerId, 'high_velocity_payouts', 'medium', 'More than 5 payouts in 24 hours');
     }
   }
   
   // Create payout request
   const payoutRef = await db.collection('payoutRequests').add({
-    creatorId,
+    earnerId,
     amount,
     currency: 'USD',
     paymentMethod,
@@ -486,7 +488,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   
   // Update user token balance (deduct equivalent tokens)
   const tokensToDeduct = amount / TOKEN_PAYOUT_USD;
-  await db.collection('users').doc(creatorId).update({
+  await db.collection('users').doc(earnerId).update({
     tokenBalance: admin.firestore.FieldValue.increment(-tokensToDeduct),
     pendingPayouts: admin.firestore.FieldValue.increment(amount)
   });
@@ -494,7 +496,7 @@ export const requestPayout = functions.https.onCall(async (request) => {
   // Create audit log
   await db.collection('complianceAuditTrail').add({
     actionType: 'payout_requested',
-    userId: creatorId,
+    userId: earnerId,
     payoutId: payoutRef.id,
     amount,
     currency: 'USD',
@@ -569,7 +571,7 @@ export const validatePaymentMethod = functions.https.onCall(async (request) => {
 });
 
 /**
- * Get creator verification status
+ * Get earner verification status
  */
 export const getVerificationStatus = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -579,7 +581,7 @@ export const getVerificationStatus = functions.https.onCall(async (request) => {
   
   const userId = request.auth.uid;
   
-  const verificationDoc = await db.collection('creatorVerification').doc(userId).get();
+  const verificationDoc = await db.collection('earnerVerification').doc(userId).get();
   if (!verificationDoc.exists) {
     return {
       verified: false,
@@ -600,6 +602,20 @@ export const getVerificationStatus = functions.https.onCall(async (request) => {
     updatedAt: verification.updatedAt
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

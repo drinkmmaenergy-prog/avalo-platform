@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 377 — Global Public Launch Orchestration Engine
  * 
@@ -67,7 +69,7 @@ export const pack377_activateCountryPhase = functions.https.onCall(async (reques
     date: new Date().toISOString().split('T')[0],
     userCount: 0,
     paymentCount: 0,
-    creatorCount: 0,
+    earnerCount: 0,
     lastReset: admin.firestore.FieldValue.serverTimestamp(),
   });
 
@@ -88,7 +90,7 @@ export const pack377_activateCountryPhase = functions.https.onCall(async (reques
     caps: {
       users: dailyUserCap,
       payments: dailyPaymentCap,
-      creators: dailyCreatorCap,
+      earners: dailyCreatorCap,
     },
   };
 });
@@ -140,7 +142,7 @@ export const pack377_pauseCountryPhase = functions.https.onCall(async (request) 
  */
 export const pack377_enforceCountryCaps = async (
   countryCode: string,
-  operation: 'user' | 'payment' | 'creator'
+  operation: 'user' | 'payment' | 'earner'
 ): Promise<boolean> => {
   // Get launch phase
   const phaseDoc = await db.collection('launchPhases').doc(countryCode).get();
@@ -168,7 +170,7 @@ export const pack377_enforceCountryCaps = async (
       date: today,
       userCount: 0,
       paymentCount: 0,
-      creatorCount: 0,
+      earnerCount: 0,
       lastReset: admin.firestore.FieldValue.serverTimestamp(),
     });
     return true;
@@ -182,7 +184,7 @@ export const pack377_enforceCountryCaps = async (
       date: today,
       userCount: 0,
       paymentCount: 0,
-      creatorCount: 0,
+      earnerCount: 0,
       lastReset: admin.firestore.FieldValue.serverTimestamp(),
     });
     return true;
@@ -203,12 +205,12 @@ export const pack377_enforceCountryCaps = async (
     await capacityRef.update({
       paymentCount: admin.firestore.FieldValue.increment(1),
     });
-  } else if (operation === 'creator') {
-    if (capacityData.creatorCount >= phaseData.dailyCreatorCap) {
+  } else if (operation === 'earner') {
+    if (capacityData.earnerCount >= phaseData.dailyCreatorCap) {
       return false;
     }
     await capacityRef.update({
-      creatorCount: admin.firestore.FieldValue.increment(1),
+      earnerCount: admin.firestore.FieldValue.increment(1),
     });
   }
 
@@ -329,7 +331,7 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (req
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
-  const { influencerId, region, trafficForecast, expectedInstalls, creatorInflow, conversionBenchmarks } = data;
+  const { influencerId, region, trafficForecast, expectedInstalls, earnerInflow, conversionBenchmarks } = data;
 
   // Verify admin or marketing privileges
   const userDoc = await db.collection('users').doc(request.auth.uid).get();
@@ -343,7 +345,7 @@ export const pack377_campaignTrafficForecast = functions.https.onCall(async (req
     region,
     trafficForecast,
     expectedInstalls,
-    creatorInflow,
+    earnerInflow,
     conversionBenchmarks,
     status: 'planning',
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -399,9 +401,9 @@ export const pack377_campaignROITracker = functions.https.onCall(async (request)
     actualInstalls: campaignData.actualInstalls || 0,
     installConversion: ((campaignData.actualInstalls || 0) / campaignData.expectedInstalls) * 100,
     
-    expectedCreators: campaignData.creatorInflow,
+    expectedCreators: campaignData.earnerInflow,
     actualCreators: campaignData.actualCreators || 0,
-    creatorConversion: ((campaignData.actualCreators || 0) / campaignData.creatorInflow) * 100,
+    earnerConversion: ((campaignData.actualCreators || 0) / campaignData.earnerInflow) * 100,
     
     actualRevenue: campaignData.actualRevenue || 0,
     revenuePerInstall: (campaignData.actualRevenue || 0) / (campaignData.actualInstalls || 1),
@@ -467,7 +469,7 @@ export const pack377_launchThreatShield = onSchedule("every 5 minutes", async (e
       }
     }
 
-    // Detect fake creator registration rings
+    // Detect fake earner registration rings
     const recentCreators = await db.collection('users')
       .where('isCreator', '==', true)
       .where('createdAt', '>', fiveMinutesAgo)
@@ -475,8 +477,8 @@ export const pack377_launchThreatShield = onSchedule("every 5 minutes", async (e
 
     if (recentCreators.size > 50) {
       await db.collection('launchThreatAlerts').add({
-        threatType: 'creator_ring',
-        creatorCount: recentCreators.size,
+        threatType: 'earner_ring',
+        earnerCount: recentCreators.size,
         severity: 'critical',
         detectedAt: admin.firestore.FieldValue.serverTimestamp(),
         status: 'active',
@@ -724,6 +726,20 @@ export const getUserCountryCode = async (userId: string): Promise<string | null>
   const userDoc = await db.collection('users').doc(userId).get();
   return userDoc.data()?.countryCode || null;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

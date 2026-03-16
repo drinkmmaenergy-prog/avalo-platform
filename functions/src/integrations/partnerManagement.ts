@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 150: Partner Management Functions
  * Handle partner registration, verification, and profile management
@@ -73,7 +75,7 @@ export const registerPartner = https.onCall(async (request) => {
 
     // Generate secure API credentials
     const partnerId = db.collection('api_integrations').doc().id;
-    const apiKey = `avalo_${crypto.randomBytes(24).toString('hex')}`;
+    const apiKey = `platform_${crypto.randomBytes(24).toString('hex')}`;
     const apiSecret = crypto.randomBytes(32).toString('hex');
 
     // Create partner profile
@@ -504,7 +506,7 @@ export const rotateAPICredentials = https.onCall(async (request) => {
       throw new https.HttpsError('not-found', 'Partner not found');
     }
 
-    const newApiKey = `avalo_${crypto.randomBytes(24).toString('hex')}`;
+    const newApiKey = `platform_${crypto.randomBytes(24).toString('hex')}`;
     const newApiSecret = crypto.randomBytes(32).toString('hex');
 
     await partnerRef.update({
@@ -527,6 +529,22 @@ export const rotateAPICredentials = https.onCall(async (request) => {
     throw error;
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

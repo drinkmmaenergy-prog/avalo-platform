@@ -1,14 +1,16 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 289 — Payouts & Withdrawals Types
  * Complete system for withdrawals/cashout of earnings from Avalo
  * 
  * IMPORTANT RULES:
  * - Only earned tokens can be withdrawn (NOT purchased tokens)
- * - Fixed rate: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo USD (or local equivalent)
+ * - Fixed rate: 1 token = MONETIZATION_SPLITS.EVENT_TICKET.platform USD (or local equivalent)
  * - KYC + AML required for all withdrawals
  * - Limits enforced: min/max per withdrawal, monthly caps
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -154,7 +156,7 @@ export interface WithdrawalRequest {
   payoutAmount: number;  // Amount in payoutCurrency
   
   // Exchange rates (for audit)
-  ratePerTokenUSD: number;  // Snapshot, should be MONETIZATION_SPLITS.EVENT_TICKET.avalo
+  ratePerTokenUSD: number;  // Snapshot, should be MONETIZATION_SPLITS.EVENT_TICKET.platform
   fxRateToPayoutCurrency: number;  // FX rate if not USD
   
   // Status tracking
@@ -498,6 +500,23 @@ export function isWithdrawalEditable(status: WithdrawalStatus): boolean {
 export function isWithdrawalFinal(status: WithdrawalStatus): boolean {
   return ['PAID', 'REJECTED', 'CANCELLED'].includes(status);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

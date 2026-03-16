@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 182: Avalo Pro Event Host Suite
  * Backend implementation for professional event hosting system
@@ -5,7 +7,7 @@
  * CRITICAL SAFETY RULES:
  * - Educational, lifestyle, career, fitness, or creative events ONLY
  * - Zero tolerance for romantic/NSFW/escort events
- * - Token-only payments (65% creator / 35% Avalo)
+ * - Token-only payments (65% earner / 35% Avalo)
  * - Location privacy until ticket purchase
  * - No algorithm boosts or visibility manipulation
  */
@@ -40,7 +42,7 @@ import { admin, auth, functions } from './runtime';
 // ============================================================================
 
 /**
- * Check if user can create events (must be verified creator)
+ * Check if user can create events (must be verified earner)
  */
 async function canCreateEvent(userId: string): Promise<boolean> {
   const userDoc = await db.collection('users').doc(userId).get();
@@ -186,7 +188,7 @@ export const createProEvent = onCall<{
   if (!canCreate) {
     throw new HttpsError(
       'permission-denied',
-      'Only verified creators can create events'
+      'Only verified earners can create events'
     );
   }
   
@@ -947,7 +949,7 @@ export const issueEventCertificate = onCall<{
     userId,
     userName: userData?.displayName || 'Unknown User',
     completionDate: event.endTime,
-    certificatUSDl: `https://avalo.app/certificates/${certificateId}`, // Placeholder
+    certificatUSDl: `https://platform.app/certificates/${certificateId}`, // Placeholder
     verificationCode,
     issuedAt: serverTimestamp() as Timestamp,
   };
@@ -964,6 +966,20 @@ export const issueEventCertificate = onCall<{
 });
 
 console.log('✅ PACK 182 - Professional Event Host Suite Functions Loaded');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

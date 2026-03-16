@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 161 — Relevance Ranking Service
  * Interest-Driven Discovery Without Matchmaking Bias
@@ -32,15 +34,15 @@ const logger = {
 // ============================================================================
 
 /**
- * Calculate topical match between viewer interests and creator content
+ * Calculate topical match between viewer interests and earner content
  * Based on content tags, category alignment, NOT looks
  */
 function calculateTopicalRelevance(
   viewerInterests: InterestVector,
-  creatorScore: CreatorRelevanceScore
+  earnerScore: CreatorRelevanceScore
 ): number {
   // Get viewer's primary category weight
-  const categoryKey = creatorScore.primaryCategory.toLowerCase().replace('_', '');
+  const categoryKey = earnerScore.primaryCategory.toLowerCase().replace('_', '');
   const viewerCategoryWeight = (viewerInterests.categories as any)[categoryKey] || 0;
   
   // Normalize to 0-1
@@ -48,10 +50,10 @@ function calculateTopicalRelevance(
   
   // Boost if specific interests overlap
   let specificInterestBoost = 0;
-  const creatorTopics = creatorScore.topicalMatch; // Already 0-100
+  const earnerTopics = earnerScore.topicalMatch; // Already 0-100
   
   // Combine category match with topical precision
-  const topicalScore = (categoryMatch * 0.7) + ((creatorTopics / 100) * 0.3);
+  const topicalScore = (categoryMatch * 0.7) + ((earnerTopics / 100) * 0.3);
   
   return Math.max(0, Math.min(1, topicalScore));
 }
@@ -61,18 +63,18 @@ function calculateTopicalRelevance(
  */
 function calculateLanguageAlignment(
   viewerLanguages: string[],
-  creatorLanguage: string
+  earnerLanguage: string
 ): number {
-  if (!creatorLanguage) return 0.5; // Neutral if unknown
+  if (!earnerLanguage) return 0.5; // Neutral if unknown
   
   // Perfect match
-  if (viewerLanguages.includes(creatorLanguage)) {
+  if (viewerLanguages.includes(earnerLanguage)) {
     return 1.0;
   }
   
   // Partial match (e.g., en-US matches en-GB)
-  const creatorLangCode = creatorLanguage.split('-')[0];
-  const hasPartialMatch = viewerLanguages.some(vl => vl.split('-')[0] === creatorLangCode);
+  const earnerLangCode = earnerLanguage.split('-')[0];
+  const hasPartialMatch = viewerLanguages.some(vl => vl.split('-')[0] === earnerLangCode);
   
   if (hasPartialMatch) {
     return 0.8;
@@ -88,16 +90,16 @@ function calculateLanguageAlignment(
 function calculateRegionalRelevance(
   viewerRegion: string | undefined,
   viewerCountry: string | undefined,
-  creatorRegion: string | undefined,
-  creatorCountry: string | undefined
+  earnerRegion: string | undefined,
+  earnerCountry: string | undefined
 ): number {
   // Same country = high relevance
-  if (viewerCountry && creatorCountry && viewerCountry === creatorCountry) {
+  if (viewerCountry && earnerCountry && viewerCountry === earnerCountry) {
     return 1.0;
   }
   
   // Same region = medium relevance
-  if (viewerRegion && creatorRegion && viewerRegion === creatorRegion) {
+  if (viewerRegion && earnerRegion && viewerRegion === earnerRegion) {
     return 0.7;
   }
   
@@ -136,7 +138,7 @@ function calculateRecencyScore(lastActivity: Timestamp | Date): number {
 }
 
 /**
- * Calculate retention quality (how engaging content is, NOT how attractive creator is)
+ * Calculate retention quality (how engaging content is, NOT how attractive earner is)
  */
 function calculateRetentionScore(retentionQuality: number): number {
   // Already 0-100, normalize to 0-1
@@ -153,7 +155,7 @@ function calculateSafetyScore(safetyScore: number): number {
 }
 
 /**
- * Calculate shadow density penalty (prevent mega-creator dominance)
+ * Calculate shadow density penalty (prevent mega-earner dominance)
  */
 export function calculateDensityPenalty(weeklyImpressions: number): number {
   // Under 500K impressions/week = no penalty
@@ -180,12 +182,12 @@ export function calculateDensityPenalty(weeklyImpressions: number): number {
 // ============================================================================
 
 /**
- * Calculate relevance score between viewer and creator
+ * Calculate relevance score between viewer and earner
  * ZERO appearance bias, ZERO attractiveness scoring
  */
 export async function calculateRelevanceScore(
   viewerId: string,
-  creatorId: string
+  earnerId: string
 ): Promise<DiscoveryScore> {
   try {
     // Fetch viewer interests
@@ -195,33 +197,33 @@ export async function calculateRelevanceScore(
     }
     const viewerInterests = viewerDoc.data() as InterestVector;
     
-    // Fetch creator relevance score
-    const creatorDoc = await db.collection('creator_relevance_scores').doc(creatorId).get();
-    if (!creatorDoc.exists) {
-      throw new Error(`Relevance score not found for creator ${creatorId}`);
+    // Fetch earner relevance score
+    const earnerDoc = await db.collection('earner_relevance_scores').doc(earnerId).get();
+    if (!earnerDoc.exists) {
+      throw new Error(`Relevance score not found for earner ${earnerId}`);
     }
-    const creatorScore = creatorDoc.data() as CreatorRelevanceScore;
+    const earnerScore = earnerDoc.data() as CreatorRelevanceScore;
     
     // Calculate component scores
-    const topicalRelevance = calculateTopicalRelevance(viewerInterests, creatorScore);
+    const topicalRelevance = calculateTopicalRelevance(viewerInterests, earnerScore);
     const languageAlignment = calculateLanguageAlignment(
       viewerInterests.languages,
-      viewerInterests.languages[0] || 'en' // Assume creator uses viewer's primary language for now
+      viewerInterests.languages[0] || 'en' // Assume earner uses viewer's primary language for now
     );
     const regionalRelevance = calculateRegionalRelevance(
       viewerInterests.region,
       viewerInterests.countryCode,
-      undefined, // Would fetch from creator profile
+      undefined, // Would fetch from earner profile
       undefined
     );
     const recencyScore = calculateRecencyScore(
-      creatorScore.lastCalculated instanceof Timestamp 
-        ? creatorScore.lastCalculated 
+      earnerScore.lastCalculated instanceof Timestamp 
+        ? earnerScore.lastCalculated 
         : Timestamp.now()
     );
-    const retentionScore = calculateRetentionScore(creatorScore.retentionQuality);
-    const safetyScore = calculateSafetyScore(creatorScore.safetyScore);
-    const densityPenalty = calculateDensityPenalty(creatorScore.weeklyImpressions);
+    const retentionScore = calculateRetentionScore(earnerScore.retentionQuality);
+    const safetyScore = calculateSafetyScore(earnerScore.safetyScore);
+    const densityPenalty = calculateDensityPenalty(earnerScore.weeklyImpressions);
     
     // Build ranking factors (FORBIDDEN fields must be 0)
     const factors: DiscoveryRankingFactors = {
@@ -257,7 +259,7 @@ export async function calculateRelevanceScore(
     const explanation = generateExplanation(factors, finalScore);
     
     const discoveryScore: DiscoveryScore = {
-      targetUserId: creatorId,
+      targetUserId: earnerId,
       viewerId,
       factors,
       finalScore,
@@ -289,7 +291,7 @@ function generateExplanation(factors: DiscoveryRankingFactors, finalScore: numbe
   }
   
   if (factors.regionalRelevance > 0.8) {
-    reasons.push('Local creator from your region');
+    reasons.push('Local earner from your region');
   }
   
   if (factors.recencyScore > 0.7) {
@@ -316,43 +318,43 @@ function generateExplanation(factors: DiscoveryRankingFactors, finalScore: numbe
 }
 
 /**
- * Update creator relevance score
+ * Update earner relevance score
  * Called by background job to refresh scores
  */
-export async function updateCreatorRelevanceScore(creatorId: string): Promise<void> {
+export async function updateCreatorRelevanceScore(earnerId: string): Promise<void> {
   try {
-    logger.info(`Updating relevance score for creator ${creatorId}`);
+    logger.info(`Updating relevance score for earner ${earnerId}`);
     
-    // Fetch creator data
-    const creatorDoc = await db.collection('users').doc(creatorId).get();
-    if (!creatorDoc.exists) {
-      throw new Error(`Creator ${creatorId} not found`);
+    // Fetch earner data
+    const earnerDoc = await db.collection('users').doc(earnerId).get();
+    if (!earnerDoc.exists) {
+      throw new Error(`Creator ${earnerId} not found`);
     }
     
-    const creatorData = creatorDoc.data();
+    const earnerData = earnerDoc.data();
     
     // Calculate topical match (from content analysis, not profile photo analysis)
-    const topicalMatch = await calculateCreatorTopicalMatch(creatorId);
+    const topicalMatch = await calculateCreatorTopicalMatch(earnerId);
     
     // Calculate retention quality (from view duration, not attractiveness)
-    const retentionQuality = await calculateCreatorRetentionQuality(creatorId);
+    const retentionQuality = await calculateCreatorRetentionQuality(earnerId);
     
     // Calculate safety score (from violation history)
-    const safetyScore = await calculateCreatorSafetyScore(creatorId);
+    const safetyScore = await calculateCreatorSafetyScore(earnerId);
     
     // Get weekly impressions for shadow density
-    const weeklyImpressions = await getWeeklyImpressions(creatorId);
+    const weeklyImpressions = await getWeeklyImpressions(earnerId);
     
     // Determine primary category
-    const primaryCategory = creatorData?.profile?.primaryCategory || 'ENTERTAINMENT';
+    const primaryCategory = earnerData?.profile?.primaryCategory || 'ENTERTAINMENT';
     
     const relevanceScore: CreatorRelevanceScore = {
-      creatorId,
+      earnerId,
       primaryCategory,
       topicalMatch,
       languageMatch: 100, // Would calculate from content language analysis
       regionMatch: 100, // Would calculate from location data
-      contentFreshness: calculateContentFreshness(creatorData?.lastActiveAt),
+      contentFreshness: calculateContentFreshness(earnerData?.lastActiveAt),
       retentionQuality,
       satisfactionScore: 70, // Would calculate from feedback
       productDeliveryQuality: undefined,
@@ -362,39 +364,39 @@ export async function updateCreatorRelevanceScore(creatorId: string): Promise<vo
     };
     
     // Save to Firestore
-    await db.collection('creator_relevance_scores').doc(creatorId).set(relevanceScore);
+    await db.collection('earner_relevance_scores').doc(earnerId).set(relevanceScore);
     
-    logger.info(`Relevance score updated for creator ${creatorId}: topical=${topicalMatch}, safety=${safetyScore}`);
+    logger.info(`Relevance score updated for earner ${earnerId}: topical=${topicalMatch}, safety=${safetyScore}`);
   } catch (error) {
-    logger.error(`Error updating relevance score for creator ${creatorId}:`, error);
+    logger.error(`Error updating relevance score for earner ${earnerId}:`, error);
     throw error;
   }
 }
 
 /**
- * Calculate creator's topical match score (content analysis, NOT appearance)
+ * Calculate earner's topical match score (content analysis, NOT appearance)
  */
-async function calculateCreatorTopicalMatch(creatorId: string): Promise<number> {
+async function calculateCreatorTopicalMatch(earnerId: string): Promise<number> {
   // Would analyze content tags, categories, topics
   // For now, return default
   return 70;
 }
 
 /**
- * Calculate creator's retention quality (watch time, NOT attractiveness)
+ * Calculate earner's retention quality (watch time, NOT attractiveness)
  */
-async function calculateCreatorRetentionQuality(creatorId: string): Promise<number> {
+async function calculateCreatorRetentionQuality(earnerId: string): Promise<number> {
   // Would analyze video completion rates, session duration
   // For now, return default
   return 70;
 }
 
 /**
- * Calculate creator's safety score (violation history)
+ * Calculate earner's safety score (violation history)
  */
-async function calculateCreatorSafetyScore(creatorId: string): Promise<number> {
+async function calculateCreatorSafetyScore(earnerId: string): Promise<number> {
   try {
-    const enforcementDoc = await db.collection('user_enforcement_state').doc(creatorId).get();
+    const enforcementDoc = await db.collection('user_enforcement_state').doc(earnerId).get();
     if (!enforcementDoc.exists) {
       return 100; // No violations = perfect score
     }
@@ -433,9 +435,9 @@ function calculateContentFreshness(lastActiveAt: any): number {
 /**
  * Get weekly impressions for shadow density calculation
  */
-async function getWeeklyImpressions(creatorId: string): Promise<number> {
+async function getWeeklyImpressions(earnerId: string): Promise<number> {
   try {
-    const counterDoc = await db.collection('shadow_density_counters').doc(creatorId).get();
+    const counterDoc = await db.collection('shadow_density_counters').doc(earnerId).get();
     if (!counterDoc.exists) {
       return 0;
     }
@@ -464,6 +466,22 @@ export function validateNoForbiddenContent(content: string): boolean {
 }
 
 logger.info('✅ Relevance Ranking Service initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

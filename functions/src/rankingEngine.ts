@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 11C - Ranking Engine
- * Core logic for creator ranking and leaderboard management
+ * Core logic for earner ranking and leaderboard management
  *
  * IMPORTANT: This module only ADDS new ranking functionality.
  * It does NOT modify ANY existing monetization, chat, call, or payout logic.
@@ -108,24 +110,24 @@ function calculatePoints(action: RankingAction): number {
 // ============================================================================
 
 /**
- * Update creator scores across all periods and segments
+ * Update earner scores across all periods and segments
  */
 async function updateCreatorScores(action: RankingAction): Promise<void> {
   const points = calculatePoints(action);
   
-  // Get creator profile for geographic data
-  const creatorRef = db.collection('users').doc(action.creatorId);
-  const creatorSnap = await creatorRef.get();
+  // Get earner profile for geographic data
+  const earnerRef = db.collection('users').doc(action.earnerId);
+  const earnerSnap = await earnerRef.get();
   
-  if (!creatorSnap.exists) {
+  if (!earnerSnap.exists) {
     // Creator not found - skip update
     return;
   }
   
-  const creatorData = creatorSnap.data();
-  const country = creatorData?.location?.country;
-  const city = creatorData?.location?.city;
-  const gender = creatorData?.gender || 'other';
+  const earnerData = earnerSnap.data();
+  const country = earnerData?.location?.country;
+  const city = earnerData?.location?.city;
+  const gender = earnerData?.gender || 'other';
   
   // Update all period/segment combinations
   const periods: RankingPeriod[] = ['daily', 'weekly', 'monthly', 'lifetime'];
@@ -134,7 +136,7 @@ async function updateCreatorScores(action: RankingAction): Promise<void> {
   for (const period of periods) {
     for (const segment of segments) {
       await updateScore({
-        creatorId: action.creatorId,
+        earnerId: action.earnerId,
         period,
         segment,
         points,
@@ -151,7 +153,7 @@ async function updateCreatorScores(action: RankingAction): Promise<void> {
  * Update a specific score document
  */
 async function updateScore(params: {
-  creatorId: string;
+  earnerId: string;
   period: RankingPeriod;
   segment: RankingSegment;
   points: number;
@@ -160,10 +162,10 @@ async function updateScore(params: {
   city?: string;
   gender: 'male' | 'female' | 'other';
 }): Promise<void> {
-  const { creatorId, period, segment, points, action, country, city, gender } = params;
+  const { earnerId, period, segment, points, action, country, city, gender } = params;
   
   // Build score document ID
-  const scoreId = `${creatorId}_${period}_${segment}${segment === 'country' ? `_${country}` : ''}${segment === 'city' ? `_${city}` : ''}`;
+  const scoreId = `${earnerId}_${period}_${segment}${segment === 'country' ? `_${country}` : ''}${segment === 'city' ? `_${city}` : ''}`;
   const scoreRef = db.collection('ranking_scores').doc(scoreId);
   
   // Get current score
@@ -172,7 +174,7 @@ async function updateScore(params: {
   if (!scoreSnap.exists) {
     // Create new score
     const newScore: RankingScore = {
-      creatorId,
+      earnerId,
       period,
       segment,
       genderFilter: 'all',
@@ -236,21 +238,21 @@ async function updateScore(params: {
   
   // Check for first-time fan bonus
   if (action.type !== 'first_time_fan') {
-    await checkFirstTimeFanBonus(creatorId, action.payerId);
+    await checkFirstTimeFanBonus(earnerId, action.payerId);
   }
 }
 
 /**
  * Check and award first-time fan bonus
  */
-async function checkFirstTimeFanBonus(creatorId: string, payerId: string): Promise<void> {
-  const fanTrackingRef = db.collection('creator_fans').doc(`${creatorId}_${payerId}`);
+async function checkFirstTimeFanBonus(earnerId: string, payerId: string): Promise<void> {
+  const fanTrackingRef = db.collection('earner_fans').doc(`${earnerId}_${payerId}`);
   const fanTrackingSnap = await fanTrackingRef.get();
   
   if (!fanTrackingSnap.exists) {
-    // First time this payer has paid this creator
+    // First time this payer has paid this earner
     await fanTrackingRef.set({
-      creatorId,
+      earnerId,
       payerId,
       firstPaymentAt: serverTimestamp(),
     });
@@ -258,7 +260,7 @@ async function checkFirstTimeFanBonus(creatorId: string, payerId: string): Promi
     // Award bonus
     await recordRankingAction({
       type: 'first_time_fan',
-      creatorId,
+      earnerId,
       payerId,
       points: SCORING_TABLE.FIRST_TIME_FAN,
       timestamp: new Date(),
@@ -310,16 +312,16 @@ export async function getLeaderboard(query: RankingQuery): Promise<LeaderboardRe
   for (const scoreDoc of scoresSnap.docs) {
     const score = scoreDoc.data() as RankingScore;
     
-    // Get creator profile
-    const creatorRef = db.collection('users').doc(score.creatorId);
-    const creatorSnap = await creatorRef.get();
+    // Get earner profile
+    const earnerRef = db.collection('users').doc(score.earnerId);
+    const earnerSnap = await earnerRef.get();
     
-    if (!creatorSnap.exists) continue;
+    if (!earnerSnap.exists) continue;
     
-    const creator = creatorSnap.data();
+    const earner = earnerSnap.data();
     
     // Apply gender filter
-    if (gender !== 'all' && creator.gender !== gender) continue;
+    if (gender !== 'all' && earner.gender !== gender) continue;
     
     // Apply category filter
     let categoryPoints = score.points;
@@ -336,17 +338,17 @@ export async function getLeaderboard(query: RankingQuery): Promise<LeaderboardRe
     // Build entry
     const entry: LeaderboardEntry = {
       rank,
-      creatorId: score.creatorId,
-      displayName: creator.displayName || creator.name || 'Unknown',
-      avatar: creator.avatar || creator.profilePicture,
-      gender: creator.gender || 'other',
+      earnerId: score.earnerId,
+      displayName: earner.displayName || earner.name || 'Unknown',
+      avatar: earner.avatar || earner.profilePicture,
+      gender: earner.gender || 'other',
       points: category === 'all' ? score.points : categoryPoints,
       badges: {
-        royal: creator.roles?.royal || false,
-        vip: creator.roles?.vip || false,
-        influencer: creator.influencerBadge || false,
-        earnOn: creator.earnOnChat || false,
-        incognito: creator.incognitoMode || false,
+        royal: earner.roles?.royal || false,
+        vip: earner.roles?.vip || false,
+        influencer: earner.influencerBadge || false,
+        earnOn: earner.earnOnChat || false,
+        incognito: earner.incognitoMode || false,
       },
       stats: {
         tips: score.tipPoints || 0,
@@ -374,17 +376,17 @@ export async function getLeaderboard(query: RankingQuery): Promise<LeaderboardRe
 }
 
 /**
- * Get creator's rank in a specific period/segment
+ * Get earner's rank in a specific period/segment
  */
 export async function getCreatorRank(
-  creatorId: string,
+  earnerId: string,
   period: RankingPeriod,
   segment: RankingSegment = 'worldwide',
   country?: string,
   city?: string
 ): Promise<number | null> {
   // Build score document ID
-  const scoreId = `${creatorId}_${period}_${segment}${segment === 'country' ? `_${country}` : ''}${segment === 'city' ? `_${city}` : ''}`;
+  const scoreId = `${earnerId}_${period}_${segment}${segment === 'country' ? `_${country}` : ''}${segment === 'city' ? `_${city}` : ''}`;
   const scoreRef = db.collection('ranking_scores').doc(scoreId);
   const scoreSnap = await scoreRef.get();
   
@@ -392,13 +394,13 @@ export async function getCreatorRank(
     return null;
   }
   
-  const creatorScore = scoreSnap.data() as RankingScore;
+  const earnerScore = scoreSnap.data() as RankingScore;
   
-  // Count how many creators have higher scores
+  // Count how many earners have higher scores
   let query = db.collection('ranking_scores')
     .where('period', '==', period)
     .where('segment', '==', segment)
-    .where('points', '>', creatorScore.points);
+    .where('points', '>', earnerScore.points);
   
   if (segment === 'country' && country) {
     query = query.where('country', '==', country);
@@ -422,37 +424,37 @@ export async function getCreatorRank(
  * Apply Top 10 bonuses for daily worldwide ranking
  */
 export async function applyTop10Bonuses(): Promise<void> {
-  // Get top 10 daily worldwide creators
+  // Get top 10 daily worldwide earners
   const leaderboard = await getLeaderboard({
     period: 'daily',
     segment: 'worldwide',
     limit: 10,
   });
   
-  const top10CreatorIds = leaderboard.entries.map(entry => entry.creatorId);
+  const top10CreatorIds = leaderboard.entries.map(entry => entry.earnerId);
   
   // Apply bonuses to top 10
   for (let i = 0; i < top10CreatorIds.length; i++) {
-    const creatorId = top10CreatorIds[i];
+    const earnerId = top10CreatorIds[i];
     const rank = i + 1;
     
-    await applyCreatorBonus(creatorId, rank);
+    await applyCreatorBonus(earnerId, rank);
   }
   
-  // Remove bonuses from creators no longer in top 10
+  // Remove bonuses from earners no longer in top 10
   await removeExpiredBonuses(top10CreatorIds);
 }
 
 /**
- * Apply bonus to a specific creator
+ * Apply bonus to a specific earner
  */
-async function applyCreatorBonus(creatorId: string, rank: number): Promise<void> {
-  const bonusRef = db.collection('top10_bonuses').doc(creatorId);
+async function applyCreatorBonus(earnerId: string, rank: number): Promise<void> {
+  const bonusRef = db.collection('top10_bonuses').doc(earnerId);
   const now = new Date();
   const expiresAt = new Date(now.getTime() + TOP_10_BONUS_DURATION);
   
   const bonus: Top10Bonus = {
-    creatorId,
+    earnerId,
     rank,
     activatedAt: now,
     expiresAt,
@@ -466,9 +468,9 @@ async function applyCreatorBonus(creatorId: string, rank: number): Promise<void>
   
   await bonusRef.set(bonus);
   
-  // Update creator profile with bonus flag
-  const creatorRef = db.collection('users').doc(creatorId);
-  await creatorRef.update({
+  // Update earner profile with bonus flag
+  const earnerRef = db.collection('users').doc(earnerId);
+  await earnerRef.update({
     'ranking.hasTop10Bonus': true,
     'ranking.top10BonusExpiresAt': expiresAt,
     'ranking.top10Rank': rank,
@@ -487,12 +489,12 @@ async function removeExpiredBonuses(currentTop10: string[]): Promise<void> {
     const bonus = bonusDoc.data() as Top10Bonus;
     
     // Remove if not in current top 10 or expired
-    if (!currentTop10.includes(bonus.creatorId) || new Date() > new Date(bonus.expiresAt)) {
+    if (!currentTop10.includes(bonus.earnerId) || new Date() > new Date(bonus.expiresAt)) {
       await bonusDoc.ref.update({ isActive: false });
       
-      // Update creator profile
-      const creatorRef = db.collection('users').doc(bonus.creatorId);
-      await creatorRef.update({
+      // Update earner profile
+      const earnerRef = db.collection('users').doc(bonus.earnerId);
+      await earnerRef.update({
         'ranking.hasTop10Bonus': false,
         'ranking.top10BonusExpiresAt': null,
         'ranking.top10Rank': null,
@@ -502,10 +504,10 @@ async function removeExpiredBonuses(currentTop10: string[]): Promise<void> {
 }
 
 /**
- * Check if creator has active Top 10 bonus
+ * Check if earner has active Top 10 bonus
  */
-export async function hasTop10Bonus(creatorId: string): Promise<boolean> {
-  const bonusRef = db.collection('top10_bonuses').doc(creatorId);
+export async function hasTop10Bonus(earnerId: string): Promise<boolean> {
+  const bonusRef = db.collection('top10_bonuses').doc(earnerId);
   const bonusSnap = await bonusRef.get();
   
   if (!bonusSnap.exists) {
@@ -565,6 +567,20 @@ export {
   updateCreatorScores,
   checkFirstTimeFanBonus,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

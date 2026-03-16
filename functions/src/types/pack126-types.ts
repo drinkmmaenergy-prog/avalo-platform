@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 126 — Avalo End-to-End Safety Framework
  * Universal Consent Protocol · Harassment Shields · Background Risk Orchestration
@@ -393,6 +395,22 @@ export const DEFAULT_SAFETY_CONFIG: SafetyFrameworkConfig = {
   
   refundWindowMinutes: 5,  // Only refund if content not delivered within 5 mins
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

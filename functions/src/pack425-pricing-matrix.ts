@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 425 — Pricing Matrix (USD-only Canonical Adapter)
  *
@@ -39,4 +41,18 @@ export async function createCountryPaymentProfile(
     monetizationRestricted: profile.monetizationRestricted ?? false
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

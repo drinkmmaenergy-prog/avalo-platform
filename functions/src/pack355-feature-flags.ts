@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 355 - Referral & Invite Engine Feature Flags
  * 
@@ -160,6 +162,20 @@ export async function getRegionFlags(): Promise<Record<string, boolean>> {
 
   return regionFlags;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

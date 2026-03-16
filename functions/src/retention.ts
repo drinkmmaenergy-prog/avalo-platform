@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Retention Engine for Avalo
  * 
@@ -176,7 +178,7 @@ async function calculateRetentionStats(userId: string, userData?: any): Promise<
     membershipTier = 'vip';
   }
   
-  // Check if creator
+  // Check if earner
   const isCreator = (wallet?.earned || 0) >= RETENTION_CONFIG.CREATOR.MIN_TOKENS_EARNED;
   
   return {
@@ -419,6 +421,20 @@ export async function createManualRetentionTask(
   
   return task;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import { setGlobalOptions } from "firebase-functions/v2";
 import { defineSecret } from "firebase-functions/params";
 
@@ -96,6 +98,20 @@ import { ethers } from "ethers";
 export { ethers };
 
 console.log("🔧 Avalo runtime module loaded (REGION europe-west1 enforced)");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

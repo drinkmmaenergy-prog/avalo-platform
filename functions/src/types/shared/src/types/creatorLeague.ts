@@ -1,7 +1,9 @@
-// Stub types for creator league
+import { MONETIZATION_SPLITS, SPLITS } from "../../../../config/monetizationSplits";
+
+// Stub types for earner league
 
 export interface CreatorLeagueEntry {
-  creatorId: string;
+  earnerId: string;
   tier: string;
   points: number;
   rank: number;
@@ -16,10 +18,10 @@ export interface LeagueTier {
 
 export type LeagueTierName = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM' | 'DIAMOND';
 
-// Additional types needed by pack244-creator-league.ts
+// Additional types needed by pack244-earner-league.ts
 
 export interface CreatorLeague {
-  creatorId: string;
+  earnerId: string;
   category: LeagueCategory;
   earningsScore: number;
   earningsScoreFactors: EarningsScoreFactors;
@@ -108,7 +110,7 @@ export interface LeagueRanking {
 }
 
 export interface LeagueRankEntry {
-  creatorId?: string;
+  earnerId?: string;
   displayName?: string;
   avatarUrl?: string;
   avatar?: string;
@@ -176,6 +178,24 @@ export interface HallOfFameAchievement {
   badge?: string;
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

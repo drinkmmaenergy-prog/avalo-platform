@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Profile & Safety Cloud Functions
  *
@@ -510,6 +512,20 @@ export function getInfluencerBadgeLevel(popularityScore: number): 'rising' | 'in
 export {
   INFLUENCER_THRESHOLDS
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

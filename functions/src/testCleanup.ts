@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 import * as admin from "firebase-admin";
 
 export async function clearCollection(path: string) {
@@ -15,3 +17,17 @@ export async function clearCollection(path: string) {
 
   await batch.commit();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

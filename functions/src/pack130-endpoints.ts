@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 130 — Long-Term Patrol AI
  * Cloud Functions Endpoints
@@ -505,6 +507,20 @@ async function checkIsModerator(userId: string): Promise<boolean> {
   const role = userDoc.data()?.role;
   return role === 'admin' || role === 'moderator';
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

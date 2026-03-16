@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 246 - Global Consistency & Contract Enforcement Engine
  * Main validation logic and enforcement
@@ -137,14 +139,14 @@ function validateChatDeposit(
 
   // Validate split is enforced (35/65)
   if (request.metadata.proposedSplit) {
-    const { avalo, creator } = request.metadata.proposedSplit;
-    if (avalo !== CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT ||
-        creator !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
+    const { platform, earner } = request.metadata.proposedSplit;
+    if (platform !== CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT ||
+        earner !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
       violations.push({
         type: ViolationType.INVALID_SPLIT,
         severity: 'CRITICAL',
-        message: `Invalid revenue split: ${avalo}/${creator} instead of ${CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT}/${CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT}`,
-        detectedValue: { avalo, creator },
+        message: `Invalid revenue split: ${platform}/${earner} instead of ${CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT}/${CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT}`,
+        detectedValue: { platform, earner },
         expectedValue: CONTRACT_RULES.REVENUE_SPLIT,
         timestamp: Timestamp.now(),
       });
@@ -232,15 +234,15 @@ function validateCall(
 
   // Validate call split (80/20)
   if (request.metadata.proposedSplit) {
-    const { avalo, creator } = request.metadata.proposedSplit;
-    if (avalo !== CONTRACT_RULES.CALLS.AVALO_PERCENT ||
-        creator !== CONTRACT_RULES.CALLS.EARNER_PERCENT) {
+    const { platform, earner } = request.metadata.proposedSplit;
+    if (platform !== CONTRACT_RULES.CALLS.AVALO_PERCENT ||
+        earner !== CONTRACT_RULES.CALLS.EARNER_PERCENT) {
       violations.push({
         type: ViolationType.INVALID_SPLIT,
         severity: 'CRITICAL',
-        message: `Invalid call revenue split: ${avalo}/${creator} instead of ${CONTRACT_RULES.CALLS.AVALO_PERCENT}/${CONTRACT_RULES.CALLS.EARNER_PERCENT}`,
-        detectedValue: { avalo, creator },
-        expectedValue: { avalo: CONTRACT_RULES.CALLS.AVALO_PERCENT, creator: CONTRACT_RULES.CALLS.EARNER_PERCENT },
+        message: `Invalid call revenue split: ${platform}/${earner} instead of ${CONTRACT_RULES.CALLS.AVALO_PERCENT}/${CONTRACT_RULES.CALLS.EARNER_PERCENT}`,
+        detectedValue: { platform, earner },
+        expectedValue: { platform: CONTRACT_RULES.CALLS.AVALO_PERCENT, earner: CONTRACT_RULES.CALLS.EARNER_PERCENT },
         timestamp: Timestamp.now(),
       });
     }
@@ -294,15 +296,15 @@ function validateBooking(
 
   // Validate booking split (35% Avalo fee)
   if (request.metadata.proposedSplit) {
-    const { avalo, creator } = request.metadata.proposedSplit;
-    if (avalo !== CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT ||
-        creator !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
+    const { platform, earner } = request.metadata.proposedSplit;
+    if (platform !== CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT ||
+        earner !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
       violations.push({
         type: ViolationType.INVALID_SPLIT,
         severity: 'CRITICAL',
-        message: `Invalid booking split: ${avalo}/${creator}`,
-        detectedValue: { avalo, creator },
-        expectedValue: { avalo: CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT, creator: CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT },
+        message: `Invalid booking split: ${platform}/${earner}`,
+        detectedValue: { platform, earner },
+        expectedValue: { platform: CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT, earner: CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT },
         timestamp: Timestamp.now(),
       });
     }
@@ -346,7 +348,7 @@ function validateRefund(
   );
 
   // Avalo ALWAYS keeps the 35% fee
-  const avaloFee = Math.floor(originalAmount * (CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT / 100));
+  const platformFee = Math.floor(originalAmount * (CONTRACT_RULES.CALENDAR.AVALO_FEE_PERCENT / 100));
 
   if (request.amount > expectedRefundAmount) {
     violations.push({
@@ -360,13 +362,13 @@ function validateRefund(
   }
 
   // Ensure Avalo fee is never refunded
-  if (request.amount + avaloFee > originalAmount) {
+  if (request.amount + platformFee > originalAmount) {
     violations.push({
       type: ViolationType.INVALID_REFUND,
       severity: 'CRITICAL',
       message: 'Attempting to refund Avalo platform fee',
       detectedValue: request.amount,
-      expectedValue: `max_${originalAmount - avaloFee}`,
+      expectedValue: `max_${originalAmount - platformFee}`,
       timestamp: Timestamp.now(),
     });
   }
@@ -395,8 +397,8 @@ function validateVoluntaryRefund(
   }
 
   // Avalo ALWAYS keeps 35% fee even on voluntary refunds
-  const avaloFee = Math.floor(originalAmount * (CONTRACT_RULES.VOLUNTARY_REFUNDS.AVALO_FEE_PERCENT / 100));
-  const maxRefund = originalAmount - avaloFee;
+  const platformFee = Math.floor(originalAmount * (CONTRACT_RULES.VOLUNTARY_REFUNDS.AVALO_FEE_PERCENT / 100));
+  const maxRefund = originalAmount - platformFee;
 
   if (request.amount > maxRefund) {
     violations.push({
@@ -466,14 +468,14 @@ function validateProductPurchase(
 
   // Validate split
   if (request.metadata.proposedSplit) {
-    const { avalo, creator } = request.metadata.proposedSplit;
-    if (avalo !== CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT ||
-        creator !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
+    const { platform, earner } = request.metadata.proposedSplit;
+    if (platform !== CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT ||
+        earner !== CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT) {
       violations.push({
         type: ViolationType.INVALID_SPLIT,
         severity: 'CRITICAL',
-        message: `Invalid product revenue split: ${avalo}/${creator}`,
-        detectedValue: { avalo, creator },
+        message: `Invalid product revenue split: ${platform}/${earner}`,
+        detectedValue: { platform, earner },
         expectedValue: CONTRACT_RULES.REVENUE_SPLIT,
         timestamp: Timestamp.now(),
       });
@@ -611,8 +613,8 @@ function attemptAutoCorrection(
   // Auto-correct splits
   if (violations.some(v => v.type === ViolationType.INVALID_SPLIT)) {
     corrections.metadata!.proposedSplit = {
-      avalo: CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT,
-      creator: CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT,
+      platform: CONTRACT_RULES.REVENUE_SPLIT.AVALO_PERCENT,
+      earner: CONTRACT_RULES.REVENUE_SPLIT.CREATOR_PERCENT,
     };
     corrected = true;
   }
@@ -821,6 +823,21 @@ async function executeAutoAction(userId: string, action: string): Promise<void> 
     logger.error(`Failed to execute auto-action ${action}:`, error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

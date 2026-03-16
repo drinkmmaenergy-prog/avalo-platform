@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 441 — Growth Safety Net & Viral Abuse Control
  * Main Entry Point
@@ -29,9 +31,9 @@ export const defaultConfig: Pack441Config = {
     reuseThreshold: 5, // Max device/IP reuse before flagging
     velocityThreshold: 10, // Max invites per hour before flagging
     weights: {
-      entropy: MONETIZATION_SPLITS.CHAT.avalo,
-      reuse: MONETIZATION_SPLITS.CHAT.avalo,
-      velocity: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+      entropy: MONETIZATION_SPLITS.CHAT.platform,
+      reuse: MONETIZATION_SPLITS.CHAT.platform,
+      velocity: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
     },
   },
   fraudDetection: {
@@ -213,6 +215,23 @@ export async function generateWeeklyQualityReport(
 
   return report;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

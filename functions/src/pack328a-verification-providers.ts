@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 328A: Verification Provider Implementations
  * Abstract providers for Bank-ID, DocAI, and Manual verification
@@ -409,6 +411,20 @@ export class VerificationProviderFactory {
     return this.getProvider('MANUAL');
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

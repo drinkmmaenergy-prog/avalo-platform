@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 108 — NSFW Content Classification Pipeline
  * Automated + user-controlled + moderation fallback
@@ -33,7 +35,7 @@ import { admin, timestamp } from './runtime';
 export async function classifyContent(
   contentId: string,
   contentType: 'POST' | 'STORY' | 'MEDIA' | 'MESSAGE' | 'PROFILE_PHOTO',
-  creatorId: string,
+  earnerId: string,
   userMarkedLevel?: NSFWLevel,
   mediaUrls?: string[]
 ): Promise<ContentNSFWMetadata> {
@@ -89,7 +91,7 @@ export async function classifyContent(
         await createClassificationCase(
           contentId,
           contentType,
-          creatorId,
+          earnerId,
           userMarkedLevel,
           aiDetected,
           confidenceScore
@@ -101,7 +103,7 @@ export async function classifyContent(
     // Create metadata
     const metadata: ContentNSFWMetadata = {
       nsfwLevel: finalLevel,
-      nsfwLastReviewer: source === 'AI_DETECTION' ? 'AI' : source === 'USER_MARKED' ? creatorId : 'SYSTEM',
+      nsfwLastReviewer: source === 'AI_DETECTION' ? 'AI' : source === 'USER_MARKED' ? earnerId : 'SYSTEM',
       nsfwLastReviewedAt: serverTimestamp() as Timestamp,
       nsfwClassificationSource: source,
       nsfwConfidenceScore: confidenceScore,
@@ -260,7 +262,7 @@ async function detectNSFWWithAI(
 async function createClassificationCase(
   contentId: string,
   contentType: 'POST' | 'STORY' | 'MEDIA' | 'MESSAGE' | 'PROFILE_PHOTO',
-  creatorId: string,
+  earnerId: string,
   userMarked: NSFWLevel,
   aiDetected: NSFWLevel,
   confidenceScore: number
@@ -272,7 +274,7 @@ async function createClassificationCase(
       caseId,
       contentId,
       contentType,
-      creatorId,
+      earnerId,
       userMarked,
       aiDetected,
       confidenceScore,
@@ -414,7 +416,7 @@ async function createModerationCaseForNSFW(
     }
 
     const contentData = contentDoc.data();
-    const userId = contentData?.userId || contentData?.creatorId;
+    const userId = contentData?.userId || contentData?.earnerId;
 
     if (!userId) {
       throw new Error(`Cannot determine user for content ${contentId}`);
@@ -540,7 +542,7 @@ export async function batchReclassifyContent(
       await classifyContent(
         contentId,
         data?.type || 'POST',
-        data?.userId || data?.creatorId,
+        data?.userId || data?.earnerId,
         data?.userMarkedNSFW,
         data?.mediaUrls
       );
@@ -555,6 +557,20 @@ export async function batchReclassifyContent(
   console.log(`[PACK108] Batch reclassification complete: ${success} success, ${failed} failed`);
   return { success, failed };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

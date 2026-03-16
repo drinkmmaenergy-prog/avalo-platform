@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 279B — AI Voice Pricing Helper
  * Per-minute billing with VIP/Royal discounts
@@ -36,6 +38,20 @@ export function calculateVoiceTokens(minutes: number, tier: AiVoiceTier): number
   const pricePerMinute = getAiVoicePricePerMinuteTokens(tier);
   return Math.floor(minutes * pricePerMinute);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

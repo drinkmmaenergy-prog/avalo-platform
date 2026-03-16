@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 380 — Global Brand Consistency Engine
  * 
@@ -347,7 +349,7 @@ function createDefaultStyleGuide() {
     messaging: {
       tone: ['premium', 'safe', 'empowering', 'global', 'innovative'],
       voice: 'confident yet approachable',
-      keywords: ['dating', 'connections', 'safety', 'premium', 'creator economy']
+      keywords: ['dating', 'connections', 'safety', 'premium', 'earner economy']
     },
     updatedAt: Timestamp.now()
   };
@@ -702,6 +704,20 @@ export const getBrandAuditHistory = functions.https.onCall(async (request) => {
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

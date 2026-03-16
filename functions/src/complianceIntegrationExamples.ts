@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 55 — Compliance Integration Examples
  * Shows how to integrate compliance checks into existing packs
@@ -79,9 +81,9 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
 // ============================================================================
 
 /**
- * Before showing creator marketplace, verify age
+ * Before showing earner marketplace, verify age
  * 
- * export const creator_getMarketplace = functions.https.onCall(async (request) => {
+ * export const earner_getMarketplace = functions.https.onCall(async (request) => {
   const data = request.data;
  *   if (!request.auth) {
  *     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
@@ -96,7 +98,7 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
  *   if (!ageDoc.exists || !ageDoc.data()?.ageVerified) {
  *     throw new functions.https.HttpsError(
  *       'failed-precondition',
- *       'Age verification required to access creator marketplace'
+ *       'Age verification required to access earner marketplace'
  *     );
  *   }
  * 
@@ -109,9 +111,9 @@ import { FieldValue, HttpsError, auth, functions, onCall, serverTimestamp, stora
 // ============================================================================
 
 /**
- * When creator earns tokens, update their AML profile
+ * When earner earns tokens, update their AML profile
  * 
- * In creator earning flow:
+ * In earner earning flow:
  * 
  * async function recordCreatorEarning(userId: string, tokensEarned: number, channel: string) {
  *   // Record the earning event
@@ -364,7 +366,7 @@ export const INTEGRATION_NOTES = `
 PACK 55 Integration Notes:
 
 1. AGE VERIFICATION
-   - Check before: swipe, chat, AI companions, creator features, marketplace
+   - Check before: swipe, chat, AI companions, earner features, marketplace
    - See Example 1, 3, 8
 
 2. CSAM SCANNING
@@ -389,6 +391,20 @@ PACK 55 Integration Notes:
 
 All integrations are non-breaking and backward compatible.
 `;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

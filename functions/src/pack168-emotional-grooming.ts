@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 168 — Emotional Grooming Recognition
  * Detects emotional manipulation and romance-for-payment patterns
@@ -453,6 +455,20 @@ export async function scanConversationHistory(
     totalRisk: suspicious.length > 0 ? totalRisk / suspicious.length : 0
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

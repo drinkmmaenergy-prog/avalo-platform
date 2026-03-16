@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 104 — Anti-Ring & Anti-Collusion Detection
  * Fraud Graph Engine - Core graph management and edge updates
  * 
  * NON-NEGOTIABLE RULES:
  * - Token price per unit never changes
- * - Revenue split always 65% creator / 35% Avalo
+ * - Revenue split always 65% earner / 35% Avalo
  * - No punishment fees, appeal fees, or paid enforcement bypass
  * - Detection never reduces already-completed legitimate earnings
  */
@@ -425,6 +427,20 @@ export async function deleteUserEdges(userId: string): Promise<number> {
   
   return edges.length;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

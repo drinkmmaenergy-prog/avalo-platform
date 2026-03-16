@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 96 - Two-Factor Authentication & Step-Up Verification
  * Core Engine Logic
@@ -624,7 +626,7 @@ async function send2FANotification(
       userId,
       title,
       body,
-      deepLink: 'avalo://security/two-factor',
+      deepLink: 'platform://security/two-factor',
     });
     
   } catch (error) {
@@ -659,6 +661,20 @@ async function logToTrustEngine(
     console.warn('[2FA] Failed to log to trust engine:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

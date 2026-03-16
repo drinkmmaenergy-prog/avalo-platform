@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 187: Avalo AI Multilingual Consciousness Layer
  * 40+ Languages · Code-Switching · Cultural Safety · Accent Safety
@@ -473,6 +475,20 @@ export const cleanupTranslationLogs = onSchedule("every 24 hours", async (event)
     console.log(`Cleaned up ${oldLogsSnapshot.size} old translation logs`);
     return null;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

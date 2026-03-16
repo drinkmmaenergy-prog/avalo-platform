@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Phase 17 - Ads & Rewarded Tokens Engine
  *
@@ -369,7 +371,7 @@ export async function recordRewardedAdWatch(
     if (rankingPoints > 0) {
       recordRankingAction({
         type: 'tip', // Use tip type as it's token-based
-        creatorId: userId,
+        earnerId: userId,
         payerId: 'system_ads',
         tokensAmount: totalAwarded,
         points: rankingPoints,
@@ -455,6 +457,20 @@ export {
   getOrCreateAdRewards,
   shouldResetDaily,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

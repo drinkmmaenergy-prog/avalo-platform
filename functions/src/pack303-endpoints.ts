@@ -1,9 +1,11 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 303 — Creator Earnings Dashboard Endpoints
  * 
  * HTTP and Callable Cloud Functions for earnings dashboard
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -28,7 +30,7 @@ import {
   GetMonthlyStatementRequest,
   ExportStatementRequest,
   isValidYearMonth,
-} from './types/pack303-creator-earnings.types';
+} from './types/pack303-earner-earnings.types';
 import { HttpsError, admin, auth, onCall, onRequest , CallableRequest} from './runtime';
 
 // ============================================================================
@@ -312,7 +314,7 @@ export const cronDailyEarningsAggregation = onSchedule({ schedule: "0 2 * * *", 
     
     console.log('Daily aggregation complete:', {
       success: result.success,
-      creatorsProcessed: result.results.length,
+      earnersProcessed: result.results.length,
       errors: result.errors,
     });
     
@@ -357,7 +359,7 @@ export const httpTriggerAggregation = onRequest({
       
       res.status(200).json({
         success: result.success,
-        creatorsProcessed: result.results.length,
+        earnersProcessed: result.results.length,
         successCount: result.results.filter(r => r.success).length,
         errorCount: result.errors,
         results: result.results,
@@ -367,6 +369,20 @@ export const httpTriggerAggregation = onRequest({
       res.status(500).json({ error: error.message });
     }
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

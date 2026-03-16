@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 211 — Adaptive Safety Intelligence Engine
  * Risk Scoring, User Type Detection, and Safety Personalization
@@ -746,6 +748,20 @@ export async function getSafetyAdjustmentsForUser(userId: string) {
 
   return getSafetyAdjustmentsForCategory(profile.safetyCategory);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

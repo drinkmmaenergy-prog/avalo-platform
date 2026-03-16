@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Win-Back Sequence Automation
  * 3-step automated win-back campaign for churned users
@@ -302,6 +304,20 @@ function getTodayDateString(): string {
 }
 
 console.log('✅ PACK 301B - Win-Back Sequence Automation initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

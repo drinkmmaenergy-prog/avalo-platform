@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 225: Match Comeback Engine - Integration Layer
  * 
@@ -16,7 +18,7 @@ import {
   generateRekindleSuggestions,
   saveRekindleSuggestions,
 } from './pack-225-match-comeback';
-import { processMessageBilling } from './chatMonetization';
+import { shimProcessMessageBilling } from './chatMonetization';
 
 // ============================================================================
 // MESSAGE SENDING
@@ -49,7 +51,7 @@ export async function sendRekindleMessage(
   
   // Process message billing (if applicable)
   try {
-    const billingResult = await processMessageBilling(chatId, initiatorId, messageText);
+    const billingResult = await shimProcessMessageBilling(chatId, initiatorId, messageText);
     
     if (!billingResult.allowed) {
       return {
@@ -429,6 +431,20 @@ export async function sendRekindleMessageNotification(
     console.error('Failed to send rekindle message notification:', error);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 280 - Safety Hooks Integration Layer
  * Connects safety engine with Calendar (PACK 274) and Events (PACK 275)
@@ -402,6 +404,20 @@ export async function getActiveSession(userId: string): Promise<any | null> {
 
   return query.docs[0].data();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

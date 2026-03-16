@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 210: Panic Button + Trusted Contact + Live Safety Tracking
  * Core engine for real-world safety system during meetings and events
@@ -555,7 +557,7 @@ export async function triggerPanicAlert(params: {
   const userData = userSnap.data();
 
   // Create tracking link
-  const trackingLink = `https://avalo.app/safety/track/${sessionId}?key=${generateId()}`;
+  const trackingLink = `https://platform.app/safety/track/${sessionId}?key=${generateId()}`;
 
   // Create panic alert
   const alert: PanicAlert = {
@@ -973,7 +975,7 @@ async function sendTrackingLinkNotification(params: {
 }): Promise<void> {
   const { sessionId, userId, userName, trustedContact, venueLocation, otherUserName } = params;
 
-  const trackingLink = `https://avalo.app/safety/track/${sessionId}?key=${generateId()}`;
+  const trackingLink = `https://platform.app/safety/track/${sessionId}?key=${generateId()}`;
 
   const message = `${userName} is meeting ${otherUserName || 'someone'} at ${venueLocation.placeName || 'a location'}.\n\nYou can follow their location here: ${trackingLink}\n\nThis is an automated safety notification from Avalo.`;
 
@@ -1077,6 +1079,20 @@ export async function resolvePanicAlert(params: {
 
   return { success: true };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

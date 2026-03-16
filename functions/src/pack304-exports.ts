@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 304 — Admin Financial Console & Reconciliation
  * Export Functions
  * 
  * Exports financial data to CSV/JSON for finance team
  * 
- * @package avaloapp
+ * @package platformapp
  * @version 1.0.0
  */
 
@@ -20,7 +22,7 @@ import { getMonthlyAggregation } from './pack304-aggregation';
 import { admin, functions } from './runtime';
 
 const storage = new Storage();
-const BUCKET_NAME = process.env.FINANCE_EXPORT_BUCKET || 'avalo-finance-exports';
+const BUCKET_NAME = process.env.FINANCE_EXPORT_BUCKET || 'platform-finance-exports';
 
 // ============================================================================
 // EXPORT MONTHLY FINANCE DATA
@@ -61,32 +63,32 @@ export async function exportMonthlyFinanceData(
             {
               feature: 'Chat',
               gmvTokens: calculateFeatureGMV(data, 'chat'),
-              avaloFeesTokens: data.feesFromChatTokens,
-              creatorShareTokens: calculateFeatureCreatorShare(data, 'chat'),
+              platformFeesTokens: data.feesFromChatTokens,
+              earnerTokens: calculateFeatureCreatorShare(data, 'chat'),
             },
             {
               feature: 'Calls',
               gmvTokens: calculateFeatureGMV(data, 'calls'),
-              avaloFeesTokens: data.feesFromCallsTokens,
-              creatorShareTokens: calculateFeatureCreatorShare(data, 'calls'),
+              platformFeesTokens: data.feesFromCallsTokens,
+              earnerTokens: calculateFeatureCreatorShare(data, 'calls'),
             },
             {
               feature: 'Calendar',
               gmvTokens: calculateFeatureGMV(data, 'calendar'),
-              avaloFeesTokens: data.feesFromCalendarTokens,
-              creatorShareTokens: calculateFeatureCreatorShare(data, 'calendar'),
+              platformFeesTokens: data.feesFromCalendarTokens,
+              earnerTokens: calculateFeatureCreatorShare(data, 'calendar'),
             },
             {
               feature: 'Events',
               gmvTokens: calculateFeatureGMV(data, 'events'),
-              avaloFeesTokens: data.feesFromEventsTokens,
-              creatorShareTokens: calculateFeatureCreatorShare(data, 'events'),
+              platformFeesTokens: data.feesFromEventsTokens,
+              earnerTokens: calculateFeatureCreatorShare(data, 'events'),
             },
             {
               feature: 'Other',
               gmvTokens: calculateFeatureGMV(data, 'other'),
-              avaloFeesTokens: data.feesFromOtherTokens,
-              creatorShareTokens: calculateFeatureCreatorShare(data, 'other'),
+              platformFeesTokens: data.feesFromOtherTokens,
+              earnerTokens: calculateFeatureCreatorShare(data, 'other'),
             },
           ],
         },
@@ -182,23 +184,23 @@ function calculateFeatureGMV(data: PlatformFinanceMonthly, feature: string): num
   }[feature] || 0;
 
   // Reverse calculate GMV from fees based on split
-  const avaloShare = feature === 'chat' || feature === 'other'
+  const platform = feature === 'chat' || feature === 'other'
     ? FINANCE_CONSTANTS.SPLIT_CHAT_AVALO
     : FINANCE_CONSTANTS.SPLIT_CALLS_AVALO;
 
-  return Math.round(feeTokens / avaloShare);
+  return Math.round(feeTokens / platform);
 }
 
 /**
- * Calculate creator share for a specific feature
+ * Calculate earner share for a specific feature
  */
 function calculateFeatureCreatorShare(data: PlatformFinanceMonthly, feature: string): number {
   const gmv = calculateFeatureGMV(data, feature);
-  const creatorShare = feature === 'chat' || feature === 'other'
+  const earner = feature === 'chat' || feature === 'other'
     ? FINANCE_CONSTANTS.SPLIT_CHAT_CREATOR
     : FINANCE_CONSTANTS.SPLIT_CALLS_CREATOR;
 
-  return Math.floor(gmv * creatorShare);
+  return Math.floor(gmv * earner);
 }
 
 // ============================================================================
@@ -206,7 +208,7 @@ function calculateFeatureCreatorShare(data: PlatformFinanceMonthly, feature: str
 // ============================================================================
 
 /**
- * Export creator summary data
+ * Export earner summary data
  */
 export async function exportCreatorSummaryData(
   year: number,
@@ -214,14 +216,14 @@ export async function exportCreatorSummaryData(
   format: 'csv' | 'json'
 ): Promise<string> {
   try {
-    logger.info(`Exporting creator summary data: ${year}-${month} as ${format}`);
+    logger.info(`Exporting earner summary data: ${year}-${month} as ${format}`);
 
-    // Get creator earnings data
+    // Get earner earnings data
     const monthStr = String(month).padStart(2, '0');
     const docIdPattern = `%_${year}_${monthStr}`;
 
     const earningsQuery = db
-      .collection('creatorEarningsMonthly')
+      .collection('earnerEarningsMonthly')
       .where('year', '==', year)
       .where('month', '==', month);
 
@@ -250,14 +252,14 @@ export async function exportCreatorSummaryData(
 
     // Generate filename
     const timestamp = Date.now();
-    const filename = `creator_summary_${year}_${monthStr}_${timestamp}.${format}`;
+    const filename = `earner_summary_${year}_${monthStr}_${timestamp}.${format}`;
 
     let content: string;
 
     if (format === 'csv') {
       content = generateCreatorSummaryCSV(rows);
     } else {
-      content = JSON.stringify({ year, month, creators: rows }, null, 2);
+      content = JSON.stringify({ year, month, earners: rows }, null, 2);
     }
 
     // Upload to Cloud Storage
@@ -271,7 +273,7 @@ export async function exportCreatorSummaryData(
         metadata: {
           year: String(year),
           month: String(month),
-          exportType: 'creator_summary',
+          exportType: 'earner_summary',
         },
       },
     });
@@ -286,13 +288,13 @@ export async function exportCreatorSummaryData(
     logger.info(`Export completed: ${filename}`);
     return signedUrl;
   } catch (error: any) {
-    logger.error('Error exporting creator summary data:', error);
+    logger.error('Error exporting earner summary data:', error);
     throw error;
   }
 }
 
 /**
- * Generate CSV for creator summary data
+ * Generate CSV for earner summary data
  */
 function generateCreatorSummaryCSV(rows: CreatorSummaryExportRow[]): string {
   const lines: string[] = [];
@@ -319,6 +321,20 @@ function generateCreatorSummaryCSV(rows: CreatorSummaryExportRow[]): string {
 
   return lines.join('\n');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

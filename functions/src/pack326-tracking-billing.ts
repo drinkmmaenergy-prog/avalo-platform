@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 326 — Impression & Click Tracking + Billing
  * Real-time tracking with anti-fraud protection and automated billing
@@ -176,7 +178,7 @@ async function billCPM(campaign: AdsCampaign): Promise<void> {
       amountTokens: tokensToCharge,
       source: 'MEDIA', // Using MEDIA source for ads
       relatedId: campaign.id,
-      creatorId: undefined, // No creator for ads (100% Avalo revenue)
+      earnerId: undefined, // No earner for ads (100% Avalo revenue)
       metadata: {
         campaignId: campaign.id,
         billingType: 'CPM',
@@ -227,7 +229,7 @@ async function billCPC(campaign: AdsCampaign, clickId: string): Promise<boolean>
     amountTokens: tokensToCharge,
     source: 'MEDIA',
     relatedId: campaign.id,
-    creatorId: undefined, // No creator for ads (100% Avalo revenue)
+    earnerId: undefined, // No earner for ads (100% Avalo revenue)
     metadata: {
       campaignId: campaign.id,
       billingType: 'CPC',
@@ -640,6 +642,20 @@ export const pack326_getCreativeAnalytics = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

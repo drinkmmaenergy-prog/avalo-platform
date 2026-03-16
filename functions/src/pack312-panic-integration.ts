@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 312 — Customer Support Console & Case Management
  * Panic Button Integration - Auto-create critical support tickets
@@ -51,7 +53,7 @@ export const onPanicButtonTriggered = onDocumentCreated(
         category: 'SAFETY_REPORT',
         userId: alertData.userId,
         otherUserId: alertData.matchedUserProfile?.userId || 
-                     (alertData.userId === meeting?.creatorId ? meeting?.bookerId : meeting?.creatorId),
+                     (alertData.userId === meeting?.earnerId ? meeting?.bookerId : meeting?.earnerId),
         meetingId,
         subject: `PANIC BUTTON TRIGGERED: ${alertData.alertType}`,
         description: `
@@ -155,7 +157,7 @@ export const onIdentityMismatchRefund = onDocumentCreated(
         priority: 'HIGH',
         category: 'MEETING_MISMATCH',
         userId: refundData.bookerId,
-        otherUserId: refundData.creatorId,
+        otherUserId: refundData.earnerId,
         meetingId: refundData.meetingId,
         subject: 'Identity Mismatch Detected - Meeting Refunded',
         description: `
@@ -165,10 +167,10 @@ Meeting ID: ${refundData.meetingId}
 Refund ID: ${refundId}
 
 Payer (Reporter): ${refundData.bookerId}
-Earner (Reported): ${refundData.creatorId}
+Earner (Reported): ${refundData.earnerId}
 
 Refund Amount: ${refundData.refundAmount} tokens
-Avalo Fee Refunded: ${refundData.avaloFeeRefunded ? 'YES (confirmed fraud)' : 'NO'}
+Avalo Fee Refunded: ${refundData.platformFeeRefunded ? 'YES (confirmed fraud)' : 'NO'}
 
 ${refundData.evidence?.complainantStatement || 'No complainant statement provided.'}
 
@@ -199,6 +201,20 @@ Automatic refund has been processed per policy.
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

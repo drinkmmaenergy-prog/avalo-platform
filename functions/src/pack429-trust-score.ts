@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 429 — Trust Score System
  * Calculates and exposes public trust score (0-100) based on multiple metrics
@@ -533,6 +535,20 @@ export async function getTrustSignals(): Promise<TrustSignals | null> {
   
   return doc.data() as TrustSignals;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

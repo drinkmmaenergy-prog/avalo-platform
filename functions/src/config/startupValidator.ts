@@ -159,17 +159,26 @@ function validateRequiredEnvVars(): { valid: boolean; missing: string[] } {
 function validateStripeKeyNotTest(): { valid: boolean; violation?: string } {
   const stripeKey = process.env.STRIPE_SECRET_KEY || '';
   const isProd = detectProductionEnvironment();
+  const projectId = getGcloudProject().toLowerCase();
+  const isNonProductionProject =
+    projectId.includes('staging') ||
+    projectId.includes('dev') ||
+    projectId.includes('test') ||
+    projectId.includes('qa') ||
+    projectId.includes('sandbox');
+  // Fail closed: if project is unknown in prod runtime, treat as true production.
+  const isTrueProduction = isProd && (!projectId || !isNonProductionProject);
   
-  // Only validate if the key is actually present in env
-  if (isProd && stripeKey && stripeKey.startsWith('sk_test_')) {
+  // Only hard-fail for true production projects.
+  if (isTrueProduction && stripeKey && stripeKey.startsWith('sk_test_')) {
     return {
       valid: false,
       violation: 'CRITICAL: Stripe test key (sk_test_*) detected in production environment',
     };
   }
   
-  // Also check for live key in non-production (warning only)
-  if (!isProd && stripeKey && stripeKey.startsWith('sk_live_')) {
+  // Also check for live key in non-production contexts (warning only)
+  if (!isTrueProduction && stripeKey && stripeKey.startsWith('sk_live_')) {
     validatorLogger.warn('Live Stripe key in non-production environment');
   }
   
@@ -412,17 +421,3 @@ export default {
   enforceStripeSecrets,
   isStripeBypassFunction,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-

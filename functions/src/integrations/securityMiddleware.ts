@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 150: Security Middleware & Validators
  * Block forbidden integrations, detect violations, and enforce policies
@@ -317,7 +319,7 @@ export async function enforceConsentRefresh(): Promise<void> {
       logger.info('Auto-renewed consent', {
         integrationId: doc.id,
         partnerId: integration.partnerId,
-        creatorId: integration.creatorId
+        earnerId: integration.earnerId
       });
     } else {
       batch.update(doc.ref, {
@@ -329,7 +331,7 @@ export async function enforceConsentRefresh(): Promise<void> {
       logger.warn('Integration suspended - consent expired', {
         integrationId: doc.id,
         partnerId: integration.partnerId,
-        creatorId: integration.creatorId
+        earnerId: integration.earnerId
       });
     }
   }
@@ -640,6 +642,22 @@ export async function detectRankingManipulation(
 
   return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 83 — Creator Payout Requests & Compliance Layer
  * Cloud Functions for manual payout request system (no auto-withdrawal)
  * 
  * NON-NEGOTIABLE RULES:
  * - Token price per unit remains fixed (config-driven)
- * - Revenue split 65% creator / 35% Avalo (inherited from PACK 81)
+ * - Revenue split 65% earner / 35% Avalo (inherited from PACK 81)
  * - No bonuses, no free tokens, no discounts, no promo codes, no cashback
  * - Tokens deducted on payout request are permanent (locked)
  * - Refunds only for REJECTED requests
@@ -351,13 +353,13 @@ export const payout_createRequest = onCall(
 
       // Create request and lock tokens in a transaction
       const requestId = generateId();
-      const balanceRef = db.collection('creator_balances').doc(userId);
+      const balanceRef = db.collection('earner_balances').doc(userId);
 
       await db.runTransaction(async (transaction) => {
         const balanceDoc = await transaction.get(balanceRef);
 
         if (!balanceDoc.exists) {
-          throw new HttpsError('failed-precondition', 'No creator balance found');
+          throw new HttpsError('failed-precondition', 'No earner balance found');
         }
 
         const balance = balanceDoc.data();
@@ -468,7 +470,7 @@ export const payout_setStatus = onCall(
           throw new HttpsError('invalid-argument', 'Rejection reason is required');
         }
 
-        const balanceRef = db.collection('creator_balances').doc(payoutRequest.userId);
+        const balanceRef = db.collection('earner_balances').doc(payoutRequest.userId);
 
         await db.runTransaction(async (transaction) => {
           // Update request status
@@ -618,6 +620,20 @@ export const payout_getConfig = onCall(
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,8 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 151 - Sponsorship Marketplace Types
- * Ethical brand-creator collaboration system
+ * Ethical brand-earner collaboration system
  */
 
 export type SponsorshipDealType =
@@ -47,7 +49,7 @@ export interface SponsorshipOffer {
     amount: number;
     currency: string;
     useTokens: boolean;
-    splitRatio?: { creator: number; platform: number };
+    splitRatio?: { earner: number; platform: number };
   };
   
   maxCreators: number;
@@ -72,7 +74,7 @@ export interface SponsorshipContract {
   id: string;
   offerId: string;
   brandId: string;
-  creatorId: string;
+  earnerId: string;
   
   status: SponsorshipStatus;
   
@@ -110,7 +112,7 @@ export interface SponsorshipDeliverable {
   id: string;
   contractId: string;
   offerId: string;
-  creatorId: string;
+  earnerId: string;
   brandId: string;
   
   type: DeliverableType;
@@ -156,7 +158,7 @@ export interface SponsorshipReview {
   offerId: string;
   reviewerId: string;
   revieweeId: string;
-  reviewerType: 'brand' | 'creator';
+  reviewerType: 'brand' | 'earner';
   
   rating: number;
   
@@ -178,7 +180,7 @@ export interface SponsorshipReview {
 export interface SponsorshipApplication {
   id: string;
   offerId: string;
-  creatorId: string;
+  earnerId: string;
   brandId: string;
   
   status: 'pending' | 'approved' | 'rejected';
@@ -202,7 +204,7 @@ export interface SponsorshipApplication {
 export interface SponsorshipAnalytics {
   contractId: string;
   offerId: string;
-  creatorId: string;
+  earnerId: string;
   period: {
     start: Date;
     end: Date;
@@ -228,7 +230,7 @@ export interface SponsorshipAnalytics {
 }
 
 export interface SponsorshipEarnings {
-  creatorId: string;
+  earnerId: string;
   totalEarnings: number;
   currency: string;
   
@@ -263,7 +265,7 @@ export interface CreateSponsorshipOfferInput {
 
 export interface ApplyToSponsorshipInput {
   offerId: string;
-  creatorId: string;
+  earnerId: string;
   message?: string;
   portfolioItems: string[];
 }
@@ -288,7 +290,7 @@ export interface ReviewDeliverableInput {
 export interface RateSponsorshipInput {
   contractId: string;
   reviewerId: string;
-  reviewerType: 'brand' | 'creator';
+  reviewerType: 'brand' | 'earner';
   rating: number;
   criteria: SponsorshipReview['criteria'];
   comment?: string;
@@ -318,6 +320,22 @@ export interface SponsorshipModeration {
     notes?: string;
   };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

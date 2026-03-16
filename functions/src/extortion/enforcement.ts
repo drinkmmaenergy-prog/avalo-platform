@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import * as admin from 'firebase-admin';
 import {
   ExtortionSeverity,
@@ -305,7 +307,7 @@ export class EnforcementEngine {
 
   private async withholdPayouts(userId: string, caseId: string): Promise<void> {
     await this.db
-      .collection('creator_earnings')
+      .collection('earner_earnings')
       .doc(userId)
       .update({
         payoutsEnabled: false,
@@ -489,7 +491,7 @@ export class EnforcementEngine {
 
         case EnforcementAction.WITHHOLD_PAYOUTS:
           await this.db
-            .collection('creator_earnings')
+            .collection('earner_earnings')
             .doc(userId)
             .update({
               payoutsEnabled: true,
@@ -518,6 +520,22 @@ export class EnforcementEngine {
 }
 
 export const enforcement = new EnforcementEngine();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface IntegrationEntry {
     id: string;
     name: string;
@@ -12,6 +14,23 @@ export interface AuditResult {
     timestamp: any;
 }
 export declare const INTEGRATION_REGISTRY: Record<string, IntegrationEntry>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

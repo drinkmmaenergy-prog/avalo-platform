@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 196 — MARKETPLACE CLOUD FUNCTIONS ENDPOINTS
  */
@@ -20,7 +22,7 @@ import { HttpsError, admin, auth, onCall } from './runtime';
 // ============================================================================
 
 /**
- * Upload a product (creators only)
+ * Upload a product (earners only)
  */
 export const marketplace_uploadProduct = functions.https.onCall(async (request) => {
   const data = request.data;
@@ -183,20 +185,20 @@ export const marketplace_getProductFeed = functions.https.onCall(async (request)
 });
 
 /**
- * Get creator shop
+ * Get earner shop
  */
 export const marketplace_getCreatorShop = functions.https.onCall(async (request) => {
   const data = request.data;
-  const { creatorId } = data;
+  const { earnerId } = data;
 
-  if (!creatorId) {
+  if (!earnerId) {
     throw new functions.https.HttpsError('invalid-argument', 'Creator ID is required');
   }
 
   try {
     // Get shop info
-    const shopQuery = await db.collection('creator_shops')
-      .where('creatorId', '==', creatorId)
+    const shopQuery = await db.collection('earner_shops')
+      .where('earnerId', '==', earnerId)
       .limit(1)
       .get();
 
@@ -208,9 +210,9 @@ export const marketplace_getCreatorShop = functions.https.onCall(async (request)
       };
     }
 
-    // Get creator's products
+    // Get earner's products
     const productsQuery = await db.collection('products')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('status', '==', 'active')
       .orderBy('createdAt', 'desc')
       .limit(20)
@@ -221,9 +223,9 @@ export const marketplace_getCreatorShop = functions.https.onCall(async (request)
       ...doc.data()
     }));
 
-    // Get creator's brand deals
+    // Get earner's brand deals
     const dealsQuery = await db.collection('brand_deals')
-      .where('creatorId', '==', creatorId)
+      .where('earnerId', '==', earnerId)
       .where('status', '==', 'active')
       .limit(10)
       .get();
@@ -266,7 +268,7 @@ export const marketplace_assignAffiliateLink = functions.https.onCall(async (req
 
   try {
     const result = await assignAffiliateLink({
-      creatorId: request.auth.uid,
+      earnerId: request.auth.uid,
       productId
     });
 
@@ -327,7 +329,7 @@ export const marketplace_discloseSponsoredContent = functions.https.onCall(async
 
   try {
     const result = await discloseSponsoredContent({
-      creatorId: request.auth.uid,
+      earnerId: request.auth.uid,
       dealId,
       postId,
       streamId
@@ -500,6 +502,20 @@ export const marketplace_resolveDispute = functions.https.onCall(async (request)
 });
 
 console.log('✅ Pack 196 (Avalo Social Commerce Marketplace) endpoints initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

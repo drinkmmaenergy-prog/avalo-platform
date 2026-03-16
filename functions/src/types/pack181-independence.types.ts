@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { admin, timestamp } from '../runtime';
 
@@ -47,7 +49,7 @@ export type RestrictionStatus = 'active' | 'expired' | 'revoked';
 
 export interface CreatorIndependenceCase {
   caseId: string;
-  creatorId: string;
+  earnerId: string;
   fanId: string;
   violationType: ViolationType;
   evidence: {
@@ -74,7 +76,7 @@ export interface CreatorIndependenceCase {
 export interface FanEntitlementEvent {
   eventId: string;
   fanId: string;
-  creatorId: string;
+  earnerId: string;
   eventType: EventType;
   messageContent: string;
   severity: SeverityLevel;
@@ -96,7 +98,7 @@ export interface FanEntitlementEvent {
 export interface EmotionalPressureLog {
   logId: string;
   fanId: string;
-  creatorId: string;
+  earnerId: string;
   messageId: string;
   pressureType: PressureType;
   detected: boolean;
@@ -111,7 +113,7 @@ export interface EmotionalPressureLog {
 }
 
 export interface CreatorBoundarySettings {
-  creatorId: string;
+  earnerId: string;
   noEmotionalLabor: boolean;
   autoDeclineRomance: boolean;
   autoBlockGuilt: boolean;
@@ -131,7 +133,7 @@ export interface CreatorBoundarySettings {
 export interface FanRestrictionRecord {
   recordId: string;
   fanId: string;
-  creatorId: string;
+  earnerId: string;
   restrictionType: RestrictionType;
   reason: string;
   startTime: Timestamp;
@@ -156,7 +158,7 @@ export interface ProfessionalTemplate {
 }
 
 export interface CreatorProfessionalTemplates {
-  creatorId: string;
+  earnerId: string;
   templates: ProfessionalTemplate[];
   updatedAt: Timestamp;
 }
@@ -208,7 +210,7 @@ export interface DetectionResult {
 
 export interface BoundaryViolationContext {
   fanId: string;
-  creatorId: string;
+  earnerId: string;
   messageContent: string;
   chatHistory?: Array<{
     content: string;
@@ -239,7 +241,7 @@ export interface IndependenceEnforcementResult {
 }
 
 export interface CreatorIndependenceStats {
-  creatorId: string;
+  earnerId: string;
   totalCases: number;
   casesBySeverity: Record<SeverityLevel, number>;
   casesByType: Record<ViolationType, number>;
@@ -259,8 +261,24 @@ export interface FanBehaviorProfile {
   activeRestrictions: number;
   riskScore: number;
   isPermanentlyBanned: boolean;
-  creatorsAffected: string[];
+  earnersAffected: string[];
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

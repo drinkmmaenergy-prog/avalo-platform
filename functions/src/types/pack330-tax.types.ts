@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 330 — Tax Reports, Earnings Statements & Payout Compliance
  * TypeScript Types and Interfaces
@@ -87,7 +89,7 @@ export interface TaxReportUser {
 // ============================================================================
 
 export interface RegionBreakdown {
-  creators: number;
+  earners: number;
   tokens: number;
   payoutUSD: number;
 }
@@ -294,6 +296,22 @@ export type TaxSourceField =
   | 'tipsTokens'
   | 'aiCompanionsTokens'
   | 'digitalProductsTokens';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

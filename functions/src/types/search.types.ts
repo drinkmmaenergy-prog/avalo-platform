@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 170 — Avalo Universal Search 3.0
  * Interest-Driven Search · Utility-First Index · Zero Attractiveness Scoring
@@ -6,7 +8,7 @@
 import { timestamp } from '../runtime';
 
 export enum SearchCategory {
-  CREATORS = 'creators',
+  CREATORS = 'earners',
   CONTENT = 'content',
   DIGITAL_PRODUCTS = 'digital_products',
   COURSES = 'courses',
@@ -59,9 +61,9 @@ export interface SearchIndexEntry {
   language: string;
   
   // Creator info (if applicable)
-  creatorId?: string;
-  creatorName?: string;
-  creatorVerified?: boolean;
+  earnerId?: string;
+  earnerName?: string;
+  earnerVerified?: boolean;
   
   // Location (region-level only, no GPS)
   region?: string;      // city / country
@@ -132,9 +134,9 @@ export interface SearchResult {
   description: string;
   thumbnailUrl?: string;
   
-  creatorId?: string;
-  creatorName?: string;
-  creatorAvatar?: string;
+  earnerId?: string;
+  earnerName?: string;
+  earnerAvatar?: string;
   
   relevanceScore: number;  // 0-100
   qualityScore: number;
@@ -157,7 +159,7 @@ export interface SearchResult {
 export interface SearchSuggestion {
   text: string;
   category?: SearchCategory;
-  type: 'recent' | 'popular' | 'related' | 'creator' | 'topic';
+  type: 'recent' | 'popular' | 'related' | 'earner' | 'topic';
 }
 
 export interface SearchHistoryEntry {
@@ -229,6 +231,22 @@ export interface SearchAnalytics {
   avgClickPosition: number;
   zerResultsRate: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

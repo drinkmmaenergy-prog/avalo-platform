@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 95 — Account, Device & Session Security
  * TypeScript Type Definitions
@@ -5,7 +7,7 @@
  * NON-NEGOTIABLE RULES:
  * - No free tokens, no discounts, no promo codes, no cashback, no bonuses
  * - Do not change token price per unit
- * - Do not change revenue split (65% creator / 35% Avalo)
+ * - Do not change revenue split (65% earner / 35% Avalo)
  * - Security actions never alter earnings, wallets, or payouts
  * - Prepares for 2FA / step-up verification (later pack)
  */
@@ -162,6 +164,20 @@ export interface DeviceContext {
   userAgent?: string;
   ipCountry?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Message Pricing Service
  * Phase 33-2: Monetized Chat - Dynamic Pricing + Revenue Split
@@ -167,3 +168,4 @@ export default {
   getAvailablePriceOptions,
   AVALO_COMMISSION,
 };
+

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export interface UnlockableMessage{
  id:string
  senderId:string
@@ -15,3 +17,19 @@ export function canViewMessage(msg:UnlockableMessage,userId:string){
 
  return msg.unlockedBy.includes(userId)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

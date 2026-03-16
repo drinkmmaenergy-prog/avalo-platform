@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 285 — Chat Free Windows & Funnel Tests
  * 
@@ -179,8 +181,8 @@ describe('PACK 285: Token Routing', () => {
       'STANDARD'
     );
     
-    expect(result.creatorShare).toBe(65);
-    expect(result.platformShare).toBe(35);
+    expect(result.earner).toBe(65);
+    expect(result.platform).toBe(35);
     expect(result.earningProfileId).toBe('earningUserId');
   });
   
@@ -192,8 +194,8 @@ describe('PACK 285: Token Routing', () => {
       'EARN_OFF_AVALO_100'
     );
     
-    expect(result.creatorShare).toBe(0);
-    expect(result.platformShare).toBe(100);
+    expect(result.earner).toBe(0);
+    expect(result.platform).toBe(100);
     expect(result.earningProfileId).toBe(null);
   });
   
@@ -205,8 +207,8 @@ describe('PACK 285: Token Routing', () => {
       'LOW_POP_FREE'
     );
     
-    expect(result.creatorShare).toBe(0);
-    expect(result.platformShare).toBe(0);
+    expect(result.earner).toBe(0);
+    expect(result.platform).toBe(0);
     expect(result.earningProfileId).toBe(null);
   });
 });
@@ -301,10 +303,10 @@ describe('PACK 285: Integration Scenarios', () => {
   
   it('SCENARIO 6: No regression on 65/35 split', async () => {
     // Standard PAID chat after free window
-    // Tokens split 65% creator, 35% platform
-    const result = await routePack285Tokens('chat', 1000, 'creator', 'STANDARD');
-    expect(result.creatorShare).toBe(650);
-    expect(result.platformShare).toBe(350);
+    // Tokens split 65% earner, 35% platform
+    const result = await routePack285Tokens('chat', 1000, 'earner', 'STANDARD');
+    expect(result.earner).toBe(650);
+    expect(result.platform).toBe(350);
   });
 });
 
@@ -343,6 +345,22 @@ describe('PACK 285: Edge Cases', () => {
     expect(true).toBe(true);
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

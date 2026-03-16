@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 56 — Stripe Connect Integration
  * 
@@ -112,7 +114,7 @@ export async function createOrUpdateStripeAccount(
         transfers: { requested: true },
       },
       metadata: {
-        avaloUserId: params.userId,
+        platformUserId: params.userId,
       },
     });
 
@@ -211,7 +213,7 @@ export async function createStripeTransfer(
       amount: params.amountCents,
       currency: params.currency.toLowerCase(),
       destination: params.accountId,
-      description: params.description || "Avalo creator payout",
+      description: params.description || "Avalo earner payout",
       metadata: params.metadata || {},
     });
 
@@ -251,6 +253,22 @@ export async function getStripeTransfer(
     throw new Error(`Failed to get transfer: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

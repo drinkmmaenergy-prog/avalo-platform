@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * WALLET + LEDGER + PAYOUT — Unified Types
  *
@@ -68,11 +70,11 @@ export const DEPRECATED_WALLET_PATHS = [
   'users/{userId}/wallet/current',
   'users/{userId}/wallet/main',
   'user_wallets/{userId}',
-  'system_wallets/avalo_platform',
+  'system_wallets/platform_platform',
   'balances/{userId}/wallet/wallet',
   'users/{userId} (wallet.balance field)',
   'platform_wallet/earnings',
-  'system/avalo_wallet',
+  'system/platform_wallet',
   'escrow_wallets/{escrowId}',
 ] as const;
 
@@ -332,6 +334,23 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
  * Payout requests collection.
  */
 export const PAYOUT_REQUESTS_COLLECTION = 'payout_requests';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

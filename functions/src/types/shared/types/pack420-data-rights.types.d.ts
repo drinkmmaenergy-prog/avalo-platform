@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface DataRightsRequest  {
     id: string;
     userId: string;
@@ -13,6 +15,23 @@ export interface AccountLifecycleEvent  {
   [key: string]: any;
 }
 export type DataRightsType = 'ACCESS' | 'DELETE' | 'EXPORT' | 'RECTIFY';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

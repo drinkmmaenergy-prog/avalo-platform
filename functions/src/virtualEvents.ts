@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 118 — Virtual Events / Live Classes Backend Functions
  * 
@@ -35,7 +37,7 @@ const db = getFirestore();
 // ============================================================================
 
 /**
- * Create a new virtual event (verified creators only)
+ * Create a new virtual event (verified earners only)
  */
 export const pack118_createEvent = onCall<CreateVirtualEventRequest, Promise<VirtualEventResponse>>(
   async (request) => {
@@ -47,7 +49,7 @@ export const pack118_createEvent = onCall<CreateVirtualEventRequest, Promise<Vir
     const userId = request.auth.uid;
     const data = request.data;
 
-    // 2. Verify creator status
+    // 2. Verify earner status
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       throw new HttpsError('not-found', 'User not found');
@@ -57,7 +59,7 @@ export const pack118_createEvent = onCall<CreateVirtualEventRequest, Promise<Vir
     if (!userData?.earnFromChat) {
       throw new HttpsError(
         'permission-denied',
-        'Only verified creators can host virtual events'
+        'Only verified earners can host virtual events'
       );
     }
 
@@ -292,9 +294,9 @@ export const pack118_cancelEvent = onCall<CancelVirtualEventRequest, Promise<Vir
             updatedAt: FieldValue.serverTimestamp(),
           });
 
-          // Deduct from host creator balance
-          const creatorBalanceRef = db.collection('creator_balances').doc(event.hostUserId);
-          batch.update(creatorBalanceRef, {
+          // Deduct from host earner balance
+          const earnerBalanceRef = db.collection('earner_balances').doc(event.hostUserId);
+          batch.update(earnerBalanceRef, {
             pendingTokens: FieldValue.increment(-attendee.hostEarnings),
             updatedAt: FieldValue.serverTimestamp(),
           });
@@ -457,10 +459,10 @@ export const pack118_joinEvent = onCall<JoinVirtualEventRequest, Promise<Virtual
           updatedAt: FieldValue.serverTimestamp(),
         });
 
-        // Add to host creator balance
-        const creatorBalanceRef = db.collection('creator_balances').doc(event.hostUserId);
+        // Add to host earner balance
+        const earnerBalanceRef = db.collection('earner_balances').doc(event.hostUserId);
         transaction.set(
-          creatorBalanceRef,
+          earnerBalanceRef,
           {
             userId: event.hostUserId,
             pendingTokens: FieldValue.increment(hostEarnings),
@@ -842,6 +844,21 @@ export const pack118_getMyEvents = onCall<GetMyEventsRequest, Promise<VirtualEve
     };
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

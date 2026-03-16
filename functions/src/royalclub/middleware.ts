@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 144 - Royal Club & Loyalty Ecosystem 2.0
  * Safety middleware to enforce ethical constraints
@@ -7,7 +9,7 @@
  * - Block NSFW mission content
  * - No influence on search/feed/discovery/matches
  * - No token bonuses or discounts
- * - No creator earning advantages
+ * - No earner earning advantages
  */
 
 import { FORBIDDEN_MISSION_PATTERNS, ALLOWED_CHANNEL_CATEGORIES } from './types';
@@ -80,7 +82,7 @@ export function validateRewardSafety(
     'discovery_boost',
     'match_priority',
     'swipe_boost',
-    'creator_revenue_share',
+    'earner_revenue_share',
     'earnings_boost',
     'unlimited_likes',
     'unlimited_messages',
@@ -334,27 +336,27 @@ export function validateTokenPricing(
 }
 
 /**
- * Validate creator revenue split is not affected
+ * Validate earner revenue split is not affected
  */
 export function validateRevenueSplit(
-  creatorShare: number,
-  platformShare: number,
+  earner: number,
+  platform: number,
   royalClubInvolved: boolean
 ): { isValid: boolean; violations: string[] } {
   const violations: string[] = [];
 
-  const expectedCreatorShare = MONETIZATION_SPLITS.CHAT.creator;
-  const expectedPlatformShare = MONETIZATION_SPLITS.CHAT.avalo;
+  const expectedCreatorShare = MONETIZATION_SPLITS.CHAT.earner;
+  const expectedPlatformShare = MONETIZATION_SPLITS.CHAT.platform;
 
-  if (Math.abs(creatorShare - expectedCreatorShare) > 0.001) {
-    violations.push(`Creator share (${creatorShare}) does not match required 65%`);
+  if (Math.abs(earner - expectedCreatorShare) > 0.001) {
+    violations.push(`Creator share (${earner}) does not match required 65%`);
   }
 
-  if (Math.abs(platformShare - expectedPlatformShare) > 0.001) {
-    violations.push(`Platform share (${platformShare}) does not match required 35%`);
+  if (Math.abs(platform - expectedPlatformShare) > 0.001) {
+    violations.push(`Platform share (${platform}) does not match required 35%`);
   }
 
-  if (royalClubInvolved && (creatorShare !== expectedCreatorShare || platformShare !== expectedPlatformShare)) {
+  if (royalClubInvolved && (earner !== expectedCreatorShare || platform !== expectedPlatformShare)) {
     violations.push(`Royal Club transaction has modified revenue split - this is forbidden`);
   }
 
@@ -378,6 +380,23 @@ export const RoyalClubSafetyMiddleware = {
   validateTokenPricing,
   validateRevenueSplit
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

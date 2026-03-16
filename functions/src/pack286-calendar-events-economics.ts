@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 286 — Calendar & Events FINAL FIX
  * Unified economics engine for calendar bookings and event tickets
@@ -52,28 +54,28 @@ const ECONOMICS = {
  * Calculate 80/20 split
  */
 export function calculateSplit(priceTokens: number): {
-  platformShareTokens: number;
-  earnerShareTokens: number;
+  platformTokens: number;
+  earnerTokens: number;
 } {
-  const platformShareTokens = Math.floor(priceTokens * (ECONOMICS.PLATFORM_SHARE_PERCENT / 100));
-  const earnerShareTokens = priceTokens - platformShareTokens;
+  const platformTokens = Math.floor(priceTokens * (ECONOMICS.PLATFORM_SHARE_PERCENT / 100));
+  const earnerTokens = priceTokens - platformTokens;
   
-  return { platformShareTokens, earnerShareTokens };
+  return { platformTokens, earnerTokens };
 }
 
 /**
  * Calculate guest/attendee cancellation refund based on time until meeting/event
  */
 export function calculateCancellationRefund(
-  earnerShareTokens: number,
+  earnerTokens: number,
   hoursUntilStart: number
 ): number {
   if (hoursUntilStart >= ECONOMICS.FULL_REFUND_HOURS) {
     // 72+ hours: 100% of earner share (80% of price)
-    return earnerShareTokens;
+    return earnerTokens;
   } else if (hoursUntilStart >= ECONOMICS.PARTIAL_REFUND_MIN_HOURS) {
     // 24-72 hours: 50% of earner share
-    return Math.floor(earnerShareTokens * 0.5);
+    return Math.floor(earnerTokens * 0.5);
   } else {
     // <24 hours: no refund
     return 0;
@@ -99,7 +101,7 @@ export async function createCalendarBooking(
   
   try {
     // Calculate split
-    const { platformShareTokens, earnerShareTokens } = calculateSplit(priceTokens);
+    const { platformTokens, earnerTokens } = calculateSplit(priceTokens);
     
     // Spend tokens from guest using PACK 277
     const spendResult = await spendTokens({
@@ -107,7 +109,7 @@ export async function createCalendarBooking(
       amountTokens: priceTokens,
       source: 'CALENDAR',
       relatedId: bookingId,
-      creatorId: hostId,
+      earnerId: hostId,
       metadata: {
         slotId,
         startTime,
@@ -134,8 +136,8 @@ export async function createCalendarBooking(
       priceTokens,
       
       split: {
-        platformShareTokens,
-        hostShareTokens: earnerShareTokens,
+        platformTokens,
+        hostShareTokens: earnerTokens,
       },
       
       payment: {
@@ -143,7 +145,7 @@ export async function createCalendarBooking(
         refundedTokensTotal: 0,
         refundedToGuestTokens: 0,
         refundedFromHostTokens: 0,
-        avalosFeeRefunded: false,
+        platformsFeeRefunded: false,
       },
       
       checkIn: {
@@ -243,7 +245,7 @@ export async function guestCancelBooking(
       status: 'CANCELLED_GUEST',
       'payment.refundedTokensTotal': refundTokens,
       'payment.refundedToGuestTokens': refundTokens,
-      'payment.avalosFeeRefunded': false, // Never refund Avalo fee on guest cancellation
+      'payment.platformsFeeRefunded': false, // Never refund Avalo fee on guest cancellation
       updatedAt: new Date().toISOString(),
     });
     
@@ -325,10 +327,10 @@ export async function hostCancelBooking(
     await bookingRef.update({
       status: 'CANCELLED_HOST',
       'split.hostShareTokens': 0,
-      'split.platformShareTokens': 0,
+      'split.platformTokens': 0,
       'payment.refundedTokensTotal': fullRefund,
       'payment.refundedToGuestTokens': fullRefund,
-      'payment.avalosFeeRefunded': true, // YES - Avalo refunds its fee
+      'payment.platformsFeeRefunded': true, // YES - Avalo refunds its fee
       updatedAt: new Date().toISOString(),
     });
     
@@ -412,10 +414,10 @@ export async function confirmMismatch(
     await bookingRef.update({
       status: 'MISMATCH_CONFIRMED',
       'split.hostShareTokens': 0,
-      'split.platformShareTokens': 0,
+      'split.platformTokens': 0,
       'payment.refundedTokensTotal': fullRefund,
       'payment.refundedToGuestTokens': fullRefund,
-      'payment.avalosFeeRefunded': true, // YES - Avalo refunds its fee
+      'payment.platformsFeeRefunded': true, // YES - Avalo refunds its fee
       'mismatch.reported': true,
       'mismatch.reportedBy': reportedBy,
       'mismatch.confirmed': true,
@@ -553,7 +555,7 @@ export async function issueGoodwillRefund(
       reason: 'Goodwill refund from host',
       metadata: {
         fromHost: hostId,
-        avaloFeeRetained: true,
+        platformFeeRetained: true,
       },
     });
     
@@ -591,7 +593,7 @@ export async function issueGoodwillRefund(
       'payment.refundedTokensTotal': FieldValue.increment(refundAmount),
       'payment.refundedFromHostTokens': FieldValue.increment(refundAmount),
       'payment.refundedToGuestTokens': FieldValue.increment(refundAmount),
-      'payment.avalosFeeRefunded': false, // Avalo NEVER refunds on goodwill
+      'payment.platformsFeeRefunded': false, // Avalo NEVER refunds on goodwill
       'goodwillRefund.requestedByHost': true,
       'goodwillRefund.processed': true,
       'goodwillRefund.amountTokens': refundAmount,
@@ -628,7 +630,7 @@ export async function purchaseEventTicket(
   
   try {
     // Calculate split
-    const { platformShareTokens, earnerShareTokens } = calculateSplit(priceTokens);
+    const { platformTokens, earnerTokens } = calculateSplit(priceTokens);
     
     // Spend tokens from attendee using PACK 277
     const spendResult = await spendTokens({
@@ -636,7 +638,7 @@ export async function purchaseEventTicket(
       amountTokens: priceTokens,
       source: 'EVENT',
       relatedId: ticketId,
-      creatorId: organizerId,
+      earnerId: organizerId,
       metadata: {
         eventId,
       },
@@ -660,8 +662,8 @@ export async function purchaseEventTicket(
       priceTokens,
       
       split: {
-        platformShareTokens,
-        organizerShareTokens: earnerShareTokens,
+        platformTokens,
+        organizerShareTokens: earnerTokens,
       },
       
       payment: {
@@ -669,7 +671,7 @@ export async function purchaseEventTicket(
         refundedTokensTotal: 0,
         refundedToAttendeeTokens: 0,
         refundedFromOrganizerTokens: 0,
-        avalosFeeRefunded: false,
+        platformsFeeRefunded: false,
       },
       
       checkIn: {
@@ -799,10 +801,10 @@ export async function organizerCancelEvent(
         await ticketDoc.ref.update({
           status: 'CANCELLED_ORGANIZER',
           'split.organizerShareTokens': 0,
-          'split.platformShareTokens': 0,
+          'split.platformTokens': 0,
           'payment.refundedTokensTotal': fullRefund,
           'payment.refundedToAttendeeTokens': fullRefund,
-          'payment.avalosFeeRefunded': true, // YES - Avalo refunds its fee
+          'payment.platformsFeeRefunded': true, // YES - Avalo refunds its fee
           updatedAt: new Date().toISOString(),
         });
         
@@ -951,6 +953,21 @@ export async function completeEventAndPayout(
 
 // Export for use by other modules
 export { ECONOMICS };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

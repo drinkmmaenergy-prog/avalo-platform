@@ -1,3 +1,4 @@
+import { MONETIZATION_SPLITS } from '';
 /**
  * Goals Service
  * Handles all creator goals and support operations for mobile app
@@ -377,3 +378,4 @@ export const calculateRevenueSplit = (amount: number): { creator: number; avalo:
   const avalo = amount - creator;
   return { creator, avalo };
 };
+

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 /**
  * PACK 252 - BOOSTS MARKETPLACE
  * Types and interfaces for visibility boost system
@@ -170,6 +172,22 @@ export const BOOST_STATS_COLLECTION = 'boostStats';
 // Constants
 export const MIN_RISK_SCORE_FOR_BOOST = 75; // Cannot boost if riskScore > 75
 export const BOOST_DISABLED_MESSAGE = 'Boosts will be available again soon.';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

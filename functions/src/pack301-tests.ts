@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Retention Automation Test Suite
  * Comprehensive tests for retention engine
@@ -87,7 +89,7 @@ export async function testChurnScoreCalculation(): Promise<void> {
     const factors2 = {
       noChatsIn5Days: true,      // +0.15
       noSwipesIn72h: true,        // +0.10
-      noAppOpenRecent: true,      // +MONETIZATION_SPLITS.EVENT_TICKET.avalo
+      noAppOpenRecent: true,      // +MONETIZATION_SPLITS.EVENT_TICKET.platform
       profileNotUpdated30d: true, // +0.05
       noLikesIn72h: true,         // +0.10
       noPhotosAdded: true,        // +0.15
@@ -589,6 +591,22 @@ async function cleanupTestUser(userId: string): Promise<void> {
 }
 
 console.log('✅ PACK 301B - Test Suite initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

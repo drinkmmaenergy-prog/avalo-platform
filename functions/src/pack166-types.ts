@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * PACK 166: AVALO DIGITAL PRODUCT SCALABILITY ENGINE
@@ -8,7 +10,7 @@
  * STRICT RULES:
  * - NO seductive/romantic funnels
  * - NO emotional manipulation
- * - NO "pay more for creator attention"
+ * - NO "pay more for earner attention"
  * - NO ranking/visibility advantage
  * - All upsells must be value-driven, not emotional-driven
  * 
@@ -51,7 +53,7 @@ export interface PricingTestVariant {
 export interface PricingTest {
   testId: string;
   productId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   testName: string;
   description: string;
   variationType: PricingVariationType;
@@ -92,7 +94,7 @@ export type BundleStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE';
 
 export interface ProductBundle {
   bundleId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   bundleName: string;
   bundleDescription: string;
   productIds: string[];
@@ -112,10 +114,10 @@ export interface BundlePurchase {
   purchaseId: string;
   bundleId: string;
   buyerUserId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   tokensAmount: number;
   platformFee: number;
-  creatorEarnings: number;
+  earnerEarnings: number;
   productPurchaseIds: string[];
   purchasedAt: Timestamp;
   status: 'active' | 'revoked';
@@ -139,7 +141,7 @@ export type UpsellType =
 
 export interface UpsellRule {
   ruleId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   ruleName: string;
   trigger: UpsellTrigger;
   sourceProductId: string;
@@ -183,7 +185,7 @@ export type AutomationStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
 export interface ProductAutomation {
   automationId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   automationName: string;
   description: string;
   trigger: AutomationTrigger;
@@ -234,7 +236,7 @@ export type DiscountStatus = 'SCHEDULED' | 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
 
 export interface ProductDiscount {
   discountId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   productIds: string[];
   discountName: string;
   discountType: DiscountType;
@@ -273,7 +275,7 @@ export interface DiscountUsage {
 
 export interface ProductAnalytics {
   analyticsId: string;
-  creatorUserId: string;
+  earnerUserId: string;
   productId: string;
   period: {
     startDate: Timestamp;
@@ -314,7 +316,7 @@ export interface ProductAnalytics {
 }
 
 export interface CreatorScalabilityMetrics {
-  creatorUserId: string;
+  earnerUserId: string;
   period: {
     startDate: Timestamp;
     endDate: Timestamp;
@@ -487,6 +489,20 @@ export interface GetCreatorMetricsResponse {
   metrics?: CreatorScalabilityMetrics;
   error?: string;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

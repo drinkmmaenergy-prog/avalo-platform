@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 277 — Wallet & Token Store Cloud Functions Endpoints
  * Callable functions for wallet operations
@@ -157,7 +159,7 @@ export const wallet_verifyIAPReceipt = https.onCall(
     }
 
     try {
-      // Map product ID to pack ID (e.g., com.avalo.tokens.mini -> mini)
+      // Map product ID to pack ID (e.g., com.platform.tokens.mini -> mini)
       const packId = productId.split('.').pop() || '';
 
       // Validate purchase
@@ -282,7 +284,7 @@ export const wallet_spendTokens = https.onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    const { amountTokens, source, relatedId, creatorId, metadata } = request.data;
+    const { amountTokens, source, relatedId, earnerId, metadata } = request.data;
 
     if (!amountTokens || !source || !relatedId) {
       throw new HttpsError('invalid-argument', 'Missing required parameters');
@@ -294,7 +296,7 @@ export const wallet_spendTokens = https.onCall(
         amountTokens,
         source,
         relatedId,
-        creatorId,
+        earnerId,
         metadata,
       });
 
@@ -538,6 +540,20 @@ export const wallet_getPayoutHistory = https.onCall(
     }
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

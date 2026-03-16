@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../../../config/monetizationSplits";
+
 export interface StoreReview  {
     id: string;
     platform: 'IOS' | 'ANDROID';
@@ -22,6 +24,23 @@ export interface ReputationScore  {
     trend: 'UP' | 'DOWN' | 'STABLE';
   [key: string]: any;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

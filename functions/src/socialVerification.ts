@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * ========================================================================
  * SOCIAL MEDIA VERIFICATION - IG/TIKTOK INTEGRATION
@@ -56,7 +58,7 @@ export interface SocialConnection {
 
   // Verification
   verified: boolean; // Platform's blue checkmark
-  avaloVerified: boolean; // Our verification
+  platformVerified: boolean; // Our verification
 
   // OAuth
   accessToken: string;
@@ -103,7 +105,7 @@ export interface CreatorScore {
   authenticity: number; // 0-100
 
   // Overall
-  creatorScore: number; // 0-100
+  earnerScore: number; // 0-100
   tier: "emerging" | "growing" | "established" | "influencer" | "celebrity";
 
   // Badges
@@ -118,7 +120,7 @@ export interface CreatorScore {
 
 export interface SocialProofBadge {
   badgeId: string;
-  type: "verified_ig" | "verified_tiktok" | "1k_followers" | "10k_followers" | "100k_followers" | "verified_creator";
+  type: "verified_ig" | "verified_tiktok" | "1k_followers" | "10k_followers" | "100k_followers" | "verified_earner";
   name: string;
   description: string;
   icon: string;
@@ -270,7 +272,7 @@ export const completeInstagramAuth = onCall(
       posts: igUser.media_count || 0,
       engagementRate,
       verified: false,
-      avaloVerified: true,
+      platformVerified: true,
       accessToken: access_token,
       expiresAt: Timestamp.fromMillis(Date.now() + 60 * 24 * 3600 * 1000), // 60 days
       recentPosts,
@@ -296,7 +298,7 @@ export const completeInstagramAuth = onCall(
     // Check for Royal Club eligibility
     await checkRoyalClubEligibility(uid, estimatedFollowers);
 
-    // Calculate creator score
+    // Calculate earner score
     await calculateCreatorScore(uid);
 
     logger.info(`Instagram connected for ${uid}: @${igUser.username}`);
@@ -445,7 +447,7 @@ export const completeTikTokAuth = onCall(
       posts: ttUser.video_count || 0,
       engagementRate,
       verified: false, // TikTok doesn't expose verified status in API
-      avaloVerified: true,
+      platformVerified: true,
       accessToken: access_token,
       expiresAt: Timestamp.fromMillis(Date.now() + 24 * 3600 * 1000), // 24 hours
       recentPosts,
@@ -471,7 +473,7 @@ export const completeTikTokAuth = onCall(
     // Check for Royal Club eligibility
     await checkRoyalClubEligibility(uid, ttUser.follower_count || 0);
 
-    // Calculate creator score
+    // Calculate earner score
     await calculateCreatorScore(uid);
 
     logger.info(`TikTok connected for ${uid}: @${ttUser.display_name}`);
@@ -534,7 +536,7 @@ export const syncSocialData = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Recalculate creator score
+    // Recalculate earner score
     await calculateCreatorScore(uid);
 
     logger.info(`Synced ${platform} data for ${uid}`);
@@ -547,7 +549,7 @@ export const syncSocialData = onCall(
 );
 
 /**
- * Get creator score
+ * Get earner score
  */
 export const getCreatorScore = onCall(
   { region: "europe-west1" },
@@ -559,7 +561,7 @@ export const getCreatorScore = onCall(
 
     const { userId = uid } = request.data;
 
-    const scoreDoc = await db.collection("creatorScores").doc(userId).get();
+    const scoreDoc = await db.collection("earnerScores").doc(userId).get();
 
     if (!scoreDoc.exists) {
       // Calculate fresh score
@@ -603,7 +605,7 @@ export const disconnectSocialAccount = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Recalculate creator score
+    // Recalculate earner score
     await calculateCreatorScore(uid);
 
     logger.info(`${platform} disconnected for ${uid}`);
@@ -721,7 +723,7 @@ async function checkRoyalClubEligibility(userId: string, newFollowerCount: numbe
 }
 
 /**
- * Calculate creator score
+ * Calculate earner score
  */
 async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
   const connectionsSnapshot = await db
@@ -746,7 +748,7 @@ async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
   // Calculate overall score
   const followerScore = Math.min((totalFollowers / 100000) * 100, 100);
   const engagementScore = Math.min(avgEngagementRate * 10, 100);
-  const creatorScore = followerScore * FOLLOWER_COUNT_WEIGHT + engagementScore * ENGAGEMENT_RATE_WEIGHT;
+  const earnerScore = followerScore * FOLLOWER_COUNT_WEIGHT + engagementScore * ENGAGEMENT_RATE_WEIGHT;
 
   // Determine badges
   const badges: string[] = [];
@@ -777,7 +779,7 @@ async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
     contentQuality: 75, // Would be calculated from content analysis
     consistency: 80, // Would be calculated from posting frequency
     authenticity: 85, // Would be calculated from engagement authenticity
-    creatorScore: Math.round(creatorScore),
+    earnerScore: Math.round(earnerScore),
     tier,
     badges,
     royalClubEligible: totalFollowers >= ROYAL_CLUB_FOLLOWER_THRESHOLD,
@@ -785,7 +787,7 @@ async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
     updatedAt: Timestamp.now(),
   };
 
-  await db.collection("creatorScores").doc(userId).set(score);
+  await db.collection("earnerScores").doc(userId).set(score);
 
   // Auto-grant permissions
   if (autoPermissions.length > 0) {
@@ -803,6 +805,20 @@ async function calculateCreatorScore(userId: string): Promise<CreatorScore> {
 }
 
 logger.info("✅ Social Verification module loaded successfully");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

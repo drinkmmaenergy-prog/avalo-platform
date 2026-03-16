@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 209: Unified Meeting & Event Refund & Complaint Extensions
  * Core engine for refund calculations, complaint processing, and voluntary refunds
@@ -35,15 +37,15 @@ export async function calculateMeetingRefund(params: {
   bookingId: string;
   meetingStartTime: Date;
   priceTokens: number;
-  earnerShareTokens: number; // Should be 65% of price
-  avaloCommission: number; // Should be 35% of price
+  earnerTokens: number; // Should be 65% of price
+  platformCommission: number; // Should be 35% of price
   cancelledBy: 'payer' | 'earner';
 }): Promise<RefundCalculation> {
   const {
     meetingStartTime,
     priceTokens,
-    earnerShareTokens,
-    avaloCommission,
+    earnerTokens,
+    platformCommission,
     cancelledBy,
   } = params;
 
@@ -54,14 +56,14 @@ export async function calculateMeetingRefund(params: {
   if (cancelledBy === 'earner') {
     return {
       canRefund: true,
-      refundToPayerAmount: earnerShareTokens,
+      refundToPayerAmount: earnerTokens,
       earnerKeeptAmount: 0,
-      avaloKeepsAmount: avaloCommission,
+      platformKeepsAmount: platformCommission,
       policy: { 
         hoursBeforeMeeting: hoursUntilMeeting,
         refundToPayerPercent: 100,
         earnerKeepPercent: 0,
-        avaloCommissionRefundable: false,
+        platformCommissionRefundable: false,
       },
       reason: 'Earner cancelled - full refund of earner share',
     };
@@ -71,27 +73,27 @@ export async function calculateMeetingRefund(params: {
   if (hoursUntilMeeting >= 72) {
     // EARLY cancellation
     const policy = MEETING_REFUND_POLICIES.EARLY;
-    const refundAmount = Math.floor(earnerShareTokens * (policy.refundToPayerPercent / 100));
+    const refundAmount = Math.floor(earnerTokens * (policy.refundToPayerPercent / 100));
     
     return {
       canRefund: true,
       refundToPayerAmount: refundAmount,
       earnerKeeptAmount: 0,
-      avaloKeepsAmount: avaloCommission,
+      platformKeepsAmount: platformCommission,
       policy,
       reason: `Cancelled ${Math.floor(hoursUntilMeeting)}h before meeting - early cancellation policy`,
     };
   } else if (hoursUntilMeeting >= 24) {
     // MID cancellation
     const policy = MEETING_REFUND_POLICIES.MID;
-    const refundAmount = Math.floor(earnerShareTokens * (policy.refundToPayerPercent / 100));
-    const earnerKeeps = Math.floor(earnerShareTokens * (policy.earnerKeepPercent / 100));
+    const refundAmount = Math.floor(earnerTokens * (policy.refundToPayerPercent / 100));
+    const earnerKeeps = Math.floor(earnerTokens * (policy.earnerKeepPercent / 100));
     
     return {
       canRefund: true,
       refundToPayerAmount: refundAmount,
       earnerKeeptAmount: earnerKeeps,
-      avaloKeepsAmount: avaloCommission,
+      platformKeepsAmount: platformCommission,
       policy,
       reason: `Cancelled ${Math.floor(hoursUntilMeeting)}h before meeting - mid cancellation policy`,
     };
@@ -102,8 +104,8 @@ export async function calculateMeetingRefund(params: {
     return {
       canRefund: false,
       refundToPayerAmount: 0,
-      earnerKeeptAmount: earnerShareTokens,
-      avaloKeepsAmount: avaloCommission,
+      earnerKeeptAmount: earnerTokens,
+      platformKeepsAmount: platformCommission,
       policy,
       reason: `Cancelled ${Math.floor(hoursUntilMeeting)}h before meeting - late cancellation, no refund`,
     };
@@ -126,11 +128,11 @@ export async function calculateEventRefund(params: {
   eventId: string;
   priceTokens: number;
   organizerShareTokens: number; // Should be 80% of price
-  avaloCommission: number; // Should be 20% of price
+  platformCommission: number; // Should be 20% of price
   cancelledBy: 'participant' | 'organizer';
   reason?: string;
 }): Promise<RefundCalculation> {
-  const { organizerShareTokens, avaloCommission, cancelledBy } = params;
+  const { organizerShareTokens, platformCommission, cancelledBy } = params;
 
   if (cancelledBy === 'organizer') {
     // Organizer cancels - full refund of organizer share
@@ -138,7 +140,7 @@ export async function calculateEventRefund(params: {
       canRefund: true,
       refundToPayerAmount: organizerShareTokens,
       earnerKeeptAmount: 0,
-      avaloKeepsAmount: avaloCommission,
+      platformKeepsAmount: platformCommission,
       policy: EVENT_REFUND_POLICY,
       reason: 'Organizer cancelled event - full refund of organizer share',
     };
@@ -148,7 +150,7 @@ export async function calculateEventRefund(params: {
       canRefund: false,
       refundToPayerAmount: 0,
       earnerKeeptAmount: organizerShareTokens,
-      avaloKeepsAmount: avaloCommission,
+      platformKeepsAmount: platformCommission,
       policy: EVENT_REFUND_POLICY,
       reason: 'Participant cancelled - no refunds per policy',
     };
@@ -196,8 +198,8 @@ export async function processAppearanceComplaint(params: {
 
   const booking = bookingSnap.data() as any;
   const priceTokens = booking.priceTokens;
-  const earnerShareTokens = booking.payment.escrowTokens;
-  const avaloCommission = booking.payment.platformFeeTokens;
+  const earnerTokens = booking.payment.escrowTokens;
+  const platformCommission = booking.payment.platformFeeTokens;
 
   // Get user names
   const complainantSnap = await db.collection('users').doc(complainantId).get();
@@ -219,7 +221,7 @@ export async function processAppearanceComplaint(params: {
   // Process based on decision
   if (decision === ComplaintDecision.ISSUE_REFUND) {
     // Refund 100% of earner share to payer, earner gets 0
-    refundAmount = earnerShareTokens;
+    refundAmount = earnerTokens;
     trustScoreImpact = -50; // Significant trust score penalty
 
     // Process refund transaction
@@ -244,13 +246,13 @@ export async function processAppearanceComplaint(params: {
         bookingId,
         complaintId,
         payerId: booking.bookerId,
-        earnerId: booking.creatorId,
+        earnerId: booking.earnerId,
         originalAmount: priceTokens,
-        earnerShare: earnerShareTokens,
-        avaloCommission,
+        earner: earnerTokens,
+        platformCommission,
         refundToPayerAmount: refundAmount,
         earnerKeptAmount: 0,
-        avaloKeptAmount: avaloCommission,
+        platformKeptAmount: platformCommission,
         triggeredBy: complainantId,
         automaticRefund: false,
         notes: 'Appearance mismatch complaint - refund issued',
@@ -290,7 +292,7 @@ export async function processAppearanceComplaint(params: {
     mismatchScore,
     manualReview: mismatchScore ? mismatchScore > 50 : true,
     refundAmount,
-    tokensKept: avaloCommission,
+    tokensKept: platformCommission,
     notes,
     trustScoreImpact,
     createdAt: serverTimestamp() as Timestamp,
@@ -358,8 +360,8 @@ export async function processEventAppearanceComplaint(params: {
 
   const attendee = attendeeSnap.data() as any;
   const priceTokens = attendee.tokensAmount;
-  const organizerShare = attendee.creatorEarnings; // 80%
-  const avaloCommission = attendee.platformFee; // 20%
+  const organizerShare = attendee.earnerEarnings; // 80%
+  const platformCommission = attendee.platformFee; // 20%
 
   const complaintId = generateId();
   let refundAmount = 0;
@@ -408,11 +410,11 @@ export async function processEventAppearanceComplaint(params: {
         payerId: reportedUserId,
         earnerId: organizerId,
         originalAmount: priceTokens,
-        earnerShare: organizerShare,
-        avaloCommission,
+        earner: organizerShare,
+        platformCommission,
         refundToPayerAmount: refundAmount,
         earnerKeptAmount: 0,
-        avaloKeptAmount: avaloCommission,
+        platformKeptAmount: platformCommission,
         triggeredBy: organizerId,
         automaticRefund: false,
         notes: notes || 'Event appearance complaint - organizer issued refund',
@@ -437,7 +439,7 @@ export async function processEventAppearanceComplaint(params: {
     reportedUserName: 'Participant',
     decision: shouldRefund ? ComplaintDecision.ISSUE_REFUND : ComplaintDecision.KEEP_COMPLETED,
     refundAmount,
-    tokensKept: avaloCommission,
+    tokensKept: platformCommission,
     notes,
     trustScoreImpact: shouldRefund ? -30 : -10,
     createdAt: serverTimestamp() as Timestamp,
@@ -485,16 +487,16 @@ export async function processVoluntaryMeetingRefund(params: {
   }
 
   // Verify caller is the earner
-  if (booking.creatorId !== earnerId) {
+  if (booking.earnerId !== earnerId) {
     throw new Error('Only the earner can issue voluntary refunds');
   }
 
   const priceTokens = booking.priceTokens;
-  const earnerShareTokens = booking.payment.escrowTokens; // 65%
-  const avaloCommission = booking.payment.platformFeeTokens; // 35%
+  const earnerTokens = booking.payment.escrowTokens; // 65%
+  const platformCommission = booking.payment.platformFeeTokens; // 35%
 
   // Calculate refund amount
-  const refundAmount = Math.floor(earnerShareTokens * (refundPercent / 100));
+  const refundAmount = Math.floor(earnerTokens * (refundPercent / 100));
 
   // Get user names
   const earnerSnap = await db.collection('users').doc(earnerId).get();
@@ -538,8 +540,8 @@ export async function processVoluntaryMeetingRefund(params: {
       recipientId: booking.bookerId,
       recipientName: payerName,
       originalAmount: priceTokens,
-      earnerShareAmount: earnerShareTokens,
-      avaloCommission,
+      earnerAmount: earnerTokens,
+      platformCommission,
       refundPercent,
       refundAmount,
       reason,
@@ -611,8 +613,8 @@ export async function processVoluntaryEventRefund(params: {
   }
 
   const priceTokens = attendee.tokensAmount;
-  const organizerShare = attendee.creatorEarnings; // 80%
-  const avaloCommission = attendee.platformFee; // 20%
+  const organizerShare = attendee.earnerEarnings; // 80%
+  const platformCommission = attendee.platformFee; // 20%
 
   // Calculate refund amount
   const refundAmount = Math.floor(organizerShare * (refundPercent / 100));
@@ -653,8 +655,8 @@ export async function processVoluntaryEventRefund(params: {
       recipientId: attendee.userId,
       recipientName: attendee.userName,
       originalAmount: priceTokens,
-      earnerShareAmount: organizerShare,
-      avaloCommission,
+      earnerAmount: organizerShare,
+      platformCommission,
       refundPercent,
       refundAmount,
       reason,
@@ -764,6 +766,20 @@ export async function getUserRefundHistory(params: {
 
   return { refunds, voluntaryRefunds, complaints };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

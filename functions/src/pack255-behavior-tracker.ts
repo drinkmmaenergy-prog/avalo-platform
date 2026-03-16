@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 255 — Behavioral Signal Tracker
  * 
@@ -571,6 +573,20 @@ export async function batchUpdateBehaviorProfiles(userIds: string[]): Promise<{
 }
 
 logger.info('✅ Pack 255 Behavior Tracker initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Account Status & Automatic Sanctions Engine
  * Phase 30C-1: Backend-only account status management
@@ -490,6 +492,20 @@ export default {
   onTrustCriticalEvent,
   canPerformAction,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

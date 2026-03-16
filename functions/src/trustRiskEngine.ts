@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 85 — Trust & Risk Engine v1
  *
@@ -7,7 +9,7 @@
  * CRITICAL CONSTRAINTS:
  * - No free tokens, no bonuses, no discounts, no cashback
  * - No token price changes
- * - No revenue split changes (65% creator / 35% Avalo)
+ * - No revenue split changes (65% earner / 35% Avalo)
  * - Risk engine does NOT reverse transactions or issue refunds
  * - Only controls access/throttling of future actions
  * - All decisions must be explainable through structured flags
@@ -591,6 +593,20 @@ export async function removeManualOverride(userId: string, adminId: string): Pro
 
   logger.info(`Manual override removed from user ${userId} by admin ${adminId}`);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * Scheduled Functions (CRON Jobs)
  * Handles automated tasks like chat expiry, calendar sweep, and Royal eligibility
@@ -143,16 +145,16 @@ export const calendarSweep = onSchedule(
 
         if (now.toMillis() > verificationDeadline.toMillis()) {
           // No verification within window - mark as no-show
-          // Refund policy: booker gets 0%, creator gets 80% (already in escrow)
+          // Refund policy: booker gets 0%, earner gets 80% (already in escrow)
 
-          // Release escrow to creator
-          const creatorWalletRef = db
+          // Release escrow to earner
+          const earnerWalletRef = db
             .collection("users")
-            .doc(booking.creatorId)
+            .doc(booking.earnerId)
             .collection("wallet")
             .doc("current");
 
-          batch.update(creatorWalletRef, {
+          batch.update(earnerWalletRef, {
             balance: increment(booking.payment.escrowTokens),
             earned: increment(booking.payment.escrowTokens),
           });
@@ -172,12 +174,12 @@ export const calendarSweep = onSchedule(
           const txId = generateId();
           batch.set(db.collection("transactions").doc(txId), {
             txId,
-            uid: booking.creatorId,
+            uid: booking.earnerId,
             type: TransactionType.CALENDAR,
             amountTokens: booking.payment.escrowTokens,
             split: {
               platformTokens: 0,
-              creatorTokens: booking.payment.escrowTokens,
+              earnerTokens: booking.payment.escrowTokens,
             },
             status: "completed",
             metadata: {
@@ -296,6 +298,20 @@ export const updateRoyalEligibility = onSchedule(
 
     return;
   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

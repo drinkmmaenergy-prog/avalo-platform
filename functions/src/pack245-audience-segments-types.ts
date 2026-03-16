@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 245: Audience Classification & VIP Segmenting
  * TypeScript types and interfaces for smart viewer segmentation
@@ -32,11 +34,11 @@ export type RiskLevel = 'normal' | 'watch' | 'blocked';
 
 // ========================================================================
 // Audience Segment Document
-// Per viewer-creator relationship
+// Per viewer-earner relationship
 // ========================================================================
 
 export interface PassionSignals {
-  /** Overlapping interests between viewer and creator */
+  /** Overlapping interests between viewer and earner */
   sharedInterests: boolean;
   
   /** High engagement without payment (views, likes) */
@@ -47,14 +49,14 @@ export interface PassionSignals {
 }
 
 export interface AudienceSegment {
-  /** Document ID: `${viewerId}_${creatorId}` */
+  /** Document ID: `${viewerId}_${earnerId}` */
   id: string;
   
   /** Viewer user ID */
   viewerId: string;
   
   /** Creator user ID */
-  creatorId: string;
+  earnerId: string;
   
   // Economic segment
   /** Budget classification */
@@ -210,14 +212,14 @@ export interface LocationData {
 }
 
 export interface ProximityCache {
-  /** Document ID: `${viewerId}_${creatorId}` */
+  /** Document ID: `${viewerId}_${earnerId}` */
   id: string;
   
   /** Viewer user ID */
   viewerId: string;
   
   /** Creator user ID */
-  creatorId: string;
+  earnerId: string;
   
   /** Computed proximity classification */
   proximityClass: ProximityClass;
@@ -238,7 +240,7 @@ export interface ProximityCache {
   viewerLocation: LocationData;
   
   /** Creator location data */
-  creatorLocation: LocationData;
+  earnerLocation: LocationData;
   
   /** Last calculation timestamp */
   lastUpdated: Timestamp;
@@ -294,14 +296,14 @@ export interface LoyaltyMetrics {
 }
 
 export interface PassionSignalsDocument {
-  /** Document ID: `${viewerId}_${creatorId}` */
+  /** Document ID: `${viewerId}_${earnerId}` */
   id: string;
   
   /** Viewer user ID */
   viewerId: string;
   
   /** Creator user ID */
-  creatorId: string;
+  earnerId: string;
   
   /** Interest overlap data */
   interestOverlap: InterestOverlap;
@@ -448,7 +450,7 @@ export interface TopSegmentCombination {
 
 export interface CreatorAudienceAnalytics {
   /** Creator user ID */
-  creatorId: string;
+  earnerId: string;
   
   /** Total unique viewers with segments */
   totalAudienceSize: number;
@@ -518,7 +520,7 @@ export interface SegmentUpdateEvent {
   viewerId: string;
   
   /** Creator user ID */
-  creatorId: string;
+  earnerId: string;
   
   /** Type of change */
   changeType: SegmentChangeType;
@@ -549,8 +551,8 @@ export interface SegmentComputationQueue {
   /** Viewer user ID */
   viewerId: string;
   
-  /** Creator user ID (null for all creators) */
-  creatorId: string | null;
+  /** Creator user ID (null for all earners) */
+  earnerId: string | null;
   
   /** Computation type */
   computationType: 'full' | 'incremental' | 'targeted';
@@ -618,7 +620,7 @@ export interface SegmentPerformanceMetrics {
   segmentValue: string;
   
   /** Creator ID (null for platform-wide) */
-  creatorId: string | null;
+  earnerId: string | null;
   
   /** Performance metrics */
   metrics: ConversionMetrics;
@@ -722,7 +724,7 @@ export interface SegmentUpdateTrigger {
   userId: string;
   
   /** Creator ID (null for all) */
-  creatorId: string | null;
+  earnerId: string | null;
   
   /** Trigger source */
   source: 'purchase' | 'chat' | 'call' | 'meeting' | 'event' | 'location' | 'profile' | 'scheduled';
@@ -755,6 +757,20 @@ export interface SegmentScore {
   passion: number;
   overall: number;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

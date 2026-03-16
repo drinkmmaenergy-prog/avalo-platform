@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 142 — Liveness Check Engine
  * 
@@ -137,7 +139,7 @@ async function detectHeadRotation(videoUrl: string): Promise<MicroMovementDetect
     timestamp: Date.now(),
     movementType: 'HEAD_ROTATION',
     detected,
-    confidence: detected ? 0.8 + Math.random() * 0.2 : MONETIZATION_SPLITS.CHAT.avalo,
+    confidence: detected ? 0.8 + Math.random() * 0.2 : MONETIZATION_SPLITS.CHAT.platform,
   };
 }
 
@@ -552,6 +554,22 @@ export default {
   getLatestLivenessSession,
   needsLivenessVerification,
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

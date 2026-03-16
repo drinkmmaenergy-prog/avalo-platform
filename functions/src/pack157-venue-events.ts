@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 157 — Venue Events Management
  * Cloud Functions for venue event scheduling, attendance, and check-in
@@ -6,7 +8,7 @@
  * - ALL events must be SAFE and professional
  * - ZERO tolerance for romantic/dating themes
  * - QR check-in for attendance tracking
- * - Token-based payments only (65% creator / 35% Avalo)
+ * - Token-based payments only (65% earner / 35% Avalo)
  */
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
@@ -384,7 +386,7 @@ export const scheduleVenueEvent = onCall<{
   const partnerDoc = await db.collection('business_partners').doc(venue.partnerId).get();
   const partner = partnerDoc.data() as BusinessPartner;
   
-  // Check if user is owner or authorized creator
+  // Check if user is owner or authorized earner
   const isOwner = partner.ownerUserId === userId;
   const isAuthorizedCreator = data.hostedBy === userId;
   
@@ -659,8 +661,8 @@ export const registerForVenueEvent = onCall<{
   // Handle payment if event is paid
   let transactionId: string | undefined;
   const platformFee = Math.floor(event.priceTokens * event.platformFeePercentage);
-  const creatorEarnings = event.priceTokens - platformFee;
-  const venueCommission = Math.floor(creatorEarnings * event.venueCommission);
+  const earnerEarnings = event.priceTokens - platformFee;
+  const venueCommission = Math.floor(earnerEarnings * event.venueCommission);
   
   if (event.priceTokens > 0) {
     // Check balance
@@ -685,12 +687,12 @@ export const registerForVenueEvent = onCall<{
         tokenBalance: increment(-event.priceTokens),
       });
       
-      // Add to creator (if event has a host)
+      // Add to earner (if event has a host)
       if (event.hostedBy) {
-        const creatorWalletRef = db.collection('users').doc(event.hostedBy)
+        const earnerWalletRef = db.collection('users').doc(event.hostedBy)
           .collection('wallet').doc('main');
-        transaction.update(creatorWalletRef, {
-          tokenBalance: increment(creatorEarnings - venueCommission),
+        transaction.update(earnerWalletRef, {
+          tokenBalance: increment(earnerEarnings - venueCommission),
         });
       }
       
@@ -706,7 +708,7 @@ export const registerForVenueEvent = onCall<{
         venueId: event.venueId,
         partnerId: event.partnerId,
         platformFee,
-        creatorEarnings: creatorEarnings - venueCommission,
+        earnerEarnings: earnerEarnings - venueCommission,
         venueCommission,
         createdAt: serverTimestamp(),
       });
@@ -732,7 +734,7 @@ export const registerForVenueEvent = onCall<{
     
     tokensAmount: event.priceTokens,
     platformFee,
-    creatorEarnings: creatorEarnings - venueCommission,
+    earnerEarnings: earnerEarnings - venueCommission,
     venueCommission,
     transactionId,
     
@@ -872,6 +874,20 @@ export const getMyVenueEvents = onCall({ region: 'us-central1' }, async (request
     })),
   };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

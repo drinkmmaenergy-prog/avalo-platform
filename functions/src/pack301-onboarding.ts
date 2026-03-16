@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 301B - Onboarding Funnel Tracking Cloud Function
  * Tracks user progress through onboarding stages and triggers contextual nudges
@@ -266,6 +268,20 @@ export const onPhotoUploaded = onDocumentCreated('users/{userId}/photos/{photoId
   });
 
 console.log('✅ PACK 301B - Onboarding Funnel Tracking initialized');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

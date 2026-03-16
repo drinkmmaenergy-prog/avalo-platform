@@ -1,3 +1,5 @@
+import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+
 export type ConversationTier=
  | "STANDARD"
  | "VIP"
@@ -8,3 +10,19 @@ export interface TierConfig{
  tier:ConversationTier
  multiplier:number
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

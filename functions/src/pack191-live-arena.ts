@@ -1,10 +1,12 @@
+import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+
 /**
  * PACK 191 — Avalo Live Video Arena
  * 
  * SFW Interactive Livestreams with Paid Reactions, Group Challenges, and Zero Sexual/Escort Dynamics
  * 
  * Key Features:
- * - Real-time livestreaming for creators and communities
+ * - Real-time livestreaming for earners and communities
  * - Interactive mechanics (reactions, polls, challenges)
  * - Safe monetization (no romantic/erotic content)
  * - Real-time safety monitoring
@@ -48,7 +50,7 @@ export interface LiveStream {
   // Participants
   viewerCount: number;
   participantIds: string[];
-  maxParticipants: number; // For collab streams (1-4 creators)
+  maxParticipants: number; // For collab streams (1-4 earners)
   
   // Monetization
   totalReactionTokens: number;
@@ -156,8 +158,8 @@ const REACTION_COSTS = {
 };
 
 const REVENUE_SPLIT = {
-  creator: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator
-  platform: MONETIZATION_SPLITS.SUBSCRIPTION.avalo, // 30% to Avalo
+  earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, // 70% to earner
+  platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform, // 30% to Avalo
 };
 
 const STREAM_LIMITS = {
@@ -221,7 +223,7 @@ export const createLiveStream = onCall(
     }
 
     // Check burnout cooldown
-    const burnoutDoc = await db.collection('creator_burnout').doc(uid).get();
+    const burnoutDoc = await db.collection('earner_burnout').doc(uid).get();
     if (burnoutDoc.exists) {
       const burnoutData = burnoutDoc.data();
       const lastStreamEnd = burnoutData?.lastStreamEndedAt?.toDate() || new Date(0);
@@ -355,8 +357,8 @@ export const endLiveStream = onCall(
 
     // Calculate total revenue and split
     const totalRevenue = stream.totalReactionTokens + stream.totalPollTokens + stream.totalChallengeTokens;
-    const creatorEarnings = Math.floor(totalRevenue * REVENUE_SPLIT.creator);
-    const platformEarnings = totalRevenue - creatorEarnings;
+    const earnerEarnings = Math.floor(totalRevenue * REVENUE_SPLIT.earner);
+    const platformEarnings = totalRevenue - earnerEarnings;
 
     // Update stream
     await streamRef.update({
@@ -366,17 +368,17 @@ export const endLiveStream = onCall(
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Update creator wallet
-    if (creatorEarnings > 0) {
+    // Update earner wallet
+    if (earnerEarnings > 0) {
       await db.collection('users').doc(uid).update({
-        'wallet.balance': FieldValue.increment(creatorEarnings),
-        'wallet.earned': FieldValue.increment(creatorEarnings),
+        'wallet.balance': FieldValue.increment(earnerEarnings),
+        'wallet.earned': FieldValue.increment(earnerEarnings),
         updatedAt: FieldValue.serverTimestamp(),
       });
     }
 
     // Update burnout tracking
-    await db.collection('creator_burnout').doc(uid).set({
+    await db.collection('earner_burnout').doc(uid).set({
       userId: uid,
       lastStreamEndedAt: FieldValue.serverTimestamp(),
       totalStreamDuration: FieldValue.increment(duration),
@@ -390,7 +392,7 @@ export const endLiveStream = onCall(
       hostId: uid,
       duration,
       totalRevenue,
-      creatorEarnings,
+      earnerEarnings,
       platformEarnings,
       peakViewers: stream.viewerCount,
       totalReactions: stream.totalReactionTokens,
@@ -404,7 +406,7 @@ export const endLiveStream = onCall(
       success: true,
       duration,
       totalRevenue,
-      creatorEarnings,
+      earnerEarnings,
       platformEarnings,
     });
 
@@ -1065,6 +1067,22 @@ export const updateViewerActivity = onDocumentCreated(
       });
   }
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
