@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-import AnalyticsClient from './AnalyticsClient';
+import AnalyticsShell from './AnalyticsShell';
 
 export default function AnalyticsPage() {
-  return <AnalyticsClient />;
+  return <AnalyticsShell />;
 }
