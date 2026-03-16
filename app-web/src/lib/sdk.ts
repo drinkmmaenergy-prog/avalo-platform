@@ -23,6 +23,7 @@ import { auth, requireDb } from '@/lib/firebase';
 import type { User } from '@/types';
 
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 const appleProvider = new OAuthProvider('apple.com');
 
 const sdk = {

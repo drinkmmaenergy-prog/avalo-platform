@@ -170,8 +170,8 @@ export async function getStripeConnectStatus(userId: string): Promise<CreatorStr
  */
 export async function initiateStripeOnboarding(
   userId: string,
-  returnUrl: string,
-  refreshUrl: string
+  returnUrl?: string,
+  refreshUrl?: string
 ): Promise<{ url: string } | null> {
     
   try {
@@ -180,11 +180,15 @@ export async function initiateStripeOnboarding(
       { onboardingUrl?: string }
     >(requireFunctions(), 'setupPayoutAccount');
     
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const resolvedReturnUrl = returnUrl || (origin ? `${origin}/creator/stripe` : '/creator/stripe');
+    const resolvedRefreshUrl = refreshUrl || (origin ? `${origin}/creator/stripe` : '/creator/stripe');
+
     const result = await setupPayoutAccount({
       userId,
       rail: 'STRIPE',
-      returnUrl,
-      refreshUrl,
+      returnUrl: resolvedReturnUrl,
+      refreshUrl: resolvedRefreshUrl,
     });
     
     if (result.data.onboardingUrl) {
@@ -284,4 +288,5 @@ export async function requestCreatorPayout(
     };
   }
 }
+
 

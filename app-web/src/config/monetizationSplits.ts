@@ -11,3 +11,4 @@ export const MONETIZATION_SPLITS = {
 
   SUBSCRIPTION: { creator: 0.70, avalo: 0.30 }
 } as const;
+

@@ -17,34 +17,38 @@ export interface RoleGate {
 }
 
 // ============================================================================
-// CANONICAL TOKEN PACKS (READ-ONLY - from backend)
+// TOKEN PACK DISPLAY CONTRACT (COMPATIBILITY ONLY)
 // ============================================================================
 
 /**
- * Canonical token pack pricing.
- * Source: CANONICAL_TOKEN_PACKS in functions/src/payments/stripe/webhook.ts
- * NO discounts, NO coupons, NO overrides.
+ * Display token-pack contract for app-web surfaces.
+ * Backend runtime is authoritative for checkout/webhook validation.
+ *
+ * Backend source-of-truth:
+ * - functions/src/pack277-token-packs.ts
+ * - functions/src/pack288-web-stripe.ts
  */
 export interface CanonicalTokenPack {
   packId: string;
   tokens: number;
-  priceUSD: number;  // Price in USD cents
-  priceEUR: number;  // Price in EUR cents
-  pricePLN: number;  // Price in PLN groszy
-  priceGBP: number;  // Price in GBP pence
+  priceUSD: number;  // Price in USD cents (display mirror of backend SoT)
+  priceEUR?: number; // Optional display-only compatibility field
+  pricePLN?: number; // Optional display-only compatibility field
+  priceGBP?: number; // Optional display-only compatibility field
 }
 
 /**
- * Canonical token packs - directly mapped from backend.
- * IMMUTABLE - any change requires explicit migration.
+ * Display/compatibility token packs for UI rendering.
+ * NOT an authority for checkout amount calculation or webhook validation.
  */
 export const CANONICAL_TOKEN_PACKS: Record<string, CanonicalTokenPack> = {
-  MINI: { packId: 'MINI', tokens: 100, priceUSD: 549, priceEUR: 499, pricePLN: 2000, priceGBP: 449 },
-  BASIC: { packId: 'BASIC', tokens: 300, priceUSD: 1599, priceEUR: 1499, pricePLN: 6000, priceGBP: 1299 },
-  STANDARD: { packId: 'STANDARD', tokens: 500, priceUSD: 2699, priceEUR: 2499, pricePLN: 10000, priceGBP: 2199 },
-  PREMIUM: { packId: 'PREMIUM', tokens: 1000, priceUSD: 5299, priceEUR: 4999, pricePLN: 20000, priceGBP: 4399 },
-  PRO: { packId: 'PRO', tokens: 2000, priceUSD: 10499, priceEUR: 9999, pricePLN: 40000, priceGBP: 8799 },
-  ELITE: { packId: 'ELITE', tokens: 5000, priceUSD: 25999, priceEUR: 24999, pricePLN: 100000, priceGBP: 21999 },
+  MINI: { packId: 'MINI', tokens: 100, priceUSD: 999, priceEUR: 499, pricePLN: 2000, priceGBP: 449 },
+  BASIC: { packId: 'BASIC', tokens: 300, priceUSD: 2699, priceEUR: 1499, pricePLN: 6000, priceGBP: 1299 },
+  STANDARD: { packId: 'STANDARD', tokens: 500, priceUSD: 4299, priceEUR: 2499, pricePLN: 10000, priceGBP: 2199 },
+  PREMIUM: { packId: 'PREMIUM', tokens: 1000, priceUSD: 7699, priceEUR: 4999, pricePLN: 20000, priceGBP: 4399 },
+  PRO: { packId: 'PRO', tokens: 2000, priceUSD: 14799, priceEUR: 9999, pricePLN: 40000, priceGBP: 8799 },
+  ELITE: { packId: 'ELITE', tokens: 5000, priceUSD: 35399, priceEUR: 24999, pricePLN: 100000, priceGBP: 21999 },
+  ROYAL: { packId: 'ROYAL', tokens: 10000, priceUSD: 67499 },
 };
 
 // ============================================================================
@@ -132,6 +136,7 @@ export interface CreatorAnalyticsDashboard {
 
 export interface CheckoutSessionRequest {
   packageId: string;
+  packId?: string;
   successUrl?: string;
   cancelUrl?: string;
 }
@@ -179,4 +184,5 @@ export interface AdminOpsView {
   systemHealth: SystemHealthMetric[];
   snapshotTime: Date;
 }
+
 

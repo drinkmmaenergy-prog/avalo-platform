@@ -26,7 +26,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
 
     const notificationsRef = collection(requireDb(), 'notifications');
     const q = query(
@@ -36,33 +40,43 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       limit(50)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newNotifications: Notification[] = [];
-      let unread = 0;
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const newNotifications: Notification[] = [];
+        let unread = 0;
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const notification: Notification = {
-          id: doc.id,
-          userId: data.userId,
-          type: data.type,
-          title: data.title,
-          body: data.body,
-          imageUrl: data.imageUrl,
-          actionUrl: data.actionUrl,
-          isRead: data.isRead || false,
-          createdAt: data.createdAt?.toDate() || new Date(),
-        };
-        newNotifications.push(notification);
-        if (!notification.isRead) unread++;
-      });
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const notification: Notification = {
+            id: doc.id,
+            userId: data.userId,
+            type: data.type,
+            title: data.title,
+            body: data.body,
+            imageUrl: data.imageUrl,
+            actionUrl: data.actionUrl,
+            isRead: data.isRead || false,
+            createdAt: data.createdAt?.toDate() || new Date(),
+          };
+          newNotifications.push(notification);
+          if (!notification.isRead) unread++;
+        });
 
-      setNotifications(newNotifications);
-      setUnreadCount(unread);
-    });
+        setNotifications(newNotifications);
+        setUnreadCount(unread);
+      },
+      (error) => {
+        if (error?.code !== 'permission-denied') {
+          console.error('[NotificationProvider] Snapshot listener failed:', error);
+        }
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user?.uid]);
 
   const markAsRead = async (notificationId: string) => {
     // Implementation would call Cloud Function

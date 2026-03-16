@@ -7,11 +7,52 @@
 
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
-import { UserCircle, Wallet, Shield } from 'lucide-react';
+import { Wallet, Shield } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
+import { getTokenBalance } from '@/lib/services/tokenService';
 
 export default function ProfilePage() {
   const { user, firebaseUser } = useAuth();
   const { t } = useI18n();
+  const [tokenBalance, setTokenBalance] = useState<number>(0);
+
+  useEffect(() => {
+    const resolvedUid = firebaseUser?.uid ?? user?.uid;
+    if (!resolvedUid) return;
+    let active = true;
+
+    const refreshFromCallable = async () => {
+      const balance = await getTokenBalance(resolvedUid);
+      if (active) setTokenBalance(balance);
+    };
+
+    // Seed from backend callable so profile reflects current balance after checkout redirect.
+    void refreshFromCallable();
+
+    const unsub = onSnapshot(
+      doc(requireDb(), 'wallets', resolvedUid),
+      (snap) => {
+        if (snap.exists()) {
+          setTokenBalance(snap.data().tokensBalance ?? snap.data().tokenBalance ?? 0);
+        } else {
+          void refreshFromCallable();
+        }
+      },
+      (error) => {
+        if (error?.code !== 'permission-denied') {
+          console.error('[Profile] Token balance listener failed:', error);
+        }
+        void refreshFromCallable();
+      }
+    );
+
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [firebaseUser?.uid, user?.uid]);
 
   const displayName = user?.displayName ?? firebaseUser?.displayName ?? '';
   const email = user?.email ?? firebaseUser?.email ?? '';
@@ -61,7 +102,7 @@ export default function ProfilePage() {
                 <Wallet className="w-4 h-4 text-primary-500" />
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('wallet.tokenBalance')}</p>
               </div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{user.tokenBalance ?? 0}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{tokenBalance}</p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-1">
@@ -76,5 +117,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-

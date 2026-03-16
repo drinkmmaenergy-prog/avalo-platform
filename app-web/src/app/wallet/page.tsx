@@ -26,6 +26,7 @@ import { useI18n } from '@/components/providers/I18nProvider';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
+import { getTokenBalance } from '@/lib/services/tokenService';
 
 interface CreatorEarnings {
   totalTokensEarnedAllTime: number;
@@ -36,36 +37,68 @@ interface CreatorEarnings {
 export default function WalletPage() {
   const { user, firebaseUser } = useAuth();
   const { t } = useI18n();
-  const [tokenBalance, setTokenBalance] = useState<number>(user?.tokenBalance ?? 0);
+  const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [creatorEarnings, setCreatorEarnings] = useState<CreatorEarnings | null>(null);
 
   // Real-time listener for token balance
   useEffect(() => {
-    if (!firebaseUser?.uid) return;
+    const resolvedUid = firebaseUser?.uid ?? user?.uid;
+    if (!resolvedUid) return;
+    let active = true;
 
-    const unsub = onSnapshot(doc(requireDb(), 'users', firebaseUser.uid), (snap) => {
-      if (snap.exists()) {
-        setTokenBalance(snap.data().tokenBalance ?? 0);
+    const refreshFromCallable = async () => {
+      const balance = await getTokenBalance(resolvedUid);
+      if (active) setTokenBalance(balance);
+    };
+
+    // Seed from callable so wallet reflects post-checkout balance even if listener is restricted.
+    void refreshFromCallable();
+
+    const unsub = onSnapshot(
+      doc(requireDb(), 'wallets', resolvedUid),
+      (snap) => {
+        if (snap.exists()) {
+          setTokenBalance(snap.data().tokensBalance ?? snap.data().tokenBalance ?? 0);
+        } else {
+          void refreshFromCallable();
+        }
+      },
+      (error) => {
+        if (error?.code !== 'permission-denied') {
+          console.error('[Wallet] Token balance listener failed:', error);
+        }
+        void refreshFromCallable();
       }
-    });
+    );
 
-    return () => unsub();
-  }, [firebaseUser?.uid]);
-
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [firebaseUser?.uid, user?.uid]);
   // Load creator earnings if user is a creator
   useEffect(() => {
     if (!user?.isCreator || !firebaseUser?.uid) return;
 
-    const unsub = onSnapshot(doc(requireDb(), 'creator_earnings', firebaseUser.uid), (snap) => {
-      if (snap.exists()) {
-        const d = snap.data();
-        setCreatorEarnings({
-          totalTokensEarnedAllTime: d.totalTokensEarnedAllTime ?? 0,
-          withdrawableTokens: d.withdrawableTokens ?? 0,
-          pendingTokens: d.pendingTokens ?? 0,
-        });
+    const unsub = onSnapshot(
+      doc(requireDb(), 'creator_earnings', firebaseUser.uid),
+      (snap) => {
+        if (snap.exists()) {
+          const d = snap.data();
+          setCreatorEarnings({
+            totalTokensEarnedAllTime: d.totalTokensEarnedAllTime ?? 0,
+            withdrawableTokens: d.withdrawableTokens ?? 0,
+            pendingTokens: d.pendingTokens ?? 0,
+          });
+        }
+      },
+      (error) => {
+        if (error?.code !== 'permission-denied') {
+          console.error('[Wallet] Creator earnings listener failed:', error);
+        }
+        setCreatorEarnings(null);
       }
-    });
+    );
 
     return () => unsub();
   }, [user?.isCreator, firebaseUser?.uid]);

@@ -278,7 +278,7 @@ export function countWords(text: string): number {
  */
 export function estimateTokenCost(text: string, wordsPerToken: number = 11): number {
   const wordCount = countWords(text);
-  return Math.round(wordCount / wordsPerToken);
+  return Math.ceil(wordCount / wordsPerToken);
 }
 
 /**
@@ -321,3 +321,4 @@ export function formatLastActivity(timestamp: Timestamp): string {
   
   return timestamp.toDate().toLocaleDateString();
 }
+

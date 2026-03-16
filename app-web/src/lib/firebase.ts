@@ -15,9 +15,11 @@
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
+
+const FUNCTIONS_REGION = 'europe-west1';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -31,8 +33,14 @@ const firebaseConfig = {
 /** Firebase App — singleton. */
 const app: FirebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-/** Firebase Auth — singleton. */
+/** Firebase Auth — stable web singleton. */
 export const auth: Auth = getAuth(app);
+
+if (typeof window !== 'undefined') {
+  void setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.warn('[Firebase] Failed to enable browserLocalPersistence:', error);
+  });
+}
 
 /** Firestore — lazy singleton. */
 let _db: Firestore | null = null;
@@ -57,7 +65,7 @@ let _functions: Functions | null = null;
  */
 export function requireFunctions(): Functions {
   if (!_functions) {
-    _functions = getFunctions(app, 'us-central1');
+    _functions = getFunctions(app, FUNCTIONS_REGION);
   }
   return _functions;
 }
@@ -76,7 +84,7 @@ export function getFirebaseApp(): FirebaseApp {
  */
 export const functions: Functions = new Proxy({} as Functions, {
   get(_target, prop) {
-    if (!_functions) _functions = getFunctions(getFirebaseApp(), 'us-central1');
+    if (!_functions) _functions = getFunctions(getFirebaseApp(), FUNCTIONS_REGION);
     return (_functions as any)[prop];
   },
 });

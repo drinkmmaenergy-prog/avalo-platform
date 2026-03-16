@@ -102,9 +102,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
+      const effectiveUser: FirebaseUser | null = fbUser ?? auth.currentUser;
+      setFirebaseUser(effectiveUser);
 
-      if (!fbUser) {
+      if (!effectiveUser) {
         setUser(null);
         setNeedsOnboarding(false);
         setLoading(false);
@@ -112,21 +113,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // ZAWSZE upewnij się, że dokument istnieje
-        await ensureUserDocument(fbUser);
+        await ensureUserDocument(effectiveUser);
 
-        const ref = doc(requireDb(), 'users', fbUser.uid);
+        const ref = doc(requireDb(), 'users', effectiveUser.uid);
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
-          // To już nie powinno się zdarzyć
           setNeedsOnboarding(true);
           setUser(null);
           setLoading(false);
           return;
         }
 
-        const profile = await sdk.getUserProfile(fbUser.uid);
+        const profile = await sdk.getUserProfile(effectiveUser.uid);
         setUser(profile);
 
         const profileComplete =
@@ -135,9 +134,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setNeedsOnboarding(!profileComplete);
       } catch (error) {
         console.error('[Auth] Bootstrap error:', error);
-        // Do NOT set needsOnboarding=true on error — prevents false redirect
-        // to onboarding when Firestore is temporarily unavailable.
-        // User will see a blank state; refresh will retry.
         setUser(null);
       } finally {
         setLoading(false);

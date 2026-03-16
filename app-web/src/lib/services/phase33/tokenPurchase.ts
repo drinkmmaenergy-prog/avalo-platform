@@ -2,17 +2,11 @@
 
 /**
  * PHASE 3.3 — Web Token Purchase Service
- * 
- * Thin client consuming the SAME checkout session function as mobile.
- * NO discounts, NO coupons, NO overrides.
- * 
- * Backend functions consumed:
- * - tokens_createCheckoutSession (from pack288-web-stripe.ts)
- * 
- * INVARIANTS ENFORCED BY BACKEND:
- * - NO_DISCOUNTS: Rejects sessions with coupons/promotions
- * - NO_FREE_TOKENS: Minimum amount validation
- * - CANONICAL_TOKEN_PACKS: Fixed pricing, no overrides
+ *
+ * Backend-authoritative model:
+ * - Checkout session is created by backend callable `tokens_createCheckoutSession`.
+ * - Pricing authority is backend runtime (functions), not app-web constants.
+ * - Local pack data in phase33.types.ts is display/compatibility only.
  */
 
 import { requireFunctions } from '../../firebase';
@@ -25,12 +19,12 @@ import type {
 import { CANONICAL_TOKEN_PACKS } from '../../../types/phase33.types';
 
 // ============================================================================
-// TOKEN PACK DISPLAY
+// TOKEN PACK DISPLAY (COMPATIBILITY LAYER)
 // ============================================================================
 
 /**
  * Get available token packs for display.
- * Returns canonical packs — NO modifications allowed.
+ * Display-only compatibility data; backend remains pricing authority.
  */
 export function getAvailableTokenPacks(): CanonicalTokenPack[] {
   return Object.values(CANONICAL_TOKEN_PACKS);
@@ -38,6 +32,7 @@ export function getAvailableTokenPacks(): CanonicalTokenPack[] {
 
 /**
  * Get a specific token pack by ID.
+ * Compatibility lookup only (UI/selection guard).
  */
 export function getTokenPackById(packId: string): CanonicalTokenPack | null {
   return CANONICAL_TOKEN_PACKS[packId.toUpperCase()] || null;
@@ -45,41 +40,36 @@ export function getTokenPackById(packId: string): CanonicalTokenPack | null {
 
 /**
  * Format price for display based on currency.
- * Display-only — backend handles actual pricing.
+ * Falls back to USD when non-USD display fields are unavailable.
  */
 export function formatPackPrice(pack: CanonicalTokenPack, currency: 'USD' | 'EUR' | 'PLN' | 'GBP' = 'USD'): string {
+  const usd = `$${(pack.priceUSD / 100).toFixed(2)}`;
+
   switch (currency) {
     case 'USD':
-      return `$${(pack.priceUSD / 100).toFixed(2)}`;
+      return usd;
     case 'EUR':
-      return `€${(pack.priceEUR / 100).toFixed(2)}`;
+      return pack.priceEUR != null ? `€${(pack.priceEUR / 100).toFixed(2)}` : usd;
     case 'PLN':
-      return `${(pack.pricePLN / 100).toFixed(2)} PLN`;
+      return pack.pricePLN != null ? `${(pack.pricePLN / 100).toFixed(2)} PLN` : usd;
     case 'GBP':
-      return `£${(pack.priceGBP / 100).toFixed(2)}`;
+      return pack.priceGBP != null ? `£${(pack.priceGBP / 100).toFixed(2)}` : usd;
     default:
-      return `$${(pack.priceUSD / 100).toFixed(2)}`;
+      return usd;
   }
 }
 
 // ============================================================================
-// STRIPE CHECKOUT SESSION
+// STRIPE CHECKOUT SESSION (BACKEND-CANONICAL)
 // ============================================================================
 
 /**
  * Create Stripe checkout session for token purchase.
- * Uses the SAME backend function as mobile — no web-specific logic.
- * 
- * Backend enforces:
- * - Age verification (18+)
- * - Monthly purchase limits
- * - NO discounts allowed
+ * Delegates to backend canonical callable.
  */
 export async function createTokenCheckoutSession(
   request: CheckoutSessionRequest
 ): Promise<CheckoutSessionResponse> {
-    
-  // Validate pack exists in canonical list
   const pack = getTokenPackById(request.packageId);
   if (!pack) {
     return {
@@ -87,23 +77,24 @@ export async function createTokenCheckoutSession(
       error: `Invalid package ID: ${request.packageId}`,
     };
   }
-  
+
   try {
     const createCheckoutSession = httpsCallable<
       CheckoutSessionRequest,
       { success: boolean; checkoutUrl?: string; sessionId?: string; error?: string }
     >(requireFunctions(), 'tokens_createCheckoutSession');
-    
-    // Default URLs if not provided
+
     const successUrl = request.successUrl || `${window.location.origin}/wallet/success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = request.cancelUrl || `${window.location.origin}/wallet`;
-    
+    const normalizedPackId = pack.packId.toLowerCase();
+
     const result = await createCheckoutSession({
-      packageId: pack.packId.toLowerCase(), // Backend expects lowercase
+      packageId: normalizedPackId,
+      packId: normalizedPackId,
       successUrl,
       cancelUrl,
     });
-    
+
     return {
       success: result.data.success,
       checkoutUrl: result.data.checkoutUrl,
@@ -112,8 +103,7 @@ export async function createTokenCheckoutSession(
     };
   } catch (error: any) {
     console.error('[TokenPurchase] Error creating checkout session:', error);
-    
-    // Map error codes to user-friendly messages
+
     let errorMessage = 'Failed to create checkout session';
     if (error.code === 'unauthenticated') {
       errorMessage = 'Please sign in to purchase tokens';
@@ -122,7 +112,7 @@ export async function createTokenCheckoutSession(
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     return {
       success: false,
       error: errorMessage,
@@ -132,7 +122,6 @@ export async function createTokenCheckoutSession(
 
 /**
  * Redirect user to Stripe checkout.
- * Simple wrapper — NO payment processing in web.
  */
 export function redirectToCheckout(checkoutUrl: string): void {
   if (typeof window !== 'undefined') {
@@ -146,7 +135,6 @@ export function redirectToCheckout(checkoutUrl: string): void {
 
 /**
  * Complete purchase flow: create session and redirect.
- * NO business logic — just orchestrates the checkout.
  */
 export async function initiatePurchase(
   packageId: string,
@@ -156,18 +144,17 @@ export async function initiatePurchase(
   }
 ): Promise<void> {
   const response = await createTokenCheckoutSession({ packageId });
-  
+
   if (!response.success) {
     options?.onError?.(response.error || 'Purchase failed');
     return;
   }
-  
+
   if (response.sessionId) {
     options?.onSuccess?.(response.sessionId);
   }
-  
+
   if (response.checkoutUrl) {
     redirectToCheckout(response.checkoutUrl);
   }
 }
-

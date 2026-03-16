@@ -186,15 +186,24 @@ export async function getPurchaseHistory(params: {
  * Get user's current token balance
  */
 export async function getTokenBalance(userId: string): Promise<number> {
+  const parseBalance = (data: any): number | null => {
+    const candidates = [data?.balance, data?.tokenBalance, data?.tokensBalance, data?.tokens];
+    for (const v of candidates) {
+      if (typeof v === 'number' && Number.isFinite(v)) return v;
+    }
+    return null;
+  };
+
   try {
-    const getBalance = httpsCallable<{ userId: string }, { balance: number }>(requireFunctions(),
-      'getTokenBalance'
+    const getWalletBalance = httpsCallable<{ userId: string }, Record<string, unknown>>(requireFunctions(),
+      'getWalletBalance'
     );
-    
-    const result = await getBalance({ userId });
-    return result.data.balance;
+
+    const result = await getWalletBalance({ userId });
+    const parsed = parseBalance(result.data);
+    return parsed ?? 0;
   } catch (error) {
-    console.error('Error getting token balance:', error);
+    console.error('Error getting wallet balance via getWalletBalance:', error);
     return 0;
   }
 }
