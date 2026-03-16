@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { Users } from 'lucide-react';
 import { DataTable } from '../components/DataTable';
 import { Badge } from '../components/Badge';
@@ -158,4 +161,5 @@ export default function UsersPage() {
     </div>
   );
 }
+
 

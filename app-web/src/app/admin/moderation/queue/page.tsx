@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, ArrowRight, Clock, User, Shield } from 'lucide-react';
@@ -267,4 +270,5 @@ export default function QueuePage() {
     </div>
   );
 }
+
 
