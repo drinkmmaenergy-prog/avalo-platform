@@ -1,13 +1,14 @@
 'use client';
 
 /**
- * Onboarding Wizard — DELIVERABLE C
+ * Onboarding Wizard — DELIVERABLE C (extended with earn_on step)
  *
  * Steps:
  *   1. Accept Terms + Age gate
  *   2. Set preferred language
- *   3. Create users/{uid} atomically → profileComplete = true
- *   4. After success → route to /feed (AppShell)
+ *   3. How do you want to use Avalo? (earn_on selection — OPTIONAL, can skip)
+ *   4. Create users/{uid} atomically → profileComplete = true
+ *   5. After success → route to /feed (AppShell)
  *
  * On Firestore error: shows explicit error message.
  */
@@ -15,7 +16,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, CheckCircle, ChevronRight, ChevronLeft, Globe, Shield } from 'lucide-react';
+import { Loader2, CheckCircle, ChevronRight, ChevronLeft, Globe, Shield, Sparkles } from 'lucide-react';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -26,8 +27,14 @@ import {
   type SupportedLocale,
 } from '@/i18n/config';
 import { toast } from '@/components/ui/Toaster';
+import {
+  EARN_SURFACE_META,
+  type EarnSurfaceKey,
+} from '@/lib/services/earnerService';
 
-type OnboardingStep = 1 | 2 | 3;
+type OnboardingStep = 1 | 2 | 3 | 4;
+
+const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -40,6 +47,13 @@ export default function OnboardingPage() {
   const [selectedLocale, setSelectedLocale] = useState<SupportedLocale>(locale);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Earn on state (step 3) ───────────────────────────────────────
+  const [earnOnChoice, setEarnOnChoice] = useState<'connect' | 'earn' | null>(null);
+  const [selectedSurfaces, setSelectedSurfaces] = useState<Partial<Record<EarnSurfaceKey, boolean>>>({
+    chat: true,
+    tips: true,
+  });
 
   // Redirect if not authenticated or already onboarded
   useEffect(() => {
@@ -68,12 +82,23 @@ export default function OnboardingPage() {
       // Apply locale selection
       setLocale(selectedLocale);
       setStep(3);
+    } else if (step === 3) {
+      // earn_on step — user can skip (earnOnChoice=null treated as 'connect')
+      setStep(4);
     }
   };
 
   const handlePreviousStep = () => {
     if (step === 2) setStep(1);
     if (step === 3) setStep(2);
+    if (step === 4) setStep(3);
+  };
+
+  const toggleSurface = (key: EarnSurfaceKey) => {
+    setSelectedSurfaces((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
   const handleComplete = async () => {
@@ -83,6 +108,40 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
+      const isEarner = earnOnChoice === 'earn';
+
+      // Build earn_surfaces object (only if earner)
+      const earn_surfaces = isEarner
+        ? {
+            chat: selectedSurfaces.chat ?? true,
+            calls: selectedSurfaces.calls ?? false,
+            tips: selectedSurfaces.tips ?? true,
+            media: selectedSurfaces.media ?? false,
+            live: selectedSurfaces.live ?? false,
+            subscription: selectedSurfaces.subscription ?? false,
+            meetings: selectedSurfaces.meetings ?? false,
+            events: selectedSurfaces.events ?? false,
+          }
+        : {
+            chat: false,
+            calls: false,
+            tips: false,
+            media: false,
+            live: false,
+            subscription: false,
+            meetings: false,
+            events: false,
+          };
+
+      // Build earn_profile defaults
+      const earn_profile = {
+        displayName: firebaseUser.displayName ?? '',
+        bio: '',
+        chatPriceTokens: 100,
+        callRatePerMin: 50,
+        subscriptionPrice: 500,
+      };
+
       // Atomically create the user document with all required fields
       const userRef = doc(requireDb(), 'users', firebaseUser.uid);
       await setDoc(userRef, {
@@ -100,6 +159,15 @@ export default function OnboardingPage() {
         isVerified: false,
         tokenBalance: 0,
         accountStatus: 'ACTIVE',
+        // Canonical earn_on fields
+        earn_on: isEarner,
+        earn_surfaces,
+        earn_profile,
+        // Backward-compatible fields
+        earnOn: isEarner,
+        modes: {
+          earnFromChat: isEarner && (selectedSurfaces.chat ?? true),
+        },
         createdAt: serverTimestamp(),
         lastActiveAt: serverTimestamp(),
       });
@@ -156,6 +224,8 @@ export default function OnboardingPage() {
   const popularLocales: SupportedLocale[] = ['en', 'pl', 'de', 'fr', 'es', 'it', 'pt'];
   const otherLocales = SUPPORTED_LOCALES.filter((l) => !popularLocales.includes(l));
 
+  const surfaceKeys = Object.keys(EARN_SURFACE_META) as EarnSurfaceKey[];
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-secondary-50 dark:from-gray-900 dark:via-black dark:to-gray-900 px-4 py-8">
       <div className="w-full max-w-lg">
@@ -169,7 +239,7 @@ export default function OnboardingPage() {
 
         {/* Step indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3].map((s) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
             <div
               key={s}
               className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
@@ -262,14 +332,142 @@ export default function OnboardingPage() {
             </div>
           )}
 
-          {/* Step 3: Confirmation */}
+          {/* Step 3: How do you want to use Avalo? (earn_on) */}
           {step === 3 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Sparkles className="w-6 h-6 text-primary-500" />
+                <div>
+                  <h2 className="text-lg font-semibold">How do you want to use Avalo?</h2>
+                  <p className="text-sm text-muted-foreground">
+                    You can always change this later in settings.
+                  </p>
+                </div>
+              </div>
+
+              {/* Choice cards */}
+              <div className="grid grid-cols-1 gap-3">
+                {/* Option A: Connect & Meet */}
+                <button
+                  type="button"
+                  onClick={() => setEarnOnChoice('connect')}
+                  className={`text-left p-4 rounded-xl border-2 transition-all ${
+                    earnOnChoice === 'connect'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🤝</span>
+                    <div>
+                      <div className="font-semibold text-gray-900 dark:text-white">Connect & Meet</div>
+                      <div className="text-sm text-muted-foreground">
+                        Discover people, chat, and enjoy the platform as a social user
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Option B: Earn with Avalo */}
+                <button
+                  type="button"
+                  onClick={() => setEarnOnChoice('earn')}
+                  className={`text-left p-4 rounded-xl border-2 transition-all ${
+                    earnOnChoice === 'earn'
+                      ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20'
+                      : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">💰</span>
+                    <div>
+                      <div className="font-semibold text-gray-900 dark:text-white">Earn with Avalo</div>
+                      <div className="text-sm text-muted-foreground">
+                        Monetize your chat, calls, tips, media, and more
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Surface selection (shown only if 'earn' chosen) */}
+              {earnOnChoice === 'earn' && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Select which surfaces to activate (you can change these later):
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {surfaceKeys.map((key) => {
+                      const meta = EARN_SURFACE_META[key];
+                      const isChecked = selectedSurfaces[key] ?? false;
+                      return (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition text-sm ${
+                            isChecked
+                              ? 'border-pink-400 bg-pink-50 dark:bg-pink-900/20'
+                              : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleSurface(key)}
+                            className="w-4 h-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                          />
+                          <span>{meta.icon}</span>
+                          <span className="text-gray-800 dark:text-gray-200">{meta.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Skip hint */}
+              {!earnOnChoice && (
+                <p className="text-xs text-center text-muted-foreground">
+                  You can skip this step — earning can be enabled later from Settings.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Step 4: Confirmation */}
+          {step === 4 && (
             <div className="space-y-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <CheckCircle className="w-8 h-8 text-green-500" />
               </div>
               <h2 className="text-lg font-semibold">{t('onboarding.step3Title')}</h2>
               <p className="text-sm text-muted-foreground">{t('onboarding.step3Desc')}</p>
+
+              {/* Show earn_on summary */}
+              {earnOnChoice === 'earn' && (
+                <div className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-lg p-3 text-left">
+                  <p className="text-sm font-medium text-pink-800 dark:text-pink-300">
+                    💰 Earning mode enabled
+                  </p>
+                  <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">
+                    Active surfaces:{' '}
+                    {surfaceKeys
+                      .filter((k) => selectedSurfaces[k])
+                      .map((k) => EARN_SURFACE_META[k].label)
+                      .join(', ') || 'None selected'}
+                  </p>
+                </div>
+              )}
+
+              {earnOnChoice === 'connect' && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-left">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                    🤝 Social mode — Connect & Meet
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    You can enable earning later from Earn with Avalo settings.
+                  </p>
+                </div>
+              )}
 
               {error && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-left">
@@ -294,13 +492,13 @@ export default function OnboardingPage() {
               <div />
             )}
 
-            {step < 3 ? (
+            {step < TOTAL_STEPS ? (
               <button
                 type="button"
                 onClick={handleNextStep}
                 className="btn btn-primary px-6 py-2 text-sm"
               >
-                {t('onboarding.next')}
+                {step === 3 && !earnOnChoice ? 'Skip' : t('onboarding.next')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </button>
             ) : (
@@ -326,5 +524,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-

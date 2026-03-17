@@ -1,0 +1,537 @@
+{
+  "auditDate": "2026-03-17T19:14:00Z",
+  "auditor": "KiloCode Staff Engineer",
+  "scope": "avalo/app-mobile — Expo/React Native mobile app production readiness",
+
+  "criticalBlockers": [
+    {
+      "id": "CB-001",
+      "severity": "P0-CRASH",
+      "file": "avalo/app-mobile/config/monetization.ts:1",
+      "description": "BROKEN IMPORT — `import { MONETIZATION_SPLITS } from '';` imports from an EMPTY STRING. This will crash at build time or runtime. Every screen that imports from monetization.ts (virtually the entire app) is affected.",
+      "impact": "App will not start. All monetization configs reference MONETIZATION_SPLITS which cannot resolve."
+    },
+    {
+      "id": "CB-002",
+      "severity": "P0-CRASH",
+      "file": "avalo/app-mobile/contexts/AuthContext.tsx",
+      "description": "AuthContext only exposes { user, loading } but login.tsx destructures { signIn } and register.tsx destructures { signUp }. These methods DO NOT EXIST on the context. Login and registration will crash with 'signIn is not a function'.",
+      "impact": "No user can log in or register. Complete authentication flow is broken."
+    },
+    {
+      "id": "CB-003",
+      "severity": "P0-CRASH",
+      "file": "avalo/app-mobile/app/notificationInit.ts:20",
+      "description": "useNotificationInit() references `currentUser` from useAuth(), but AuthContext only provides `user` (not `currentUser`). Additionally, useNotificationInit is NEVER called from any component — push notification registration is dead code.",
+      "impact": "Push notifications are completely non-functional. The hook is defined but never mounted."
+    },
+    {
+      "id": "CB-004",
+      "severity": "P0-SECURITY",
+      "file": "avalo/app-mobile/app/_sdk.ts:8-9",
+      "description": "Hardcoded Firebase API key as plaintext fallback: 'AIzaSyBpOGHxWKxd7Y8zXnLxJ7bZTdEwNRuCqLw'. Also duplicated in avalo/app-mobile/index.tsx:7. Combined with deviceId: 'DEVICE_PLACEHOLDER' which is never resolved to actual device ID.",
+      "impact": "API key leaked in source. Device identification is fake — affects analytics, rate limiting, fraud detection."
+    },
+    {
+      "id": "CB-005",
+      "severity": "P0-SECURITY",
+      "file": "avalo/app-mobile/lib/firebase.ts:8-13",
+      "description": "Firebase config has STAGING credentials hardcoded as fallbacks (projectId: 'avalostaging', appId refers to web config '1:1097334032970:web:...'). In production build without env vars, app connects to STAGING backend.",
+      "impact": "Production data could flow to staging. A web appId is used instead of native platform appId."
+    },
+    {
+      "id": "CB-006",
+      "severity": "P0-CRASH",
+      "file": "avalo/app-mobile/components/TokenPurchaseModal.tsx:34-36",
+      "description": "Token purchase is a SIMULATED setTimeout (1500ms delay + alert). No actual payment integration. The modal is used across the app as the primary purchase entrypoint.",
+      "impact": "Users cannot purchase tokens. Core revenue flow is completely non-functional."
+    },
+    {
+      "id": "CB-007",
+      "severity": "P0-CRASH",
+      "file": "avalo/app-mobile/app/_sdk.ts:6",
+      "description": "SDK apiUrl hardcoded to 'https://us-central1-avalo-c8c46.cloudfunctions.net' (different project than staging config 'avalostaging'). Two different Firebase projects are referenced, creating a split-brain scenario.",
+      "impact": "SDK calls go to one project, Firestore/Auth go to another. Data inconsistency and auth failures."
+    }
+  ],
+
+  "missingConfigs": [
+    {
+      "id": "MC-001",
+      "item": "EXPO_PUBLIC_FIREBASE_API_KEY",
+      "file": "avalo/app-mobile/app.config.ts:71",
+      "status": "env var referenced but no .env file found in app-mobile/",
+      "fallback": "Hardcoded staging key in lib/firebase.ts"
+    },
+    {
+      "id": "MC-002",
+      "item": "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN",
+      "file": "avalo/app-mobile/app.config.ts:72",
+      "status": "no .env file, falls back to 'avalostaging.firebaseapp.com'"
+    },
+    {
+      "id": "MC-003",
+      "item": "EXPO_PUBLIC_FIREBASE_PROJECT_ID",
+      "file": "avalo/app-mobile/app.config.ts:73",
+      "status": "no .env file, falls back to 'avalostaging'"
+    },
+    {
+      "id": "MC-004",
+      "item": "EXPO_PUBLIC_API_URL",
+      "file": "avalo/app-mobile/app.config.ts:77",
+      "status": "missing — pushNotificationService.ts falls back to 'https://us-central1-avalo-app.cloudfunctions.net' (yet another 3rd project reference)"
+    },
+    {
+      "id": "MC-005",
+      "item": "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+      "file": "avalo/app-mobile/app.config.ts:78",
+      "status": "env var referenced but never consumed by any service in the codebase"
+    },
+    {
+      "id": "MC-006",
+      "item": "google-services.json (Android) / GoogleService-Info.plist (iOS)",
+      "file": "avalo/app-mobile/app.config.ts",
+      "status": "MISSING — no googleServicesFile in android config, no GoogleService-Info.plist reference in iOS config. Required for FCM push notifications and crashlytics."
+    },
+    {
+      "id": "MC-007",
+      "item": "EAS secrets / env config for production",
+      "file": "avalo/eas.json",
+      "status": "eas.json has no 'env' block for production profile. All builds will use hardcoded staging credentials."
+    },
+    {
+      "id": "MC-008",
+      "item": "Push notification projectId for Expo",
+      "file": "avalo/app-mobile/services/pushNotificationService.ts:33",
+      "status": "getExpoPushTokenAsync() called without projectId parameter — required for Expo SDK 49+. Will fail in production."
+    }
+  ],
+
+  "incompleteScreens": [
+    {
+      "file": "avalo/app-mobile/app/profile/edit.tsx",
+      "status": "STUB — shows emoji placeholder '✏️ Edit Profile - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/earn.tsx",
+      "status": "STUB — shows emoji placeholder '💰 Earn - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/help.tsx",
+      "status": "STUB — shows emoji placeholder '❓ Help - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/security.tsx",
+      "status": "STUB — shows emoji placeholder '🛡️ Security - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/photos.tsx",
+      "status": "STUB — shows emoji placeholder '📸 Photos - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/ai-avatar.tsx",
+      "status": "STUB — shows emoji placeholder '🤖 AI Avatar - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/likes.tsx",
+      "status": "STUB — shows emoji placeholder '❤️ Likes - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet.tsx",
+      "status": "STUB — shows emoji placeholder '💰 Wallet - Coming Soon'"
+    },
+    {
+      "file": "avalo/app-mobile/app/messages.tsx",
+      "status": "STUB — shows static 'No Messages Yet' with no actual chat list integration"
+    },
+    {
+      "file": "avalo/app-mobile/app/ledger/transactions.tsx",
+      "status": "STUB — shows 'Transaction list coming soon' text"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/subscription.tsx",
+      "status": "TODO-heavy — subscription check, purchase, and cancellation are all TODO stubs"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/vip/paywall.tsx",
+      "status": "TODO-heavy — subscription load and purchase are TODO stubs"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/vip/vault.tsx",
+      "status": "TODO-heavy — vault items are hardcoded mock data with placeholder images"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/vip/themes.tsx",
+      "status": "TODO-heavy — themes are hardcoded mock data with via.placeholder.com images"
+    },
+    {
+      "file": "avalo/app-mobile/app/calls/ongoing.tsx",
+      "status": "PLACEHOLDER — no RTC provider SDK integrated, all call controls are TODO stubs"
+    },
+    {
+      "file": "avalo/app-mobile/app/live/[roomId].tsx, [liveId].tsx, [id].tsx",
+      "status": "PLACEHOLDER — 'Live Video Placeholder' UI, no streaming SDK integration"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/settings/incognito.tsx",
+      "status": "TODO-heavy — toggle and load are all TODO stubs"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/settings/passport.tsx",
+      "status": "TODO-heavy — 7 separate TODO comments, no Cloud Function calls implemented"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/settings/sleep-mode.tsx",
+      "status": "TODO-heavy — 7 separate TODO comments, no Cloud Function calls implemented"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet/subscription.tsx",
+      "status": "TODO-heavy — subscription check returns mock data, upgrade/cancel are stubs"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet/store.tsx",
+      "status": "TODO — payment integration placeholder with Alert"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet/payout.tsx",
+      "status": "TODO — KYC verification not implemented, payout flow incomplete"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet/payout-methods.tsx",
+      "status": "TODO — add/edit payout method shows 'Coming Soon' alert"
+    },
+    {
+      "file": "avalo/app-mobile/app/wallet/token-store.tsx",
+      "status": "TODO — IAP purchase commented out, no actual purchase"
+    },
+    {
+      "file": "avalo/app-mobile/app/store/promo-bundles.tsx",
+      "status": "TODO — IAP purchase not implemented"
+    },
+    {
+      "file": "avalo/app-mobile/app/purchase/buy-tokens.tsx",
+      "status": "PLACEHOLDER — shows Alert for payment, no PSP integration"
+    },
+    {
+      "file": "avalo/app-mobile/app/onboarding/verification.tsx",
+      "status": "TODO — sim verification with mock result"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/creator-missions.tsx",
+      "status": "TODO — missions and claim reward are Cloud Function stubs"
+    }
+  ],
+
+  "workingFeatures": [
+    {
+      "feature": "Firebase Auth initialization",
+      "file": "avalo/app-mobile/lib/firebase.ts",
+      "notes": "Properly initializes Firebase with AsyncStorage persistence. Works but uses staging credentials as fallback."
+    },
+    {
+      "feature": "Chat service (Firestore real-time)",
+      "file": "avalo/app-mobile/services/chatService.ts",
+      "notes": "Complete implementation: create chat, send messages, subscriptions, escrow billing, streak tracking, backend sync. Well-structured with proper error handling."
+    },
+    {
+      "feature": "Payout service (Cloud Functions)",
+      "file": "avalo/app-mobile/services/payoutService.ts",
+      "notes": "Complete implementation: CRUD for payout methods and requests via httpsCallable. Includes validation logic."
+    },
+    {
+      "feature": "Wallet API (read-only client)",
+      "file": "avalo/app-mobile/services/walletApi.ts",
+      "notes": "Well-designed read-only wallet: balance subscription, transaction history, Stripe Checkout integration via backend. Proper canonical rules (no client-side mutations)."
+    },
+    {
+      "feature": "Monetization config (SOT)",
+      "file": "avalo/app-mobile/config/monetization.ts",
+      "notes": "Comprehensive pricing/split config. BLOCKED by CB-001 (empty import). If import is fixed, this is a solid source of truth."
+    },
+    {
+      "feature": "Home screen (discovery + swipe)",
+      "file": "avalo/app-mobile/app/(tabs)/home.tsx",
+      "notes": "Feature-rich home screen with discovery grid, swipe deck, sponsored ads, discount engine, FTUX missions, social momentum. Complex but functional."
+    },
+    {
+      "feature": "Tab navigation layout",
+      "file": "avalo/app-mobile/app/(tabs)/_layout.tsx",
+      "notes": "7 visible tabs + hidden routes. Includes safety banner integration."
+    },
+    {
+      "feature": "Root layout with guards",
+      "file": "avalo/app-mobile/app/_layout.tsx",
+      "notes": "ErrorBoundary, LocaleProvider, ToastProvider, AuthProvider, NavigationGuard (legal acceptance check), RestrictionGate. Well-layered."
+    },
+    {
+      "feature": "Onboarding flow structure",
+      "file": "avalo/app-mobile/app/(onboarding)/",
+      "notes": "Has welcome, language, login, register, selfie-verify, legal-acceptance, profile-setup, earn-to-chat-setup. Structure exists but login/register are broken (CB-002)."
+    },
+    {
+      "feature": "Deep linking (scheme)",
+      "file": "avalo/app-mobile/app.config.ts:10",
+      "notes": "scheme: 'avalo' is configured. walletApi.ts uses 'avalo://wallet/success' and 'avalo://wallet/cancel' for Stripe return URLs."
+    },
+    {
+      "feature": "EAS Build configuration",
+      "file": "avalo/eas.json",
+      "notes": "Production profile configured with store distribution, auto-increment, app-bundle for Android."
+    },
+    {
+      "feature": "Expo Router with typed routes",
+      "file": "avalo/app-mobile/app.config.ts:18",
+      "notes": "typedRoutes experiment enabled, expo-router plugin configured."
+    },
+    {
+      "feature": "react-native-iap (In-App Purchases)",
+      "file": "avalo/app-mobile/package.json:62, app.config.ts:32",
+      "notes": "Package installed and plugin registered, but no actual IAP purchase flow is implemented in any screen."
+    }
+  ],
+
+  "appStoreBlockers": [
+    {
+      "id": "ASB-001",
+      "store": "Apple + Google",
+      "issue": "NO WORKING PAYMENT FLOW — TokenPurchaseModal is a simulated setTimeout. Apple requires functional IAP for digital goods. Google requires working billing. Both will reject.",
+      "severity": "REJECTION"
+    },
+    {
+      "id": "ASB-002",
+      "store": "Apple",
+      "issue": "Stripe Checkout via external browser (walletApi.ts purchaseTokens) — Apple PROHIBITS opening external payment links for digital goods on iOS. Must use StoreKit/IAP. This is explicitly against App Store Guidelines 3.1.1.",
+      "severity": "REJECTION"
+    },
+    {
+      "id": "ASB-003",
+      "store": "Apple + Google",
+      "issue": "NO PRIVACY POLICY URL in app.config.ts — both stores require a privacy policy URL in app metadata.",
+      "severity": "REJECTION"
+    },
+    {
+      "id": "ASB-004",
+      "store": "Apple + Google",
+      "issue": "Tab bar icons return EMOJI STRINGS instead of proper React components (e.g., `tabBarIcon: () => '🏠'`). This may render as text on some platforms and looks unprofessional for store review.",
+      "severity": "WARNING"
+    },
+    {
+      "id": "ASB-005",
+      "store": "Apple",
+      "issue": "Location 'always' permission requested (UIBackgroundModes: ['location']) but no clear user-facing feature justification in the app for always-on location. Apple will ask for justification and likely reject without demonstrated use.",
+      "severity": "REJECTION-RISK"
+    },
+    {
+      "id": "ASB-006",
+      "store": "Apple + Google",
+      "issue": "Multiple screens show 'Coming Soon' stubs (edit profile, security, help, earn, photos, wallet). Store reviewers will flag these as incomplete app.",
+      "severity": "REJECTION"
+    },
+    {
+      "id": "ASB-007",
+      "store": "Apple + Google",
+      "issue": "No app icon assets verified — app.config references './assets/icon.png' and './assets/splash.png' but existence not confirmed. Missing icons = instant rejection.",
+      "severity": "REJECTION-RISK"
+    },
+    {
+      "id": "ASB-008",
+      "store": "Apple",
+      "issue": "VIP/Royal subscription flow is entirely TODO stubs. If subscription features are advertised but non-functional, Apple rejects.",
+      "severity": "REJECTION"
+    },
+    {
+      "id": "ASB-009",
+      "store": "Apple + Google",
+      "issue": "NSFW/Adult content features referenced (AI_CHAT_CONFIG.NSFW_MESSAGE_COST, adult-content settings screen) — both stores have strict NSFW policies. Must be properly gated or removed.",
+      "severity": "REJECTION-RISK"
+    },
+    {
+      "id": "ASB-010",
+      "store": "Apple + Google",
+      "issue": "No account deletion flow working — profile/settings/index.tsx shows 'This feature will be implemented soon' for delete account. Both stores now REQUIRE account deletion (Apple since 2022, Google since 2024).",
+      "severity": "REJECTION"
+    }
+  ],
+
+  "hardcodedTestValues": [
+    {
+      "file": "avalo/app-mobile/app/_sdk.ts:8",
+      "value": "apiKey: 'AIzaSyBpOGHxWKxd7Y8zXnLxJ7bZTdEwNRuCqLw'"
+    },
+    {
+      "file": "avalo/app-mobile/app/_sdk.ts:9",
+      "value": "deviceId: 'DEVICE_PLACEHOLDER'"
+    },
+    {
+      "file": "avalo/app-mobile/index.tsx:7-8",
+      "value": "Same API key and DEVICE_PLACEHOLDER duplicated"
+    },
+    {
+      "file": "avalo/app-mobile/lib/firebase.ts:8-13",
+      "value": "Full staging Firebase config hardcoded as fallbacks"
+    },
+    {
+      "file": "avalo/app-mobile/services/pushNotificationService.ts:10",
+      "value": "API_BASE_URL fallback: 'https://us-central1-avalo-app.cloudfunctions.net' (third project)"
+    },
+    {
+      "file": "avalo/app-mobile/app/_sdk.ts:6",
+      "value": "apiUrl: 'https://us-central1-avalo-c8c46.cloudfunctions.net' (second project)"
+    },
+    {
+      "file": "avalo/app-mobile/screens/settings/SupportTicketListScreen.tsx:40",
+      "value": "userId = 'current-user-id'"
+    },
+    {
+      "file": "avalo/app-mobile/screens/settings/SupportTicketDetailScreen.tsx:50",
+      "value": "userId = 'current-user-id'"
+    },
+    {
+      "file": "avalo/app-mobile/screens/settings/SupportNewTicketScreen.tsx:44",
+      "value": "userId = 'current-user-id'"
+    },
+    {
+      "file": "avalo/app-mobile/hooks/useAICharacterSafeguards.ts:145",
+      "value": "userId = 'current-user-id'"
+    },
+    {
+      "file": "avalo/app-mobile/app/feed.tsx:32",
+      "value": "MOCK_USER_ID = 'current_user_123'"
+    },
+    {
+      "file": "avalo/app-mobile/app/events/[id].tsx:35",
+      "value": "userId = 'CURRENT_USER_ID'"
+    },
+    {
+      "file": "avalo/app-mobile/app/events/ticket.tsx:37",
+      "value": "userId = 'CURRENT_USER_ID'"
+    },
+    {
+      "file": "avalo/app-mobile/app/events/dashboard.tsx:37",
+      "value": "userId = 'CURRENT_USER_ID'"
+    },
+    {
+      "file": "avalo/app-mobile/app/events/create.tsx:76",
+      "value": "userId = 'CURRENT_USER_ID'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/report-mismatch.tsx:87",
+      "value": "currentUserId = 'current-user-id'"
+    },
+    {
+      "file": "avalo/app-mobile/components/BotCard.tsx:39",
+      "value": "uri: 'https://via.placeholder.com/120'"
+    },
+    {
+      "file": "avalo/app-mobile/screens/creator/CreatorProfileScreen.tsx:177",
+      "value": "uri: 'https://via.placeholder.com/120'"
+    },
+    {
+      "file": "avalo/app-mobile/screens/creator/CreatorMarketplaceScreen.tsx:75",
+      "value": "uri: 'https://via.placeholder.com/80'"
+    },
+    {
+      "file": "avalo/app-mobile/app/ranking/index.tsx:107",
+      "value": "uri: 'https://via.placeholder.com/50'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/[userId].tsx:282-284",
+      "value": "Hardcoded PPV media with picsum.photos URLs"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/vip/vault.tsx:81",
+      "value": "profilePhotoUrl: 'https://via.placeholder.com/100'"
+    },
+    {
+      "file": "avalo/app-mobile/app/profile/vip/themes.tsx:79,88,97",
+      "value": "previewImageUrl: 'https://via.placeholder.com/300x400'"
+    },
+    {
+      "file": "avalo/app-mobile/app/swipe/matches.tsx:97",
+      "value": "uri: 'https://via.placeholder.com/150'"
+    },
+    {
+      "file": "avalo/app-mobile/app/experts/[expertId]/profile.tsx:102",
+      "value": "uri: 'https://via.placeholder.com/100'"
+    },
+    {
+      "file": "avalo/app-mobile/components/rating/NpsModal.tsx:53",
+      "value": "platform: 'IOS' — hardcoded instead of detected"
+    },
+    {
+      "file": "avalo/app-mobile/app/rating/interaction/[interactionId].tsx:58",
+      "value": "platform: 'IOS' — hardcoded instead of detected"
+    }
+  ],
+
+  "stubServicesAndHooks": [
+    "avalo/app-mobile/services/twoFactorService.ts — Auto-generated stub, TODO",
+    "avalo/app-mobile/services/sessionSecurityService.ts — Auto-generated stub, TODO",
+    "avalo/app-mobile/services/dataRightsService.ts — Auto-generated stub, TODO",
+    "avalo/app-mobile/services/aiAvatarService.ts — Generates placeholder emojis, not real AI",
+    "avalo/app-mobile/services/adsService.ts — Rewarded ad is placeholder",
+    "avalo/app-mobile/services/aiChatService.ts — Falls back to hardcoded placeholder responses",
+    "avalo/app-mobile/app/hooks/useStepUpVerification.ts — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/StepUpVerificationModal.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/VIPProgress.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/VIPPrivilegesList.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/VIPBadge.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/TrustBadgeLearnMoreModal.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/TrustBadge.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/SearchResultCard.tsx — Auto-generated stub, TODO",
+    "avalo/app-mobile/components/SearchFiltersModal.tsx — Auto-generated stub, TODO"
+  ],
+
+  "firebaseProjectConfusion": {
+    "description": "THREE different Firebase project references found in the codebase. This is a split-brain risk.",
+    "projects": [
+      {
+        "projectId": "avalo-c8c46",
+        "references": ["app/_sdk.ts:6 (apiUrl)", "app.config.ts:69 (EAS projectId)"],
+        "note": "Appears to be the original/production project"
+      },
+      {
+        "projectId": "avalostaging",
+        "references": ["lib/firebase.ts:8-13 (all Firebase config fallbacks)"],
+        "note": "Staging project used as fallback — will be active if env vars missing"
+      },
+      {
+        "projectId": "avalo-app",
+        "references": ["services/pushNotificationService.ts:10 (API_BASE_URL fallback)"],
+        "note": "Yet another project for push notification registration"
+      }
+    ]
+  },
+
+  "estimatedCompletionPercent": 32,
+
+  "completionBreakdown": {
+    "authFlow": "15% — Context exists but signIn/signUp not implemented. Login/register screens reference non-existent methods.",
+    "paymentFlow": "10% — walletApi has Stripe Checkout design, but TokenPurchaseModal is faked. IAP package installed but unused. No working purchase path.",
+    "pushNotifications": "20% — Service written, hook written, but hook never mounted. Missing projectId param. Missing google-services files.",
+    "deepLinks": "40% — scheme configured, Stripe return URLs set up, but no universal links / App Links configured.",
+    "chatSystem": "85% — chatService.ts is complete and well-built. Blocked by monetization.ts import crash.",
+    "walletSystem": "70% — walletApi.ts is well-designed read-only client. Blocked by no working purchase flow to fund wallet.",
+    "payoutSystem": "80% — payoutService.ts is complete with Cloud Function integration.",
+    "monetizationConfig": "90% — Comprehensive but blocked by empty import on line 1.",
+    "homeScreen": "75% — Feature-rich but dependent on broken services.",
+    "onboarding": "35% — Structure exists but auth methods missing, selfie verify is stub.",
+    "profileManagement": "20% — edit, photos, security are all stubs.",
+    "videoCallsLive": "5% — All placeholder UI, no RTC/streaming SDK.",
+    "subscriptions": "5% — All TODO stubs.",
+    "appStoreMetadata": "10% — No privacy URL, no app store screenshots, no marketing text."
+  },
+
+  "topPriorityFixOrder": [
+    "1. CB-001: Fix monetization.ts empty import — unblocks entire app",
+    "2. CB-002: Implement signIn/signUp in AuthContext — unblocks login/register",
+    "3. CB-005: Consolidate Firebase project refs to single production project",
+    "4. CB-004: Remove hardcoded API keys, require proper env vars",
+    "5. CB-006: Implement actual token purchase (IAP for mobile, Stripe for web redirect)",
+    "6. ASB-010: Implement account deletion (required by both stores)",
+    "7. CB-003: Mount useNotificationInit, fix currentUser reference",
+    "8. ASB-003: Add privacy policy URL to app config",
+    "9. Replace all stub screens with minimal functional versions",
+    "10. ASB-002: Implement IAP for iOS (cannot use external Stripe for digital goods)"
+  ]
+}

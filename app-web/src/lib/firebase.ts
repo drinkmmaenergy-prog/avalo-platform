@@ -7,6 +7,7 @@
  *   - functions    Cloud Functions lazy proxy
  *   - requireDb()  Firestore getter (throws if unavailable)
  *   - requireFunctions() Cloud Functions getter (throws if unavailable)
+ *   - requireStorage() Firebase Storage getter (throws if unavailable)
  *   - getFirebaseApp() App getter
  *
  * INVARIANTS:
@@ -18,6 +19,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence, type Auth } from 'firebase/auth';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 const FUNCTIONS_REGION = 'europe-west1';
 
@@ -68,6 +70,20 @@ export function requireFunctions(): Functions {
     _functions = getFunctions(app, FUNCTIONS_REGION);
   }
   return _functions;
+}
+
+/** Firebase Storage — lazy singleton. */
+let _storage: FirebaseStorage | null = null;
+
+/**
+ * Returns Firebase Storage instance. Throws if Firebase is not initialized.
+ * This is a canonical guard — do NOT remove or bypass.
+ */
+export function requireStorage(): FirebaseStorage {
+  if (!_storage) {
+    _storage = getStorage(app);
+  }
+  return _storage;
 }
 
 /**

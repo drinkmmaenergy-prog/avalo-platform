@@ -5,7 +5,7 @@
  * Handles content fetching with infinite scroll, NSFW gating, and premium unlocks
  */
 
-import { requireDb } from '../firebase';
+import { requireDb, requireFunctions } from '../firebase';
 import {
   collection,
   query,
@@ -23,7 +23,10 @@ import {
   QueryConstraint,
   deleteDoc,
   setDoc,
+  addDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { Post, Story, Reel } from '../types';
 
 const POSTS_PER_PAGE = 20;
@@ -93,12 +96,31 @@ export async function fetchFeedPosts(
 }
 
 /**
+ * Fetch a single post by ID from 'posts' collection
+ */
+export async function fetchPostById(postId: string): Promise<Post | null> {
+  try {
+    const postRef = doc(requireDb(), 'posts', postId);
+    const postSnap = await getDoc(postRef);
+
+    if (!postSnap.exists()) {
+      return null;
+    }
+
+    return { id: postSnap.id, ...postSnap.data() } as Post;
+  } catch (error) {
+    console.error('Error fetching post by ID:', error);
+    throw error;
+  }
+}
+
+/**
  * Unlock premium post
  */
 export async function unlockPremiumPost(
   postId: string,
   userId: string
-): Promise<{ success: boolean; mediaUrl?: string }> {
+): Promise<{ success: boolean; mediaUrl?: string; error?: string }> {
   try {
     const postRef = doc(requireDb(), 'posts', postId);
     const postSnap = await getDoc(postRef);
@@ -121,13 +143,81 @@ export async function unlockPremiumPost(
       return { success: true, mediaUrl: post.mediaUrl };
     }
 
-    // TODO: Deduct tokens and create unlock record
-    // This should be done via Cloud Function for security
+    // Call Cloud Function to deduct tokens + create unlock (same pattern as unlockPPVContent)
+    const unlockContent = httpsCallable<
+      { contentId: string; contentType: string },
+      { success: boolean; mediaUrl?: string; error?: string }
+    >(requireFunctions(), 'pack323_unlockContent');
 
-    return { success: true, mediaUrl: post.mediaUrl };
-  } catch (error) {
+    const result = await unlockContent({ contentId: postId, contentType: 'post' });
+    return result.data;
+  } catch (error: any) {
     console.error('Error unlocking post:', error);
-    throw error;
+    return {
+      success: false,
+      error: error?.message || 'Failed to unlock post',
+    };
+  }
+}
+
+/**
+ * Unlock PPV (pay-per-view) content via Cloud Function.
+ * The backend deducts tokens and creates an unlock record.
+ */
+export async function unlockPPVContent(
+  contentId: string,
+  contentType: 'post' | 'reel' | 'story',
+  userId: string
+): Promise<{ success: boolean; mediaUrl?: string; error?: string }> {
+  try {
+    // Check if already unlocked
+    const unlockRef = doc(requireDb(), 'unlocks', `${userId}_${contentType}_${contentId}`);
+    const unlockSnap = await getDoc(unlockRef);
+
+    if (unlockSnap.exists()) {
+      // Already unlocked — fetch the media URL from the content
+      const contentCollection = contentType === 'post' ? 'posts' : contentType === 'reel' ? 'reels' : 'stories';
+      const contentRef = doc(requireDb(), contentCollection, contentId);
+      const contentSnap = await getDoc(contentRef);
+      const data = contentSnap.data();
+      return {
+        success: true,
+        mediaUrl: data?.mediaUrl || data?.videoUrl,
+      };
+    }
+
+    // Call Cloud Function to deduct tokens + create unlock
+    const unlockContent = httpsCallable<
+      { contentId: string; contentType: string },
+      { success: boolean; mediaUrl?: string; error?: string }
+    >(requireFunctions(), 'pack323_unlockContent');
+
+    const result = await unlockContent({ contentId, contentType });
+    return result.data;
+  } catch (error: any) {
+    console.error('Error unlocking PPV content:', error);
+    return {
+      success: false,
+      error: error?.message || 'Failed to unlock content',
+    };
+  }
+}
+
+/**
+ * Check if user has unlocked a specific content item
+ */
+export async function checkContentUnlocked(
+  contentId: string,
+  contentType: 'post' | 'reel' | 'story',
+  userId: string
+): Promise<boolean> {
+  try {
+    const unlockRef = doc(requireDb(), 'unlocks', `${userId}_${contentType}_${contentId}`);
+    const unlockSnap = await getDoc(unlockRef);
+    return unlockSnap.exists();
+  } catch (error) {
+    console.error('Error checking unlock status:', error);
+    return false;
   }
 }
 
@@ -143,6 +233,214 @@ export async function incrementPostViews(postId: string): Promise<void> {
   } catch (error) {
     console.error('Error incrementing post views:', error);
   }
+}
+
+// ============================================================================
+// POST LIKES — subcollection: post_likes/{postId}/users/{uid}
+// ============================================================================
+
+/**
+ * Toggle like on a post using subcollection path.
+ * Writes to: post_likes/{postId}/users/{uid}
+ * Also updates the likes count on the post document.
+ */
+export async function togglePostLike(
+  postId: string,
+  userId: string
+): Promise<{ liked: boolean }> {
+  try {
+    const likeRef = doc(requireDb(), 'post_likes', postId, 'users', userId);
+    const likeSnap = await getDoc(likeRef);
+
+    const postRef = doc(requireDb(), 'posts', postId);
+
+    if (likeSnap.exists()) {
+      // Unlike
+      await deleteDoc(likeRef);
+      await updateDoc(postRef, { likes: increment(-1) });
+      return { liked: false };
+    } else {
+      // Like
+      await setDoc(likeRef, {
+        userId,
+        createdAt: Timestamp.now(),
+      });
+      await updateDoc(postRef, { likes: increment(1) });
+      return { liked: true };
+    }
+  } catch (error) {
+    console.error('Error toggling post like:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if the current user has liked a specific post
+ */
+export async function checkPostLiked(
+  postId: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    const likeRef = doc(requireDb(), 'post_likes', postId, 'users', userId);
+    const likeSnap = await getDoc(likeRef);
+    return likeSnap.exists();
+  } catch (error) {
+    console.error('Error checking post like:', error);
+    return false;
+  }
+}
+
+/**
+ * Batch check which posts the user has liked
+ */
+export async function batchCheckPostLikes(
+  postIds: string[],
+  userId: string
+): Promise<Record<string, boolean>> {
+  const result: Record<string, boolean> = {};
+  try {
+    const checks = postIds.map(async (postId) => {
+      const likeRef = doc(requireDb(), 'post_likes', postId, 'users', userId);
+      const likeSnap = await getDoc(likeRef);
+      result[postId] = likeSnap.exists();
+    });
+    await Promise.all(checks);
+  } catch (error) {
+    console.error('Error batch checking post likes:', error);
+  }
+  return result;
+}
+
+// ============================================================================
+// POST COMMENTS — subcollection: post_comments/{postId}/comments
+// ============================================================================
+
+export interface PostComment {
+  id: string;
+  userId: string;
+  text: string;
+  createdAt: any;
+  displayName?: string | null;
+  photoURL?: string | null;
+}
+
+/**
+ * Fetch comments for a post from subcollection
+ * Reads from: post_comments/{postId}/comments
+ */
+export async function fetchPostComments(
+  postId: string,
+  limitCount: number = 50
+): Promise<PostComment[]> {
+  try {
+    const commentsRef = collection(requireDb(), 'post_comments', postId, 'comments');
+    const q = query(
+      commentsRef,
+      orderBy('createdAt', 'asc'),
+      limit(limitCount)
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as PostComment[];
+  } catch (error) {
+    console.error('Error fetching post comments:', error);
+    return [];
+  }
+}
+
+/**
+ * Add a comment to a post
+ * Writes to: post_comments/{postId}/comments
+ * Also increments the comments count on the post document.
+ */
+export async function addPostComment(
+  postId: string,
+  userId: string,
+  text: string,
+  displayName?: string,
+  photoURL?: string
+): Promise<PostComment | null> {
+  try {
+    const commentsRef = collection(requireDb(), 'post_comments', postId, 'comments');
+    const commentData = {
+      userId,
+      text: text.trim(),
+      displayName: displayName || null,
+      photoURL: photoURL || null,
+      createdAt: serverTimestamp(),
+    };
+
+    const docRef = await addDoc(commentsRef, commentData);
+
+    // Increment comment count on the post
+    const postRef = doc(requireDb(), 'posts', postId);
+    await updateDoc(postRef, { comments: increment(1) });
+
+    return {
+      id: docRef.id,
+      ...commentData,
+      createdAt: Timestamp.now(), // local approximation for immediate display
+    };
+  } catch (error) {
+    console.error('Error adding post comment:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
+// USER PROFILES (for feed display)
+// ============================================================================
+
+export interface FeedUserProfile {
+  uid: string;
+  displayName: string | null;
+  photoURL: string | null;
+  isVerified: boolean;
+  isCreator: boolean;
+}
+
+/**
+ * Fetch multiple user profiles for feed display (avatar + name)
+ */
+export async function fetchUserProfiles(
+  userIds: string[]
+): Promise<Record<string, FeedUserProfile>> {
+  const profiles: Record<string, FeedUserProfile> = {};
+
+  try {
+    const uniqueIds = [...new Set(userIds)];
+    const fetches = uniqueIds.map(async (uid) => {
+      const userRef = doc(requireDb(), 'users', uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        profiles[uid] = {
+          uid,
+          displayName: data.displayName || null,
+          photoURL: data.photoURL || null,
+          isVerified: data.isVerified || false,
+          isCreator: data.isCreator || false,
+        };
+      } else {
+        profiles[uid] = {
+          uid,
+          displayName: null,
+          photoURL: null,
+          isVerified: false,
+          isCreator: false,
+        };
+      }
+    });
+    await Promise.all(fetches);
+  } catch (error) {
+    console.error('Error fetching user profiles:', error);
+  }
+
+  return profiles;
 }
 
 // ============================================================================
@@ -226,7 +524,7 @@ export async function fetchUserStories(
 export async function unlockPremiumStory(
   storyId: string,
   userId: string
-): Promise<{ success: boolean; mediaUrl?: string }> {
+): Promise<{ success: boolean; mediaUrl?: string; error?: string }> {
   try {
     const storyRef = doc(requireDb(), 'stories', storyId);
     const storySnap = await getDoc(storyRef);
@@ -249,12 +547,20 @@ export async function unlockPremiumStory(
       return { success: true, mediaUrl: story.mediaUrl };
     }
 
-    // TODO: Deduct tokens and create unlock record via Cloud Function
+    // Call Cloud Function to deduct tokens + create unlock (same pattern as unlockPPVContent)
+    const unlockContent = httpsCallable<
+      { contentId: string; contentType: string },
+      { success: boolean; mediaUrl?: string; error?: string }
+    >(requireFunctions(), 'pack323_unlockContent');
 
-    return { success: true, mediaUrl: story.mediaUrl };
-  } catch (error) {
+    const result = await unlockContent({ contentId: storyId, contentType: 'story' });
+    return result.data;
+  } catch (error: any) {
     console.error('Error unlocking story:', error);
-    throw error;
+    return {
+      success: false,
+      error: error?.message || 'Failed to unlock story',
+    };
   }
 }
 
@@ -326,7 +632,7 @@ export async function fetchReels(
 export async function unlockPremiumReel(
   reelId: string,
   userId: string
-): Promise<{ success: boolean; videoUrl?: string }> {
+): Promise<{ success: boolean; videoUrl?: string; error?: string }> {
   try {
     const reelRef = doc(requireDb(), 'reels', reelId);
     const reelSnap = await getDoc(reelRef);
@@ -349,12 +655,24 @@ export async function unlockPremiumReel(
       return { success: true, videoUrl: reel.videoUrl };
     }
 
-    // TODO: Deduct tokens via Cloud Function
+    // Call Cloud Function to deduct tokens + create unlock (same pattern as unlockPPVContent)
+    const unlockContent = httpsCallable<
+      { contentId: string; contentType: string },
+      { success: boolean; mediaUrl?: string; error?: string }
+    >(requireFunctions(), 'pack323_unlockContent');
 
-    return { success: true, videoUrl: reel.videoUrl };
-  } catch (error) {
+    const result = await unlockContent({ contentId: reelId, contentType: 'reel' });
+    return {
+      success: result.data.success,
+      videoUrl: result.data.mediaUrl,
+      error: result.data.error,
+    };
+  } catch (error: any) {
     console.error('Error unlocking reel:', error);
-    throw error;
+    return {
+      success: false,
+      error: error?.message || 'Failed to unlock reel',
+    };
   }
 }
 

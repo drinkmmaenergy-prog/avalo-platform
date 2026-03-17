@@ -2,22 +2,28 @@
 
 import { MONETIZATION_SPLITS } from "@constants/monetization";
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';/**
+import { useRouter } from 'next/navigation';
+/**
  * PACK 343 — Unified Account Panel
  * Overview page showing profile, subscription, wallet,
  */
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { AccountLayout } from '../../components/account/AccountLayout';
 
 import { useWallet } from '../../../hooks/useWallet';
 import { useSubscription } from '../../../hooks/useSubscription';
 import { useCompliance } from '../../../hooks/useCompliance';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { recordSession } from '@/lib/services/accountService';
 
 import type { WalletBalance } from '../../../hooks/useWallet';
 import type { UserSubscription } from '../../../hooks/useSubscription';
 import type { UserComplianceStatus } from '../../../hooks/useCompliance';
+
 export default function AccountPage() {
+  const { user, firebaseUser, loading: authLoading } = useAuth();
 
   const { getBalance } = useWallet();
   const { getCurrentSubscription } = useSubscription();
@@ -34,9 +40,17 @@ export default function AccountPage() {
     loadData();
   }, []);
 
+  // Record session on mount when user is authenticated
+  useEffect(() => {
+    if (firebaseUser) {
+      recordSession().catch((err) => {
+        console.warn('[Account] Failed to record session:', err);
+      });
+    }
+  }, [firebaseUser]);
+
   const loadData = async () => {
     try {
-
       setLoading(true);
       setError(null);
 
@@ -47,19 +61,15 @@ export default function AccountPage() {
       setBalance(balanceData);
       setSubscription(subscriptionData);
       setCompliance(complianceData);
-
     } catch (err) {
-
       console.error('Account load error', err);
       setError('Failed to load account data');
-
     } finally {
-
       setLoading(false);
-
     }
   };
-  if (loading) {
+
+  if (loading || authLoading) {
     return (
       <AccountLayout>
         <div className="flex items-center justify-center py-12">
@@ -76,7 +86,7 @@ export default function AccountPage() {
     return (
       <AccountLayout>
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="text-6xl mb-4">⚠️</div>
+          <div className="text-6xl mb-4">&#x26A0;&#xFE0F;</div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Account</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <button
@@ -96,38 +106,92 @@ export default function AccountPage() {
 
   return (
     <AccountLayout>
-      {/* Profile Summary */}
+      {/* Profile Summary — wired to Firebase Auth + Firestore */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Profile Summary</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Profile Summary</h2>
+          <Link
+            href="/account/profile"
+            className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+          >
+            Edit Profile &rarr;
+          </Link>
+        </div>
         <div className="flex items-start gap-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl">
-            👤
+          {/* Avatar */}
+          <div className="relative">
+            {user?.photoURL || firebaseUser?.photoURL ? (
+              <Image
+                src={user?.photoURL || firebaseUser?.photoURL || ''}
+                alt={user?.displayName || 'User avatar'}
+                width={80}
+                height={80}
+                className="w-20 h-20 rounded-full object-cover border-2 border-purple-200"
+                unoptimized
+              />
+            ) : (
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl">
+                {user?.displayName?.charAt(0)?.toUpperCase() || '👤'}
+              </div>
+            )}
+            {user?.isVerified && (
+              <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                ✓
+              </div>
+            )}
           </div>
+
+          {/* User Info */}
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">User Account</h3>
-            <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              {user?.displayName || firebaseUser?.displayName || 'No Name Set'}
+            </h3>
+            <p className="text-sm text-gray-500 mb-2">
+              {user?.email || firebaseUser?.email || 'No email'}
+            </p>
+            {user?.bio && (
+              <p className="text-sm text-gray-700 mb-3 line-clamp-2">{user.bio}</p>
+            )}
+            {user?.handle && (
+              <p className="text-sm text-purple-600 font-medium mb-2">@{user.handle}</p>
+            )}
+
+            {/* Badges row */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {user?.isCreator && (
+                <span className="inline-flex items-center gap-1 bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-xs font-medium">
+                  ✨ Creator
+                </span>
+              )}
               {compliance?.selfieVerified && (
-                <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm mr-2">
-                  <span>✓</span>
-                  <span>Selfie Verified</span>
-                </div>
+                <span className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
+                  ✓ Selfie Verified
+                </span>
               )}
               {compliance?.kycVerified && (
-                <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm mr-2">
-                  <span>✓</span>
-                  <span>KYC Verified</span>
-                </div>
+                <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
+                  ✓ KYC Verified
+                </span>
               )}
               {compliance?.ageVerified && (
-                <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
-                  <span>✓</span>
-                  <span>Age Verified</span>
-                </div>
+                <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium">
+                  ✓ Age Verified
+                </span>
               )}
             </div>
-            {compliance?.country && (
-              <p className="text-gray-600 mt-2">Country: {compliance.country}</p>
-            )}
+
+            {/* Account metadata */}
+            <div className="mt-3 text-xs text-gray-400 space-y-1">
+              {firebaseUser?.metadata?.creationTime && (
+                <p>Member since: {new Date(firebaseUser.metadata.creationTime).toLocaleDateString()}</p>
+              )}
+              {firebaseUser?.metadata?.lastSignInTime && (
+                <p>Last sign-in: {new Date(firebaseUser.metadata.lastSignInTime).toLocaleDateString()}</p>
+              )}
+              {compliance?.country && (
+                <p>Country: {compliance.country}</p>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -140,7 +204,7 @@ export default function AccountPage() {
             href="/account/billing"
             className="text-purple-600 hover:text-purple-700 font-medium text-sm"
           >
-            Manage →
+            Manage &rarr;
           </Link>
         </div>
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
@@ -194,7 +258,7 @@ export default function AccountPage() {
             href="/account/tokens"
             className="text-purple-600 hover:text-purple-700 font-medium text-sm"
           >
-            Buy Tokens →
+            Buy Tokens &rarr;
           </Link>
         </div>
         <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-6 text-white mb-4">
@@ -238,7 +302,7 @@ export default function AccountPage() {
             href="/account/security"
             className="text-purple-600 hover:text-purple-700 font-medium text-sm"
           >
-            View Details →
+            View Details &rarr;
           </Link>
         </div>
         <div className="space-y-3">
@@ -300,7 +364,3 @@ export default function AccountPage() {
     </AccountLayout>
   );
 }
-
-
-
-

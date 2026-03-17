@@ -2,18 +2,47 @@
 
 /**
  * PHASE 3.3 — Creator Stripe Connect Page
- * 
+ *
  * Displays Stripe Connect status and initiates onboarding.
  * All data from backend — NO direct Stripe API access.
- * 
- * Backend functions consumed:
- * - getPayoutState (status check)
- * - setupPayoutAccount (onboarding)
+ *
+ * Backend functions consumed (via phase33/creatorPanel.ts):
+ *   - getPayoutState (status check)
+ *   - setupPayoutAccount (onboarding)
  */
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getStripeConnectStatus, initiateStripeOnboarding } from '@/lib/services/phase33';
 import type { CreatorStripeConnectInfo, StripeConnectStatus } from '@/types/phase33.types';
+
+// ============================================================================
+// NOT-A-CREATOR CTA
+// ============================================================================
+
+function NotACreatorCTA() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center border border-gray-100">
+        <div className="text-6xl mb-6">🔗</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Stripe Connect</h1>
+        <p className="text-gray-600 mb-6 leading-relaxed">
+          Enable creator mode first before connecting your Stripe account for payouts.
+        </p>
+        <a
+          href="/settings/creator"
+          className="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white
+                     font-medium rounded-lg transition"
+        >
+          Enable Creator Mode
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// STATUS INDICATOR
+// ============================================================================
 
 function StatusIndicator({ status }: { status: StripeConnectStatus }) {
   const config: Record<StripeConnectStatus, { color: string; label: string; icon: string }> = {
@@ -24,9 +53,9 @@ function StatusIndicator({ status }: { status: StripeConnectStatus }) {
     RESTRICTED: { color: 'bg-red-100 text-red-800', label: 'Restricted', icon: '🔴' },
     DISABLED: { color: 'bg-red-200 text-red-900', label: 'Disabled', icon: '⛔' },
   };
-  
+
   const { color, label, icon } = config[status];
-  
+
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${color}`}>
       <span className="mr-2">{icon}</span>
@@ -35,17 +64,21 @@ function StatusIndicator({ status }: { status: StripeConnectStatus }) {
   );
 }
 
+// ============================================================================
+// MAIN PAGE
+// ============================================================================
+
 export default function CreatorStripePage() {
   const { user } = useAuth();
   const [stripeInfo, setStripeInfo] = useState<CreatorStripeConnectInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState(false);
-  
+
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
-      
+
       try {
         setLoading(true);
         const data = await getStripeConnectStatus(user.uid);
@@ -56,21 +89,21 @@ export default function CreatorStripePage() {
         setLoading(false);
       }
     }
-    
+
     fetchData();
   }, [user]);
-  
+
   const handleStartOnboarding = async () => {
     if (!user) return;
-    
+
     setOnboarding(true);
     setError(null);
-    
+
     try {
       const result = await initiateStripeOnboarding(
         user.uid
       );
-      
+
       if ('url' in result && result.url) {
         window.location.href = result.url;
       } else {
@@ -82,7 +115,15 @@ export default function CreatorStripePage() {
       setOnboarding(false);
     }
   };
-  
+
+  // ── Not-a-creator gate ───────────────────────────────────────────
+
+  if (!loading && user && !user.isCreator) {
+    return <NotACreatorCTA />;
+  }
+
+  // ── Loading ──────────────────────────────────────────────────────
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
@@ -91,26 +132,26 @@ export default function CreatorStripePage() {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Stripe Connect</h1>
         <p className="text-gray-600 mt-1">Connect your Stripe account to receive payouts</p>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Account Status</h2>
           {stripeInfo && <StatusIndicator status={stripeInfo.status} />}
         </div>
-        
+
         {error && (
           <div className="mb-6 bg-red-50 text-red-700 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
-        
+
         {stripeInfo?.status === 'NOT_CONNECTED' && (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🔗</div>
@@ -118,7 +159,7 @@ export default function CreatorStripePage() {
               Connect Your Stripe Account
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              To receive payouts, you need to connect a Stripe account. 
+              To receive payouts, you need to connect a Stripe account.
               This allows us to transfer your earnings directly to your bank.
             </p>
             <button
@@ -130,7 +171,7 @@ export default function CreatorStripePage() {
             </button>
           </div>
         )}
-        
+
         {stripeInfo?.status === 'ONBOARDING_INCOMPLETE' && (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">⚠️</div>
@@ -159,7 +200,7 @@ export default function CreatorStripePage() {
             </button>
           </div>
         )}
-        
+
         {stripeInfo?.status === 'ACTIVE' && (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">✅</div>
@@ -187,7 +228,7 @@ export default function CreatorStripePage() {
             </div>
           </div>
         )}
-        
+
         {stripeInfo?.status === 'RESTRICTED' && (
           <div className="text-center py-8">
             <div className="text-6xl mb-4">🚫</div>
@@ -207,14 +248,14 @@ export default function CreatorStripePage() {
           </div>
         )}
       </div>
-      
+
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <span className="text-xl">ℹ️</span>
           <div>
             <h3 className="font-medium text-blue-900">About Stripe Connect</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Stripe Connect is a secure payment platform that handles your payouts. 
+              Stripe Connect is a secure payment platform that handles your payouts.
               Your banking information is stored securely with Stripe — Avalo never has direct access to it.
             </p>
           </div>
@@ -223,5 +264,3 @@ export default function CreatorStripePage() {
     </div>
   );
 }
-
-
