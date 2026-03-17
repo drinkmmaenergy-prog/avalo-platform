@@ -1,4 +1,5 @@
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+import { AI_ECONOMY, getBillableWords, getAIBotSplit } from './config/aiEconomyConfig';
 
 /**
  * PACK 279A — AI Chat Runtime + Token Billing Integration
@@ -84,7 +85,12 @@ const TOKENS_PER_BUCKET = 100;
 
 // Revenue splits
 const AVALO_ONLY_SPLIT = { earner: 0, platform: 1.0 };      // 100% Avalo
-const USER_AI_SPLIT = { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform };     // 65/35 split
+/**
+ * Revenue split for user-created AI bot interactions.
+ * Business rule: 65% to bot owner (earner), 35% to Avalo platform.
+ * Sourced from canonical AI_ECONOMY config via getAIBotSplit().
+ */
+const USER_AI_SPLIT = { earner: getAIBotSplit().owner, platform: getAIBotSplit().avalo };     // 65/35 split
 
 const MIN_AGE = 18;
 const MAX_MESSAGE_LENGTH = 2000;
@@ -308,7 +314,14 @@ export const pack279_aiChatSendMessage = https.onCall(
     // ========================================================================
     
     const isRoyal = await isRoyalMember(userId);
-    const wordsPerBucket = isRoyal ? WORDS_PER_BUCKET_ROYAL : WORDS_PER_BUCKET_STANDARD;
+    /**
+     * Words per billing bucket.
+     * Business rule for user AI bots: 30 words per token (from AI_ECONOMY config).
+     * Business rule for Avalo AI: standard bucket billing (11/7 words per bucket).
+     */
+    const wordsPerBucket = session.isUserAI
+      ? AI_ECONOMY.USER_BOTS.WORDS_PER_TOKEN
+      : (isRoyal ? WORDS_PER_BUCKET_ROYAL : WORDS_PER_BUCKET_STANDARD);
     
     // Determine revenue split
     let contextType: string;
@@ -400,7 +413,13 @@ export const pack279_aiChatSendMessage = https.onCall(
     // ========================================================================
     
     const wordCount = countWords(aiReply);
-    const requiredBuckets = Math.ceil(wordCount / wordsPerBucket);
+    /**
+     * For user AI bots: apply anti-padding protection via getBillableWords().
+     * Business rule: <10 words = free, 10-300 words = actual count, >300 words = capped at 300.
+     * For Avalo AI: use raw word count (unchanged billing logic).
+     */
+    const billable = session.isUserAI ? getBillableWords(wordCount) : wordCount;
+    const requiredBuckets = billable > 0 ? Math.ceil(billable / wordsPerBucket) : 0;
     const tokensCharged = requiredBuckets * TOKENS_PER_BUCKET;
     
     // ========================================================================

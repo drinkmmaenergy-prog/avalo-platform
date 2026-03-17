@@ -4,10 +4,14 @@
  * 
  * Rules enforced in this config:
  * - 35% instant platform fee on deposits
- * - 20% ongoing revenue share from consumed tokens
+ * - 35% ongoing revenue share from consumed tokens
  * - Push users toward paid chat aggressively
  * - VIP/Royal discounts to drive subscriptions
  */
+
+// PAYMENT: Stripe web only. Mobile redirects to avaloapp.com/wallet/buy
+// No Apple IAP, No Google Play billing
+// Creator bots: free to create, no limit, all users can access
 
 // ============================================================================
 // AI BOT PRICING
@@ -57,14 +61,30 @@ export const AI_CHAT_DEPOSIT = {
 // ============================================================================
 
 export const AI_REVENUE_SPLIT = {
-  /** Creator receives 80% of consumed tokens */
-  CREATOR_PERCENT: 80,
+  /**
+   * Creator receives 65% of consumed tokens.
+   * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
+   * Changed from 80/20 to align with canonical AI economy config.
+   */
+  CREATOR_PERCENT: 65,
   
-  /** Avalo receives 20% of consumed tokens */
-  AVALO_PERCENT: 20,
+  /**
+   * Avalo receives 35% of consumed tokens.
+   * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
+   * Changed from 20 to 35 to align with canonical AI economy config.
+   */
+  AVALO_PERCENT: 35,
   
-  /** Total Avalo earnings per 100-token deposit: 35 (instant) + ~13 (20% of 65) = ~48 tokens */
-  TOTAL_AVALO_PER_100_DEPOSIT: 48,
+  /**
+   * Total Avalo earnings per 100-token deposit:
+   *   Platform fee: 35 tokens (35% of 100, non-refundable)
+   *   Revenue share from escrow: floor(65 * 0.35) = 22 tokens (35% of 65 escrow)
+   *   Total: 35 + 22 = 57 tokens
+   *
+   * Previously was 48 tokens with 80/20 split (35 fee + 13 share).
+   * New 65/35 split increases Avalo's total take from 48% to 57% per deposit.
+   */
+  TOTAL_AVALO_PER_100_DEPOSIT: 57,
 } as const;
 
 // ============================================================================
@@ -200,6 +220,57 @@ export const LEADERBOARD_CONFIG = {
 } as const;
 
 // ============================================================================
+// AI SUBSCRIPTION TIERS (Avalo AI companions — paid in tokens, not USD)
+// ============================================================================
+
+/**
+ * Avalo AI subscription tiers.
+ * Business rule: subscriptions are paid in tokens (not USD) to avoid Apple/Google IAP commission (15-30%).
+ * All tokens are purchased via Stripe web at avaloapp.com/wallet/buy.
+ * Revenue from Avalo AI subscriptions goes 100% to Avalo treasury.
+ */
+export const AI_SUBSCRIPTION_TIERS = {
+  FREE: {
+    tokensPerMonth: 0,
+    dailyMsgLimit: 10,
+    nsfwAccess: false,
+    voiceIncludedMin: 0,
+    description: 'Free access: 10 messages/day with Avalo AI',
+  },
+  CONNECT: {
+    tokensPerMonth: 120,
+    dailyMsgLimit: -1,
+    nsfwAccess: false,
+    voiceIncludedMin: 0,
+    description: 'Unlimited Avalo AI chat',
+  },
+  PREMIUM: {
+    tokensPerMonth: 175,
+    dailyMsgLimit: -1,
+    nsfwAccess: true,
+    voiceIncludedMin: 100,
+    description: 'Unlimited AI + NSFW + 100 min voice',
+  },
+} as const;
+
+// ============================================================================
+// PAYMENT ARCHITECTURE
+// ============================================================================
+
+/**
+ * Payment architecture configuration.
+ * Business rule: Stripe web only. No Apple IAP, no Google Play billing.
+ * Apple/Google IAP commission (15-30%) makes economics impossible.
+ * Mobile app redirects to avaloapp.com/wallet/buy for token purchases.
+ */
+export const PAYMENT_ARCHITECTURE = {
+  gateway: 'STRIPE_WEB_ONLY',
+  mobileRedirect: 'avaloapp.com/wallet/buy',
+  noIAP: true,
+  reason: 'Apple/Google IAP commission 15-30% makes economics impossible. All purchases via Stripe web.',
+} as const;
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -223,7 +294,9 @@ export function calculateAIMessageCost(
 }
 
 /**
- * Calculate creator earnings from consumed tokens
+ * Calculate creator earnings from consumed tokens.
+ * Business rule: 65% to bot owner (earner), 35% to Avalo platform.
+ * Updated from 80/20 to 65/35 to align with canonical AI economy config.
  */
 export function calculateCreatorEarnings(consumedTokens: number): {
   creatorAmount: number;
@@ -236,7 +309,12 @@ export function calculateCreatorEarnings(consumedTokens: number): {
 }
 
 /**
- * Calculate total Avalo earnings from deposit
+ * Calculate total Avalo earnings from deposit.
+ * Business rule:
+ *   - Instant platform fee: 35% of deposit (non-refundable)
+ *   - Revenue share: 35% of consumed escrow tokens
+ *   - Total Avalo take per fully-consumed 100-token deposit: 57 tokens
+ * Updated from 20% revenue share to 35% to align with canonical AI economy config.
  */
 export function calculateAvaloTotalEarnings(
   depositAmount: number,
@@ -334,6 +412,8 @@ export default {
   NSFW_CONFIG,
   UI_TRIGGERS,
   LEADERBOARD_CONFIG,
+  AI_SUBSCRIPTION_TIERS,
+  PAYMENT_ARCHITECTURE,
   
   // Helper functions
   calculateAIMessageCost,

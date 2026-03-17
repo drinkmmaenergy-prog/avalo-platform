@@ -1,4 +1,5 @@
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
+import { AI_ECONOMY, getBillableWords, getAIBotSplit } from './config/aiEconomyConfig';
 
 /**
  * AI Bot Engine
@@ -40,9 +41,13 @@ const MIN_PRICE_PER_MESSAGE = 1;
 const CLAUDE_MODEL = 'claude-3-5-sonnet-20241022';
 const MAX_CONTEXT_MESSAGES = 15;
 
-// Revenue split
-const CREATOR_SHARE_PERCENT = 80;
-const AVALO_SHARE_PERCENT = 20;
+/**
+ * Revenue split for creator bot interactions.
+ * Business rule: 65% to bot owner (earner), 35% to Avalo platform.
+ * Sourced from canonical AI_ECONOMY config to avoid hardcoded values.
+ */
+const CREATOR_SHARE_PERCENT = getAIBotSplit().owner * 100;
+const AVALO_SHARE_PERCENT = getAIBotSplit().avalo * 100;
 
 // Claude API configuration
 // Claude API will use Firebase Functions config
@@ -57,6 +62,9 @@ const logger = {
 // ============================================================================
 // BOT MANAGEMENT FUNCTIONS
 // ============================================================================
+
+// Business rule: bot creation is always FREE, no limit on number of bots per earner
+// All users can access all creator bots without subscription
 
 /**
  * Create a new AI bot
