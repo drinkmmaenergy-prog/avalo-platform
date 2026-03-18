@@ -1206,3 +1206,11 @@ export const ping = functions.https.onRequest((req, res) => {
 
 
 
+
+// MULTI-ROOM CHAT
+export * from './chat/multiChatRoom';
+export * from './chat/priorityReply';
+
+// MULTI-ROOM CHAT MONETIZATION
+export * from './chat/multiChatRoom';
+export * from './chat/priorityReply';
