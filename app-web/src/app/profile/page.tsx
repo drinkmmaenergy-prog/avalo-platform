@@ -524,11 +524,20 @@ function PublicProfileView({ uid }: { uid: string }) {
 
 function ProfileRouter() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const uid = searchParams?.get('uid') ?? null;
 
-  // If ?uid=xxx is present, show public profile view
+  // If ?uid=xxx is present, redirect to the new /profile/[userId] route
+  // (backward-compatible: old links like /profile?uid=xxx still work)
+  useEffect(() => {
+    if (uid) {
+      router.replace(`/profile/${uid}`);
+    }
+  }, [uid, router]);
+
+  // Show loading skeleton while redirecting
   if (uid) {
-    return <PublicProfileView uid={uid} />;
+    return <PublicProfileSkeleton />;
   }
 
   // Otherwise show the user's own profile (original behavior)

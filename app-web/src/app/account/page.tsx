@@ -16,7 +16,15 @@ import { useWallet } from '../../../hooks/useWallet';
 import { useSubscription } from '../../../hooks/useSubscription';
 import { useCompliance } from '../../../hooks/useCompliance';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { recordSession } from '@/lib/services/accountService';
+import {
+  recordSession,
+  getDiscoverySettings,
+  updateDiscoveryRadius,
+  updateIncognitoMode,
+  updatePassportMode,
+  updateShowMeInDiscovery,
+} from '@/lib/services/accountService';
+import type { DiscoverySettings, DiscoveryRadius } from '@/lib/services/accountService';
 
 import type { WalletBalance } from '../../../hooks/useWallet';
 import type { UserSubscription } from '../../../hooks/useSubscription';
@@ -32,6 +40,7 @@ export default function AccountPage() {
   const [balance, setBalance] = useState<WalletBalance | null>(null);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [compliance, setCompliance] = useState<UserComplianceStatus | null>(null);
+  const [discovery, setDiscovery] = useState<DiscoverySettings | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,10 +66,12 @@ export default function AccountPage() {
       const balanceData = await getBalance();
       const subscriptionData = await getCurrentSubscription();
       const complianceData = await getComplianceStatus();
+      const discoveryData = await getDiscoverySettings();
 
       setBalance(balanceData);
       setSubscription(subscriptionData);
       setCompliance(complianceData);
+      setDiscovery(discoveryData);
     } catch (err) {
       console.error('Account load error', err);
       setError('Failed to load account data');
@@ -102,6 +113,58 @@ export default function AccountPage() {
 
   const getFiatEquivalent = (tokens: number) => {
     return (tokens * MONETIZATION_SPLITS.EVENT_TICKET.avalo).toFixed(2);
+  };
+
+  // ---------------------------------------------------------------------------
+  // Discovery & Privacy — optimistic update handlers with rollback
+  // ---------------------------------------------------------------------------
+
+  const handleDiscoveryRadiusChange = async (radius: DiscoveryRadius) => {
+    if (!discovery) return;
+    const prev = discovery.discoveryRadius;
+    setDiscovery({ ...discovery, discoveryRadius: radius });
+    try {
+      await updateDiscoveryRadius(radius);
+    } catch (err) {
+      console.error('[Account] Failed to update discovery radius:', err);
+      setDiscovery((s) => (s ? { ...s, discoveryRadius: prev } : s));
+    }
+  };
+
+  const handleIncognitoChange = async (enabled: boolean) => {
+    if (!discovery) return;
+    const prev = discovery.incognito;
+    setDiscovery({ ...discovery, incognito: enabled });
+    try {
+      await updateIncognitoMode(enabled);
+    } catch (err) {
+      console.error('[Account] Failed to update incognito mode:', err);
+      setDiscovery((s) => (s ? { ...s, incognito: prev } : s));
+    }
+  };
+
+  const handlePassportModeChange = async (enabled: boolean) => {
+    if (!discovery) return;
+    const prev = discovery.passportMode;
+    setDiscovery({ ...discovery, passportMode: enabled });
+    try {
+      await updatePassportMode(enabled);
+    } catch (err) {
+      console.error('[Account] Failed to update passport mode:', err);
+      setDiscovery((s) => (s ? { ...s, passportMode: prev } : s));
+    }
+  };
+
+  const handleShowMeInDiscoveryChange = async (enabled: boolean) => {
+    if (!discovery) return;
+    const prev = discovery.discoverable;
+    setDiscovery({ ...discovery, discoverable: enabled });
+    try {
+      await updateShowMeInDiscovery(enabled);
+    } catch (err) {
+      console.error('[Account] Failed to update show me in discovery:', err);
+      setDiscovery((s) => (s ? { ...s, discoverable: prev } : s));
+    }
   };
 
   return (
@@ -249,6 +312,114 @@ export default function AccountPage() {
           </div>
         </div>
       </section>
+
+      {/* Discovery & Privacy */}
+      {discovery && (
+        <section className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Discovery &amp; Privacy</h2>
+          </div>
+
+          {/* Discovery Radius — segmented control */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Who can find you
+            </label>
+            <div className="grid grid-cols-3 gap-1 bg-gray-100 rounded-lg p-1">
+              {([
+                { value: 'local' as DiscoveryRadius, label: 'Local (0-50km)' },
+                { value: 'regional' as DiscoveryRadius, label: 'Regional (50-500km)' },
+                { value: 'international' as DiscoveryRadius, label: 'International' },
+              ]).map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleDiscoveryRadiusChange(opt.value)}
+                  className={`py-2 px-3 rounded-md text-sm font-medium transition ${
+                    discovery.discoveryRadius === opt.value
+                      ? 'bg-white text-purple-700 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Toggle settings */}
+          <div className="space-y-4">
+            {/* Incognito Mode */}
+            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <p className="font-medium text-gray-900">Incognito Mode</p>
+                <p className="text-sm text-gray-600">Your profile won&apos;t appear in Discover</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={discovery.incognito}
+                onClick={() => handleIncognitoChange(!discovery.incognito)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  discovery.incognito ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    discovery.incognito ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Passport Mode */}
+            <div className="flex items-center justify-between py-3 border-b border-gray-100">
+              <div>
+                <p className="font-medium text-gray-900">Passport Mode</p>
+                <p className="text-sm text-gray-600">Appear in discovery worldwide regardless of location</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={discovery.passportMode}
+                onClick={() => handlePassportModeChange(!discovery.passportMode)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  discovery.passportMode ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    discovery.passportMode ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Show Me In Discovery */}
+            <div className="flex items-center justify-between py-3">
+              <div>
+                <p className="font-medium text-gray-900">Show Me In Discovery</p>
+                <p className="text-sm text-gray-600">
+                  {discovery.discoverable
+                    ? 'Your profile is visible in Discover'
+                    : 'Your profile is hidden from all discovery'}
+                </p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={discovery.discoverable}
+                onClick={() => handleShowMeInDiscoveryChange(!discovery.discoverable)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  discovery.discoverable ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    discovery.discoverable ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Wallet Overview */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-6">

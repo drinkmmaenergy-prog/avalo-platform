@@ -294,5 +294,107 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+
+    // PUBLIC PROFILES - discovery
+    match /public_profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // POSTS / FEED
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(resource.data.authorId);
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    // STORIES
+    match /stories/{storyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // REELS
+    match /reels/{reelId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // FEED CACHE
+    match /feed/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    // USER SESSIONS
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // TRANSACTIONS (account page)
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // USER PAYOUTS
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // USER SESSIONS (activity tracking)
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if false;
+    }
+
+    // SECURITY SESSIONS
+    match /user_sessions/{userId}/sessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{userId}/items/{notifId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    // FOLLOWS
+    match /follows/{followId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.followerId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.followerId == request.auth.uid;
+    }
+
+    // LIKES
+    match /likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // TIPS
+    match /tips/{tipId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.senderId == request.auth.uid ||
+         resource.data.recipientId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
   }
 }

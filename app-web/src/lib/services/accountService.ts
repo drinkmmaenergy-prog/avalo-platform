@@ -374,6 +374,130 @@ export async function deleteAccountOAuth(reason: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Discovery & Privacy Settings
+// ---------------------------------------------------------------------------
+
+export type DiscoveryRadius = 'local' | 'regional' | 'international';
+
+export interface DiscoverySettings {
+  discoveryRadius: DiscoveryRadius;
+  incognito: boolean;
+  passportMode: boolean;
+  discoverable: boolean;
+}
+
+const DEFAULT_DISCOVERY_SETTINGS: DiscoverySettings = {
+  discoveryRadius: 'regional',
+  incognito: false,
+  passportMode: false,
+  discoverable: true,
+};
+
+/**
+ * Load discovery & privacy settings from Firestore.
+ * Reads from users/{uid} for discoveryRadius, incognito, passportMode
+ * and from public_profiles/{uid} for discoverable.
+ */
+export async function getDiscoverySettings(): Promise<DiscoverySettings> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const db = requireDb();
+  const userRef = doc(db, 'users', user.uid);
+  const publicRef = doc(db, 'public_profiles', user.uid);
+
+  const [userSnap, publicSnap] = await Promise.all([
+    getDoc(userRef),
+    getDoc(publicRef),
+  ]);
+
+  const userData = userSnap.data();
+  const publicData = publicSnap.data();
+
+  return {
+    discoveryRadius:
+      (userData?.discoveryRadius as DiscoveryRadius) ??
+      DEFAULT_DISCOVERY_SETTINGS.discoveryRadius,
+    incognito: userData?.incognito ?? DEFAULT_DISCOVERY_SETTINGS.incognito,
+    passportMode:
+      userData?.passportMode ?? DEFAULT_DISCOVERY_SETTINGS.passportMode,
+    discoverable:
+      publicData?.discoverable ?? DEFAULT_DISCOVERY_SETTINGS.discoverable,
+  };
+}
+
+/**
+ * Update the discovery radius setting.
+ * Writes to: users/{uid}.discoveryRadius
+ */
+export async function updateDiscoveryRadius(
+  radius: DiscoveryRadius,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const userRef = doc(requireDb(), 'users', user.uid);
+  await updateDoc(userRef, {
+    discoveryRadius: radius,
+    lastActiveAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Update incognito mode.
+ * Writes to: users/{uid}.incognito
+ */
+export async function updateIncognitoMode(enabled: boolean): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const userRef = doc(requireDb(), 'users', user.uid);
+  await updateDoc(userRef, {
+    incognito: enabled,
+    lastActiveAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Update passport mode.
+ * Writes to: users/{uid}.passportMode
+ */
+export async function updatePassportMode(enabled: boolean): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const userRef = doc(requireDb(), 'users', user.uid);
+  await updateDoc(userRef, {
+    passportMode: enabled,
+    lastActiveAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Update "show me in discovery" setting.
+ * Writes to: public_profiles/{uid}.discoverable
+ */
+export async function updateShowMeInDiscovery(
+  enabled: boolean,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const publicRef = doc(requireDb(), 'public_profiles', user.uid);
+  await setDoc(publicRef, { discoverable: enabled }, { merge: true });
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

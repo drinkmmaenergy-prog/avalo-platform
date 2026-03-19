@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * PHASE 3.3 — Creator Panel Layout
- * 
- * Layout for creator web panel with role gating.
- * Requires creator role to access.
+ * PHASE 3.3 — Creator Hub Layout
+ *
+ * Layout for Creator Hub / Earn with Avalo panel.
+ * ANY authenticated user can access — earner is NOT restricted to creator role.
+ * See creator/page.tsx: "earn_on is GLOBAL — ANY user can be an earner."
  */
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ export default function CreatorLayout({
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { isAuthorized, isLoading } = useRoleGate({
-    requiredRole: 'creator',
+    requiredRole: 'user',
     redirectTo: '/auth/login?redirect=/creator',
   });
   
@@ -49,21 +50,21 @@ export default function CreatorLayout({
     );
   }
   
-  // Redirect non-creators
+  // Redirect unauthenticated users
   if (!isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center max-w-md p-8 bg-white rounded-xl shadow-lg">
-          <div className="text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Creator Access Required</h1>
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h1>
           <p className="text-gray-600 mb-6">
-            You need to be a verified creator to access this panel.
+            Please sign in to access the Creator Hub and start earning with Avalo.
           </p>
           <a
-            href="/become-creator"
+            href="/auth/login?redirect=/creator"
             className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 px-6 rounded-lg transition"
           >
-            Become a Creator
+            Sign In
           </a>
         </div>
       </div>

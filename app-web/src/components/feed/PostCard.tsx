@@ -4,6 +4,8 @@
  * PACK 323 - Post Card Component
  * Displays a single post in the feed with avatar, text, media, like/comment counts,
  * PPV blur overlay, and unlock button.
+ *
+ * Extended: Follow/Unfollow button, Tip button, Image carousel, double-tap like.
  */
 
 import React, { useState, useCallback } from 'react';
@@ -12,13 +14,19 @@ import Image from 'next/image';
 import { Heart, MessageCircle, Lock, Eye } from 'lucide-react';
 import { Post } from '@/lib/types';
 import { FeedUserProfile, togglePostLike, unlockPPVContent } from '@/lib/services/feedService';
+import FollowButton from '@/components/feed/FollowButton';
+import TipModal from '@/components/feed/TipModal';
+import ImageCarousel from '@/components/feed/ImageCarousel';
+import HeartAnimation from '@/components/feed/HeartAnimation';
 
 interface PostCardProps {
   post: Post;
   author: FeedUserProfile | null;
   currentUserId: string | null;
   initialLiked: boolean;
+  initialFollowing?: boolean;
   onUnlocked?: (postId: string) => void;
+  onFollowChange?: (targetUserId: string, isFollowing: boolean) => void;
 }
 
 export default function PostCard({
@@ -26,16 +34,34 @@ export default function PostCard({
   author,
   currentUserId,
   initialLiked,
+  initialFollowing = false,
   onUnlocked,
+  onFollowChange,
 }: PostCardProps) {
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(post.likes || 0);
   const [unlocked, setUnlocked] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [tipModalOpen, setTipModalOpen] = useState(false);
+  const [heartTrigger, setHeartTrigger] = useState(0);
 
   const isPPV = post.isPremium && !unlocked;
   const hasMedia = !!post.mediaUrl || !!post.thumbnailUrl;
+
+  // Build images array for carousel support
+  // Support both single mediaUrl and potential mediaUrls array (from post data)
+  const postImages: string[] = [];
+  const postData = post as Post & { mediaUrls?: string[] };
+  if (postData.mediaUrls && Array.isArray(postData.mediaUrls) && postData.mediaUrls.length > 0) {
+    postImages.push(...postData.mediaUrls);
+  } else if (post.mediaUrl) {
+    postImages.push(post.mediaUrl);
+  } else if (post.thumbnailUrl) {
+    postImages.push(post.thumbnailUrl);
+  }
+
+  const isImagePost = post.mediaType !== 'video' && postImages.length > 0;
 
   const handleLike = useCallback(async () => {
     if (!currentUserId) return;
@@ -53,6 +79,22 @@ export default function PostCard({
       setLiked(!newLiked);
       setLikeCount((prev) => (newLiked ? prev - 1 : prev + 1));
     }
+  }, [currentUserId, liked, post.id]);
+
+  const handleDoubleTapLike = useCallback(() => {
+    if (!currentUserId) return;
+    if (!liked) {
+      // Only like (not unlike) on double-tap
+      setLiked(true);
+      setLikeCount((prev) => prev + 1);
+      togglePostLike(post.id, currentUserId).catch((error) => {
+        console.error('Double-tap like failed:', error);
+        setLiked(false);
+        setLikeCount((prev) => prev - 1);
+      });
+    }
+    // Always show animation regardless
+    setHeartTrigger((prev) => prev + 1);
   }, [currentUserId, liked, post.id]);
 
   const handleUnlock = useCallback(async () => {
@@ -99,15 +141,23 @@ export default function PostCard({
           )}
         </Link>
         <div className="flex-1 min-w-0">
-          <Link
-            href={`/profile/${post.userId}`}
-            className="font-semibold text-sm text-gray-900 dark:text-white hover:underline truncate block"
-          >
-            {displayName}
-            {author?.isVerified && (
-              <span className="ml-1 text-blue-500" title="Verified">✓</span>
-            )}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/profile/${post.userId}`}
+              className="font-semibold text-sm text-gray-900 dark:text-white hover:underline truncate"
+            >
+              {displayName}
+              {author?.isVerified && (
+                <span className="ml-1 text-blue-500" title="Verified">✓</span>
+              )}
+            </Link>
+            <FollowButton
+              currentUserId={currentUserId}
+              targetUserId={post.userId}
+              initialFollowing={initialFollowing}
+              onFollowChange={onFollowChange}
+            />
+          </div>
           <span className="text-xs text-gray-500 dark:text-gray-400">
             {post.createdAt?.toDate?.()
               ? timeAgo(post.createdAt.toDate())
@@ -125,10 +175,23 @@ export default function PostCard({
         </div>
       )}
 
-      {/* Media */}
-      {hasMedia && (
+      {/* Media — Image Carousel with double-tap like */}
+      {isImagePost && !isPPV && (
+        <div className="relative">
+          <ImageCarousel
+            images={postImages}
+            alt={`Post by ${displayName}`}
+            isPPV={false}
+            onDoubleTap={handleDoubleTapLike}
+          />
+          <HeartAnimation trigger={heartTrigger} />
+        </div>
+      )}
+
+      {/* Media — Video or PPV-locked content (existing behavior preserved) */}
+      {hasMedia && (isPPV || post.mediaType === 'video') && !(isImagePost && !isPPV) && (
         <Link href={`/feed/post/${post.id}`} className="block relative">
-          <div className="relative aspect-square w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <div className="relative w-full overflow-hidden bg-gray-100 dark:bg-gray-800" style={{ maxHeight: '600px' }}>
             {post.mediaType === 'video' ? (
               <>
                 <video
@@ -138,6 +201,7 @@ export default function PostCard({
                   muted
                   playsInline
                   preload="metadata"
+                  style={{ maxHeight: '600px' }}
                 />
                 {isPPV && post.thumbnailUrl && (
                   <Image
@@ -149,12 +213,13 @@ export default function PostCard({
                 )}
               </>
             ) : (
-              <Image
-                src={post.thumbnailUrl || post.mediaUrl || ''}
-                alt="Post media"
-                fill
-                className={`object-cover ${isPPV ? 'blur-xl scale-110' : ''}`}
-              />
+              <div className="relative">
+                <ImageCarousel
+                  images={postImages}
+                  alt="Locked content"
+                  isPPV={true}
+                />
+              </div>
             )}
 
             {/* PPV Overlay */}
@@ -184,7 +249,8 @@ export default function PostCard({
       )}
 
       {/* Actions Row */}
-      <div className="flex items-center gap-5 px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+      <div className="flex items-center gap-4 px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+        {/* Like */}
         <button
           onClick={handleLike}
           disabled={!currentUserId}
@@ -195,6 +261,8 @@ export default function PostCard({
           />
           <span>{likeCount}</span>
         </button>
+
+        {/* Comment */}
         <Link
           href={`/feed/post/${post.id}`}
           className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
@@ -202,11 +270,36 @@ export default function PostCard({
           <MessageCircle className="w-5 h-5" />
           <span>{post.comments || 0}</span>
         </Link>
+
+        {/* Tip */}
+        {currentUserId && currentUserId !== post.userId && (
+          <button
+            onClick={() => setTipModalOpen(true)}
+            className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+          >
+            <span className="text-base">💎</span>
+            <span>Tip</span>
+          </button>
+        )}
+
+        {/* Views (pushed to right) */}
         <div className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 ml-auto">
           <Eye className="w-4 h-4" />
           <span>{post.views || 0}</span>
         </div>
       </div>
+
+      {/* Tip Modal */}
+      {currentUserId && (
+        <TipModal
+          isOpen={tipModalOpen}
+          onClose={() => setTipModalOpen(false)}
+          senderId={currentUserId}
+          recipientId={post.userId}
+          recipientName={displayName}
+          postId={post.id}
+        />
+      )}
     </div>
   );
 }

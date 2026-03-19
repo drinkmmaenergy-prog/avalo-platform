@@ -4,6 +4,8 @@
  * PACK 323 - Feed Page (Web)
  * Main feed view with infinite-scroll posts from Firestore 'posts' collection,
  * stories from 'stories' collection, and reels from 'reels' collection.
+ *
+ * Extended: Follow state for inline Follow/Unfollow buttons, followed-first feed ordering.
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
@@ -21,6 +23,10 @@ import {
   FeedUserProfile,
   PaginatedResult,
 } from '@/lib/services/feedService';
+import {
+  batchCheckFollowing,
+  getFollowingIds,
+} from '@/lib/services/feedInteractionService';
 import { Story, Reel } from '@/lib/types';
 
 import PostCard from '@/components/feed/PostCard';
@@ -42,6 +48,10 @@ export default function FeedPage() {
   // Likes state
   const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
 
+  // Follow state
+  const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
+
   // User profiles cache
   const [profiles, setProfiles] = useState<Record<string, FeedUserProfile>>({});
 
@@ -54,6 +64,31 @@ export default function FeedPage() {
   // Infinite scroll sentinel ref
   const sentinelRef = useRef<HTMLDivElement>(null);
   const currentUserId = firebaseUser?.uid || null;
+
+  // ========================================================================
+  // Feed ordering: posts from followed users first, then rest by createdAt desc
+  // ========================================================================
+  const sortPostsFollowedFirst = useCallback(
+    (postsToSort: Post[], followedUserIds: string[]): Post[] => {
+      if (followedUserIds.length === 0) return postsToSort;
+
+      const followedSet = new Set(followedUserIds);
+      const followedPosts: Post[] = [];
+      const otherPosts: Post[] = [];
+
+      for (const post of postsToSort) {
+        if (followedSet.has(post.userId)) {
+          followedPosts.push(post);
+        } else {
+          otherPosts.push(post);
+        }
+      }
+
+      // Each group is already sorted by createdAt desc from the query
+      return [...followedPosts, ...otherPosts];
+    },
+    []
+  );
 
   // ========================================================================
   // Initial load
@@ -70,8 +105,18 @@ export default function FeedPage() {
       setLoadingPosts(true);
       setError(null);
 
+      // Load following IDs for feed ordering (if logged in)
+      let myFollowingIds: string[] = [];
+      if (currentUserId) {
+        myFollowingIds = await getFollowingIds(currentUserId);
+        setFollowingIds(myFollowingIds);
+      }
+
       const result: PaginatedResult<Post> = await fetchFeedPosts(null);
-      setPosts(result.items);
+
+      // Apply followed-first ordering
+      const orderedPosts = sortPostsFollowedFirst(result.items, myFollowingIds);
+      setPosts(orderedPosts);
       setLastDoc(result.lastDoc);
       setHasMore(result.hasMore);
 
@@ -88,6 +133,12 @@ export default function FeedPage() {
         const likes = await batchCheckPostLikes(postIds, currentUserId);
         setLikedMap((prev) => ({ ...prev, ...likes }));
       }
+
+      // Check following status for post authors
+      if (currentUserId && userIds.length > 0) {
+        const following = await batchCheckFollowing(currentUserId, userIds);
+        setFollowingMap((prev) => ({ ...prev, ...following }));
+      }
     } catch (err) {
       console.error('Error loading feed:', err);
       setError('Could not load feed. Pull to refresh.');
@@ -103,7 +154,9 @@ export default function FeedPage() {
       setLoadingMore(true);
       const result = await fetchFeedPosts(lastDoc);
 
-      setPosts((prev) => [...prev, ...result.items]);
+      // Apply followed-first ordering to new batch
+      const orderedNew = sortPostsFollowedFirst(result.items, followingIds);
+      setPosts((prev) => [...prev, ...orderedNew]);
       setLastDoc(result.lastDoc);
       setHasMore(result.hasMore);
 
@@ -122,12 +175,18 @@ export default function FeedPage() {
         const likes = await batchCheckPostLikes(newPostIds, currentUserId);
         setLikedMap((prev) => ({ ...prev, ...likes }));
       }
+
+      // Check following status for new post authors
+      if (currentUserId && newUserIds.length > 0) {
+        const following = await batchCheckFollowing(currentUserId, newUserIds);
+        setFollowingMap((prev) => ({ ...prev, ...following }));
+      }
     } catch (err) {
       console.error('Error loading more posts:', err);
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, lastDoc, profiles, currentUserId]);
+  }, [loadingMore, hasMore, lastDoc, profiles, currentUserId, followingIds, sortPostsFollowedFirst]);
 
   // ========================================================================
   // Infinite scroll via IntersectionObserver
@@ -186,6 +245,21 @@ export default function FeedPage() {
       console.error('Error loading reels:', err);
     }
   };
+
+  // ========================================================================
+  // Follow change handler (from PostCard FollowButton)
+  // ========================================================================
+  const handleFollowChange = useCallback(
+    (targetUserId: string, isFollowing: boolean) => {
+      setFollowingMap((prev) => ({ ...prev, [targetUserId]: isFollowing }));
+      if (isFollowing) {
+        setFollowingIds((prev) => [...new Set([...prev, targetUserId])]);
+      } else {
+        setFollowingIds((prev) => prev.filter((id) => id !== targetUserId));
+      }
+    },
+    []
+  );
 
   // ========================================================================
   // Render
@@ -249,6 +323,8 @@ export default function FeedPage() {
               author={profiles[post.userId] || null}
               currentUserId={currentUserId}
               initialLiked={likedMap[post.id] || false}
+              initialFollowing={followingMap[post.userId] || false}
+              onFollowChange={handleFollowChange}
             />
           ))}
 

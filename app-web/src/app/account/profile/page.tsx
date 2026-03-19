@@ -65,8 +65,8 @@ export default function ProfileEditPage() {
               description: error.message,
             });
           }}
-          maxFiles={6}
-          maxSizeMB={10}
+          maxFiles={20}
+          maxSizeMB={50}
           acceptTypes={['image/jpeg', 'image/png', 'image/webp']}
         />
       </div>

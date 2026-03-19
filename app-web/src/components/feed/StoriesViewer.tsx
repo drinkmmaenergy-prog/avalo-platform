@@ -4,11 +4,14 @@
  * Stories Viewer Component
  * Horizontal carousel of active stories with full-screen viewer on click.
  * Reads from 'stories' collection via feedService.
+ *
+ * Extended: "+" button for user's own story → navigates to /create/story.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { X, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import Link from 'next/link';
+import { X, ChevronLeft, ChevronRight, Lock, Plus } from 'lucide-react';
 import { Story } from '@/lib/types';
 import { FeedUserProfile, incrementStoryViews } from '@/lib/services/feedService';
 
@@ -100,10 +103,6 @@ export default function StoriesViewer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeStoryIndex, goNext, goPrev, closeStory]);
 
-  if (stories.length === 0) {
-    return null;
-  }
-
   // Group stories by userId for the carousel
   const storyUserIds = [...new Set(stories.map((s) => s.userId))];
 
@@ -112,6 +111,22 @@ export default function StoriesViewer({
       {/* Stories Carousel */}
       <div className="relative mb-6">
         <div className="flex gap-4 overflow-x-auto py-2 px-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700">
+          {/* "+" Button for own story */}
+          {currentUserId && (
+            <Link
+              href="/create/story"
+              className="flex-shrink-0 flex flex-col items-center gap-1 group"
+            >
+              <div className="w-16 h-16 rounded-full ring-2 ring-dashed ring-purple-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900 overflow-hidden group-hover:scale-105 transition-transform flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30">
+                <Plus className="w-7 h-7 text-purple-500" />
+              </div>
+              <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[4rem]">
+                Your Story
+              </span>
+            </Link>
+          )}
+
+          {/* User story avatars */}
           {storyUserIds.map((userId) => {
             const userStories = stories.filter((s) => s.userId === userId);
             const firstStory = userStories[0];
@@ -145,6 +160,9 @@ export default function StoriesViewer({
               </button>
             );
           })}
+
+          {/* Show "+" even if no stories exist, to encourage creation */}
+          {stories.length === 0 && !currentUserId && null}
         </div>
       </div>
 

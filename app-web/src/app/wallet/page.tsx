@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Wallet as WalletIcon, ShoppingCart, ClipboardList, ArrowRight, Loader2 } from 'lucide-react';
+import { Wallet as WalletIcon, ShoppingCart, ClipboardList, ArrowRight, Loader2, Banknote, ScrollText } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -127,7 +127,7 @@ export default function WalletPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid sm:grid-cols-2 gap-4 mb-6">
+      <div className="grid sm:grid-cols-3 gap-4 mb-6">
         <Link
           href="/wallet/buy"
           className="card p-5 hover:shadow-md transition-shadow group flex items-center gap-4"
@@ -147,18 +147,36 @@ export default function WalletPage() {
         </Link>
 
         <Link
-          href="/wallet/history"
+          href="/wallet/transactions"
           className="card p-5 hover:shadow-md transition-shadow group flex items-center gap-4"
         >
           <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <ClipboardList className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <ScrollText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
           <div className="flex-1">
             <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
-              {t('wallet.purchaseHistory')}
+              History
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              {t('wallet.purchaseHistoryDesc')}
+              View all transactions
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition" />
+        </Link>
+
+        <Link
+          href="/wallet/payouts"
+          className="card p-5 hover:shadow-md transition-shadow group flex items-center gap-4"
+        >
+          <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+            <Banknote className="w-5 h-5 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="flex-1">
+            <div className="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
+              Payouts
+            </div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Request &amp; track payouts
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition" />
