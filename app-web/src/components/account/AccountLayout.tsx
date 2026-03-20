@@ -16,6 +16,8 @@ export function AccountLayout({ children }: AccountLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const isSubpage = pathname !== '/account' && (pathname ?? '').startsWith('/account/');
+
   const navItems = [
     { href: '/account', label: 'Overview', icon: '👤' },
     { href: '/account/profile', label: 'Profile', icon: '✏️' },
@@ -30,13 +32,23 @@ export function AccountLayout({ children }: AccountLayoutProps) {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
-            <button
-              onClick={() => router.push('/')}
+            <div className="flex items-center gap-4">
+              {isSubpage && (
+                <button
+                  onClick={() => router.push('/account')}
+                  className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition"
+                >
+                  ← Back
+                </button>
+              )}
+              <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
+            </div>
+            <Link
+              href="/"
               className="text-gray-600 hover:text-gray-900 transition"
             >
               ← Back to App
-            </button>
+            </Link>
           </div>
         </div>
       </div>

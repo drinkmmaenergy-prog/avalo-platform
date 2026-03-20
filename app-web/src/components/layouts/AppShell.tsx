@@ -56,7 +56,7 @@ interface NavItem {
 const CENTER_NAV: NavItem[] = [
   { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
   { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
-  { key: 'ai', href: '/ai/chat', icon: Bot, labelKey: 'nav.ai' },
+  { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
   { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creatorHub' },
 ];
 
@@ -64,7 +64,7 @@ const CENTER_NAV: NavItem[] = [
 const BOTTOM_NAV: NavItem[] = [
   { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
   { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
-  { key: 'ai', href: '/ai/chat', icon: Bot, labelKey: 'nav.ai' },
+  { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
   { key: 'wallet', href: '/wallet', icon: Wallet, labelKey: 'nav.wallet' },
   { key: 'profile', href: '/profile', icon: UserCircle, labelKey: 'nav.profile' },
 ];

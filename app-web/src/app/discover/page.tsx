@@ -5,10 +5,13 @@
  * Layout provides AppShell wrapping.
  *
  * Features:
+ *   - "First message is free" banner at top
  *   - Grid of user cards from Firestore 'public_profiles' collection
  *   - Each card: avatar, name, age, earn_on badge, chat price badge, online indicator
- *   - Click card → navigate to /profile?uid=xxx
- *   - Filter bar: online only, earn_on only, price range
+ *   - Click card → navigate to /profile/[userId]
+ *   - Search radius km selector (saved to users/{uid}.searchRadius in Firestore)
+ *   - Collapsible dating-app style filters panel:
+ *       Age range, gender, body type, hair color, interests, online only, earn on
  *   - Infinite scroll using Firestore pagination (limit 20, startAfter cursor)
  *   - Loading skeleton and empty state
  */
@@ -16,6 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/components/providers/I18nProvider';
+import { useAuth } from '@/components/providers/AuthProvider';
 import {
   Compass,
   Search,
@@ -25,7 +29,11 @@ import {
   DollarSign,
   BadgeCheck,
   ChevronDown,
+  ChevronUp,
   X,
+  MapPin,
+  MessageCircle,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   fetchPublicProfiles,
@@ -34,9 +42,20 @@ import {
 import type {
   PublicProfile,
   DiscoverFilters,
+  SearchRadiusValue,
 } from '@/lib/types/publicProfile';
-import { DEFAULT_DISCOVER_FILTERS } from '@/lib/types/publicProfile';
+import {
+  DEFAULT_DISCOVER_FILTERS,
+  SEARCH_RADIUS_OPTIONS,
+  DEFAULT_SEARCH_RADIUS,
+  GENDER_OPTIONS,
+  BODY_TYPE_OPTIONS,
+  HAIR_COLOR_OPTIONS,
+  INTEREST_OPTIONS,
+} from '@/lib/types/publicProfile';
 import type { DocumentSnapshot } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
 
 // ============================================================================
 // CONSTANTS
@@ -47,6 +66,20 @@ const SCROLL_THRESHOLD_PX = 300;
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
+
+/** "First message is free" promotional banner */
+function FreeMessageBanner() {
+  return (
+    <div className="w-full rounded-xl bg-gradient-to-r from-primary-600 via-purple-500 to-pink-500 px-4 py-2.5 mb-6">
+      <div className="flex items-center justify-center gap-2">
+        <MessageCircle className="w-4 h-4 text-white/90" />
+        <p className="text-sm font-medium text-white">
+          First message is free — start a conversation!
+        </p>
+      </div>
+    </div>
+  );
+}
 
 /** Loading skeleton matching the card layout */
 function CardSkeleton() {
@@ -117,7 +150,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** Single profile card */
+/** Single profile card — clicking navigates to /profile/[userId] */
 function ProfileCard({
   profile,
   onClick,
@@ -233,135 +266,382 @@ function ProfileCard({
   );
 }
 
-/** Filter bar component */
-function FilterBar({
+// ============================================================================
+// SEARCH RADIUS SELECTOR
+// ============================================================================
+
+/** Granular km selector for search radius */
+function SearchRadiusSelector({
+  value,
+  onChange,
+}: {
+  value: SearchRadiusValue;
+  onChange: (v: SearchRadiusValue) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const currentLabel =
+    SEARCH_RADIUS_OPTIONS.find((o) => o.value === value)?.label ?? '50 km';
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="flex items-center gap-2 mb-1">
+        <MapPin className="w-4 h-4 text-primary-500" />
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Search radius
+        </span>
+      </div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-750 transition-colors"
+      >
+        {currentLabel}
+        <ChevronDown className="w-3 h-3" />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 min-w-[160px]">
+          {SEARCH_RADIUS_OPTIONS.map((option) => (
+            <button
+              key={String(option.value)}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className={`w-full text-left px-3 py-1.5 text-xs transition-colors ${
+                option.value === value
+                  ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-medium'
+                  : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-750'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// COLLAPSIBLE FILTERS PANEL
+// ============================================================================
+
+/** Dual-thumb age range slider (simplified with two range inputs) */
+function AgeRangeSlider({
+  min,
+  max,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  onChange: (min: number, max: number) => void;
+}) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+        Age range: {min} – {max}
+      </label>
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={18}
+          max={99}
+          value={min}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10);
+            onChange(Math.min(v, max - 1), max);
+          }}
+          className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-primary-500"
+        />
+        <input
+          type="range"
+          min={18}
+          max={99}
+          value={max}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10);
+            onChange(min, Math.max(v, min + 1));
+          }}
+          className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full appearance-none cursor-pointer accent-pink-500"
+        />
+      </div>
+      <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+        <span>18</span>
+        <span>99</span>
+      </div>
+    </div>
+  );
+}
+
+/** Multi-select checkbox group */
+function CheckboxGroup({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: readonly { value: string; label: string }[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+}) {
+  const toggle = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((s) => s !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  return (
+    <div>
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+        {label}
+      </label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => toggle(opt.value)}
+            className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+              selected.includes(opt.value)
+                ? 'bg-primary-100 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-700 dark:text-primary-400'
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Multi-select chip group (for strings like body type, hair color, interests) */
+function ChipGroup({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: readonly string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+}) {
+  const toggle = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((s) => s !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  return (
+    <div>
+      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+        {label}
+      </label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={opt}
+            onClick={() => toggle(opt)}
+            className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
+              selected.includes(opt)
+                ? 'bg-pink-100 border-pink-300 text-pink-700 dark:bg-pink-900/30 dark:border-pink-700 dark:text-pink-400'
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Collapsible dating-app style filters panel */
+function FiltersPanel({
   filters,
   onFiltersChange,
   onClear,
+  searchRadius,
+  onSearchRadiusChange,
 }: {
   filters: DiscoverFilters;
   onFiltersChange: (filters: DiscoverFilters) => void;
   onClear: () => void;
+  searchRadius: SearchRadiusValue;
+  onSearchRadiusChange: (v: SearchRadiusValue) => void;
 }) {
-  const [showPriceRange, setShowPriceRange] = useState(false);
-  const [priceMinInput, setPriceMinInput] = useState('');
-  const [priceMaxInput, setPriceMaxInput] = useState('');
+  const [expanded, setExpanded] = useState(false);
 
   const hasActiveFilters =
     filters.onlineOnly ||
     filters.earnOnOnly ||
-    filters.priceMin !== null ||
-    filters.priceMax !== null;
+    filters.ageMin > 18 ||
+    filters.ageMax < 99 ||
+    filters.genders.length > 0 ||
+    filters.bodyTypes.length > 0 ||
+    filters.hairColors.length > 0 ||
+    filters.interests.length > 0;
 
-  const handleApplyPrice = () => {
-    const min = priceMinInput ? parseInt(priceMinInput, 10) : null;
-    const max = priceMaxInput ? parseInt(priceMaxInput, 10) : null;
-    onFiltersChange({
-      ...filters,
-      priceMin: min && !isNaN(min) && min > 0 ? min : null,
-      priceMax: max && !isNaN(max) && max > 0 ? max : null,
-    });
-    setShowPriceRange(false);
-  };
-
-  const handleClearAll = () => {
-    setPriceMinInput('');
-    setPriceMaxInput('');
-    setShowPriceRange(false);
-    onClear();
-  };
+  const activeCount = [
+    filters.onlineOnly,
+    filters.earnOnOnly,
+    filters.ageMin > 18 || filters.ageMax < 99,
+    filters.genders.length > 0,
+    filters.bodyTypes.length > 0,
+    filters.hairColors.length > 0,
+    filters.interests.length > 0,
+  ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-6">
-      <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 mr-1">
-        <Filter className="w-4 h-4" />
-        <span className="hidden sm:inline">Filters</span>
-      </div>
-
-      {/* Online Only toggle */}
-      <button
-        onClick={() =>
-          onFiltersChange({ ...filters, onlineOnly: !filters.onlineOnly })
-        }
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-          filters.onlineOnly
-            ? 'bg-green-100 border-green-300 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400'
-            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
-        }`}
-      >
-        <Wifi className="w-3 h-3" />
-        Online Only
-      </button>
-
-      {/* Earn On toggle */}
-      <button
-        onClick={() =>
-          onFiltersChange({ ...filters, earnOnOnly: !filters.earnOnOnly })
-        }
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-          filters.earnOnOnly
-            ? 'bg-emerald-100 border-emerald-300 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-400'
-            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
-        }`}
-      >
-        <DollarSign className="w-3 h-3" />
-        Earn On
-      </button>
-
-      {/* Price Range dropdown */}
-      <div className="relative">
+    <div className="mb-6">
+      {/* Top row: quick toggles + Filters button + search radius */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        {/* Online Only toggle */}
         <button
-          onClick={() => setShowPriceRange(!showPriceRange)}
+          onClick={() =>
+            onFiltersChange({ ...filters, onlineOnly: !filters.onlineOnly })
+          }
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-            filters.priceMin !== null || filters.priceMax !== null
-              ? 'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700 dark:text-amber-400'
+            filters.onlineOnly
+              ? 'bg-green-100 border-green-300 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400'
               : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
           }`}
         >
-          Price Range
-          <ChevronDown className="w-3 h-3" />
+          <Wifi className="w-3 h-3" />
+          Online Only
         </button>
 
-        {showPriceRange && (
-          <div className="absolute top-full left-0 mt-1 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 min-w-[200px]">
-            <div className="flex gap-2 mb-2">
-              <input
-                type="number"
-                placeholder="Min"
-                value={priceMinInput}
-                onChange={(e) => setPriceMinInput(e.target.value)}
-                className="input text-xs w-20 py-1"
-                min="0"
-              />
-              <span className="text-gray-400 self-center">–</span>
-              <input
-                type="number"
-                placeholder="Max"
-                value={priceMaxInput}
-                onChange={(e) => setPriceMaxInput(e.target.value)}
-                className="input text-xs w-20 py-1"
-                min="0"
-              />
-            </div>
-            <button
-              onClick={handleApplyPrice}
-              className="btn btn-primary text-xs w-full py-1"
-            >
-              Apply
-            </button>
-          </div>
+        {/* Earn On toggle */}
+        <button
+          onClick={() =>
+            onFiltersChange({ ...filters, earnOnOnly: !filters.earnOnOnly })
+          }
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+            filters.earnOnOnly
+              ? 'bg-emerald-100 border-emerald-300 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-400'
+              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
+          }`}
+        >
+          <DollarSign className="w-3 h-3" />
+          Earn On
+        </button>
+
+        {/* Filters toggle button */}
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+            hasActiveFilters
+              ? 'bg-primary-100 border-primary-300 text-primary-700 dark:bg-primary-900/30 dark:border-primary-700 dark:text-primary-400'
+              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
+          }`}
+        >
+          <SlidersHorizontal className="w-3 h-3" />
+          Filters
+          {activeCount > 0 && (
+            <span className="ml-1 inline-flex items-center justify-center w-4 h-4 text-[10px] font-bold rounded-full bg-primary-500 text-white">
+              {activeCount}
+            </span>
+          )}
+          {expanded ? (
+            <ChevronUp className="w-3 h-3" />
+          ) : (
+            <ChevronDown className="w-3 h-3" />
+          )}
+        </button>
+
+        {/* Clear all */}
+        {hasActiveFilters && (
+          <button
+            onClick={onClear}
+            className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 hover:text-red-500 transition-colors"
+          >
+            <X className="w-3 h-3" />
+            Clear
+          </button>
         )}
+
+        {/* Search radius selector — right side */}
+        <div className="ml-auto">
+          <SearchRadiusSelector
+            value={searchRadius}
+            onChange={onSearchRadiusChange}
+          />
+        </div>
       </div>
 
-      {/* Clear all */}
-      {hasActiveFilters && (
-        <button
-          onClick={handleClearAll}
-          className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 hover:text-red-500 transition-colors"
-        >
-          <X className="w-3 h-3" />
-          Clear
-        </button>
+      {/* Collapsible panel body */}
+      {expanded && (
+        <div className="card p-4 space-y-5 animate-slide-down">
+          {/* Age range */}
+          <AgeRangeSlider
+            min={filters.ageMin}
+            max={filters.ageMax}
+            onChange={(ageMin, ageMax) =>
+              onFiltersChange({ ...filters, ageMin, ageMax })
+            }
+          />
+
+          {/* Gender */}
+          <CheckboxGroup
+            label="Gender"
+            options={GENDER_OPTIONS}
+            selected={filters.genders}
+            onChange={(genders) =>
+              onFiltersChange({
+                ...filters,
+                genders: genders as Array<'male' | 'female' | 'other'>,
+              })
+            }
+          />
+
+          {/* Body type */}
+          <ChipGroup
+            label="Body type"
+            options={BODY_TYPE_OPTIONS}
+            selected={filters.bodyTypes}
+            onChange={(bodyTypes) =>
+              onFiltersChange({ ...filters, bodyTypes })
+            }
+          />
+
+          {/* Hair color */}
+          <ChipGroup
+            label="Hair color"
+            options={HAIR_COLOR_OPTIONS}
+            selected={filters.hairColors}
+            onChange={(hairColors) =>
+              onFiltersChange({ ...filters, hairColors })
+            }
+          />
+
+          {/* Interests / hobbies */}
+          <ChipGroup
+            label="Interests / hobbies"
+            options={INTEREST_OPTIONS}
+            selected={filters.interests}
+            onChange={(interests) =>
+              onFiltersChange({ ...filters, interests })
+            }
+          />
+        </div>
       )}
     </div>
   );
@@ -385,6 +665,7 @@ function formatCount(n: number): string {
 export default function DiscoverPage() {
   const { t } = useI18n();
   const router = useRouter();
+  const { firebaseUser } = useAuth();
 
   // ── State ───────────────────────────────────────────────────────────
   const [profiles, setProfiles] = useState<PublicProfile[]>([]);
@@ -397,10 +678,55 @@ export default function DiscoverPage() {
     DEFAULT_DISCOVER_FILTERS
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchRadius, setSearchRadius] =
+    useState<SearchRadiusValue>(DEFAULT_SEARCH_RADIUS);
 
   // Ref for infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+
+  // ── Load saved search radius from Firestore ─────────────────────────
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+
+    const loadSavedRadius = async () => {
+      try {
+        const userDoc = await getDoc(
+          doc(requireDb(), 'users', firebaseUser.uid)
+        );
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.searchRadius !== undefined) {
+            setSearchRadius(data.searchRadius as SearchRadiusValue);
+          }
+        }
+      } catch (err) {
+        console.warn('[DiscoverPage] Failed to load saved search radius:', err);
+      }
+    };
+
+    void loadSavedRadius();
+  }, [firebaseUser?.uid]);
+
+  // ── Save search radius to Firestore ─────────────────────────────────
+  const handleSearchRadiusChange = useCallback(
+    async (newRadius: SearchRadiusValue) => {
+      setSearchRadius(newRadius);
+
+      if (!firebaseUser?.uid) return;
+
+      try {
+        await setDoc(
+          doc(requireDb(), 'users', firebaseUser.uid),
+          { searchRadius: newRadius },
+          { merge: true }
+        );
+      } catch (err) {
+        console.warn('[DiscoverPage] Failed to save search radius:', err);
+      }
+    },
+    [firebaseUser?.uid]
+  );
 
   // ── Initial + filter-change fetch ───────────────────────────────────
   const loadProfiles = useCallback(
@@ -486,7 +812,7 @@ export default function DiscoverPage() {
   // ── Card click → navigate to public profile ─────────────────────────
   const handleCardClick = useCallback(
     (uid: string) => {
-      router.push(`/profile?uid=${uid}`);
+      router.push(`/profile/${uid}`);
     },
     [router]
   );
@@ -510,9 +836,24 @@ export default function DiscoverPage() {
       )
     : profiles;
 
+  // ── Check if any filters are active (for empty state) ───────────────
+  const hasActiveFilters =
+    filters.onlineOnly ||
+    filters.earnOnOnly ||
+    filters.ageMin > 18 ||
+    filters.ageMax < 99 ||
+    filters.genders.length > 0 ||
+    filters.bodyTypes.length > 0 ||
+    filters.hairColors.length > 0 ||
+    filters.interests.length > 0 ||
+    searchQuery.trim().length > 0;
+
   // ── Render ──────────────────────────────────────────────────────────
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Free message banner */}
+      <FreeMessageBanner />
+
       {/* Header */}
       <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">
         {t('placeholder.discoverTitle')}
@@ -541,11 +882,13 @@ export default function DiscoverPage() {
         )}
       </div>
 
-      {/* Filter bar */}
-      <FilterBar
+      {/* Filters panel (collapsible, includes search radius) */}
+      <FiltersPanel
         filters={filters}
         onFiltersChange={handleFiltersChange}
         onClear={handleClearFilters}
+        searchRadius={searchRadius}
+        onSearchRadiusChange={handleSearchRadiusChange}
       />
 
       {/* Loading state */}
@@ -556,15 +899,7 @@ export default function DiscoverPage() {
 
       {/* Empty state */}
       {!loading && !error && filteredProfiles.length === 0 && (
-        <EmptyState
-          hasFilters={
-            filters.onlineOnly ||
-            filters.earnOnOnly ||
-            filters.priceMin !== null ||
-            filters.priceMax !== null ||
-            searchQuery.trim().length > 0
-          }
-        />
+        <EmptyState hasFilters={hasActiveFilters} />
       )}
 
       {/* Profile grid */}

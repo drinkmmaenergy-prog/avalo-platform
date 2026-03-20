@@ -33,9 +33,11 @@ import {
   DollarSign,
   Wifi,
   AlertCircle,
+  Pencil,
 } from 'lucide-react';
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { getTokenBalance } from '@/lib/services/tokenService';
@@ -99,9 +101,18 @@ function OwnProfileView() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-        {t('placeholder.profileTitle')}
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {t('placeholder.profileTitle')}
+        </h1>
+        <Link
+          href="/account/profile"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600 transition-colors shadow-sm"
+        >
+          <Pencil className="w-4 h-4" />
+          Edit Profile
+        </Link>
+      </div>
 
       <div className="card p-6">
         <div className="flex items-center gap-4 mb-6">

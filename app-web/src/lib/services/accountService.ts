@@ -377,20 +377,28 @@ export async function deleteAccountOAuth(reason: string): Promise<void> {
 // Discovery & Privacy Settings
 // ---------------------------------------------------------------------------
 
-export type DiscoveryRadius = 'local' | 'regional' | 'international';
+export type DiscoveryRadius = 'local' | 'regional' | 'international' | '0-50km' | '50-100km' | '100-300km' | 'entire_country';
+
+export interface PassportLocation {
+  city: string;
+  lat: number;
+  lng: number;
+}
 
 export interface DiscoverySettings {
   discoveryRadius: DiscoveryRadius;
   incognito: boolean;
   passportMode: boolean;
   discoverable: boolean;
+  passportLocation?: PassportLocation | null;
 }
 
 const DEFAULT_DISCOVERY_SETTINGS: DiscoverySettings = {
-  discoveryRadius: 'regional',
+  discoveryRadius: '50-100km',
   incognito: false,
   passportMode: false,
   discoverable: true,
+  passportLocation: null,
 };
 
 /**
@@ -425,6 +433,7 @@ export async function getDiscoverySettings(): Promise<DiscoverySettings> {
       userData?.passportMode ?? DEFAULT_DISCOVERY_SETTINGS.passportMode,
     discoverable:
       publicData?.discoverable ?? DEFAULT_DISCOVERY_SETTINGS.discoverable,
+    passportLocation: userData?.passportLocation ?? null,
   };
 }
 
@@ -495,6 +504,25 @@ export async function updateShowMeInDiscovery(
 
   const publicRef = doc(requireDb(), 'public_profiles', user.uid);
   await setDoc(publicRef, { discoverable: enabled }, { merge: true });
+}
+
+/**
+ * Update passport location.
+ * Writes to: users/{uid}.passportLocation
+ */
+export async function updatePassportLocation(
+  location: { city: string; lat: number; lng: number } | null,
+): Promise<void> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Not authenticated.');
+  }
+
+  const userRef = doc(requireDb(), 'users', user.uid);
+  await updateDoc(userRef, {
+    passportLocation: location,
+    lastActiveAt: serverTimestamp(),
+  });
 }
 
 // ---------------------------------------------------------------------------

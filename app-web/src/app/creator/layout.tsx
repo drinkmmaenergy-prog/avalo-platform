@@ -20,6 +20,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'Earnings', href: '/creator', icon: '💰' },
+  { name: 'AI Companions', href: '/creator/ai', icon: '🤖' },
   { name: 'Payouts', href: '/creator/payouts', icon: '💳' },
   { name: 'Stripe Connect', href: '/creator/stripe', icon: '🔗' },
   { name: 'Analytics', href: '/creator/analytics', icon: '📊' },
@@ -71,6 +72,8 @@ export default function CreatorLayout({
     );
   }
   
+  const isSubpage = pathname !== '/creator' && (pathname ?? '').startsWith('/creator/');
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -78,6 +81,14 @@ export default function CreatorLayout({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
+              {isSubpage && (
+                <button
+                  onClick={() => router.push('/creator')}
+                  className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition mr-2"
+                >
+                  ← Back
+                </button>
+              )}
               <a href="/" className="text-2xl font-bold text-pink-600">
                 Avalo
               </a>
@@ -88,7 +99,11 @@ export default function CreatorLayout({
               <span className="text-sm text-gray-600">
                 {user?.displayName || user?.email}
               </span>
-              <div className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center">
+              <button
+                onClick={() => router.push('/profile')}
+                className="h-8 w-8 rounded-full bg-pink-100 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-pink-300 transition"
+                aria-label="View my profile"
+              >
                 {user?.photoURL ? (
                   <img
                     src={user.photoURL}
@@ -100,7 +115,7 @@ export default function CreatorLayout({
                     {(user?.displayName || user?.email || 'C')[0].toUpperCase()}
                   </span>
                 )}
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -129,6 +144,16 @@ export default function CreatorLayout({
                   </li>
                 );
               })}
+              {/* View My Profile link */}
+              <li>
+                <a
+                  href="/profile"
+                  className="flex items-center px-4 py-3 rounded-lg transition text-gray-700 hover:bg-gray-100 border-t border-gray-100 mt-2 pt-4"
+                >
+                  <span className="mr-3 text-lg">👤</span>
+                  View My Profile
+                </a>
+              </li>
             </ul>
           </nav>
           

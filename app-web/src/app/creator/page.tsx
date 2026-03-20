@@ -48,6 +48,12 @@ import {
 import { MONETIZATION_SPLITS } from '@/config/monetizationSplits';
 import { requireDb } from '@/lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import CreatorMediaSection, { type CreatorPhoto } from './CreatorMediaSection';
+import EarningsFilters, {
+  type EarningsFilterState,
+  DEFAULT_EARNINGS_FILTERS,
+  filterEarningsBySource,
+} from './EarningsFilters';
 
 // ============================================================================
 // CONSTANTS
@@ -110,6 +116,32 @@ async function getContentStats(userId: string): Promise<ContentStatsData> {
   } catch (error) {
     console.error('Error getting content stats:', error);
     return { ...DEFAULT_CONTENT_STATS };
+  }
+}
+
+async function getCreatorPhotos(userId: string): Promise<CreatorPhoto[]> {
+  try {
+    const profileRef = doc(requireDb(), 'public_profiles', userId);
+    const profileSnap = await getDoc(profileRef);
+
+    if (!profileSnap.exists()) {
+      return [];
+    }
+
+    const data = profileSnap.data();
+    const photos = data.photos;
+
+    if (!Array.isArray(photos)) {
+      return [];
+    }
+
+    return photos.map((p: any) => ({
+      url: typeof p === 'string' ? p : p.url ?? '',
+      caption: typeof p === 'string' ? '' : p.caption ?? '',
+    }));
+  } catch (error) {
+    console.error('Error getting creator photos:', error);
+    return [];
   }
 }
 
@@ -749,6 +781,8 @@ export default function EarnWithAvaloPage() {
   const [messageCount, setMessageCount] = useState<number>(0);
   const [contentStats, setContentStats] = useState<ContentStatsData>(DEFAULT_CONTENT_STATS);
   const [discoverySettings, setDiscoverySettings] = useState<DiscoverySettingsData>(DEFAULT_DISCOVERY_SETTINGS);
+  const [creatorPhotos, setCreatorPhotos] = useState<CreatorPhoto[]>([]);
+  const [earningsFilters, setEarningsFilters] = useState<EarningsFilterState>(DEFAULT_EARNINGS_FILTERS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingEarnOn, setSavingEarnOn] = useState(false);
@@ -763,7 +797,7 @@ export default function EarnWithAvaloPage() {
 
       try {
         setLoading(true);
-        const [earningsData, analyticsData, settingsData, walletData, msgCount, statsData, discData] =
+        const [earningsData, analyticsData, settingsData, walletData, msgCount, statsData, discData, photosData] =
           await Promise.all([
             getCreatorEarningsSummary(user.uid).catch(() => null),
             getCreatorAnalytics(user.uid, 'week').catch(() => null),
@@ -772,6 +806,7 @@ export default function EarnWithAvaloPage() {
             getCreatorMessageCount(user.uid).catch(() => 0),
             getContentStats(user.uid).catch(() => ({ ...DEFAULT_CONTENT_STATS })),
             getDiscoverySettings(user.uid).catch(() => ({ ...DEFAULT_DISCOVERY_SETTINGS })),
+            getCreatorPhotos(user.uid).catch(() => [] as CreatorPhoto[]),
           ]);
         setEarnings(earningsData);
         setAnalytics(analyticsData);
@@ -780,6 +815,7 @@ export default function EarnWithAvaloPage() {
         setMessageCount(msgCount);
         setContentStats(statsData);
         setDiscoverySettings(discData);
+        setCreatorPhotos(photosData);
       } catch (err: any) {
         setError(err.message || 'Failed to load earnings');
       } finally {
@@ -966,6 +1002,15 @@ export default function EarnWithAvaloPage() {
         saving={savingDiscovery}
       />
 
+      {/* SECTION 6: Media / Photo Management */}
+      {user && (
+        <CreatorMediaSection
+          userId={user.uid}
+          photos={creatorPhotos}
+          onPhotosChange={setCreatorPhotos}
+        />
+      )}
+
       {/* Earn Profile Editor (preserved) */}
       {earnerSettings && (
         <EarnProfileEditor
@@ -1052,14 +1097,42 @@ export default function EarnWithAvaloPage() {
         </div>
       </div>
 
-      {/* Earnings Breakdown (preserved, if analytics available) */}
+      {/* SECTION: My AI Companions */}
+      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">My AI Companions</h2>
+          <a
+            href="/creator/ai"
+            className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition text-sm"
+          >
+            🤖 Manage AI Bots
+          </a>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Create and manage AI companions that earn tokens when users chat with them.
+        </p>
+        <a
+          href="/creator/ai"
+          className="text-purple-600 hover:text-purple-700 text-sm font-medium"
+        >
+          View all AI companions →
+        </a>
+      </div>
+
+      {/* Earnings Breakdown (preserved, with filters) */}
       {analytics && (
         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Earnings Breakdown (This Week)
+            Earnings Breakdown
           </h2>
+          <EarningsFilters
+            filters={earningsFilters}
+            onFiltersChange={setEarningsFilters}
+          />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {Object.entries(analytics.earningsBySource).map(([source, tokens]) => (
+            {Object.entries(
+              filterEarningsBySource(analytics.earningsBySource, earningsFilters.surfaceFilter),
+            ).map(([source, tokens]) => (
               <div key={source} className="text-center p-4 bg-gray-50 rounded-lg">
                 <div className="text-lg font-bold text-gray-900">
                   {tokens.toLocaleString()}

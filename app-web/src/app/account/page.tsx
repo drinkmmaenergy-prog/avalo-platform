@@ -23,8 +23,9 @@ import {
   updateIncognitoMode,
   updatePassportMode,
   updateShowMeInDiscovery,
+  updatePassportLocation,
 } from '@/lib/services/accountService';
-import type { DiscoverySettings, DiscoveryRadius } from '@/lib/services/accountService';
+import type { DiscoverySettings, DiscoveryRadius, PassportLocation } from '@/lib/services/accountService';
 
 import type { WalletBalance } from '../../../hooks/useWallet';
 import type { UserSubscription } from '../../../hooks/useSubscription';
@@ -41,6 +42,12 @@ export default function AccountPage() {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [compliance, setCompliance] = useState<UserComplianceStatus | null>(null);
   const [discovery, setDiscovery] = useState<DiscoverySettings | null>(null);
+
+  // Track the previous discoverable value so we can restore it when incognito is toggled off
+  const [prevDiscoverable, setPrevDiscoverable] = useState<boolean>(true);
+
+  // Passport location input state
+  const [passportLocationInput, setPassportLocationInput] = useState<string>('');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +79,8 @@ export default function AccountPage() {
       setSubscription(subscriptionData);
       setCompliance(complianceData);
       setDiscovery(discoveryData);
+      setPrevDiscoverable(discoveryData.discoverable);
+      setPassportLocationInput(discoveryData.passportLocation?.city ?? '');
     } catch (err) {
       console.error('Account load error', err);
       setError('Failed to load account data');
@@ -133,13 +142,30 @@ export default function AccountPage() {
 
   const handleIncognitoChange = async (enabled: boolean) => {
     if (!discovery) return;
-    const prev = discovery.incognito;
-    setDiscovery({ ...discovery, incognito: enabled });
-    try {
-      await updateIncognitoMode(enabled);
-    } catch (err) {
-      console.error('[Account] Failed to update incognito mode:', err);
-      setDiscovery((s) => (s ? { ...s, incognito: prev } : s));
+    const prevIncognito = discovery.incognito;
+    const prevDisc = discovery.discoverable;
+
+    if (enabled) {
+      // Turning incognito ON: save current discoverable value, then set discoverable OFF
+      setPrevDiscoverable(discovery.discoverable);
+      setDiscovery({ ...discovery, incognito: true, discoverable: false });
+      try {
+        await updateIncognitoMode(true);
+        await updateShowMeInDiscovery(false);
+      } catch (err) {
+        console.error('[Account] Failed to update incognito mode:', err);
+        setDiscovery((s) => (s ? { ...s, incognito: prevIncognito, discoverable: prevDisc } : s));
+      }
+    } else {
+      // Turning incognito OFF: restore discoverable to its previous value
+      setDiscovery({ ...discovery, incognito: false, discoverable: prevDiscoverable });
+      try {
+        await updateIncognitoMode(false);
+        await updateShowMeInDiscovery(prevDiscoverable);
+      } catch (err) {
+        console.error('[Account] Failed to update incognito mode:', err);
+        setDiscovery((s) => (s ? { ...s, incognito: prevIncognito, discoverable: prevDisc } : s));
+      }
     }
   };
 
@@ -164,6 +190,24 @@ export default function AccountPage() {
     } catch (err) {
       console.error('[Account] Failed to update show me in discovery:', err);
       setDiscovery((s) => (s ? { ...s, discoverable: prev } : s));
+    }
+  };
+
+  const handlePassportLocationSave = async () => {
+    if (!discovery) return;
+    const city = passportLocationInput.trim();
+    if (!city) return;
+
+    // Save with city name; lat/lng set to 0 as placeholder (proper geocoding would be server-side)
+    const location: PassportLocation = { city, lat: 0, lng: 0 };
+    const prev = discovery.passportLocation;
+    setDiscovery({ ...discovery, passportLocation: location });
+    try {
+      await updatePassportLocation(location);
+    } catch (err) {
+      console.error('[Account] Failed to update passport location:', err);
+      setDiscovery((s) => (s ? { ...s, passportLocation: prev } : s));
+      setPassportLocationInput(prev?.city ?? '');
     }
   };
 
@@ -320,21 +364,23 @@ export default function AccountPage() {
             <h2 className="text-xl font-bold text-gray-900">Discovery &amp; Privacy</h2>
           </div>
 
-          {/* Discovery Radius — segmented control */}
+          {/* Discovery Radius — 5-option segmented control (CHANGE 7) */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Who can find you
+              Search area
             </label>
-            <div className="grid grid-cols-3 gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="grid grid-cols-5 gap-1 bg-gray-100 rounded-lg p-1">
               {([
-                { value: 'local' as DiscoveryRadius, label: 'Local (0-50km)' },
-                { value: 'regional' as DiscoveryRadius, label: 'Regional (50-500km)' },
+                { value: '0-50km' as DiscoveryRadius, label: '0-50km' },
+                { value: '50-100km' as DiscoveryRadius, label: '50-100km' },
+                { value: '100-300km' as DiscoveryRadius, label: '100-300km' },
+                { value: 'entire_country' as DiscoveryRadius, label: 'Entire Country' },
                 { value: 'international' as DiscoveryRadius, label: 'International' },
               ]).map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => handleDiscoveryRadiusChange(opt.value)}
-                  className={`py-2 px-3 rounded-md text-sm font-medium transition ${
+                  className={`py-2 px-2 rounded-md text-xs sm:text-sm font-medium transition text-center ${
                     discovery.discoveryRadius === opt.value
                       ? 'bg-white text-purple-700 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -348,48 +394,86 @@ export default function AccountPage() {
 
           {/* Toggle settings */}
           <div className="space-y-4">
-            {/* Incognito Mode */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
-              <div>
-                <p className="font-medium text-gray-900">Incognito Mode</p>
-                <p className="text-sm text-gray-600">Your profile won&apos;t appear in Discover</p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={discovery.incognito}
-                onClick={() => handleIncognitoChange(!discovery.incognito)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  discovery.incognito ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    discovery.incognito ? 'translate-x-6' : 'translate-x-1'
+            {/* Incognito Mode (CHANGE 5) */}
+            <div className="py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Incognito Mode</p>
+                  <p className="text-sm text-gray-600">Your profile won&apos;t appear in Discover</p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={discovery.incognito}
+                  onClick={() => handleIncognitoChange(!discovery.incognito)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    discovery.incognito ? 'bg-purple-600' : 'bg-gray-300'
                   }`}
-                />
-              </button>
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      discovery.incognito ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {discovery.incognito && (
+                <p className="mt-2 text-sm text-purple-600 bg-purple-50 rounded-lg px-3 py-2">
+                  Incognito: only people you have interacted with can see your profile.
+                </p>
+              )}
             </div>
 
-            {/* Passport Mode */}
-            <div className="flex items-center justify-between py-3 border-b border-gray-100">
-              <div>
-                <p className="font-medium text-gray-900">Passport Mode</p>
-                <p className="text-sm text-gray-600">Appear in discovery worldwide regardless of location</p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={discovery.passportMode}
-                onClick={() => handlePassportModeChange(!discovery.passportMode)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  discovery.passportMode ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    discovery.passportMode ? 'translate-x-6' : 'translate-x-1'
+            {/* Passport Mode (CHANGE 6) */}
+            <div className="py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Passport Mode</p>
+                  <p className="text-sm text-gray-600">Appear in discovery worldwide regardless of location</p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={discovery.passportMode}
+                  onClick={() => handlePassportModeChange(!discovery.passportMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    discovery.passportMode ? 'bg-purple-600' : 'bg-gray-300'
                   }`}
-                />
-              </button>
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      discovery.passportMode ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+              {discovery.passportMode && (
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Search from location
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={passportLocationInput}
+                      onChange={(e) => setPassportLocationInput(e.target.value)}
+                      placeholder="Enter city, country..."
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handlePassportLocationSave}
+                      disabled={!passportLocationInput.trim()}
+                      className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  {discovery.passportLocation?.city && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Current: {discovery.passportLocation.city}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Show Me In Discovery */}
@@ -397,7 +481,9 @@ export default function AccountPage() {
               <div>
                 <p className="font-medium text-gray-900">Show Me In Discovery</p>
                 <p className="text-sm text-gray-600">
-                  {discovery.discoverable
+                  {discovery.incognito
+                    ? 'Disabled while Incognito Mode is active'
+                    : discovery.discoverable
                     ? 'Your profile is visible in Discover'
                     : 'Your profile is hidden from all discovery'}
                 </p>
@@ -406,8 +492,13 @@ export default function AccountPage() {
                 role="switch"
                 aria-checked={discovery.discoverable}
                 onClick={() => handleShowMeInDiscoveryChange(!discovery.discoverable)}
+                disabled={discovery.incognito}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  discovery.discoverable ? 'bg-purple-600' : 'bg-gray-300'
+                  discovery.incognito
+                    ? 'bg-gray-200 cursor-not-allowed'
+                    : discovery.discoverable
+                    ? 'bg-purple-600'
+                    : 'bg-gray-300'
                 }`}
               >
                 <span

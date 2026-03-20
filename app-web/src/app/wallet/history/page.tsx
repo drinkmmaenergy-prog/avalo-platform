@@ -134,6 +134,13 @@ export default function WalletHistoryPage() {
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        {/* Back button */}
+        <Link
+          href="/wallet"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
+        >
+          ← Back
+        </Link>
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm">
           <Link href="/wallet" className="text-pink-600 hover:text-pink-700">

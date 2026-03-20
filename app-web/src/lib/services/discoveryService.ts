@@ -5,11 +5,12 @@
  *
  * Provides:
  *   - fetchPublicProfiles()   Paginated grid data for Discover page
- *   - getPublicProfile()      Single profile fetch for /profile?uid=xxx
+ *   - getPublicProfile()      Single profile fetch for /profile/[userId]
  *   - findOrCreateChat()      Creates or finds existing conversation for "Start Chat"
  *
  * Pagination: limit 20 per page, cursor-based via startAfter.
- * Filters: online only, earn_on only, price range.
+ * Filters: online only, earn_on only, gender (server-side).
+ *          Age, body type, hair color, interests applied client-side.
  *
  * INVARIANTS:
  *   - Uses requireDb() — the canonical Firestore guard from @/lib/firebase.
@@ -35,6 +36,7 @@ import type {
   PublicProfile,
   DiscoverFilters,
 } from '../types/publicProfile';
+import { DEFAULT_DISCOVER_FILTERS } from '../types/publicProfile';
 
 const PROFILES_PER_PAGE = 20;
 const COLLECTION_NAME = 'public_profiles';
@@ -52,22 +54,24 @@ export interface PaginatedProfilesResult {
 /**
  * Fetch public profiles with pagination and optional filters.
  *
+ * Server-side Firestore constraints:
+ *   - online == true (if onlineOnly)
+ *   - earn_on == true (if earnOnOnly)
+ *   - gender in [...] (if genders array is non-empty)
+ *
+ * Client-side filters (applied after fetch):
+ *   - Age range (ageMin/ageMax)
+ *   - Body type
+ *   - Hair color
+ *   - Interests
+ *
  * Firestore composite index requirements:
  *   - (online ASC, updatedAt DESC) for onlineOnly
  *   - (earn_on ASC, updatedAt DESC) for earnOnOnly
- *   - (earn_on ASC, chat_price ASC, updatedAt DESC) for price range
- *
- * When both onlineOnly + earnOnOnly are active, the query uses a combined
- * constraint set. Firestore will need the matching composite index.
  */
 export async function fetchPublicProfiles(
   cursor: DocumentSnapshot | null = null,
-  filters: DiscoverFilters = {
-    onlineOnly: false,
-    earnOnOnly: false,
-    priceMin: null,
-    priceMax: null,
-  }
+  filters: DiscoverFilters = DEFAULT_DISCOVER_FILTERS
 ): Promise<PaginatedProfilesResult> {
   try {
     const constraints: QueryConstraint[] = [];
@@ -81,28 +85,13 @@ export async function fetchPublicProfiles(
       constraints.push(where('earn_on', '==', true));
     }
 
-    if (filters.priceMin !== null && filters.priceMin > 0) {
-      constraints.push(where('chat_price', '>=', filters.priceMin));
-    }
-
-    if (filters.priceMax !== null && filters.priceMax > 0) {
-      constraints.push(where('chat_price', '<=', filters.priceMax));
+    // Gender filter — Firestore 'in' query (max 10 values, we use 3)
+    if (filters.genders.length > 0) {
+      constraints.push(where('gender', 'in', filters.genders));
     }
 
     // ── Order + pagination ────────────────────────────────────────────
-    // If price range filters are active, order by chat_price first (Firestore requirement),
-    // then by updatedAt. Otherwise, order by updatedAt for recency.
-    const hasPriceFilter =
-      (filters.priceMin !== null && filters.priceMin > 0) ||
-      (filters.priceMax !== null && filters.priceMax > 0);
-
-    if (hasPriceFilter) {
-      constraints.push(orderBy('chat_price', 'asc'));
-      constraints.push(orderBy('updatedAt', 'desc'));
-    } else {
-      constraints.push(orderBy('updatedAt', 'desc'));
-    }
-
+    constraints.push(orderBy('updatedAt', 'desc'));
     constraints.push(limit(PROFILES_PER_PAGE));
 
     if (cursor) {
@@ -115,15 +104,49 @@ export async function fetchPublicProfiles(
     );
     const snapshot = await getDocs(q);
 
-    const items: PublicProfile[] = snapshot.docs.map((docSnap) => ({
+    let items: PublicProfile[] = snapshot.docs.map((docSnap) => ({
       uid: docSnap.id,
       ...docSnap.data(),
     })) as PublicProfile[];
 
+    // ── Client-side filters ─────────────────────────────────────────
+    // Age range
+    if (filters.ageMin > 18 || filters.ageMax < 99) {
+      items = items.filter(
+        (p) =>
+          p.age !== null &&
+          p.age >= filters.ageMin &&
+          p.age <= filters.ageMax
+      );
+    }
+
+    // Body type
+    if (filters.bodyTypes.length > 0) {
+      items = items.filter(
+        (p) => p.bodyType && filters.bodyTypes.includes(p.bodyType)
+      );
+    }
+
+    // Hair color
+    if (filters.hairColors.length > 0) {
+      items = items.filter(
+        (p) => p.hairColor && filters.hairColors.includes(p.hairColor)
+      );
+    }
+
+    // Interests — match if profile has at least one of the selected interests
+    if (filters.interests.length > 0) {
+      items = items.filter(
+        (p) =>
+          p.interests &&
+          p.interests.some((interest) => filters.interests.includes(interest))
+      );
+    }
+
     return {
       items,
       lastDoc: snapshot.docs[snapshot.docs.length - 1] ?? null,
-      hasMore: items.length === PROFILES_PER_PAGE,
+      hasMore: snapshot.docs.length === PROFILES_PER_PAGE,
     };
   } catch (error) {
     console.error('[discoveryService] fetchPublicProfiles error:', error);

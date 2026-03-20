@@ -3,7 +3,7 @@
  *
  * This is the publicly-visible subset of a user's profile, used for:
  *   - Discover page grid cards
- *   - Public profile view (/profile?uid=xxx)
+ *   - Public profile view (/profile/[userId])
  *
  * Firestore path: public_profiles/{uid}
  */
@@ -47,6 +47,15 @@ export interface PublicProfile {
   /** Gender */
   gender: 'male' | 'female' | 'other';
 
+  /** Body type (optional — populated from extended profile) */
+  bodyType?: string;
+
+  /** Hair color (optional — populated from extended profile) */
+  hairColor?: string;
+
+  /** User interests / hobbies (optional — populated from extended profile) */
+  interests?: string[];
+
   /** Public stats */
   stats: {
     followers: number;
@@ -64,6 +73,106 @@ export interface PublicProfile {
   updatedAt: Timestamp;
 }
 
+// ============================================================================
+// SEARCH RADIUS OPTIONS
+// ============================================================================
+
+/** Search radius option values — granular km selector for Discover page */
+export type SearchRadiusValue =
+  | 5
+  | 10
+  | 20
+  | 25
+  | 50
+  | 100
+  | 150
+  | 'entire_country'
+  | 'international';
+
+export interface SearchRadiusOption {
+  value: SearchRadiusValue;
+  label: string;
+}
+
+/** Ordered list of search radius options for the km selector */
+export const SEARCH_RADIUS_OPTIONS: SearchRadiusOption[] = [
+  { value: 5, label: '5 km' },
+  { value: 10, label: '10 km' },
+  { value: 20, label: '20 km' },
+  { value: 25, label: '25 km' },
+  { value: 50, label: '50 km' },
+  { value: 100, label: '100 km' },
+  { value: 150, label: '150 km' },
+  { value: 'entire_country', label: 'Entire Country' },
+  { value: 'international', label: 'International' },
+];
+
+export const DEFAULT_SEARCH_RADIUS: SearchRadiusValue = 50;
+
+// ============================================================================
+// BODY TYPE / HAIR COLOR / INTEREST OPTIONS
+// ============================================================================
+
+/** Body type options for the filter panel */
+export const BODY_TYPE_OPTIONS = [
+  'Slim',
+  'Athletic',
+  'Average',
+  'Curvy',
+  'Plus Size',
+] as const;
+
+export type BodyType = (typeof BODY_TYPE_OPTIONS)[number];
+
+/** Hair color options for the filter panel */
+export const HAIR_COLOR_OPTIONS = [
+  'Blonde',
+  'Brown',
+  'Black',
+  'Red',
+  'Gray',
+  'Other',
+] as const;
+
+export type HairColor = (typeof HAIR_COLOR_OPTIONS)[number];
+
+/** Interest / hobby categories for multi-select chips (max 20) */
+export const INTEREST_OPTIONS = [
+  'Travel',
+  'Music',
+  'Fitness',
+  'Photography',
+  'Cooking',
+  'Reading',
+  'Gaming',
+  'Art',
+  'Dancing',
+  'Movies',
+  'Fashion',
+  'Sports',
+  'Nature',
+  'Yoga',
+  'Hiking',
+  'Tech',
+  'Animals',
+  'Nightlife',
+  'Foodie',
+  'Volunteering',
+] as const;
+
+export type Interest = (typeof INTEREST_OPTIONS)[number];
+
+/** Gender options for filter checkboxes (mirrors PublicProfile.gender) */
+export const GENDER_OPTIONS = [
+  { value: 'male' as const, label: 'Male' },
+  { value: 'female' as const, label: 'Female' },
+  { value: 'other' as const, label: 'Other' },
+];
+
+// ============================================================================
+// DISCOVER FILTERS
+// ============================================================================
+
 /** Filters for the Discover page grid */
 export interface DiscoverFilters {
   /** Show only online users */
@@ -72,17 +181,37 @@ export interface DiscoverFilters {
   /** Show only users with earn_on active */
   earnOnOnly: boolean;
 
-  /** Minimum chat price filter (inclusive) */
-  priceMin: number | null;
+  /** Search radius — km or special value */
+  searchRadius: SearchRadiusValue;
 
-  /** Maximum chat price filter (inclusive) */
-  priceMax: number | null;
+  /** Age range — minimum (inclusive, 18–99) */
+  ageMin: number;
+
+  /** Age range — maximum (inclusive, 18–99) */
+  ageMax: number;
+
+  /** Gender filter — empty array means all genders */
+  genders: Array<'male' | 'female' | 'other'>;
+
+  /** Body type filter — empty array means all */
+  bodyTypes: string[];
+
+  /** Hair color filter — empty array means all */
+  hairColors: string[];
+
+  /** Interest/hobby filter — empty array means all */
+  interests: string[];
 }
 
 /** Default filter state */
 export const DEFAULT_DISCOVER_FILTERS: DiscoverFilters = {
   onlineOnly: false,
   earnOnOnly: false,
-  priceMin: null,
-  priceMax: null,
+  searchRadius: 50,
+  ageMin: 18,
+  ageMax: 99,
+  genders: [],
+  bodyTypes: [],
+  hairColors: [],
+  interests: [],
 };

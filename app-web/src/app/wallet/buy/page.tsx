@@ -23,6 +23,7 @@
  * @version v2.1 (PHASE 5.1 — removed redundant Header/Footer since AppShell provides navigation)
  */
 import React, { Suspense, useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRoleGate } from '@/hooks/useRoleGate';
@@ -117,6 +118,14 @@ function WalletBuyContent() {
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
+        {/* Back button */}
+        <Link
+          href="/wallet"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
+        >
+          ← Back
+        </Link>
+
         {/* Page Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">💎 Buy Tokens</h1>
