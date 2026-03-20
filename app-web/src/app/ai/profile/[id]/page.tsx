@@ -1,429 +1,441 @@
 'use client';
 
 /**
- * PACK 279D - AI Profile Page (Web)
- * Detailed AI Companion profile with pricing and session routing
+ * AI Companion Profile Page ÔÇö /ai/profile/[avatarId]
+ *
+ * Layout identical to /profile/[userId] human profile page:
+ *   - Full-width cover photo 300px height (first from gallery)
+ *   - Avatar overlapping cover photo, bottom-left, 80px, white border
+ *   - Name, AI badge, age
+ *   - Body type, ethnicity, personality traits as tags
+ *   - Photo gallery grid (3 columns, all photos)
+ *   - Bio and backstory section
+ *   - Stats: total conversations, average rating
+ *   - "Start Chat" button Ôćĺ /ai/chat/[avatarId]
+ *   - "First 3 messages FREE" badge, then token cost per message
+ *
+ * Data source: Firestore 'ai_avatars/{avatarId}'
  */
+
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { requireDb, requireFunctions } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
+import { AI_FREE_MESSAGES, AI_COST_PER_MESSAGE } from '@/lib/aiEconomyConfig';
+import type { AIAvatar } from '@/lib/types/aiAvatar';
+import {
+  ArrowLeft,
+  Bot,
+  MessageCircle,
+  Star,
+  Users,
+  Loader2,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react';
 
 // ============================================================================
-// TYPES
+// HELPER
 // ============================================================================
 
-interface AICompanionProfile {
-  id: string;
-  name: string;
-  avatar: string;
-  gender: 'male' | 'female' | 'other';
-  language: string;
-  style: string[];
-  rating: number;
-  reviewCount: number;
-  creatorType: 'USER_CREATED' | 'AVALO_CREATED';
-  creatorId?: string;
-  creatorName?: string;
-  isRoyalExclusive: boolean;
-  description: string;
-  personalityPrompt: string;
-  chatPrice: number;
-  voicePricing: { standard: number; vip: number; royal: number };
-  videoPricing: { standard: number; vip: number; royal: number };
-}
-
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  createdAt: Date;
+function formatCount(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
 }
 
 // ============================================================================
-// COMPONENT
+// LOADING SKELETON
+// ============================================================================
+
+function ProfileSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="w-full h-[300px] bg-gray-200 dark:bg-gray-700" />
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="-mt-10 flex items-end gap-4 mb-4">
+          <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-600 border-4 border-white dark:border-gray-900 flex-shrink-0" />
+          <div className="flex-1 pt-12">
+            <div className="h-6 w-40 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+        </div>
+        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+        <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded mb-6" />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// NOT FOUND STATE
+// ============================================================================
+
+function ProfileNotFound() {
+  const router = useRouter();
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-4 flex items-center justify-center">
+        <AlertCircle className="w-8 h-8 text-gray-400" />
+      </div>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        AI Companion not found
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+        This AI companion doesn't exist or has been removed.
+      </p>
+      <button
+        onClick={() => router.push('/ai')}
+        className="px-4 py-2 rounded-lg bg-purple-600 text-white font-semibold text-sm hover:bg-purple-700 transition-colors"
+      >
+        Back to AI Discovery
+      </button>
+    </div>
+  );
+}
+
+// ============================================================================
+// MAIN COMPONENT
 // ============================================================================
 
 export default function AIProfilePage() {
   const router = useRouter();
   const params = useParams()!;
-  const companionId = params.id as string;
+  const avatarId = params.id as string;
 
-  const [companion, setCompanion] = useState<AICompanionProfile | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [avatar, setAvatar] = useState<AIAvatar | null>(null);
   const [loading, setLoading] = useState(true);
-  const [startingSession, setStartingSession] = useState<'chat' | 'voice' | 'video' | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
+  // ÔöÇÔöÇ Fetch avatar profile ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   useEffect(() => {
-    if (companionId) {
-      loadCompanionProfile();
-    }
-  }, [companionId]);
+    if (!avatarId) return;
+    let active = true;
 
-  const loadCompanionProfile = async () => {
-    try {
-      setLoading(true);
+    async function load() {
+      try {
+        setLoading(true);
+        setNotFound(false);
 
-      // Load companion data
-      const companionRef = doc(requireDb(), 'aiCompanions', companionId);
-      const companionSnap = await getDoc(companionRef);
+        const avatarRef = doc(requireDb(), 'ai_avatars', avatarId);
+        const snap = await getDoc(avatarRef);
 
-      if (!companionSnap.exists()) {
-        alert('AI Companion not found');
-        router.push('/ai/discovery');
-        return;
+        if (!active) return;
+
+        if (!snap.exists()) {
+          setNotFound(true);
+          return;
+        }
+
+        const d = snap.data();
+        const profile: AIAvatar = {
+          id: snap.id,
+          name: d.name || 'AI Companion',
+          age: d.age || 0,
+          gender: d.gender || 'other',
+          ethnicity: d.ethnicity || '',
+          bodyType: d.bodyType || '',
+          hairColor: d.hairColor || '',
+          eyeColor: d.eyeColor || '',
+          personalityTraits: d.personalityTraits || [],
+          bio: d.bio || '',
+          backstory: d.backstory || '',
+          interests: d.interests || [],
+          photos: d.photos || [],
+          voiceType: d.voiceType || '',
+          creatorId: d.creatorId || null,
+          creatorDisplayName: d.creatorDisplayName || null,
+          isAvaloPlatform: d.isAvaloPlatform === true,
+          totalConversations: d.totalConversations || 0,
+          averageRating: d.averageRating || 0,
+          ratingCount: d.ratingCount || 0,
+          createdAt: d.createdAt || null,
+          updatedAt: d.updatedAt || null,
+        };
+
+        setAvatar(profile);
+      } catch (err) {
+        console.error('[AIProfilePage] Load error:', err);
+        if (active) setNotFound(true);
+      } finally {
+        if (active) setLoading(false);
       }
-
-      const data = companionSnap.data();
-      const profile: AICompanionProfile = {
-        id: companionSnap.id,
-        name: data.name || 'AI Companion',
-        avatar: data.avatarUrl || '🤖',
-        gender: data.gender || 'other',
-        language: data.language || 'en',
-        style: data.style || [],
-        rating: data.rating || 0,
-        reviewCount: data.reviewCount || 0,
-        creatorType: data.creatorType || 'AVALO_CREATED',
-        creatorId: data.creatorId,
-        creatorName: data.creatorName,
-        isRoyalExclusive: data.isRoyalExclusive || false,
-        description: data.description || '',
-        personalityPrompt: data.personalityPrompt || '',
-        chatPrice: 100,
-        voicePricing: { standard: 10, vip: 7, royal: 5 },
-        videoPricing: { standard: 20, vip: 14, royal: 10 },
-      };
-
-      setCompanion(profile);
-
-      // Load reviews
-      const reviewsRef = collection(requireDb(), 'aiCompanionReviews');
-      const reviewsQuery = query(
-        reviewsRef,
-        where('companionId', '==', companionId),
-        orderBy('createdAt', 'desc'),
-        limit(5)
-      );
-      const reviewsSnap = await getDocs(reviewsQuery);
-
-      const loadedReviews: Review[] = reviewsSnap.docs.map((doc) => ({
-        id: doc.id,
-        userId: doc.data().userId,
-        userName: doc.data().userName || 'Anonymous',
-        rating: doc.data().rating,
-        comment: doc.data().comment,
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-      }));
-
-      setReviews(loadedReviews);
-    } catch (error) {
-      console.error('Error loading companion profile:', error);
-      alert('Failed to load companion profile');
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleStartChat = async () => {
-    if (!companion) return;
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [avatarId]);
 
-    try {
-      setStartingSession('chat');
-      const startChatFn = httpsCallable(requireFunctions(), 'pack279_aiChatStart');
-      const result = await startChatFn({ companionId: companion.id });
+  // ÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  if (loading) return <ProfileSkeleton />;
+  if (notFound || !avatar) return <ProfileNotFound />;
 
-      const data = result.data as any;
-      if (data.success) {
-        router.push(`/ai/chat/${companion.id}`);
-      } else {
-        alert(data.error || 'Failed to start chat');
-      }
-    } catch (error: any) {
-      console.error('Error starting chat:', error);
-      alert(error.message || 'Failed to start chat session');
-    } finally {
-      setStartingSession(null);
-    }
-  };
+  const coverPhoto =
+    avatar.photos && avatar.photos.length > 0 ? avatar.photos[0] : null;
 
-  const handleStartVoice = async () => {
-    if (!companion) return;
+  const allGalleryPhotos = avatar.photos || [];
 
-    try {
-      setStartingSession('voice');
-      const startVoiceFn = httpsCallable(requireFunctions(), 'pack279_aiVoiceStart');
-      const result = await startVoiceFn({ companionId: companion.id });
-
-      const data = result.data as any;
-      if (data.success) {
-        router.push(`/ai/voice/${companion.id}`);
-      } else {
-        alert(data.error || 'Failed to start voice session');
-      }
-    } catch (error: any) {
-      console.error('Error starting voice:', error);
-      alert(error.message || 'Failed to start voice session');
-    } finally {
-      setStartingSession(null);
-    }
-  };
-
-  const handleStartVideo = async () => {
-    if (!companion) return;
-
-    try {
-      setStartingSession('video');
-      const startVideoFn = httpsCallable(requireFunctions(), 'pack322_aiVideoStartSession');
-      const result = await startVideoFn({
-        userId: 'current_user_id', // TODO: Get from auth context
-        companionId: companion.id,
-      });
-
-      const data = result.data as any;
-      if (data.success) {
-        router.push(`/ai/video/${companion.id}?sessionId=${data.sessionId}`);
-      } else {
-        alert(data.error || 'Failed to start video session');
-      }
-    } catch (error: any) {
-      console.error('Error starting video:', error);
-      alert(error.message || 'Failed to start video session');
-    } finally {
-      setStartingSession(null);
-    }
-  };
-
-  if (loading || !companion) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading AI Profile...</p>
-        </div>
-      </div>
-    );
-  }
+  const initials = avatar.name
+    ? avatar.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'AI';
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <>
+      {/* ================================================================
+          HEADER SECTION ÔÇö Cover photo + avatar overlap
+          ================================================================ */}
+      <div className="relative">
+        {/* Cover Photo ÔÇö 300px height */}
+        <div className="w-full h-[300px] bg-gradient-to-br from-purple-400 via-violet-500 to-indigo-600 overflow-hidden">
+          {coverPhoto ? (
+            <img
+              src={coverPhoto}
+              alt={`${avatar.name} cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Bot className="w-24 h-24 text-white/30" />
+            </div>
+          )}
+        </div>
+
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors z-10"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Profile Info Container */}
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Avatar overlapping cover ÔÇö 80px, white border */}
+        <div className="-mt-10 flex items-end gap-4">
+          {coverPhoto ? (
+            <img
+              src={avatar.photos[0]}
+              alt={avatar.name}
+              className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-900 flex-shrink-0 shadow-lg"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 border-4 border-white dark:border-gray-900 flex-shrink-0 shadow-lg flex items-center justify-center text-white text-2xl font-bold">
+              {initials}
+            </div>
+          )}
+
+          {/* Name row */}
+          <div className="flex-1 min-w-0 pb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                {avatar.name}
+              </h1>
+              {/* Purple AI badge */}
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold bg-purple-600 text-white rounded-full flex-shrink-0">
+                <Bot className="w-3 h-3" />
+                AI
+              </span>
+              {avatar.age > 0 && (
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {avatar.age}
+                </span>
+              )}
+            </div>
+
+            {/* Creator attribution */}
+            {!avatar.isAvaloPlatform && avatar.creatorDisplayName && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                by {avatar.creatorDisplayName}
+              </p>
+            )}
+            {avatar.isAvaloPlatform && (
+              <p className="text-xs text-purple-500 dark:text-purple-400 mt-0.5">
+                Avalo Official
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Body type, ethnicity, personality traits tags */}
+        <div className="flex flex-wrap gap-1.5 mt-4">
+          {avatar.bodyType && (
+            <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+              {avatar.bodyType}
+            </span>
+          )}
+          {avatar.ethnicity && (
+            <span className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+              {avatar.ethnicity}
+            </span>
+          )}
+          {avatar.personalityTraits.map((trait) => (
+            <span
+              key={trait}
+              className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-full"
+            >
+              {trait}
+            </span>
+          ))}
+        </div>
+
+        {/* Bio */}
+        {avatar.bio && (
+          <p className="mt-4 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            {avatar.bio}
+          </p>
+        )}
+
+        {/* Stats Row */}
+        <div className="flex gap-6 mt-4">
+          <div className="text-center">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
+              {formatCount(avatar.totalConversations)}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Conversations
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-1">
+              <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {avatar.averageRating > 0 ? avatar.averageRating.toFixed(1) : 'ÔÇö'}
+              </p>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Avg Rating ({avatar.ratingCount})
+            </p>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 mt-5 flex-wrap">
+          {/* Start Chat */}
           <button
-            onClick={() => router.back()}
-            className="text-blue-600 hover:text-blue-700 font-semibold mb-2"
+            onClick={() => router.push(`/ai/chat/${avatar.id}`)}
+            className="flex-1 min-w-[160px] py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm text-center flex items-center justify-center gap-2 transition-colors"
           >
-            ← Back
+            <MessageCircle className="w-4 h-4" />
+            Start Chat
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">AI Profile</h1>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Profile Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Profile Header */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow">
-              <div className="flex items-start gap-6">
-                {/* Avatar */}
-                <div className="relative">
-                  {companion.avatar.startsWith('http') ? (
-                    <img
-                      src={companion.avatar}
-                      alt={companion.name}
-                      className="w-32 h-32 rounded-full"
-                    />
-                  ) : (
-                    <div className="text-8xl">{companion.avatar}</div>
-                  )}
-                  {companion.isRoyalExclusive && (
-                    <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold">
-                      👑 Royal Exclusive
-                    </div>
-                  )}
-                </div>
+        {/* Free messages badge + token cost */}
+        <div className="mt-3 flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
+            <Sparkles className="w-3 h-3" />
+            First {AI_FREE_MESSAGES} messages FREE
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            then {AI_COST_PER_MESSAGE} token per message
+          </span>
+        </div>
 
-                {/* Info */}
-                <div className="flex-1">
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                    {companion.name}
-                  </h2>
+        {/* ================================================================
+            BACKSTORY SECTION
+            ================================================================ */}
+        {avatar.backstory && (
+          <div className="mt-8">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              Backstory
+            </h2>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
+              {avatar.backstory}
+            </p>
+          </div>
+        )}
 
-                  {/* Style Badges */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {companion.style.map((style, index) => (
-                      <span
-                        key={index}
-                        className="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm font-semibold rounded-lg"
-                      >
-                        {style}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-3">
-                    <span className="text-yellow-500 text-xl font-bold">
-                      ⭐ {companion.rating.toFixed(1)}
-                    </span>
-                    <span className="text-gray-600 dark:text-gray-400">
-                      ({companion.reviewCount} reviews)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">About</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {companion.description}
-              </p>
-            </div>
-
-            {/* Personality */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Personality</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed italic">
-                {companion.personalityPrompt.substring(0, 200)}...
-              </p>
-            </div>
-
-            {/* Creator Info */}
-            {companion.creatorType === 'USER_CREATED' && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Creator</h3>
-                <p className="text-gray-700 dark:text-gray-300">
-                  👤 Created by {companion.creatorName || 'User'}
-                </p>
+        {/* ================================================================
+            DETAILS SECTION ÔÇö hair, eyes, interests
+            ================================================================ */}
+        <div className="mt-8">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+            Details
+          </h2>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {avatar.gender && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Gender:</span>{' '}
+                <span className="text-gray-900 dark:text-white capitalize">
+                  {avatar.gender}
+                </span>
               </div>
             )}
-
-            {/* Reviews */}
-            {reviews.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                  Recent Reviews
-                </h3>
-                <div className="space-y-4">
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {review.userName}
-                        </span>
-                        <span className="text-yellow-500 font-bold">
-                          ⭐ {review.rating.toFixed(1)}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
-                    </div>
-                  ))}
-                </div>
+            {avatar.hairColor && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Hair:</span>{' '}
+                <span className="text-gray-900 dark:text-white">{avatar.hairColor}</span>
+              </div>
+            )}
+            {avatar.eyeColor && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Eyes:</span>{' '}
+                <span className="text-gray-900 dark:text-white">{avatar.eyeColor}</span>
+              </div>
+            )}
+            {avatar.bodyType && (
+              <div>
+                <span className="text-gray-500 dark:text-gray-400">Body:</span>{' '}
+                <span className="text-gray-900 dark:text-white">{avatar.bodyType}</span>
               </div>
             )}
           </div>
 
-          {/* Right Column - Pricing & Actions */}
-          <div className="space-y-6">
-            {/* Pricing Card */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow sticky top-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Pricing</h3>
-
-              {/* Chat Pricing */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    💬 Chat
+          {/* Interests */}
+          {avatar.interests && avatar.interests.length > 0 && (
+            <div className="mt-4">
+              <span className="text-sm text-gray-500 dark:text-gray-400 block mb-2">
+                Interests
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {avatar.interests.map((interest) => (
+                  <span
+                    key={interest}
+                    className="inline-flex items-center px-2.5 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-full"
+                  >
+                    {interest}
                   </span>
-                  <span className="text-lg font-bold text-blue-600">
-                    {companion.chatPrice} tokens
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Per bucket</p>
-              </div>
-
-              {/* Voice Pricing */}
-              <div className="mb-6">
-                <div className="font-semibold text-gray-900 dark:text-white mb-2">
-                  🎤 Voice Call
-                </div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Standard:</span>
-                    <span className="font-semibold">{companion.voicePricing.standard}/min</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">VIP:</span>
-                    <span className="font-semibold">{companion.voicePricing.vip}/min</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Royal:</span>
-                    <span className="font-semibold">{companion.voicePricing.royal}/min</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Video Pricing */}
-              <div className="mb-8">
-                <div className="font-semibold text-gray-900 dark:text-white mb-2">
-                  📹 Video Call
-                </div>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Standard:</span>
-                    <span className="font-semibold">{companion.videoPricing.standard}/min</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">VIP:</span>
-                    <span className="font-semibold">{companion.videoPricing.vip}/min</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Royal:</span>
-                    <span className="font-semibold">{companion.videoPricing.royal}/min</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <button
-                  onClick={handleStartChat}
-                  disabled={startingSession !== null}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {startingSession === 'chat' ? 'Starting...' : '💬 Start Chat'}
-                </button>
-
-                <button
-                  onClick={handleStartVoice}
-                  disabled={startingSession !== null}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {startingSession === 'voice' ? 'Starting...' : '🎤 Voice Call'}
-                </button>
-
-                <button
-                  onClick={handleStartVideo}
-                  disabled={startingSession !== null}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {startingSession === 'video' ? 'Starting...' : '📹 Video Call'}
-                </button>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* ================================================================
+            PHOTO GALLERY ÔÇö 3 column grid
+            ================================================================ */}
+        {allGalleryPhotos.length > 0 && (
+          <div className="mt-8 mb-12">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+              Gallery
+            </h2>
+            <div className="grid grid-cols-3 gap-1">
+              {allGalleryPhotos.map((photo, index) => (
+                <div
+                  key={index}
+                  className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-800"
+                >
+                  <img
+                    src={photo}
+                    alt={`${avatar.name} photo ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }
