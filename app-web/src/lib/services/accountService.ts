@@ -90,9 +90,10 @@ export async function updateUserProfile(
     await updateProfile(user, authUpdate);
   }
 
-  // Update Firestore document
+  // Update Firestore — Collection 1: users/{uid}
   const firestoreUpdate: Record<string, any> = {
     lastActiveAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
 
   if (payload.displayName !== undefined) {
@@ -105,8 +106,26 @@ export async function updateUserProfile(
     firestoreUpdate.photoURL = payload.photoURL;
   }
 
-  const userRef = doc(requireDb(), 'users', user.uid);
-  await updateDoc(userRef, firestoreUpdate);
+  const db = requireDb();
+  const userRef = doc(db, 'users', user.uid);
+  await setDoc(userRef, firestoreUpdate, { merge: true });
+
+  // BUG 3 fix: also write to Collection 2: public_profiles/{uid}
+  // so that displayName and bio are visible on the public profile
+  const publicUpdate: Record<string, any> = {
+    updatedAt: serverTimestamp(),
+  };
+  if (payload.displayName !== undefined) {
+    publicUpdate.displayName = payload.displayName;
+  }
+  if (payload.bio !== undefined) {
+    publicUpdate.bio = payload.bio;
+  }
+
+  if (Object.keys(publicUpdate).length > 1) {
+    const publicRef = doc(db, 'public_profiles', user.uid);
+    await setDoc(publicRef, publicUpdate, { merge: true });
+  }
 }
 
 // ---------------------------------------------------------------------------

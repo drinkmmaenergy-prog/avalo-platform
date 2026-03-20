@@ -54,7 +54,7 @@ export interface EarnProfile {
 }
 
 export interface EarnerSettings {
-  earn_on: boolean;
+  earn_on: boolean | null;
   earn_surfaces: EarnSurfaces;
   earn_profile: EarnProfile;
 }
@@ -121,7 +121,7 @@ export async function getEarnerSettings(userId: string): Promise<EarnerSettings>
 
     if (!userSnap.exists()) {
       return {
-        earn_on: false,
+        earn_on: null,
         earn_surfaces: { ...DEFAULT_EARN_SURFACES },
         earn_profile: { ...DEFAULT_EARN_PROFILE },
       };
@@ -129,8 +129,10 @@ export async function getEarnerSettings(userId: string): Promise<EarnerSettings>
 
     const data = userSnap.data();
 
-    // Read earn_on with fallback to legacy earnOn field
-    const earn_on: boolean = data.earn_on ?? data.earnOn ?? false;
+    // Read earn_on with fallback to legacy earnOn field.
+    // Return null when the field was never set (distinguishes "never set" from "explicitly false").
+    const rawEarnOn = data.earn_on !== undefined ? data.earn_on : data.earnOn;
+    const earn_on: boolean | null = rawEarnOn !== undefined ? Boolean(rawEarnOn) : null;
 
     // Read earn_surfaces with defaults
     const storedSurfaces = data.earn_surfaces ?? {};

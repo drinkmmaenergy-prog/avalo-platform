@@ -9,7 +9,7 @@ import { MONETIZATION_SPLITS } from "@constants/monetization";
  */
 
 /** USD value of 1 Avalo token for payout calculations. */
-export const TOKEN_PAYOUT_USD = 0.01;
+export const TOKEN_PAYOUT_USD = 0.03;
 
 /** Creator revenue share percentage (0-1 range). */
 export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.SUBSCRIPTION.creator;

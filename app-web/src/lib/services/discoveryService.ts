@@ -9,8 +9,10 @@
  *   - findOrCreateChat()      Creates or finds existing conversation for "Start Chat"
  *
  * Pagination: limit 20 per page, cursor-based via startAfter.
- * Filters: online only, earn_on only, gender (server-side).
- *          Age, body type, hair color, interests applied client-side.
+ * Filters: discoverable != false (server-side visibility only).
+ *          All other filters (online, earn_on, gender, age, body type,
+ *          hair color, interests) applied client-side to eliminate
+ *          composite index requirements.
  *
  * INVARIANTS:
  *   - Uses requireDb() — the canonical Firestore guard from @/lib/firebase.
@@ -55,19 +57,19 @@ export interface PaginatedProfilesResult {
  * Fetch public profiles with pagination and optional filters.
  *
  * Server-side Firestore constraints:
- *   - online == true (if onlineOnly)
- *   - earn_on == true (if earnOnOnly)
- *   - gender in [...] (if genders array is non-empty)
+ *   - discoverable != false (basic visibility — only server-side filter)
  *
  * Client-side filters (applied after fetch):
+ *   - online (onlineOnly)
+ *   - earn_on (earnOnOnly)
+ *   - gender
  *   - Age range (ageMin/ageMax)
  *   - Body type
  *   - Hair color
  *   - Interests
  *
- * Firestore composite index requirements:
- *   - (online ASC, updatedAt DESC) for onlineOnly
- *   - (earn_on ASC, updatedAt DESC) for earnOnOnly
+ * BUG 6 fix: All filters except basic visibility are now client-side.
+ * This eliminates all composite index requirements for the discover query.
  */
 export async function fetchPublicProfiles(
   cursor: DocumentSnapshot | null = null,
@@ -76,19 +78,8 @@ export async function fetchPublicProfiles(
   try {
     const constraints: QueryConstraint[] = [];
 
-    // ── Filter constraints (must come before orderBy) ─────────────────
-    if (filters.onlineOnly) {
-      constraints.push(where('online', '==', true));
-    }
-
-    if (filters.earnOnOnly) {
-      constraints.push(where('earn_on', '==', true));
-    }
-
-    // Gender filter — Firestore 'in' query (max 10 values, we use 3)
-    if (filters.genders.length > 0) {
-      constraints.push(where('gender', 'in', filters.genders));
-    }
+    // ── Basic visibility filter (only server-side filter) ─────────────
+    constraints.push(where('discoverable', '!=', false));
 
     // ── Order + pagination ────────────────────────────────────────────
     constraints.push(orderBy('updatedAt', 'desc'));
@@ -110,6 +101,22 @@ export async function fetchPublicProfiles(
     })) as PublicProfile[];
 
     // ── Client-side filters ─────────────────────────────────────────
+
+    // Online only
+    if (filters.onlineOnly) {
+      items = items.filter((p) => p.online === true);
+    }
+
+    // Earn-on only
+    if (filters.earnOnOnly) {
+      items = items.filter((p) => p.earn_on === true);
+    }
+
+    // Gender
+    if (filters.genders.length > 0) {
+      items = items.filter((p) => p.gender && filters.genders.includes(p.gender));
+    }
+
     // Age range
     if (filters.ageMin > 18 || filters.ageMax < 99) {
       items = items.filter(

@@ -47,7 +47,8 @@ import {
 } from '@/lib/services/creatorService';
 import { MONETIZATION_SPLITS } from '@/config/monetizationSplits';
 import { requireDb } from '@/lib/firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { toast } from '@/components/ui/Toaster';
 import CreatorMediaSection, { type CreatorPhoto } from './CreatorMediaSection';
 import EarningsFilters, {
   type EarningsFilterState,
@@ -158,7 +159,9 @@ async function getDiscoverySettings(userId: string): Promise<DiscoverySettingsDa
     const stored = data.discovery_settings ?? {};
     return {
       profileRadiusKm: stored.profileRadiusKm ?? DEFAULT_DISCOVERY_SETTINGS.profileRadiusKm,
-      incognitoMode: stored.incognitoMode ?? DEFAULT_DISCOVERY_SETTINGS.incognitoMode,
+      // BUG 5 fix: read incognito from top-level users/{uid}.incognito
+      // to share state with account page (both use the same Firestore path)
+      incognitoMode: data.incognito ?? DEFAULT_DISCOVERY_SETTINGS.incognitoMode,
       passportMode: stored.passportMode ?? DEFAULT_DISCOVERY_SETTINGS.passportMode,
     };
   } catch (error) {
@@ -181,7 +184,9 @@ async function saveDiscoverySettings(
       updatePayload['discovery_settings.profileRadiusKm'] = settings.profileRadiusKm;
     }
     if (settings.incognitoMode !== undefined) {
-      updatePayload['discovery_settings.incognitoMode'] = settings.incognitoMode;
+      // BUG 5 fix: write incognito to top-level users/{uid}.incognito
+      // to share state with account page (both use the same Firestore path)
+      updatePayload['incognito'] = settings.incognitoMode;
     }
     if (settings.passportMode !== undefined) {
       updatePayload['discovery_settings.passportMode'] = settings.passportMode;
@@ -874,8 +879,13 @@ export default function EarnWithAvaloPage() {
               }
             : prev
         );
-      } catch {
-        /* toast / ignore */
+      } catch (err) {
+        console.error('[CreatorPage] Failed to toggle surface:', surface, err);
+        toast({
+          type: 'error',
+          title: 'Surface toggle failed',
+          description: `Failed to update ${EARN_SURFACE_META[surface]?.label ?? surface}. Please try again.`,
+        });
       } finally {
         setSavingSurface(null);
       }
@@ -949,8 +959,9 @@ export default function EarnWithAvaloPage() {
     );
   }
 
-  // ── Non-earner CTA ───────────────────────────────────────────────
-  if (earnerSettings && !earnerSettings.earn_on) {
+  // ── Non-earner CTA — only shown when earn_on was never set (null/undefined) ──
+  //    When earn_on === false, show dashboard with toggle OFF instead.
+  if (earnerSettings && earnerSettings.earn_on == null) {
     return <StartEarningCTA onEnable={handleEnableEarnOn} saving={savingEarnOn} />;
   }
 
@@ -971,7 +982,7 @@ export default function EarnWithAvaloPage() {
       {/* SECTION 1: Earn Status Card */}
       {earnerSettings && (
         <EarnStatusCard
-          earnOn={earnerSettings.earn_on}
+          earnOn={earnerSettings.earn_on ?? false}
           onToggle={handleToggleEarnOn}
           saving={savingEarnOn}
           todayTokens={todayTokens}
@@ -986,7 +997,7 @@ export default function EarnWithAvaloPage() {
       {earnerSettings && (
         <SurfaceTogglesGrid
           surfaces={earnerSettings.earn_surfaces}
-          earnOn={earnerSettings.earn_on}
+          earnOn={earnerSettings.earn_on ?? false}
           onToggleSurface={handleToggleSurface}
           savingSurface={savingSurface}
         />
