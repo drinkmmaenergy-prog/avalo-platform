@@ -20,6 +20,9 @@ export interface PublicProfile {
   /** Primary avatar URL */
   photoURL: string | null;
 
+  /** Cover photo URL */
+  coverURL?: string | null;
+
   /** Array of photo URLs for profile carousel */
   photos: string[];
 

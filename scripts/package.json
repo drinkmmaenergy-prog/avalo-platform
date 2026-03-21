@@ -11,7 +11,9 @@
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
-  "dependencies": {},
+  "dependencies": {
+    "firebase-admin": "^13.7.0"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "ts-node": "^10.9.0",

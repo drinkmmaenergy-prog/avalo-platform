@@ -104,7 +104,7 @@ export default function TokenEconomyPage() {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Token earnings credited immediately</div>
               </div>
               <div>
-                <div className="text-3xl font-extrabold text-pink-600 mb-2">$0.01</div>
+                <div className="text-3xl font-extrabold text-pink-600 mb-2">$0.03</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Token-to-USD payout rate</div>
               </div>
             </div>

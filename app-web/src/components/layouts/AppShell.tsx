@@ -60,11 +60,12 @@ const CENTER_NAV: NavItem[] = [
   { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creatorHub' },
 ];
 
-/** Bottom navigation for mobile — quick access */
+/** Bottom navigation for mobile — quick access (6 items) */
 const BOTTOM_NAV: NavItem[] = [
   { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
   { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
   { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
+  { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creator' },
   { key: 'wallet', href: '/wallet', icon: Wallet, labelKey: 'nav.wallet' },
   { key: 'profile', href: '/profile', icon: UserCircle, labelKey: 'nav.profile' },
 ];
@@ -212,7 +213,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* 💎 Buy Tokens — primary CTA */}
             <Link
               href="/wallet/buy"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-pink-600 hover:to-purple-700 transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+              style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
             >
               <Gem className="w-4 h-4" />
               <span>{t('nav.buyTokens')}</span>
@@ -324,7 +326,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* Buy Tokens CTA — always visible on mobile header */}
             <Link
               href="/wallet/buy"
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-semibold shadow-sm"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-white text-xs font-semibold shadow-sm"
+              style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
             >
               <Gem className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('nav.buyTokens')}</span>
@@ -454,8 +457,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${active ? 'stroke-[2.5]' : ''}`} />
-                <span className={`text-[10px] leading-tight ${active ? 'font-semibold' : 'font-medium'}`}>
+                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'stroke-[2.5]' : ''}`} />
+                <span className={`text-[10px] leading-tight truncate ${active ? 'font-semibold' : 'font-medium'}`}>
                   {t(item.labelKey)}
                 </span>
               </Link>

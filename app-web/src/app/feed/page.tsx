@@ -9,6 +9,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import { Loader2, Plus } from 'lucide-react';
 
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -36,6 +37,7 @@ import ReelsPlayer from '@/components/feed/ReelsPlayer';
 export default function FeedPage() {
   const { t } = useI18n();
   const { user, firebaseUser } = useAuth();
+  const router = useRouter();
 
   // Posts state
   const [posts, setPosts] = useState<Post[]>([]);
@@ -346,8 +348,8 @@ export default function FeedPage() {
           )}
         </div>
       ) : (
-        /* Empty state */
-        <div className="card p-12 text-center rounded-xl">
+        /* Empty state — FIX 36: Wire "+" to /create/post */
+        <div className="card p-12 text-center rounded-xl cursor-pointer" onClick={() => router.push('/create/post')}>
           <div className="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/30 mx-auto mb-4 flex items-center justify-center">
             <Plus className="w-8 h-8 text-primary-500" />
           </div>

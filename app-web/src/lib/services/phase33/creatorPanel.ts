@@ -258,8 +258,8 @@ export async function getCreatorAnalytics(
       lastUpdated: data.updatedAt?.toDate() || new Date(),
     };
   } catch (error) {
-    console.error('[CreatorPanel] Error getting creator analytics:', error);
-    throw error;
+    console.debug('[CreatorPanel] Creator analytics not available:', error);
+    return null;
   }
 }
 

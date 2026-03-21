@@ -40,14 +40,27 @@ function WalletSuccessContent() {
   /** BUG 5: Tracks whether AI chat redirect has been attempted */
   const aiChatRedirectAttempted = useRef(false);
 
+  // 2.7: Also read from_chat URL param (passed through Stripe success_url)
+  const fromChat = searchParams?.get('from_chat');
+
   /**
-   * BUG 5: After successful fulfillment, check if the user came from AI chat.
-   * If sessionStorage has 'ai_chat_return_to', redirect there.
+   * BUG 5 + 2.7: After successful fulfillment, check if the user came from AI chat.
+   * Checks both sessionStorage 'ai_chat_return_to' and URL param 'from_chat'.
    */
   const maybeRedirectToAIChat = useCallback(() => {
     if (aiChatRedirectAttempted.current) return;
     if (typeof window === 'undefined') return;
 
+    // Priority 1: URL param from_chat (survives cross-tab Stripe redirect)
+    if (fromChat) {
+      aiChatRedirectAttempted.current = true;
+      setTimeout(() => {
+        window.location.href = `/ai/chat/${encodeURIComponent(fromChat)}?purchased=true`;
+      }, 1500);
+      return;
+    }
+
+    // Priority 2: sessionStorage (same-tab only)
     const returnTo = sessionStorage.getItem('ai_chat_return_to');
     if (returnTo) {
       aiChatRedirectAttempted.current = true;
@@ -57,7 +70,7 @@ function WalletSuccessContent() {
         window.location.href = returnTo;
       }, 1500);
     }
-  }, []);
+  }, [fromChat]);
 
   const runFulfillment = useCallback(async (sid: string) => {
     setState({ status: 'loading' });

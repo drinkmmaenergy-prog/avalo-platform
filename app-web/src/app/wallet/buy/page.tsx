@@ -41,6 +41,8 @@ function WalletBuyContent() {
   // Extract app→web redirect params (NOT trusted, passes through to backend)
   const sourceApp = searchParams?.get('source') === 'app';
   const passedUserId = searchParams?.get('userId');
+  // 2.7: AI chat return context — when user navigates from AI chat
+  const fromChat = searchParams?.get('from_chat') ?? null;
   
   // Auth is relaxed for app→web flow (backend handles verification)
   const { isAuthorized, isLoading: roleLoading } = useRoleGate({
@@ -73,8 +75,8 @@ function WalletBuyContent() {
         // Pass through app userId (backend re-verifies, we don't trust it)
         userId: sourceApp ? (passedUserId || undefined) : undefined,
         source: sourceApp ? 'app' : 'web',
-        successUrl: `${window.location.origin}/wallet/success?session_id={CHECKOUT_SESSION_ID}&source=${sourceApp ? 'app' : 'web'}`,
-        cancelUrl: `${window.location.origin}/wallet/buy${sourceApp ? '?source=app' : ''}`,
+        successUrl: `${window.location.origin}/wallet/success?session_id={CHECKOUT_SESSION_ID}&source=${sourceApp ? 'app' : 'web'}${fromChat ? `&from_chat=${encodeURIComponent(fromChat)}` : ''}`,
+        cancelUrl: fromChat ? `${window.location.origin}/ai/chat/${encodeURIComponent(fromChat)}` : `${window.location.origin}/wallet/buy${sourceApp ? '?source=app' : ''}`,
       });
       
       if (!result.success) {

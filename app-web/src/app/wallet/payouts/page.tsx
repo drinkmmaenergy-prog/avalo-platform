@@ -229,7 +229,7 @@ export default function WalletPayoutsPage() {
         { success: boolean; payoutId?: string; error?: string }
       >(requireFunctions(), 'requestPayoutCallable');
 
-      const result = await requestPayoutCallable({ tokens: availableBalance });
+      const result = await requestPayoutCallable({ tokens: Number(availableBalance) });
 
       if (result.data.success) {
         setRequestSuccess(

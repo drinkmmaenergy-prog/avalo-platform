@@ -648,14 +648,25 @@ export default function AccountPage() {
   };
 
   const handleShowMeInDiscoveryChange = async (enabled: boolean) => {
-    if (!discovery) return;
-    const prev = discovery.discoverable;
-    setDiscovery({ ...discovery, discoverable: enabled });
+    if (!discovery || !firebaseUser) return;
+    const prevDisc = discovery.discoverable;
+    const prevIncognito = discovery.incognito;
+
+    // Discoverable and incognito are always opposite
+    setDiscovery({ ...discovery, discoverable: enabled, incognito: !enabled });
     try {
-      await updateShowMeInDiscovery(enabled);
+      const db = requireDb();
+      await updateDoc(doc(db, 'users', firebaseUser.uid), {
+        discoverable: enabled,
+        incognito: !enabled,
+        lastActiveAt: serverTimestamp(),
+      });
+      await updateDoc(doc(db, 'public_profiles', firebaseUser.uid), {
+        discoverable: enabled,
+      });
     } catch (err) {
       console.error('[Account] Failed to update show me in discovery:', err);
-      setDiscovery((s) => (s ? { ...s, discoverable: prev } : s));
+      setDiscovery((s) => (s ? { ...s, discoverable: prevDisc, incognito: prevIncognito } : s));
     }
   };
 
@@ -956,7 +967,33 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Show Me In Discovery — removed as separate toggle; derived from Incognito */}
+            {/* Show Me In Discovery — synced with Incognito (opposite values) */}
+            <div className="py-3 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-gray-900">Show Me In Discovery</p>
+                  <p className="text-sm text-gray-600">
+                    {discovery.discoverable
+                      ? 'Your profile appears in Discover'
+                      : 'Your profile is hidden from Discover'}
+                  </p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={discovery.discoverable}
+                  onClick={() => handleShowMeInDiscoveryChange(!discovery.discoverable)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    discovery.discoverable ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      discovery.discoverable ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -1070,6 +1107,113 @@ export default function AccountPage() {
             Your account has restrictions. Payment and subscription operations may be limited.
             Please contact support for more information.
           </p>
+        </div>
+      )}
+
+      {/* FIX 23: Cover Photo Upload Section */}
+      {firebaseUser && (
+        <section className="bg-white rounded-lg shadow-md p-6 mb-6 mt-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Cover Photo</h2>
+          <p className="text-sm text-gray-500 mb-3">Upload a cover photo for your profile banner (4:1 aspect ratio recommended).</p>
+          <div className="relative w-full aspect-[4/1] rounded-lg overflow-hidden bg-gray-100 border border-gray-200 mb-3">
+            {/* Cover photo preview would be loaded from user doc */}
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+              Cover photo preview
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <label className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm cursor-pointer hover:bg-purple-700">
+              Change Cover
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file || !firebaseUser) return;
+                try {
+                  const storage = requireStorage();
+                  const storageRef = ref(storage, `users/${firebaseUser.uid}/cover/photo`);
+                  await uploadBytes(storageRef, file);
+                  const url = await getDownloadURL(storageRef);
+                  const db = requireDb();
+                  await updateDoc(doc(db, 'users', firebaseUser.uid), { coverURL: url });
+                  await updateDoc(doc(db, 'public_profiles', firebaseUser.uid), { coverURL: url }).catch(() => {});
+                  toast({ type: 'success', title: 'Cover photo updated!' });
+                } catch (err) {
+                  console.error('[Account] Cover upload error:', err);
+                  toast({ type: 'error', title: 'Failed to upload cover photo' });
+                }
+              }} />
+            </label>
+            <button onClick={async () => {
+              if (!firebaseUser) return;
+              try {
+                const db = requireDb();
+                await updateDoc(doc(db, 'users', firebaseUser.uid), { coverURL: '' });
+                await updateDoc(doc(db, 'public_profiles', firebaseUser.uid), { coverURL: '' }).catch(() => {});
+                toast({ type: 'success', title: 'Cover photo removed' });
+              } catch (err) {
+                console.error('[Account] Cover remove error:', err);
+              }
+            }} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">
+              Remove Cover
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* FIX 29: Delete Account Section */}
+      {firebaseUser && (
+        <div className="mt-12 pt-6 border-t border-red-200">
+          <h3 className="text-lg font-semibold text-red-600">Delete Account</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            This action is permanent. All your data will be deleted.
+          </p>
+          <button onClick={async () => {
+            const confirmation = window.prompt('Type DELETE to confirm account deletion:');
+            if (confirmation !== 'DELETE') return;
+
+            try {
+              const db = requireDb();
+              const uid = firebaseUser.uid;
+
+              // Delete Firestore docs
+              const { deleteDoc } = await import('firebase/firestore');
+              await deleteDoc(doc(db, 'users', uid)).catch(() => {});
+              await deleteDoc(doc(db, 'public_profiles', uid)).catch(() => {});
+              await deleteDoc(doc(db, 'wallets', uid)).catch(() => {});
+              await deleteDoc(doc(db, 'earn_settings', uid)).catch(() => {});
+
+              // Delete Storage files
+              try {
+                const storage = requireStorage();
+                const { deleteObject, listAll } = await import('firebase/storage');
+                const userStorageRef = ref(storage, `users/${uid}`);
+                const list = await listAll(userStorageRef);
+                await Promise.all(list.items.map(item => deleteObject(item)));
+                // Delete nested folders
+                for (const prefix of list.prefixes) {
+                  const subList = await listAll(prefix);
+                  await Promise.all(subList.items.map(item => deleteObject(item)));
+                }
+              } catch (storageErr) {
+                console.warn('[Account] Storage cleanup error:', storageErr);
+              }
+
+              // Delete auth user
+              const { getAuth } = await import('firebase/auth');
+              const auth = getAuth();
+              if (auth.currentUser) {
+                await auth.currentUser.delete();
+              }
+
+              window.location.href = '/';
+            } catch (err) {
+              console.error('[Account] Delete account error:', err);
+              toast({ type: 'error', title: 'Failed to delete account. You may need to re-authenticate first.' });
+            }
+          }}
+            className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm"
+          >
+            Delete My Account
+          </button>
         </div>
       )}
     </AccountLayout>

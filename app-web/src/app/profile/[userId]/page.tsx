@@ -36,9 +36,12 @@ import {
   User,
   Eye,
 } from 'lucide-react';
-import { DocumentSnapshot } from 'firebase/firestore';
+import { DocumentSnapshot, doc, getDoc, collection, query, where, getDocs, limit, arrayUnion, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 import { useAuth } from '@/components/providers/AuthProvider';
+import { requireDb, requireStorage } from '@/lib/firebase';
+import { toast } from '@/components/ui/Toaster';
 import { getPublicProfile, findOrCreateChat } from '@/lib/services/discoveryService';
 import {
   fetchFeedPosts,
@@ -461,6 +464,17 @@ export default function UserProfilePage() {
   // ── Share state ──────────────────────────────────────────────────────
   const [shareSuccess, setShareSuccess] = useState(false);
 
+  // ── FIX 18: Live post/follower/following counts ────────────────────
+  const [postCount, setPostCount] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  // ── FIX 32: Subscribe button state ─────────────────────────────────
+  const [hasSubscriptions, setHasSubscriptions] = useState(false);
+
+  // ── FIX 33: Suggested profiles ─────────────────────────────────────
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+
   // ====================================================================
   // FETCH PROFILE
   // ====================================================================
@@ -472,14 +486,57 @@ export default function UserProfilePage() {
       try {
         setLoading(true);
         setNotFound(false);
-        const result = await getPublicProfile(userId);
+
+        // FIX 4: Read from public_profiles FIRST, fall back to users/{uid}, merge
+        const db = requireDb();
+        const publicSnap = await getDoc(doc(db, 'public_profiles', userId));
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        const merged = { ...userSnap.data?.(), ...publicSnap.data?.() } as any;
+
         if (!active) return;
 
-        if (!result) {
-          setNotFound(true);
-        } else {
-          setProfile(result);
+        // If neither doc exists, try legacy getPublicProfile
+        if (!publicSnap.exists() && !userSnap.exists()) {
+          const result = await getPublicProfile(userId);
+          if (!active) return;
+          if (!result) {
+            setNotFound(true);
+          } else {
+            setProfile(result);
+          }
+          return;
         }
+
+        // Build profile from merged data
+        const result: PublicProfile = {
+          uid: userId,
+          displayName: merged.displayName ?? merged.name ?? '',
+          photoURL: merged.photoURL ?? merged.avatarUrl ?? '',
+          coverURL: merged.coverURL ?? '',
+          bio: merged.bio ?? '',
+          age: merged.age ?? null,
+          dateOfBirth: merged.dateOfBirth ?? null,
+          city: merged.city ?? merged.location ?? '',
+          location: merged.location ?? merged.city ?? '',
+          gender: merged.gender ?? '',
+          lookingFor: merged.lookingFor ?? '',
+          interests: merged.interests ?? [],
+          verified: merged.verified ?? merged.isVerified ?? false,
+          earn_on: merged.earn_on ?? false,
+          chat_price: merged.chat_price ?? merged.chatPricePerToken ?? 0,
+          photos: merged.photos ?? [],
+          stats: merged.stats ?? {
+            posts: merged.totalPosts ?? 0,
+            followers: merged.followerCount ?? 0,
+            following: merged.followingCount ?? 0,
+          },
+          discoverable: merged.discoverable ?? true,
+          online: merged.online ?? false,
+          lastActiveAt: merged.lastActiveAt ?? null,
+          createdAt: merged.createdAt ?? null,
+          updatedAt: merged.updatedAt ?? null,
+        };
+        setProfile(result);
       } catch (err) {
         console.error('[UserProfilePage] Load error:', err);
         if (active) setNotFound(true);
@@ -509,6 +566,92 @@ export default function UserProfilePage() {
       active = false;
     };
   }, [currentUserId, userId, isOwnProfile]);
+
+  // ====================================================================
+  // FIX 18: QUERY LIVE POST / FOLLOWER / FOLLOWING COUNTS
+  // ====================================================================
+  useEffect(() => {
+    if (!userId) return;
+    let active = true;
+
+    async function loadCounts() {
+      try {
+        const db = requireDb();
+
+        // Post count
+        const postsQuery = query(collection(db, 'posts'), where('authorId', '==', userId));
+        const postsSnap = await getDocs(postsQuery);
+        if (active) setPostCount(postsSnap.size);
+
+        // Follower count
+        const followersQuery = query(collection(db, 'follows'), where('followeeId', '==', userId));
+        const followersSnap = await getDocs(followersQuery);
+        if (active) setFollowerCount(followersSnap.size);
+
+        // Following count
+        const followingQuery = query(collection(db, 'follows'), where('followerId', '==', userId));
+        const followingSnap = await getDocs(followingQuery);
+        if (active) setFollowingCount(followingSnap.size);
+      } catch (err) {
+        console.error('[UserProfilePage] Count query error:', err);
+      }
+    }
+
+    void loadCounts();
+    return () => { active = false; };
+  }, [userId]);
+
+  // ====================================================================
+  // FIX 32: CHECK IF PROFILE USER HAS SUBSCRIPTIONS ENABLED
+  // ====================================================================
+  useEffect(() => {
+    if (!userId || isOwnProfile) return;
+    let active = true;
+
+    async function checkSubscriptions() {
+      try {
+        const db = requireDb();
+        const earnSnap = await getDoc(doc(db, 'earn_settings', userId));
+        if (active && earnSnap.exists()) {
+          const data = earnSnap.data();
+          setHasSubscriptions(data?.subscriptions === true);
+        }
+      } catch (err) {
+        console.error('[UserProfilePage] Earn settings check error:', err);
+      }
+    }
+
+    void checkSubscriptions();
+    return () => { active = false; };
+  }, [userId, isOwnProfile]);
+
+  // ====================================================================
+  // FIX 33: LOAD SUGGESTED PROFILES
+  // ====================================================================
+  useEffect(() => {
+    let active = true;
+
+    async function loadSuggestions() {
+      try {
+        const db = requireDb();
+        const q = query(
+          collection(db, 'public_profiles'),
+          where('discoverable', '==', true),
+          limit(8)
+        );
+        const snap = await getDocs(q);
+        const profiles = snap.docs
+          .map(d => ({ ...d.data(), uid: d.id }))
+          .filter((p: any) => p.uid !== userId && p.uid !== currentUserId);
+        if (active) setSuggestions(profiles.slice(0, 6));
+      } catch (err) {
+        console.error('[UserProfilePage] Suggestions load error:', err);
+      }
+    }
+
+    void loadSuggestions();
+    return () => { active = false; };
+  }, [userId, currentUserId]);
 
   // ====================================================================
   // FETCH POSTS FOR GRID
@@ -666,6 +809,34 @@ export default function UserProfilePage() {
     );
   }, []);
 
+  /** FIX 26: Quick photo upload handler */
+  const handleQuickPhotoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUserId) return;
+
+    try {
+      const storage = requireStorage();
+      const storageRef = ref(storage, `users/${currentUserId}/photos/${Date.now()}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      const db = requireDb();
+      await updateDoc(doc(db, 'public_profiles', currentUserId), {
+        photos: arrayUnion(downloadURL),
+      });
+
+      toast({ type: 'success', title: 'Photo added!' });
+    } catch (err) {
+      console.error('[UserProfilePage] Quick photo upload error:', err);
+      toast({ type: 'error', title: 'Failed to upload photo' });
+    }
+  }, [currentUserId]);
+
+  /** FIX 32: Subscribe handler (placeholder) */
+  const handleSubscribe = useCallback(() => {
+    toast({ type: 'info', title: 'Coming soon — subscription payments will be available after Stripe integration is complete.' });
+  }, []);
+
   // ====================================================================
   // RENDER
   // ====================================================================
@@ -674,7 +845,7 @@ export default function UserProfilePage() {
   if (notFound || !profile) return <ProfileNotFound />;
 
   const coverPhoto =
-    profile.photos && profile.photos.length > 0 ? profile.photos[0] : null;
+    profile.coverURL || (profile.photos && profile.photos.length > 0 ? profile.photos[0] : null);
 
   const initials = profile.displayName
     ? profile.displayName
@@ -691,18 +862,12 @@ export default function UserProfilePage() {
           HEADER SECTION
           ================================================================ */}
       <div className="relative">
-        {/* Cover Photo */}
-        <div className="w-full h-[300px] bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 overflow-hidden">
+        {/* Cover Photo — FIX 22 */}
+        <div className="w-full h-48 sm:h-56 relative overflow-hidden">
           {coverPhoto ? (
-            <img
-              src={coverPhoto}
-              alt={`${profile.displayName} cover`}
-              className="w-full h-full object-cover"
-            />
+            <img src={coverPhoto} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-8xl opacity-30">📷</span>
-            </div>
+            <div className="w-full h-full" style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}} />
           )}
         </div>
 
@@ -718,17 +883,17 @@ export default function UserProfilePage() {
 
       {/* Profile Info Container */}
       <div className="max-w-4xl mx-auto px-4">
-        {/* Avatar overlapping cover */}
-        <div className="-mt-10 flex items-end gap-4">
+        {/* Avatar overlapping cover — FIX 22 */}
+        <div className="relative -mt-12 ml-4 z-10 flex items-end gap-4">
           {profile.photoURL ? (
             <img
               src={profile.photoURL}
-              alt={profile.displayName}
-              className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-900 flex-shrink-0 shadow-lg"
+              alt=""
+              className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 border-4 border-white dark:border-gray-900 flex-shrink-0 shadow-lg flex items-center justify-center text-white text-2xl font-bold">
-              {initials}
+            <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+              {profile.displayName?.charAt(0) || '?'}
             </div>
           )}
 
@@ -772,33 +937,12 @@ export default function UserProfilePage() {
           </p>
         )}
 
-        {/* Stats Row */}
-        {profile.stats && (
-          <div className="flex gap-6 mt-4">
-            <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatCount(profile.stats.posts)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Posts</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatCount(profile.stats.followers)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Followers
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatCount(profile.stats.following)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Following
-              </p>
-            </div>
-          </div>
-        )}
+        {/* Stats Row — FIX 18: Uses live Firestore counts, falls back to profile.stats */}
+        <div className="flex gap-6 text-sm mt-4">
+          <span><strong>{formatCount(postCount || profile.stats?.posts || 0)}</strong> Posts</span>
+          <span><strong>{formatCount(followerCount || profile.stats?.followers || 0)}</strong> Followers</span>
+          <span><strong>{formatCount(followingCount || profile.stats?.following || 0)}</strong> Following</span>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2 mt-5 flex-wrap">
@@ -857,9 +1001,35 @@ export default function UserProfilePage() {
               >
                 💎 Tip
               </button>
+
+              {/* FIX 32: Subscribe button */}
+              {hasSubscriptions && (
+                <button
+                  onClick={handleSubscribe}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-semibold"
+                >
+                  Subscribe
+                </button>
+              )}
             </>
           )}
         </div>
+
+        {/* FIX 26: Owner quick action buttons */}
+        {isOwnProfile && (
+          <div className="flex gap-2 mt-3">
+            <button onClick={() => router.push('/create/post')}
+              className="flex-1 py-2 px-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-medium">
+              + New Post
+            </button>
+            <button onClick={() => document.getElementById('quick-photo-upload')?.click()}
+              className="flex-1 py-2 px-3 border border-gray-300 rounded-lg text-sm font-medium">
+              + Add Photo
+            </button>
+            <input id="quick-photo-upload" type="file" accept="image/*" className="hidden"
+              onChange={handleQuickPhotoUpload} />
+          </div>
+        )}
 
         {/* Chat error */}
         {chatError && (
@@ -1041,6 +1211,49 @@ export default function UserProfilePage() {
               )}
             </div>
 
+            {/* Gender */}
+            {profile.gender && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  Gender
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {profile.gender}
+                </p>
+              </div>
+            )}
+
+            {/* Looking For */}
+            {profile.lookingFor && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  Looking For
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {profile.lookingFor}
+                </p>
+              </div>
+            )}
+
+            {/* Interests */}
+            {profile.interests && profile.interests.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                  Interests
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {profile.interests.map((interest, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Location */}
             {profile.location && (
               <div>
@@ -1092,6 +1305,33 @@ export default function UserProfilePage() {
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* FIX 33: Suggested profiles carousel */}
+        {suggestions.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-sm font-semibold text-gray-500 mb-3">You might also like</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2" style={{scrollSnapType: 'x mandatory'}}>
+              {suggestions.map((s: any) => (
+                <Link href={`/profile/${s.uid}`} key={s.uid}
+                  className="flex-shrink-0 w-28" style={{scrollSnapAlign: 'start'}}>
+                  <div className="w-28 h-36 rounded-xl overflow-hidden relative">
+                    {s.photoURL ? (
+                      <img src={s.photoURL} className="w-full h-full object-cover" alt="" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
+                        {s.displayName?.charAt(0)}
+                      </div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="text-white text-xs font-medium truncate">{s.displayName}</p>
+                      <p className="text-white/70 text-[10px] truncate">{s.city}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

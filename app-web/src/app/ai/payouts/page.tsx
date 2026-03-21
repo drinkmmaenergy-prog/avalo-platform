@@ -126,7 +126,7 @@ export default function AIPayoutsWebPage() {
       const requestPayout = httpsCallable(functions, 'pack277_requestPayout');
 
       await requestPayout({
-        tokens: availableTokens,
+        tokens: Number(availableTokens),
         type: 'ai_creator',
       });
 

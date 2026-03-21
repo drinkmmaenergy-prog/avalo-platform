@@ -306,27 +306,27 @@ export const requestPayoutCallable = onCall(
     }
 
     const userId = request.auth.uid;
-    const { amountTokens } = request.data;
+    // Accept both 'tokens' (frontend) and 'amountTokens' (legacy) field names.
+    // Coerce to Number to guard against string values from UI inputs.
+    const rawTokens = request.data.tokens ?? request.data.amountTokens;
+    const amountTokens = Number(rawTokens);
 
-    if (!amountTokens || amountTokens <= 0) {
+    if (isNaN(amountTokens) || amountTokens <= 0) {
       throw new HttpsError("invalid-argument", "Invalid token amount");
     }
 
-    const walletRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("wallet")
-      .doc("current");
+    // Read balance from canonical wallets/{uid} collection
+    const walletRef = db.collection("wallets").doc(userId);
 
     const walletSnap = await walletRef.get();
     const wallet = walletSnap.data();
 
-    if (!wallet || wallet.earned < amountTokens) {
+    if (!wallet || (wallet.balance ?? 0) < amountTokens) {
       throw new HttpsError("failed-precondition", "Insufficient earned tokens");
     }
 
-    if (amountTokens < 500) {
-      throw new HttpsError("invalid-argument", "Minimum payout is 500 tokens");
+    if (amountTokens < 100) {
+      throw new HttpsError("invalid-argument", "Minimum payout is 100 tokens");
     }
 
     // USD canonical payout rate
@@ -337,7 +337,7 @@ export const requestPayoutCallable = onCall(
 
     await db.runTransaction(async (tx) => {
       tx.update(walletRef, {
-        earned: increment(-amountTokens),
+        balance: increment(-amountTokens),
       });
 
       tx.set(db.collection("payoutRequests").doc(payoutId), {

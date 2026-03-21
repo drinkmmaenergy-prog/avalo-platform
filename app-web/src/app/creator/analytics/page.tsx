@@ -107,13 +107,14 @@ export default function CreatorAnalyticsPage() {
       try {
         setLoading(true);
         const [analyticsData, statsData] = await Promise.all([
-          getCreatorAnalytics(user.uid, period),
-          getCreatorStatsData(user.uid),
+          getCreatorAnalytics(user.uid, period).catch(() => null),
+          getCreatorStatsData(user.uid).catch(() => null),
         ]);
         setAnalytics(analyticsData);
         setStats(statsData);
       } catch (err: any) {
-        setError(err.message || 'Failed to load analytics');
+        console.debug('Creator analytics not available:', err);
+        // Silent fallback — no error shown to user
       } finally {
         setLoading(false);
       }

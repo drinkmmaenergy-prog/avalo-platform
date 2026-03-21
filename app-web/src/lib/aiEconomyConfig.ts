@@ -11,7 +11,7 @@
 export const AI_WORDS_PER_TOKEN = 30;
 
 /** Number of free messages before token billing begins. */
-export const AI_FREE_MESSAGES = 3;
+export const AI_FREE_MESSAGES = 7;
 
 /** Cost per message in tokens (after free messages). */
 export const AI_COST_PER_MESSAGE = 1;

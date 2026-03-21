@@ -9,8 +9,19 @@
  */
 import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import {
+  Newspaper,
+  Compass,
+  Bot,
+  Wallet,
+  UserCircle,
+  Palette,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRoleGate } from '@/hooks/useRoleGate';
+import { useI18n } from '@/components/providers/I18nProvider';
 
 interface NavItem {
   name: string;
@@ -26,6 +37,22 @@ const navItems: NavItem[] = [
   { name: 'Analytics', href: '/creator/analytics', icon: '📊' },
 ];
 
+interface BottomNavItem {
+  key: string;
+  href: string;
+  icon: LucideIcon;
+  labelKey: string;
+}
+
+const BOTTOM_NAV: BottomNavItem[] = [
+  { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
+  { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
+  { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
+  { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creator' },
+  { key: 'wallet', href: '/wallet', icon: Wallet, labelKey: 'nav.wallet' },
+  { key: 'profile', href: '/profile', icon: UserCircle, labelKey: 'nav.profile' },
+];
+
 export default function CreatorLayout({
   children,
 }: {
@@ -34,6 +61,7 @@ export default function CreatorLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useI18n();
   const { isAuthorized, isLoading } = useRoleGate({
     requiredRole: 'user',
     redirectTo: '/auth/login?redirect=/creator',
@@ -74,8 +102,12 @@ export default function CreatorLayout({
   
   const isSubpage = pathname !== '/creator' && (pathname ?? '').startsWith('/creator/');
 
+  function isActive(href: string): boolean {
+    return pathname === href || (pathname?.startsWith(href + '/') ?? false);
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 lg:pb-0">
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -161,6 +193,32 @@ export default function CreatorLayout({
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
+
+      {/* ─── Bottom Navigation — mobile & tablet only ─────────────────── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 lg:hidden safe-area-pb">
+        <div className="max-w-lg mx-auto flex items-center justify-around h-16">
+          {BOTTOM_NAV.map((item) => {
+            const active = isActive(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors min-w-[56px] ${
+                  active
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'stroke-[2.5]' : ''}`} />
+                <span className={`text-[10px] leading-tight truncate ${active ? 'font-semibold' : 'font-medium'}`}>
+                  {t(item.labelKey)}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }

@@ -116,8 +116,8 @@ export async function getCreatorAnalytics(
       ...analyticsSnap.data(),
     } as CreatorAnalytics;
   } catch (error) {
-    console.error('Error getting creator analytics:', error);
-    throw error;
+    console.debug('Creator analytics not available:', error);
+    return null;
   }
 }
 
@@ -332,8 +332,8 @@ export async function getCreatorStatsData(userId: string): Promise<CreatorStatsD
       pendingBalance: data.pendingBalance ?? 0,
     };
   } catch (error) {
-    console.error('Error getting creator stats:', error);
-    throw error;
+    console.debug('Creator stats not available:', error);
+    return null;
   }
 }
 

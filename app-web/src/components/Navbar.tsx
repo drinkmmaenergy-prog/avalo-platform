@@ -87,7 +87,8 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-3">
                 <Link
                   href="/wallet/buy"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all"
+                  style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
                 >
                   💎 Buy Tokens
                 </Link>
@@ -95,9 +96,13 @@ export default function Navbar() {
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
-                    {(user?.displayName ?? firebaseUser.displayName ?? '?')[0]?.toUpperCase()}
-                  </div>
+                  {(user?.photoURL || firebaseUser.photoURL) ? (
+                    <img src={(user?.photoURL || firebaseUser.photoURL)!} alt="" className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                      {(user?.displayName ?? firebaseUser.displayName ?? 'U')[0]?.toUpperCase()}
+                    </div>
+                  )}
                   <span className="hidden md:inline">
                     {user?.displayName ?? firebaseUser.displayName ?? 'Profile'}
                   </span>
@@ -160,7 +165,8 @@ export default function Navbar() {
               <Link
                 href="/wallet/buy"
                 onClick={() => setMobileOpen(false)}
-                className="block mt-2 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold text-center"
+                className="block mt-2 px-4 py-3 rounded-xl text-white text-sm font-semibold text-center"
+                style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
               >
                 💎 Buy Tokens
               </Link>

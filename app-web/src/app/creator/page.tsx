@@ -46,6 +46,7 @@ import {
   type WalletData,
 } from '@/lib/services/creatorService';
 import { MONETIZATION_SPLITS } from '@/config/monetizationSplits';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 import { requireDb } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { toast } from '@/components/ui/Toaster';
@@ -60,8 +61,7 @@ import EarningsFilters, {
 // CONSTANTS
 // ============================================================================
 
-/** Canonical payout rate: $0.03 USD per token (from economyConfig.TOKEN_PAYOUT_USD) */
-const TOKEN_PAYOUT_USD = 0.03;
+/** Canonical payout rate imported from @/lib/economyConfig (TOKEN_PAYOUT_USD = 0.03) */
 
 // ============================================================================
 // TYPES — Discovery Settings
@@ -847,10 +847,26 @@ export default function EarnWithAvaloPage() {
       try {
         setLoading(true);
 
-        // BUG 3 fix: Read earnSurfaces directly from users/{uid} on mount
+        // 2.10: Read surfaces from users/{uid} on mount (both field names),
+        // with earn_settings/{uid} as additional source of truth.
         const userDocSnap = await getDoc(doc(requireDb(), 'users', user.uid));
         const userData = userDocSnap.data();
-        setActiveSurfaces(userData?.earnSurfaces ?? {});
+        const userSurfaces = userData?.earnSurfaces ?? userData?.earn_surfaces ?? {};
+
+        // Also read from earn_settings/{uid} and merge (earn_settings takes priority if present)
+        let mergedSurfaces = { ...userSurfaces };
+        try {
+          const earnSettingsSnap = await getDoc(doc(requireDb(), 'earn_settings', user.uid));
+          if (earnSettingsSnap.exists()) {
+            const earnData = earnSettingsSnap.data();
+            if (earnData?.surfaces) {
+              mergedSurfaces = { ...mergedSurfaces, ...earnData.surfaces };
+            }
+          }
+        } catch {
+          // Non-critical: fallback to user doc surfaces
+        }
+        setActiveSurfaces(mergedSurfaces);
 
         const [earningsData, analyticsData, settingsData, walletData, msgCount, statsData, discData, photosData] =
           await Promise.all([
@@ -920,9 +936,21 @@ export default function EarnWithAvaloPage() {
       const newValue = !earnerSettings.earn_surfaces[surface];
       setSavingSurface(surface);
       try {
-        // BUG 3 fix: write directly to Firestore earnSurfaces field
+        // 2.10: Write to BOTH field names on users/{uid} for backward compat +
+        // write to dedicated earn_settings/{uid} for persistence guarantee.
         const userRef = doc(requireDb(), 'users', user.uid);
-        await updateDoc(userRef, { [`earnSurfaces.${surface}`]: newValue });
+        await updateDoc(userRef, {
+          [`earnSurfaces.${surface}`]: newValue,
+          [`earn_surfaces.${surface}`]: newValue,
+        });
+
+        // 2.10: Also write to earn_settings/{uid} (dedicated collection)
+        const earnSettingsRef = doc(requireDb(), 'earn_settings', user.uid);
+        await setDoc(earnSettingsRef, {
+          [`surfaces.${surface}`]: newValue,
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+
         setActiveSurfaces((prev) => ({ ...prev, [surface]: newValue }));
         setEarnerSettings((prev) =>
           prev

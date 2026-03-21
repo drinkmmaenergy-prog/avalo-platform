@@ -21,18 +21,34 @@
  *   BUG 4 — "Later" button token gate: allows exactly 3 more messages after dismiss, then paywall again.
  *   BUG 5 — Post-purchase return: detects ?resumed=true param and shows welcome-back toast.
  *
+ * OVERHAUL FIXES (2.x):
+ *   2.1 — Token bridge: real-time wallet balance via onSnapshot on wallets/{uid}.
+ *   2.2 — AI bot language detection: locale passed to system prompt.
+ *   2.3 — Simplified Token Balance panel: removed "Words left" / "Words per token", added tooltip.
+ *   2.5 — Auto-focus input after AI response.
+ *   2.6 — Buy tokens: use wallet first (primary), buy more (secondary).
+ *   2.7 — Post-purchase return: passes avatarId to checkout flow.
+ *   2.8 — Chat history persistence: loads persisted messages from ai_chats/{chatId}/messages on init.
+ *
  * Data source: Firestore 'ai_avatars/{avatarId}'
  */
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  getDocs,
+} from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/components/ui/Toaster';
 import {
-  AI_WORDS_PER_TOKEN,
   AI_FREE_MESSAGES,
   AI_COST_PER_MESSAGE,
 } from '@/lib/aiEconomyConfig';
@@ -43,7 +59,7 @@ import {
   Send,
   Coins,
   Sparkles,
-  AlertTriangle,
+  Info,
 } from 'lucide-react';
 
 // ============================================================================
@@ -98,13 +114,14 @@ function countWords(text: string): number {
 }
 
 /**
- * BUG 1 + BUG 2: Build system prompt from avatar data with language mirroring.
+ * BUG 1 + BUG 2 + 2.2: Build system prompt from avatar data with language detection.
  *
  * - Loads avatar fields: name, age, personalityTraits, bio, backstory.
  * - Instructs the AI to stay in character.
- * - Instructs the AI to mirror the user's language.
+ * - 2.2: Prepends critical language detection instruction with UI locale.
+ * - BUG 1: Instructs the AI to mirror the user's language.
  */
-function buildSystemPrompt(avatar: AIAvatar): string {
+function buildSystemPrompt(avatar: AIAvatar, locale: string): string {
   const personalityStr =
     avatar.personalityTraits.length > 0
       ? avatar.personalityTraits.join(', ')
@@ -112,9 +129,16 @@ function buildSystemPrompt(avatar: AIAvatar): string {
 
   const backstoryStr = avatar.backstory || 'A thoughtful AI companion.';
 
+  // 2.2: Language detection instruction prepended
+  const languageInstruction =
+    `CRITICAL: Detect the user's language. The UI locale is: ${locale}. ` +
+    `Your FIRST message must be in the UI language. For all subsequent messages, ` +
+    `respond in whatever language the user writes in. Never default to English ` +
+    `unless the user writes in English.\n\n`;
+
   // BUG 2: Character prompt from avatar data
-  // BUG 1: Language mirroring instruction appended
   return (
+    languageInstruction +
     `You are ${avatar.name}, a ${avatar.age} year old AI companion. ` +
     `Personality: ${personalityStr}. ` +
     `Background: ${backstoryStr}. ` +
@@ -122,6 +146,20 @@ function buildSystemPrompt(avatar: AIAvatar): string {
     `Always respond in the same language the user writes in. ` +
     `Detect language from each message and mirror it exactly.`
   );
+}
+
+/**
+ * 2.2: Get the current UI locale from the document or fallback to navigator.
+ */
+function getUILocale(): string {
+  if (typeof document !== 'undefined') {
+    const htmlLang = document.documentElement.lang;
+    if (htmlLang) return htmlLang;
+  }
+  if (typeof navigator !== 'undefined' && navigator.language) {
+    return navigator.language;
+  }
+  return 'en';
 }
 
 // ============================================================================
@@ -143,16 +181,19 @@ function AIChatAvatarPageInner() {
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
+  /** 2.3: Controls visibility of disclaimer tooltip */
+  const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
   /** BUG 5: tracks whether resumed toast has been shown */
   const resumedToastShown = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // ── BUG 5: Detect ?resumed=true and show toast ───────────────────
+  // ── BUG 5 + 2.7: Detect ?resumed=true or ?purchased=true and show toast ──
   useEffect(() => {
     if (resumedToastShown.current) return;
     const resumed = searchParams?.get('resumed');
-    if (resumed === 'true') {
+    const purchased = searchParams?.get('purchased');
+    if (resumed === 'true' || purchased === 'true') {
       resumedToastShown.current = true;
       toast({
         type: 'success',
@@ -162,9 +203,22 @@ function AIChatAvatarPageInner() {
       // Clean up the URL param without navigation
       const url = new URL(window.location.href);
       url.searchParams.delete('resumed');
+      url.searchParams.delete('purchased');
       window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams]);
+
+  // ── 2.1: Real-time wallet balance via onSnapshot ─────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(doc(requireDb(), 'wallets', user.uid), (snap) => {
+      const newBalance = snap.exists() ? snap.data().balance || 0 : 0;
+      setSession((prev) =>
+        prev ? { ...prev, tokenBalance: newBalance } : prev
+      );
+    });
+    return unsub;
+  }, [user]);
 
   // ── Load avatar + initialize session ─────────────────────────────────
   useEffect(() => {
@@ -177,6 +231,16 @@ function AIChatAvatarPageInner() {
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // ── 2.5: Auto-focus input after AI response ──────────────────────────
+  useEffect(() => {
+    if (
+      messages.length > 0 &&
+      (messages[messages.length - 1].role === 'ai')
+    ) {
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [messages]);
 
@@ -236,7 +300,7 @@ function AIChatAvatarPageInner() {
 
       setAvatar(loadedAvatar);
 
-      // Load user's token balance from wallet
+      // Load user's token balance from wallet (initial fetch; onSnapshot keeps it live)
       let tokenBalance = 0;
       if (user?.uid) {
         try {
@@ -250,6 +314,41 @@ function AIChatAvatarPageInner() {
         }
       }
 
+      // 2.8: Load persisted messages from ai_chats/{chatId}/messages
+      let persistedMessages: Message[] = [];
+      let persistedFreeUsed = 0;
+      let persistedTotalSent = 0;
+
+      if (user?.uid) {
+        try {
+          const chatId = `${user.uid}_${avatarId}`;
+          const messagesRef = collection(requireDb(), 'ai_chats', chatId, 'messages');
+          const q = query(messagesRef, orderBy('timestamp', 'asc'));
+          const msgSnapshot = await getDocs(q);
+
+          if (!msgSnapshot.empty) {
+            persistedMessages = msgSnapshot.docs.map((docSnap, idx) => {
+              const data = docSnap.data();
+              return {
+                id: docSnap.id,
+                role: data.role === 'user' ? 'user' as const : 'ai' as const,
+                content: data.content || '',
+                timestamp: data.timestamp?.toDate?.() || new Date(),
+                tokensCost: 0,
+                wasFree: idx < AI_FREE_MESSAGES * 2, // approximate: first N exchanges are free
+                wordCount: countWords(data.content || ''),
+              };
+            });
+
+            // Count how many user messages were sent (for freeMessagesUsed tracking)
+            persistedTotalSent = persistedMessages.filter((m) => m.role === 'user').length;
+            persistedFreeUsed = Math.min(persistedTotalSent, AI_FREE_MESSAGES);
+          }
+        } catch (chatErr) {
+          console.warn('[AIChatPage] Could not load chat history:', chatErr);
+        }
+      }
+
       const chatSession: ChatSessionState = {
         avatarId: loadedAvatar.id,
         avatarName: loadedAvatar.name,
@@ -257,27 +356,36 @@ function AIChatAvatarPageInner() {
           loadedAvatar.photos && loadedAvatar.photos.length > 0
             ? loadedAvatar.photos[0]
             : null,
-        state: 'FREE_ACTIVE',
+        state:
+          persistedFreeUsed >= AI_FREE_MESSAGES
+            ? tokenBalance > 0
+              ? 'PAID_ACTIVE'
+              : 'AWAITING_DEPOSIT'
+            : 'FREE_ACTIVE',
         tokenBalance,
-        freeMessagesUsed: 0,
-        totalMessagesSent: 0,
+        freeMessagesUsed: persistedFreeUsed,
+        totalMessagesSent: persistedTotalSent,
         freeExtended: false,
         laterMessageCount: 0,
       };
 
       setSession(chatSession);
 
-      // Welcome message
-      const welcomeMsg: Message = {
-        id: 'welcome',
-        role: 'ai',
-        content: `Hi! I'm ${loadedAvatar.name}. ${loadedAvatar.bio || "I'd love to chat with you!"} How can I help you today?`,
-        timestamp: new Date(),
-        tokensCost: 0,
-        wasFree: true,
-        wordCount: 0,
-      };
-      setMessages([welcomeMsg]);
+      // 2.8: If persisted messages exist, use them; otherwise show welcome message
+      if (persistedMessages.length > 0) {
+        setMessages(persistedMessages);
+      } else {
+        const welcomeMsg: Message = {
+          id: 'welcome',
+          role: 'ai',
+          content: `Hi! I'm ${loadedAvatar.name}. ${loadedAvatar.bio || "I'd love to chat with you!"} How can I help you today?`,
+          timestamp: new Date(),
+          tokensCost: 0,
+          wasFree: true,
+          wordCount: 0,
+        };
+        setMessages([welcomeMsg]);
+      }
     } catch (error: any) {
       console.error('[AIChatPage] Failed to initialize chat:', error);
     } finally {
@@ -335,8 +443,9 @@ function AIChatAvatarPageInner() {
         return;
       }
 
-      // BUG 2: Build system prompt from avatar data + BUG 1: Language mirroring
-      const systemPrompt = buildSystemPrompt(avatar);
+      // 2.2: Build system prompt with locale
+      const locale = getUILocale();
+      const systemPrompt = buildSystemPrompt(avatar, locale);
 
       // BUG 3: Build conversation history for Anthropic (excluding welcome messages)
       const conversationHistory = messages
@@ -473,8 +582,18 @@ function AIChatAvatarPageInner() {
   };
 
   /**
-   * BUG 5: Handle "Buy Tokens" button click in the paywall modal.
-   * Stores return-to info in sessionStorage and navigates to wallet.
+   * 2.6: Handle "Use tokens from wallet" button — dismiss gate, let user continue.
+   */
+  const handleUseWalletTokens = () => {
+    setShowTokenModal(false);
+    // No special action needed — tokens are deducted per-message from wallets/{uid}
+    // by the backend (onSnapshot keeps balance in sync).
+    inputRef.current?.focus();
+  };
+
+  /**
+   * BUG 5 + 2.7: Handle "Buy Tokens" button click in the paywall modal.
+   * Stores return-to info in sessionStorage and navigates to wallet buy with from_chat param.
    */
   const handleBuyTokensClick = () => {
     setShowTokenModal(false);
@@ -483,11 +602,12 @@ function AIChatAvatarPageInner() {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(
         'ai_chat_return_to',
-        `/ai/chat/${avatarId}?resumed=true`
+        `/ai/chat/${avatarId}?purchased=true`
       );
     }
 
-    router.push('/wallet/buy');
+    // 2.7: Pass avatarId as from_chat param so checkout success_url includes it
+    router.push(`/wallet/buy?from_chat=${encodeURIComponent(avatarId)}`);
   };
 
   // ── Loading state ───────────────────────────────────────────────────
@@ -507,7 +627,6 @@ function AIChatAvatarPageInner() {
   }
 
   // ── Computed display values ─────────────────────────────────────────
-  const wordsRemaining = session.tokenBalance * AI_WORDS_PER_TOKEN;
   const freeMessagesLeft = Math.max(0, AI_FREE_MESSAGES - session.freeMessagesUsed);
   // BUG 4: Show remaining "Later" messages if in extended mode
   const laterMessagesLeft =
@@ -560,13 +679,32 @@ function AIChatAvatarPageInner() {
             </div>
           )}
 
-          {/* Token Balance Display (CORRECTED) */}
+          {/* 2.3: Simplified Token Balance Display */}
           <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4 mb-4">
             <div className="flex items-center mb-3">
               <Coins className="w-4 h-4 text-purple-600 mr-2" />
               <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                 Token Balance
               </h3>
+              {/* 2.3: ℹ️ icon tooltip for disclaimer */}
+              <div className="relative ml-auto">
+                <button
+                  type="button"
+                  aria-label="Billing information"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  onMouseEnter={() => setShowDisclaimerTooltip(true)}
+                  onMouseLeave={() => setShowDisclaimerTooltip(false)}
+                  onClick={() => setShowDisclaimerTooltip((prev) => !prev)}
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+                {showDisclaimerTooltip && (
+                  <div className="absolute right-0 top-6 z-50 w-56 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg">
+                    All AI chat usage is billed per message. Unused tokens are not refundable.
+                    <div className="absolute -top-1 right-2 w-2 h-2 bg-gray-900 rotate-45" />
+                  </div>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
@@ -579,26 +717,18 @@ function AIChatAvatarPageInner() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Words left:
+                  Cost:
                 </span>
-                <span className="text-sm font-bold text-gray-900 dark:text-white">
-                  {wordsRemaining.toLocaleString()}
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  {AI_COST_PER_MESSAGE} token / message
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Cost per message:
+                  Free messages left:
                 </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {AI_COST_PER_MESSAGE} token
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Words per token:
-                </span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {AI_WORDS_PER_TOKEN}
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">
+                  {freeMessagesLeft}
                 </span>
               </div>
             </div>
@@ -635,16 +765,6 @@ function AIChatAvatarPageInner() {
           >
             View Full Profile
           </button>
-
-          {/* No Refund Notice */}
-          <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-            <div className="flex items-start">
-              <AlertTriangle className="w-4 h-4 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-gray-700 dark:text-gray-300">
-                All AI chat usage is billed per message. Unused tokens are not refundable.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -702,7 +822,7 @@ function AIChatAvatarPageInner() {
                   <span className="text-xs text-gray-500 dark:text-gray-400">tokens</span>
                 </div>
                 <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                  {wordsRemaining.toLocaleString()} words left
+                  {freeMessagesLeft > 0 ? `${freeMessagesLeft} free left` : `${AI_COST_PER_MESSAGE} token/msg`}
                 </span>
               </div>
               {freeMessagesLeft > 0 && (
@@ -796,7 +916,7 @@ function AIChatAvatarPageInner() {
         </div>
       </div>
 
-      {/* Token Purchase Modal */}
+      {/* 2.6: Token Purchase / Use Wallet Modal */}
       {showTokenModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
@@ -808,8 +928,7 @@ function AIChatAvatarPageInner() {
                   : 'Low Token Balance'}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                You have <strong>{session.tokenBalance} tokens</strong> (
-                {wordsRemaining.toLocaleString()} words) remaining.
+                You have <strong>{session.tokenBalance} tokens</strong> remaining.
                 {session.tokenBalance <= 0 &&
                   ' Add more tokens to continue chatting.'}
               </p>
@@ -826,13 +945,31 @@ function AIChatAvatarPageInner() {
               )}
             </div>
             <div className="space-y-3">
-              {/* BUG 5: "Buy Tokens" stores return URL and navigates to wallet */}
-              <button
-                onClick={handleBuyTokensClick}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
-              >
-                Buy Tokens
-              </button>
+              {/* 2.6: If wallet has tokens, show "Use tokens" as PRIMARY */}
+              {session.tokenBalance > 0 ? (
+                <>
+                  <button
+                    onClick={handleUseWalletTokens}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
+                  >
+                    Use tokens from wallet ({session.tokenBalance} available)
+                  </button>
+                  <button
+                    onClick={handleBuyTokensClick}
+                    className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-3 rounded-xl transition-colors text-sm"
+                  >
+                    Buy more tokens
+                  </button>
+                </>
+              ) : (
+                /* 2.6: If wallet is empty, show only "Buy tokens" */
+                <button
+                  onClick={handleBuyTokensClick}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
+                >
+                  Buy Tokens
+                </button>
+              )}
               {/* BUG 4: "Later" button — only allows bypass if not already exhausted */}
               <button
                 onClick={handleLaterClick}

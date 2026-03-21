@@ -90,21 +90,20 @@ export default function Hero() {
               </button>
             </div>
 
-            {/* Social proof */}
+            {/* Social proof — FIX 41: replaced "10K+ members | 4.9 rating" */}
             <div className="mt-10 flex items-center gap-6 justify-center lg:justify-start text-sm text-gray-500 dark:text-gray-400">
               <div className="flex items-center gap-1.5">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white dark:border-gray-900"
+                      className="w-7 h-7 rounded-full border-2 border-white dark:border-gray-900"
+                      style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
                     />
                   ))}
                 </div>
-                <span className="ml-2 font-medium">10K+ members</span>
+                <span className="ml-2 font-medium">Join the community</span>
               </div>
-              <div className="h-4 w-px bg-gray-300 dark:bg-gray-700" />
-              <span>⭐ 4.9 rating</span>
             </div>
           </div>
 
