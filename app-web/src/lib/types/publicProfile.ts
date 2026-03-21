@@ -26,6 +26,9 @@ export interface PublicProfile {
   /** User age (derived from dateOfBirth on backend) */
   age: number | null;
 
+  /** Date of birth (YYYY-MM-DD string, written from profile editor) */
+  dateOfBirth?: string;
+
   /** Short bio / description */
   bio: string;
 
@@ -44,8 +47,14 @@ export interface PublicProfile {
   /** Location label (e.g. "Warsaw, PL") */
   location: string;
 
-  /** Gender */
-  gender: 'male' | 'female' | 'other';
+  /** City — flat top-level field written by profile editor for Discovery filtering */
+  city?: string;
+
+  /** Gender (profile editor values: Man, Woman, Non-binary, Other) */
+  gender: string;
+
+  /** Looking for preference (Men, Women, Everyone) */
+  lookingFor?: string;
 
   /** Body type (optional — populated from extended profile) */
   bodyType?: string;
@@ -55,6 +64,12 @@ export interface PublicProfile {
 
   /** User interests / hobbies (optional — populated from extended profile) */
   interests?: string[];
+
+  /** Whether user is visible in Discovery */
+  discoverable?: boolean;
+
+  /** Whether user passed human verification */
+  isHuman?: boolean;
 
   /** Public stats */
   stats: {

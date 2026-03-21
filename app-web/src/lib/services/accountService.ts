@@ -41,14 +41,16 @@ export interface ProfileUpdatePayload {
   displayName?: string;
   bio?: string;
   photoURL?: string;
-  /** BUG 7: city → users/{uid}.location.city + public_profiles/{uid}.location.city */
+  /** city — flat top-level field on users/{uid} + public_profiles/{uid} */
   city?: string;
-  /** BUG 7: gender → users/{uid}.profile.gender + public_profiles/{uid}.profile.gender */
+  /** gender — flat top-level field on users/{uid} + public_profiles/{uid} */
   gender?: string;
-  /** BUG 7: lookingFor → users/{uid}.preferences.lookingFor */
-  lookingFor?: string[];
-  /** BUG 7: interests → users/{uid}.profile.interests + public_profiles/{uid}.profile.interests */
+  /** lookingFor — flat top-level field on users/{uid} + public_profiles/{uid} */
+  lookingFor?: string;
+  /** interests — flat top-level field on users/{uid} + public_profiles/{uid} */
   interests?: string[];
+  /** dateOfBirth — flat top-level field on users/{uid} + public_profiles/{uid} */
+  dateOfBirth?: string;
 }
 
 export interface SessionInfo {
@@ -113,50 +115,42 @@ export async function updateUserProfile(
   if (payload.photoURL !== undefined) {
     firestoreUpdate.photoURL = payload.photoURL;
   }
-  // BUG 7: location, gender, preferences, interests
+  // Flat top-level fields for city, gender, lookingFor, interests, dateOfBirth
   if (payload.city !== undefined) {
-    firestoreUpdate['location.city'] = payload.city;
+    firestoreUpdate.city = payload.city;
   }
   if (payload.gender !== undefined) {
-    firestoreUpdate['profile.gender'] = payload.gender;
+    firestoreUpdate.gender = payload.gender;
   }
   if (payload.lookingFor !== undefined) {
-    firestoreUpdate['preferences.lookingFor'] = payload.lookingFor;
+    firestoreUpdate.lookingFor = payload.lookingFor;
   }
   if (payload.interests !== undefined) {
-    firestoreUpdate['profile.interests'] = payload.interests;
+    firestoreUpdate.interests = payload.interests;
+  }
+  if (payload.dateOfBirth !== undefined) {
+    firestoreUpdate.dateOfBirth = payload.dateOfBirth;
   }
 
   const db = requireDb();
   const userRef = doc(db, 'users', user.uid);
   await setDoc(userRef, firestoreUpdate, { merge: true });
 
-  // Also write to Collection 2: public_profiles/{uid}
-  // so that displayName, bio, location, gender, interests are visible on the public profile
-  const publicUpdate: Record<string, any> = {
+  // Dual-write to public_profiles/{uid} so Discovery can filter by these fields
+  await setDoc(doc(db, 'public_profiles', user.uid), {
+    uid: user.uid,
+    displayName: payload.displayName ?? '',
+    bio: payload.bio ?? '',
+    photoURL: payload.photoURL ?? '',
+    city: payload.city ?? '',
+    gender: payload.gender ?? '',
+    lookingFor: payload.lookingFor ?? '',
+    dateOfBirth: payload.dateOfBirth ?? '',
+    interests: payload.interests ?? [],
+    discoverable: true,
+    isHuman: true,
     updatedAt: serverTimestamp(),
-  };
-  if (payload.displayName !== undefined) {
-    publicUpdate.displayName = payload.displayName;
-  }
-  if (payload.bio !== undefined) {
-    publicUpdate.bio = payload.bio;
-  }
-  // BUG 7: sync to public_profiles
-  if (payload.city !== undefined) {
-    publicUpdate['location.city'] = payload.city;
-  }
-  if (payload.gender !== undefined) {
-    publicUpdate['profile.gender'] = payload.gender;
-  }
-  if (payload.interests !== undefined) {
-    publicUpdate['profile.interests'] = payload.interests;
-  }
-
-  if (Object.keys(publicUpdate).length > 1) {
-    const publicRef = doc(db, 'public_profiles', user.uid);
-    await setDoc(publicRef, publicUpdate, { merge: true });
-  }
+  }, { merge: true });
 }
 
 // ---------------------------------------------------------------------------

@@ -29,11 +29,12 @@ export default function ProfileEditor() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
-  // BUG 7: new profile fields
+  // Profile fields: city, gender, lookingFor, interests, dateOfBirth
   const [city, setCity] = useState('');
   const [gender, setGender] = useState('');
-  const [lookingFor, setLookingFor] = useState<string[]>([]);
+  const [lookingFor, setLookingFor] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
+  const [dateOfBirth, setDateOfBirth] = useState('');
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -53,7 +54,7 @@ export default function ProfileEditor() {
     }
   }, [user, firebaseUser]);
 
-  // BUG 7: load extended profile fields from Firestore on mount
+  // Load extended profile fields from Firestore on mount (flat top-level fields)
   useEffect(() => {
     if (!firebaseUser) return;
     const loadExtendedFields = async () => {
@@ -62,10 +63,11 @@ export default function ProfileEditor() {
         const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
         const data = snap.data();
         if (data) {
-          setCity(data.location?.city || '');
-          setGender(data.profile?.gender || '');
-          setLookingFor(data.preferences?.lookingFor || []);
-          setInterests(data.profile?.interests || []);
+          setCity(data.city || '');
+          setGender(data.gender || '');
+          setLookingFor(data.lookingFor || '');
+          setInterests(data.interests || []);
+          setDateOfBirth(data.dateOfBirth || '');
         }
       } catch (err) {
         console.error('[ProfileEditor] Failed to load extended fields:', err);
@@ -178,11 +180,11 @@ export default function ProfileEditor() {
         displayName: displayName.trim(),
         bio: bio.trim(),
         photoURL: finalPhotoURL || undefined,
-        // BUG 7: include new profile fields in save
         city: city.trim(),
         gender,
         lookingFor,
         interests,
+        dateOfBirth,
       });
 
       // Refresh auth context to reflect changes
@@ -360,7 +362,7 @@ export default function ProfileEditor() {
           </div>
         </div>
 
-        {/* BUG 7: City */}
+        {/* City */}
         <div>
           <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
             City
@@ -376,7 +378,22 @@ export default function ProfileEditor() {
           />
         </div>
 
-        {/* BUG 7: Gender */}
+        {/* Date of Birth */}
+        <div>
+          <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
+            Date of Birth
+          </label>
+          <input
+            id="dateOfBirth"
+            type="date"
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+          />
+        </div>
+
+        {/* Gender */}
         <div>
           <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
             Gender
@@ -396,34 +413,26 @@ export default function ProfileEditor() {
           </select>
         </div>
 
-        {/* BUG 7: Looking for */}
+        {/* Looking For */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Looking for
+          <label htmlFor="lookingFor" className="block text-sm font-medium text-gray-700 mb-1">
+            Looking For
           </label>
-          <div className="flex flex-wrap gap-3">
-            {['Men', 'Women', 'Everyone'].map((option) => (
-              <label key={option} className="flex items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={lookingFor.includes(option)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setLookingFor((prev) => [...prev, option]);
-                    } else {
-                      setLookingFor((prev) => prev.filter((v) => v !== option));
-                    }
-                  }}
-                  disabled={isLoading}
-                  className="rounded border-gray-300 text-pink-500 focus:ring-pink-500"
-                />
-                {option}
-              </label>
-            ))}
-          </div>
+          <select
+            id="lookingFor"
+            value={lookingFor}
+            onChange={(e) => setLookingFor(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+          >
+            <option value="">Select...</option>
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Everyone">Everyone</option>
+          </select>
         </div>
 
-        {/* BUG 7: Interests — multi-select chips */}
+        {/* Interests — multi-select chips */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Interests

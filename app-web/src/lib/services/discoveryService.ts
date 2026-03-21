@@ -114,7 +114,7 @@ export async function fetchPublicProfiles(
 
     // Gender
     if (filters.genders.length > 0) {
-      items = items.filter((p) => p.gender && filters.genders.includes(p.gender));
+      items = items.filter((p) => p.gender && (filters.genders as string[]).includes(p.gender));
     }
 
     // Age range
