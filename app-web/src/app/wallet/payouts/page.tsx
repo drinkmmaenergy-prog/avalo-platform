@@ -22,7 +22,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { requireDb, requireFunctions } from '@/lib/firebase';
-import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
+import { TOKEN_PAYOUT_USD, INTERNAL_FX_RATES } from '@/lib/economyConfig';
 import {
   doc,
   onSnapshot,
@@ -341,6 +341,12 @@ export default function WalletPayoutsPage() {
                         ${(availableBalance * TOKEN_PAYOUT_USD).toFixed(2)} USD
                       </span>
                     </div>
+                    <p className="text-sm text-gray-500">
+                      ≈ {(availableBalance * TOKEN_PAYOUT_USD * INTERNAL_FX_RATES.PLN).toFixed(2)} PLN
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Szacunkowa wartość · Estimated value only. Final amount depends on exchange rates and bank fees.
+                    </p>
                   </div>
                 )}
 
@@ -379,6 +385,19 @@ export default function WalletPayoutsPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* ── Currency Disclaimer (PL / EN) ────────────────────────── */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800 mb-6">
+          <p className="font-semibold mb-1">⚠️ Ważne / Important</p>
+          <p className="mb-2">
+            Kwoty w PLN/EUR są szacunkowe. Rzeczywista kwota na Twoim koncie może się różnić
+            ze względu na kurs wymiany walut i opłaty bankowe.
+          </p>
+          <p>
+            PLN/EUR amounts are estimates only. The actual amount received may differ
+            due to exchange rates and bank transfer fees.
+          </p>
         </div>
 
         {/* ── Payout History ───────────────────────────────────────── */}

@@ -1,0 +1,786 @@
+=== economyConfig.ts ===
+import { MONETIZATION_SPLITS } from "@constants/monetization";
+/**
+ * Economy Configuration — Canonical token pricing & payout constants.
+ *
+ * INVARIANTS:
+ *   - These values MUST match backend config exactly.
+ *   - Do NOT change pricing without backend coordination.
+ *   - No discounts, no coupons, no overrides.
+ */
+
+/** USD value of 1 Avalo token for payout calculations. */
+export const TOKEN_PAYOUT_USD = 0.03;
+
+/** Creator revenue share percentage (0-1 range). */
+export const CREATOR_REVENUE_SHARE = MONETIZATION_SPLITS.SUBSCRIPTION.creator;
+
+/** Platform fee percentage (0-1 range). */
+export const PLATFORM_FEE = MONETIZATION_SPLITS.SUBSCRIPTION.avalo;
+
+/** Minimum payout threshold in tokens. */
+export const MIN_PAYOUT_TOKENS = 1000;
+
+/** Internal FX rates for display purposes (backend is source of truth). */
+export const INTERNAL_FX_RATES: Record<string, number> = {
+  USD: 1.0,
+  EUR: 0.92,
+  GBP: 0.79,
+  PLN: 4.05,
+  CAD: 1.36,
+  AUD: 1.53,
+  JPY: 149.5,
+  CHF: 0.88,
+  SEK: 10.45,
+  NOK: 10.72,
+  DKK: 6.87,
+  CZK: 23.15,
+};
+
+/** Alias for PayoutPreview compatibility */
+export const PAYOUT_PER_TOKEN_USD = TOKEN_PAYOUT_USD;
+
+/** Alias for PayoutPreview compatibility */
+export const CREATOR_SHARE = CREATOR_REVENUE_SHARE;
+
+/** Alias for PayoutPreview compatibility */
+export const PLATFORM_SHARE = PLATFORM_FEE;
+
+/**
+ * Format a token amount to its USD equivalent for display.
+ */
+export function tokensToUsd(tokens: number): string {
+  return `$${(tokens * TOKEN_PAYOUT_USD).toFixed(2)}`;
+}
+
+/**
+ * Format a token amount to a given currency equivalent for display.
+ */
+export function tokensToCurrency(tokens: number, currency: string): string {
+  const rate = INTERNAL_FX_RATES[currency] ?? 1;
+  const value = tokens * TOKEN_PAYOUT_USD * rate;
+  return `${value.toFixed(2)} ${currency}`;
+}
+
+
+
+
+
+=== aiEconomyConfig.ts ===
+/**
+ * AI Economy Configuration — Canonical AI companion pricing & word-per-token constants.
+ *
+ * INVARIANTS:
+ *   - These values MUST match backend config exactly.
+ *   - Do NOT change pricing without backend coordination.
+ *   - AI_WORDS_PER_TOKEN is the canonical conversion rate for user-created bots.
+ */
+
+/** Words generated per 1 token for user-created AI bots. */
+export const AI_WORDS_PER_TOKEN = 30;
+
+/** Number of free messages before token billing begins. */
+export const AI_FREE_MESSAGES = 3;
+
+/** Cost per message in tokens (after free messages). */
+export const AI_COST_PER_MESSAGE = 1;
+
+/** Personality trait options for AI companions. */
+export const AI_PERSONALITY_TRAITS = [
+  'Friendly',
+  'Romantic',
+  'Intellectual',
+  'Playful',
+  'Mysterious',
+  'Caring',
+  'Adventurous',
+  'Flirty',
+  'Supportive',
+  'Witty',
+  'Confident',
+  'Calm',
+  'Energetic',
+  'Creative',
+  'Empathetic',
+] as const;
+
+export type AIPersonalityTrait = (typeof AI_PERSONALITY_TRAITS)[number];
+
+/** Ethnicity options for AI companions. */
+export const AI_ETHNICITY_OPTIONS = [
+  'Asian',
+  'Black',
+  'Caucasian',
+  'Hispanic/Latino',
+  'Middle Eastern',
+  'Mixed',
+  'South Asian',
+  'Other',
+] as const;
+
+export type AIEthnicity = (typeof AI_ETHNICITY_OPTIONS)[number];
+
+/** Body type options for AI companions. */
+export const AI_BODY_TYPE_OPTIONS = [
+  'Slim',
+  'Athletic',
+  'Average',
+  'Curvy',
+  'Plus Size',
+] as const;
+
+export type AIBodyType = (typeof AI_BODY_TYPE_OPTIONS)[number];
+
+/** Hair color options for AI companions. */
+export const AI_HAIR_COLOR_OPTIONS = [
+  'Blonde',
+  'Brown',
+  'Black',
+  'Red',
+  'Gray',
+  'White',
+  'Auburn',
+  'Other',
+] as const;
+
+export type AIHairColor = (typeof AI_HAIR_COLOR_OPTIONS)[number];
+
+/** Eye color options for AI companions. */
+export const AI_EYE_COLOR_OPTIONS = [
+  'Brown',
+  'Blue',
+  'Green',
+  'Hazel',
+  'Gray',
+  'Amber',
+  'Other',
+] as const;
+
+export type AIEyeColor = (typeof AI_EYE_COLOR_OPTIONS)[number];
+
+/** Interest / hobby categories for AI companions. */
+export const AI_INTEREST_OPTIONS = [
+  'Travel',
+  'Music',
+  'Fitness',
+  'Photography',
+  'Cooking',
+  'Reading',
+  'Gaming',
+  'Art',
+  'Dancing',
+  'Movies',
+  'Fashion',
+  'Sports',
+  'Nature',
+  'Yoga',
+  'Hiking',
+  'Tech',
+  'Animals',
+  'Nightlife',
+  'Foodie',
+  'Volunteering',
+] as const;
+
+export type AIInterest = (typeof AI_INTEREST_OPTIONS)[number];
+
+
+=== firestore.rules ===
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ──────────────────────────────────────────────
+    // Helper functions
+    // ──────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
+    }
+    
+    function isAdmin() {
+      return hasRole('admin') || hasRole('super_admin');
+    }
+    
+    function isModerator() {
+      return hasRole('moderator') || isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 1: Users collection
+    //
+    // - Any authenticated user can READ any user doc (public profiles).
+    // - A user can CREATE their own doc (onboarding).
+    // - A user can UPDATE their own doc (profile edits).
+    // - Only admin can delete user docs.
+    // ──────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+      
+      // Private user data (settings, preferences)
+      match /private/{document=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      
+      // ──────────────────────────────────────────────
+      // BLOCK 2: User wallet subcollection
+      //
+      // - Owner can READ their wallet snapshot.
+      // - Admin can READ any wallet.
+      // - Client CANNOT write — only Admin SDK (backend).
+      // ──────────────────────────────────────────────
+      match /wallet/{document=**} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false; // Only server-side writes via Admin SDK
+      }
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 3: Profiles collection
+    // ──────────────────────────────────────────────
+    match /profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(profileId);
+      allow update: if isOwner(profileId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 4: Posts collection
+    // ──────────────────────────────────────────────
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.authorId) || isAdmin();
+      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 5: Chats collection
+    // ──────────────────────────────────────────────
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && 
+                     request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                       request.auth.uid in resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && 
+                       request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() && 
+                         request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if isOwner(resource.data.senderId) || isModerator();
+        allow delete: if isOwner(resource.data.senderId) || isModerator();
+      }
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 6: Transactions — read-only for users
+    // Client CANNOT write. Only Admin SDK.
+    // ──────────────────────────────────────────────
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource.data.uid) || isAdmin());
+      allow write: if false; // Only server-side writes
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 7: Notifications — server-generated only
+    // ──────────────────────────────────────────────
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow write: if false; // Only server-side writes
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 8: Moderation reports
+    // ──────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow read: if isModerator();
+      allow create: if isAuthenticated();
+      allow update: if isModerator();
+      allow delete: if isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 9: Creator shops
+    // ──────────────────────────────────────────────
+    match /shops/{shopId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.creatorId) || isAdmin();
+      allow delete: if isOwner(resource.data.creatorId) || isAdmin();
+      
+      match /items/{itemId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(get(/databases/$(database)/documents/shops/$(shopId)).data.creatorId) || isAdmin();
+      }
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 10: Live rooms
+    // ──────────────────────────────────────────────
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isOwner(resource.data.hostId) || isAdmin();
+      allow delete: if isOwner(resource.data.hostId) || isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 11: Analytics — admin only
+    // ──────────────────────────────────────────────
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 12: Creator Analytics (PACK 97)
+    // Read-only for the owning creator. Backend writes only.
+    // ──────────────────────────────────────────────
+    match /creator_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.creatorId);
+      allow write: if false; // Only backend writes
+      
+      match /payers/{payerId} {
+        allow read, write: if false; // Backend only
+      }
+    }
+    
+    match /content_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    match /creator_analytics_snapshot/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 13: Creator balances — read-only
+    // Client CANNOT write. Only Admin SDK.
+    // ──────────────────────────────────────────────
+    match /creator_balances/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 14: Earnings ledger — read-only for creators
+    // ECONOMY INVARIANT: 65/35 split, TOKEN_PAYOUT_USD
+    // Client CANNOT write. Only Admin SDK.
+    // ──────────────────────────────────────────────
+    match /earnings_ledger/{entryId} {
+      allow read: if isAuthenticated() &&
+                     isOwner(resource.data.creatorId);
+      allow write: if false; // Only backend writes
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 15: Treasury — FULLY PROTECTED
+    // No client reads or writes. Admin SDK only.
+    // Economy invariants enforced server-side.
+    // ──────────────────────────────────────────────
+    match /treasury/{document=**} {
+      allow read, write: if false; // Admin SDK only — no client access
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 16: Ledger — FULLY PROTECTED
+    // No client reads or writes. Admin SDK only.
+    // ──────────────────────────────────────────────
+    match /ledger/{document=**} {
+      allow read, write: if false; // Admin SDK only — no client access
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 17: Creator earnings payouts — PROTECTED
+    // Creators can read their own. Writes server-only.
+    // ──────────────────────────────────────────────
+    match /creator_earnings/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Admin SDK only
+      
+      match /{document=**} {
+        allow read: if isAuthenticated() && isOwner(userId);
+        allow write: if false; // Admin SDK only
+      }
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 18: System configuration — admin only write
+    // ──────────────────────────────────────────────
+    match /config/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 19: Wallets — top-level token wallets
+    //
+    // - Owner can READ their own wallet document.
+    // - Admin can READ any wallet.
+    // - Client CANNOT write — only Admin SDK (backend webhook).
+    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
+    // ──────────────────────────────────────────────
+    match /wallets/{uid} {
+      allow read: if isAuthenticated() && (isOwner(uid) || isAdmin());
+      allow write: if false; // Only server-side writes via Admin SDK
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 20: Token Purchases — purchase history records
+    //
+    // - Owner can READ their own purchases (userId field must match).
+    // - Admin can READ any purchase.
+    // - Client CANNOT write — only Admin SDK (backend webhook).
+    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
+    // ──────────────────────────────────────────────
+    match /tokenPurchases/{purchaseId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only server-side writes via Admin SDK
+    }
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 21: Wallet Transactions — balance change audit trail
+    //
+    // - Owner can READ their own transactions (userId field must match).
+    // - Admin can READ any transaction.
+    // - Client CANNOT write — only Admin SDK (backend webhook).
+    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
+    // ──────────────────────────────────────────────
+    match /walletTransactions/{txId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false; // Only server-side writes via Admin SDK
+    }
+    
+    // ──────────────────────────────────────────────
+    // CATCH-ALL — Deny all other access
+    // Any collection not explicitly matched above is denied.
+    // ──────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // PUBLIC PROFILES - discovery
+    match /public_profiles/{profileId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // POSTS / FEED
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(resource.data.authorId);
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    // STORIES
+    match /stories/{storyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // REELS
+    match /reels/{reelId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // FEED CACHE
+    match /feed/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    // USER SESSIONS
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // TRANSACTIONS (account page)
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // USER PAYOUTS
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // USER SESSIONS (activity tracking)
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if false;
+    }
+
+    // SECURITY SESSIONS
+    match /user_sessions/{userId}/sessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // NOTIFICATIONS
+    match /notifications/{userId}/items/{notifId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    // FOLLOWS
+    match /follows/{followId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.followerId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.followerId == request.auth.uid;
+    }
+
+    // LIKES
+    match /likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // TIPS
+    match /tips/{tipId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.senderId == request.auth.uid ||
+         resource.data.recipientId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if false;
+    }
+
+    match /user_sessions/{userId}/sessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /notifications/{userId}/items/{notifId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    match /follows/{followId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.followerId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.followerId == request.auth.uid;
+    }
+
+    match /likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    match /tips/{tipId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.senderId == request.auth.uid ||
+         resource.data.recipientId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    match /creator_analytics/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    match /earnings/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    match /creator_earnings/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow update: if isOwner(userId);
+      allow create: if isOwner(userId);
+    }
+
+    match /ai_avatars/{avatarId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid;
+    }
+
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /creator_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /earn_settings/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow update: if isOwner(userId);
+      allow create: if isOwner(userId);
+    }
+
+    match /ai_avatars/{avatarId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid;
+    }
+
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /creator_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /earn_settings/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow update: if isOwner(userId);
+      allow create: if isOwner(userId);
+    }
+
+    match /ai_avatars/{avatarId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.creatorId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
+    }
+
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    match /earn_settings/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    match /public_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+  }
+}
+
+
+=== storage.rules ===
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/avatar/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/photos/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /ai_avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /posts/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /creator/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}
+
+
+=== git log ===
+fbebe89f feat: direct storage upload, AI chat fix, onboarding tips, unlimited photos, profile fields
+882a3a77 fix: payout rate 0.03, earn-on toggle, profile save dual-write, surfaces persist, incognito sync, discover client-side filters
+6dcdc575 fix: move ai profile from [avatarId] to [id] route
+aa8c9167 feat: discover filters, profile edit, AI redesign, creator photos, wallet pages
+5ceab3e7 feat: feed interactions, profile redesign, wallet pages, creator hub fix, discovery settings
+9b2824d5 feat: export multi-room functions to index.ts, execution roadmap complete
+7374b289 feat: multi-room chat monetization - entry fee, word budget, priority messages, guaranteed reply, tips
+2508a0a0 feat: AI economy canonical config - hybrid model, 65/35 split, anti-padding, Stripe web only
+74c20ce0 fix: earn-with-avalo system, economics splits, feed unlock, TS type fixes
+ce891fde fix: force-add app-web/pnpm-lock.yaml required by App Hosting buildpack
