@@ -85,8 +85,8 @@ function FreeMessageBanner() {
 function CardSkeleton() {
   return (
     <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 animate-pulse">
-      <div className="absolute inset-x-0 bottom-0 p-3 space-y-2">
-        <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
+      <div className="absolute inset-x-0 bottom-0 p-2 space-y-1">
+        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
         <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/3" />
       </div>
     </div>
@@ -96,7 +96,7 @@ function CardSkeleton() {
 /** Grid skeleton for initial load */
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {Array.from({ length: 8 }).map((_, i) => (
         <CardSkeleton key={i} />
       ))}
@@ -177,9 +177,9 @@ function ProfileCard({
   return (
     <button
       onClick={onClick}
-      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500"
+      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm hover:shadow-md transition-shadow duration-200"
     >
-      {/* Photo or gradient placeholder */}
+      {/* Photo or gradient placeholder — edge-to-edge, no padding */}
       {photoSrc ? (
         <img
           src={photoSrc}
@@ -189,34 +189,34 @@ function ProfileCard({
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-          <span className="text-6xl font-bold text-white/80">{initial}</span>
+          <span className="text-4xl font-bold text-white/80">{initial}</span>
         </div>
       )}
 
       {/* Online indicator — top right */}
       {profile.online && (
         <span
-          className="absolute top-3 right-3 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-10"
+          className="absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full z-10"
           title="Online"
         />
       )}
 
       {/* Verified badge — top left */}
       {profile.verified && (
-        <div className="absolute top-3 left-3 z-10">
-          <BadgeCheck className="w-5 h-5 text-blue-400 drop-shadow-lg" />
+        <div className="absolute top-2 left-2 z-10">
+          <BadgeCheck className="w-4 h-4 text-blue-400 drop-shadow-lg" />
         </div>
       )}
 
       {/* Earn-on / chat price badges — top right (below online dot) */}
       {profile.earn_on && (
-        <div className="absolute top-10 right-3 flex flex-col gap-1 z-10">
-          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/80 text-white rounded-full backdrop-blur-sm">
-            <DollarSign className="w-2.5 h-2.5" />
+        <div className="absolute top-7 right-2 flex flex-col gap-1 z-10">
+          <span className="inline-flex items-center gap-0.5 px-1 py-0.5 text-[9px] font-medium bg-emerald-500/80 text-white rounded-full backdrop-blur-sm">
+            <DollarSign className="w-2 h-2" />
             Earn
           </span>
           {profile.chat_price > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/80 text-white rounded-full backdrop-blur-sm">
+            <span className="inline-flex items-center px-1 py-0.5 text-[9px] font-medium bg-amber-500/80 text-white rounded-full backdrop-blur-sm">
               {profile.chat_price}t
             </span>
           )}
@@ -227,17 +227,17 @@ function ProfileCard({
       <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
 
       {/* Name + Age + City — bottom left over gradient */}
-      <div className="absolute inset-x-0 bottom-0 p-3 z-10">
-        <div className="flex items-center gap-1.5">
-          <p className="text-white font-bold text-base leading-snug drop-shadow-md truncate">
+      <div className="absolute inset-x-0 bottom-0 p-2 z-10">
+        <div className="flex items-center gap-1">
+          <p className="text-white font-bold text-sm leading-snug drop-shadow-md truncate">
             {profile.displayName}{age !== null && age > 0 ? `, ${age}` : ''}
           </p>
           {profile.verified && (
-            <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow-md" />
+            <BadgeCheck className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 drop-shadow-md" />
           )}
         </div>
         {profile.city && (
-          <p className="text-white/80 text-sm drop-shadow-md truncate mt-0.5">
+          <p className="text-white/80 text-xs drop-shadow-md truncate mt-0.5">
             {profile.city}
           </p>
         )}
@@ -587,7 +587,7 @@ function FiltersPanel({
             onChange={(genders) =>
               onFiltersChange({
                 ...filters,
-                genders: genders as Array<'male' | 'female' | 'other'>,
+                genders: genders as Array<'Man' | 'Woman' | 'Non-binary' | 'Other'>,
               })
             }
           />
@@ -885,9 +885,9 @@ export default function DiscoverPage() {
         />
       )}
 
-      {/* Profile grid */}
+      {/* Profile grid — 2-col mobile, 3-col tablet, 4-col desktop */}
       {!loading && !error && filteredProfiles.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {filteredProfiles.map((profile) => (
             <ProfileCard
               key={profile.uid}

@@ -737,6 +737,15 @@ export default function UserProfilePage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">
                 {profile.displayName}
+                {/* Age — computed from dateOfBirth if available, fallback to pre-computed age */}
+                {(() => {
+                  const computedAge = profile.dateOfBirth
+                    ? Math.floor((Date.now() - new Date(profile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                    : profile.age;
+                  return computedAge !== null && computedAge !== undefined && computedAge > 0
+                    ? `, ${computedAge}`
+                    : '';
+                })()}
               </h1>
               {profile.verified && (
                 <BadgeCheck className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -747,10 +756,11 @@ export default function UserProfilePage() {
                 </span>
               )}
             </div>
-            {profile.age !== null && profile.age > 0 && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {profile.age} years old
-              </span>
+            {/* City — shown below name line */}
+            {profile.city && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {profile.city}
+              </p>
             )}
           </div>
         </div>

@@ -179,9 +179,10 @@ export type Interest = (typeof INTEREST_OPTIONS)[number];
 
 /** Gender options for filter checkboxes (mirrors PublicProfile.gender) */
 export const GENDER_OPTIONS = [
-  { value: 'male' as const, label: 'Male' },
-  { value: 'female' as const, label: 'Female' },
-  { value: 'other' as const, label: 'Other' },
+  { value: 'Man' as const, label: 'Man' },
+  { value: 'Woman' as const, label: 'Woman' },
+  { value: 'Non-binary' as const, label: 'Non-binary' },
+  { value: 'Other' as const, label: 'Other' },
 ];
 
 // ============================================================================
@@ -206,7 +207,7 @@ export interface DiscoverFilters {
   ageMax: number;
 
   /** Gender filter — empty array means all genders */
-  genders: Array<'male' | 'female' | 'other'>;
+  genders: Array<'Man' | 'Woman' | 'Non-binary' | 'Other'>;
 
   /** Body type filter — empty array means all */
   bodyTypes: string[];

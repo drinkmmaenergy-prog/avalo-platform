@@ -487,9 +487,6 @@ export default function AccountPage() {
   const [compliance, setCompliance] = useState<UserComplianceStatus | null>(null);
   const [discovery, setDiscovery] = useState<DiscoverySettings | null>(null);
 
-  // Track the previous discoverable value so we can restore it when incognito is toggled off
-  const [prevDiscoverable, setPrevDiscoverable] = useState<boolean>(true);
-
   // Passport location input state
   const [passportLocationInput, setPassportLocationInput] = useState<string>('');
 
@@ -539,8 +536,23 @@ export default function AccountPage() {
       setSubscription(subscriptionData);
       setCompliance(complianceData);
       setDiscovery(discoveryData);
-      setPrevDiscoverable(discoveryData.discoverable);
       setPassportLocationInput(discoveryData.passportLocation?.city ?? '');
+
+      // FIX 1: Auto-fix inconsistency — if not incognito but discoverable is false, correct it
+      if (!discoveryData.incognito && !discoveryData.discoverable) {
+        const db = requireDb();
+        const uid = firebaseUser?.uid;
+        if (uid) {
+          discoveryData.discoverable = true;
+          setDiscovery({ ...discoveryData, discoverable: true });
+          updateDoc(doc(db, 'users', uid), { discoverable: true }).catch((e) =>
+            console.error('[Account] Failed to auto-fix discoverable on users:', e)
+          );
+          updateDoc(doc(db, 'public_profiles', uid), { discoverable: true }).catch((e) =>
+            console.error('[Account] Failed to auto-fix discoverable on public_profiles:', e)
+          );
+        }
+      }
     } catch (err) {
       console.error('Account load error', err);
       setError('Failed to load account data');
@@ -600,32 +612,26 @@ export default function AccountPage() {
     }
   };
 
-  const handleIncognitoChange = async (enabled: boolean) => {
-    if (!discovery) return;
+  const handleIncognitoChange = async (incognito: boolean) => {
+    if (!discovery || !firebaseUser) return;
     const prevIncognito = discovery.incognito;
     const prevDisc = discovery.discoverable;
 
-    if (enabled) {
-      // Turning incognito ON: save current discoverable value, then set discoverable OFF
-      setPrevDiscoverable(discovery.discoverable);
-      setDiscovery({ ...discovery, incognito: true, discoverable: false });
-      try {
-        await updateIncognitoMode(true);
-        await updateShowMeInDiscovery(false);
-      } catch (err) {
-        console.error('[Account] Failed to update incognito mode:', err);
-        setDiscovery((s) => (s ? { ...s, incognito: prevIncognito, discoverable: prevDisc } : s));
-      }
-    } else {
-      // Turning incognito OFF: restore discoverable to its previous value
-      setDiscovery({ ...discovery, incognito: false, discoverable: prevDiscoverable });
-      try {
-        await updateIncognitoMode(false);
-        await updateShowMeInDiscovery(prevDiscoverable);
-      } catch (err) {
-        console.error('[Account] Failed to update incognito mode:', err);
-        setDiscovery((s) => (s ? { ...s, incognito: prevIncognito, discoverable: prevDisc } : s));
-      }
+    // Incognito and discoverable are always opposite
+    setDiscovery({ ...discovery, incognito, discoverable: !incognito });
+    try {
+      const db = requireDb();
+      await updateDoc(doc(db, 'users', firebaseUser.uid), {
+        incognito,
+        discoverable: !incognito,
+        lastActiveAt: serverTimestamp(),
+      });
+      await updateDoc(doc(db, 'public_profiles', firebaseUser.uid), {
+        discoverable: !incognito,
+      });
+    } catch (err) {
+      console.error('[Account] Failed to update incognito mode:', err);
+      setDiscovery((s) => (s ? { ...s, incognito: prevIncognito, discoverable: prevDisc } : s));
     }
   };
 
@@ -864,12 +870,16 @@ export default function AccountPage() {
 
           {/* Toggle settings */}
           <div className="space-y-4">
-            {/* Incognito Mode (CHANGE 5) */}
+            {/* Incognito Mode — synced with discoverable (opposite values) */}
             <div className="py-3 border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-gray-900">Incognito Mode</p>
-                  <p className="text-sm text-gray-600">Your profile won&apos;t appear in Discover</p>
+                  <p className="text-sm text-gray-600">
+                    {discovery.incognito
+                      ? 'Your profile is hidden from Discover'
+                      : 'Your profile is visible in Discover'}
+                  </p>
                 </div>
                 <button
                   role="switch"
@@ -946,38 +956,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Show Me In Discovery */}
-            <div className="flex items-center justify-between py-3">
-              <div>
-                <p className="font-medium text-gray-900">Show Me In Discovery</p>
-                <p className="text-sm text-gray-600">
-                  {discovery.incognito
-                    ? 'Disabled while Incognito Mode is active'
-                    : discovery.discoverable
-                    ? 'Your profile is visible in Discover'
-                    : 'Your profile is hidden from all discovery'}
-                </p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={discovery.discoverable}
-                onClick={() => handleShowMeInDiscoveryChange(!discovery.discoverable)}
-                disabled={discovery.incognito}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  discovery.incognito
-                    ? 'bg-gray-200 cursor-not-allowed'
-                    : discovery.discoverable
-                    ? 'bg-purple-600'
-                    : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    discovery.discoverable ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
+            {/* Show Me In Discovery — removed as separate toggle; derived from Incognito */}
           </div>
         </section>
       )}
