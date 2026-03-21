@@ -2,7 +2,7 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // ──────────────────────────────────────────────
     // Helper functions
     // ──────────────────────────────────────────────
@@ -10,59 +10,73 @@ service cloud.firestore {
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
+
     function hasRole(role) {
-      return isAuthenticated() && 
+      return isAuthenticated() &&
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
     }
-    
+
     function isAdmin() {
       return hasRole('admin') || hasRole('super_admin');
     }
-    
+
     function isModerator() {
       return hasRole('moderator') || isAdmin();
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 1: Users collection
-    //
-    // - Any authenticated user can READ any user doc (public profiles).
-    // - A user can CREATE their own doc (onboarding).
-    // - A user can UPDATE their own doc (profile edits).
-    // - Only admin can delete user docs.
+    // BLOCK 1: Users
     // ──────────────────────────────────────────────
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
-      
+
       // Private user data (settings, preferences)
       match /private/{document=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
-      
-      // ──────────────────────────────────────────────
-      // BLOCK 2: User wallet subcollection
-      //
-      // - Owner can READ their wallet snapshot.
-      // - Admin can READ any wallet.
-      // - Client CANNOT write — only Admin SDK (backend).
-      // ──────────────────────────────────────────────
+
+      // Wallet subcollection — server-only writes
       match /wallet/{document=**} {
         allow read: if isOwner(userId) || isAdmin();
-        allow write: if false; // Only server-side writes via Admin SDK
+        allow write: if false;
       }
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 3: Profiles collection
+    // BLOCK 2: Public Profiles — discovery
+    // Owner can write (dual-write from profile edit).
+    // ──────────────────────────────────────────────
+    match /public_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 3: Creator Profiles
+    // ──────────────────────────────────────────────
+    match /creator_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 4: Earn Settings (Active Surfaces)
+    // ──────────────────────────────────────────────
+    match /earn_settings/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 5: Profiles (legacy — kept for backward compat)
     // ──────────────────────────────────────────────
     match /profiles/{profileId} {
       allow read: if isAuthenticated();
@@ -70,58 +84,231 @@ service cloud.firestore {
       allow update: if isOwner(profileId) || isAdmin();
       allow delete: if isAdmin();
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 4: Posts collection
+    // BLOCK 6: AI Avatars
+    // ──────────────────────────────────────────────
+    match /ai_avatars/{avatarId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 7: Posts
     // ──────────────────────────────────────────────
     match /posts/{postId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update: if isOwner(resource.data.authorId) || isAdmin();
-      allow delete: if isOwner(resource.data.authorId) || isAdmin();
+      allow update, delete: if isAuthenticated() &&
+        resource.data.authorId == request.auth.uid || isAdmin();
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 5: Chats collection
+    // BLOCK 8: Stories
+    // ──────────────────────────────────────────────
+    match /stories/{storyId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 9: Reels
+    // ──────────────────────────────────────────────
+    match /reels/{reelId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 10: Chats & Messages
     // ──────────────────────────────────────────────
     match /chats/{chatId} {
-      allow read: if isAuthenticated() && 
-                     request.auth.uid in resource.data.participants;
+      allow read: if isAuthenticated() &&
+        request.auth.uid in resource.data.participants;
       allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && 
-                       request.auth.uid in resource.data.participants;
-      
-      // Messages subcollection
+      allow update: if isAuthenticated() &&
+        request.auth.uid in resource.data.participants;
+
       match /messages/{messageId} {
-        allow read: if isAuthenticated() && 
-                       request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow create: if isAuthenticated() && 
-                         request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow read: if isAuthenticated() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if isAuthenticated() &&
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
         allow update: if isOwner(resource.data.senderId) || isModerator();
         allow delete: if isOwner(resource.data.senderId) || isModerator();
       }
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 6: Transactions — read-only for users
-    // Client CANNOT write. Only Admin SDK.
+    // BLOCK 11: Follows
+    // ──────────────────────────────────────────────
+    match /follows/{followId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.followerId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.followerId == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 12: Likes
+    // ──────────────────────────────────────────────
+    match /likes/{likeId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 13: Tips — server-only writes
+    // ──────────────────────────────────────────────
+    match /tips/{tipId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.senderId == request.auth.uid ||
+         resource.data.recipientId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 14: Wallets (top-level) — server-only writes
+    // Written by: Stripe webhook (handleCheckoutCompleted)
+    // ──────────────────────────────────────────────
+    match /wallets/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 15: Token Purchases — server-only writes
+    // ──────────────────────────────────────────────
+    match /tokenPurchases/{purchaseId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 16: Wallet Transactions — server-only writes
+    // ──────────────────────────────────────────────
+    match /walletTransactions/{txId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 17: Transactions (legacy) — server-only writes
     // ──────────────────────────────────────────────
     match /transactions/{txId} {
-      allow read: if isAuthenticated() && 
-                     (isOwner(resource.data.uid) || isAdmin());
-      allow write: if false; // Only server-side writes
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 7: Notifications — server-generated only
+    // BLOCK 18: Payouts — server-only writes
     // ──────────────────────────────────────────────
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && isOwner(resource.data.userId);
-      allow write: if false; // Only server-side writes
+    match /payouts/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if false;
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 8: Moderation reports
+    // BLOCK 19: Creator Balances — server-only writes
+    // ──────────────────────────────────────────────
+    match /creator_balances/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 20: Creator Earnings — server-only writes
+    // ──────────────────────────────────────────────
+    match /creator_earnings/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+
+      match /{document=**} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if false;
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 21: Earnings Ledger — server-only writes
+    // ──────────────────────────────────────────────
+    match /earnings_ledger/{entryId} {
+      allow read: if isAuthenticated() &&
+        isOwner(resource.data.creatorId);
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 22: Earnings (legacy) — server-only writes
+    // ──────────────────────────────────────────────
+    match /earnings/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 23: Creator Analytics
+    // ──────────────────────────────────────────────
+    match /creator_analytics/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false;
+    }
+
+    match /creator_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+        isOwner(resource.data.creatorId);
+      allow write: if false;
+
+      match /payers/{payerId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /content_analytics_daily/{docId} {
+      allow read: if isAuthenticated() &&
+        isOwner(resource.data.userId);
+      allow write: if false;
+    }
+
+    match /creator_analytics_snapshot/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 24: Treasury & Ledger — FULLY PROTECTED
+    // ──────────────────────────────────────────────
+    match /treasury/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /ledger/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 25: Notifications
+    // ──────────────────────────────────────────────
+    match /notifications/{userId}/items/{notifId} {
+      allow read: if isOwner(userId);
+      allow write: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 26: Reports (moderation)
     // ──────────────────────────────────────────────
     match /reports/{reportId} {
       allow read: if isModerator();
@@ -129,24 +316,24 @@ service cloud.firestore {
       allow update: if isModerator();
       allow delete: if isAdmin();
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 9: Creator shops
+    // BLOCK 27: Creator Shops
     // ──────────────────────────────────────────────
     match /shops/{shopId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
       allow update: if isOwner(resource.data.creatorId) || isAdmin();
       allow delete: if isOwner(resource.data.creatorId) || isAdmin();
-      
+
       match /items/{itemId} {
         allow read: if isAuthenticated();
         allow write: if isOwner(get(/databases/$(database)/documents/shops/$(shopId)).data.creatorId) || isAdmin();
       }
     }
-    
+
     // ──────────────────────────────────────────────
-    // BLOCK 10: Live rooms
+    // BLOCK 28: Live Rooms
     // ──────────────────────────────────────────────
     match /rooms/{roomId} {
       allow read: if isAuthenticated();
@@ -154,248 +341,18 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.hostId) || isAdmin();
       allow delete: if isOwner(resource.data.hostId) || isAdmin();
     }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 11: Analytics — admin only
-    // ──────────────────────────────────────────────
-    match /analytics/{document=**} {
-      allow read, write: if isAdmin();
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 12: Creator Analytics (PACK 97)
-    // Read-only for the owning creator. Backend writes only.
-    // ──────────────────────────────────────────────
-    match /creator_analytics_daily/{docId} {
-      allow read: if isAuthenticated() &&
-                     isOwner(resource.data.creatorId);
-      allow write: if false; // Only backend writes
-      
-      match /payers/{payerId} {
-        allow read, write: if false; // Backend only
-      }
-    }
-    
-    match /content_analytics_daily/{docId} {
-      allow read: if isAuthenticated() &&
-                     isOwner(resource.data.userId);
-      allow write: if false; // Only backend writes
-    }
-    
-    match /creator_analytics_snapshot/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow write: if false; // Only backend writes
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 13: Creator balances — read-only
-    // Client CANNOT write. Only Admin SDK.
-    // ──────────────────────────────────────────────
-    match /creator_balances/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow write: if false; // Only backend writes
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 14: Earnings ledger — read-only for creators
-    // ECONOMY INVARIANT: 65/35 split, TOKEN_PAYOUT_USD
-    // Client CANNOT write. Only Admin SDK.
-    // ──────────────────────────────────────────────
-    match /earnings_ledger/{entryId} {
-      allow read: if isAuthenticated() &&
-                     isOwner(resource.data.creatorId);
-      allow write: if false; // Only backend writes
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 15: Treasury — FULLY PROTECTED
-    // No client reads or writes. Admin SDK only.
-    // Economy invariants enforced server-side.
-    // ──────────────────────────────────────────────
-    match /treasury/{document=**} {
-      allow read, write: if false; // Admin SDK only — no client access
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 16: Ledger — FULLY PROTECTED
-    // No client reads or writes. Admin SDK only.
-    // ──────────────────────────────────────────────
-    match /ledger/{document=**} {
-      allow read, write: if false; // Admin SDK only — no client access
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 17: Creator earnings payouts — PROTECTED
-    // Creators can read their own. Writes server-only.
-    // ──────────────────────────────────────────────
-    match /creator_earnings/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
-      allow write: if false; // Admin SDK only
-      
-      match /{document=**} {
-        allow read: if isAuthenticated() && isOwner(userId);
-        allow write: if false; // Admin SDK only
-      }
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 18: System configuration — admin only write
-    // ──────────────────────────────────────────────
-    match /config/{document=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 19: Wallets — top-level token wallets
-    //
-    // - Owner can READ their own wallet document.
-    // - Admin can READ any wallet.
-    // - Client CANNOT write — only Admin SDK (backend webhook).
-    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
-    // ──────────────────────────────────────────────
-    match /wallets/{uid} {
-      allow read: if isAuthenticated() && (isOwner(uid) || isAdmin());
-      allow write: if false; // Only server-side writes via Admin SDK
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 20: Token Purchases — purchase history records
-    //
-    // - Owner can READ their own purchases (userId field must match).
-    // - Admin can READ any purchase.
-    // - Client CANNOT write — only Admin SDK (backend webhook).
-    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
-    // ──────────────────────────────────────────────
-    match /tokenPurchases/{purchaseId} {
-      allow read: if isAuthenticated() &&
-                     (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false; // Only server-side writes via Admin SDK
-    }
-    
-    // ──────────────────────────────────────────────
-    // BLOCK 21: Wallet Transactions — balance change audit trail
-    //
-    // - Owner can READ their own transactions (userId field must match).
-    // - Admin can READ any transaction.
-    // - Client CANNOT write — only Admin SDK (backend webhook).
-    // Written by: pack288-web-stripe webhook (handleCheckoutCompleted)
-    // ──────────────────────────────────────────────
-    match /walletTransactions/{txId} {
-      allow read: if isAuthenticated() &&
-                     (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false; // Only server-side writes via Admin SDK
-    }
-    
-    // ──────────────────────────────────────────────
-    // CATCH-ALL — Deny all other access
-    // Any collection not explicitly matched above is denied.
-    // ──────────────────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // PUBLIC PROFILES - discovery
-    match /public_profiles/{profileId} {
-      allow read: if isAuthenticated();
-      allow write: if false;
-    }
-
-    // POSTS / FEED
-    match /posts/{postId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(resource.data.authorId);
-      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
-    }
-
-    // STORIES
-    match /stories/{storyId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
-    }
-
-    // REELS
-    match /reels/{reelId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
-    }
-
-    // FEED CACHE
+    // ──────────────────────────────────────────────
+    // BLOCK 29: Feed Cache — server-only writes
+    // ──────────────────────────────────────────────
     match /feed/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow write: if false;
     }
 
-    // USER SESSIONS
-    match /sessions/{sessionId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    // TRANSACTIONS (account page)
-    match /transactions/{txId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    // USER PAYOUTS
-    match /payouts/{payoutId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    // USER SESSIONS (activity tracking)
-    match /sessions/{sessionId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(resource.data.userId);
-      allow delete: if false;
-    }
-
-    // SECURITY SESSIONS
-    match /user_sessions/{userId}/sessions/{sessionId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    // NOTIFICATIONS
-    match /notifications/{userId}/items/{notifId} {
-      allow read: if isOwner(userId);
-      allow write: if false;
-    }
-
-    // FOLLOWS
-    match /follows/{followId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.followerId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.followerId == request.auth.uid;
-    }
-
-    // LIKES
-    match /likes/{likeId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
-    }
-
-    // TIPS
-    match /tips/{tipId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.senderId == request.auth.uid ||
-         resource.data.recipientId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
+    // ──────────────────────────────────────────────
+    // BLOCK 30: User Sessions
+    // ──────────────────────────────────────────────
     match /sessions/{sessionId} {
       allow read: if isAuthenticated() &&
         (resource.data.userId == request.auth.uid || isAdmin());
@@ -409,144 +366,27 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
-    match /notifications/{userId}/items/{notifId} {
-      allow read: if isOwner(userId);
-      allow write: if false;
-    }
-
-    match /follows/{followId} {
+    // ──────────────────────────────────────────────
+    // BLOCK 31: System Config — admin only write
+    // ──────────────────────────────────────────────
+    match /config/{document=**} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.followerId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.followerId == request.auth.uid;
+      allow write: if isAdmin();
     }
 
-    match /likes/{likeId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+    // ──────────────────────────────────────────────
+    // BLOCK 32: Analytics — admin only
+    // ──────────────────────────────────────────────
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
     }
 
-    match /tips/{tipId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.senderId == request.auth.uid ||
-         resource.data.recipientId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /wallets/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if false;
-    }
-
-    match /creator_analytics/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if false;
-    }
-
-    match /earnings/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if false;
-    }
-
-    match /creator_earnings/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if false;
-    }
-
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow update: if isOwner(userId);
-      allow create: if isOwner(userId);
-    }
-
-    match /ai_avatars/{avatarId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.creatorId == request.auth.uid;
-      allow update, delete: if isAuthenticated() &&
-        resource.data.creatorId == request.auth.uid;
-    }
-
-    match /payouts/{payoutId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    match /creator_profiles/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /earn_settings/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow update: if isOwner(userId);
-      allow create: if isOwner(userId);
-    }
-
-    match /ai_avatars/{avatarId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.creatorId == request.auth.uid;
-      allow update, delete: if isAuthenticated() &&
-        resource.data.creatorId == request.auth.uid;
-    }
-
-    match /payouts/{payoutId} {
-      allow read: if isAuthenticated() &&
-        (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    match /creator_profiles/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /earn_settings/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow update: if isOwner(userId);
-      allow create: if isOwner(userId);
-    }
-
-    match /ai_avatars/{avatarId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.creatorId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
-    }
-
-    match /payouts/{payoutId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false;
-    }
-
-    match /earn_settings/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
-    }
-
-    match /public_profiles/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+    // ──────────────────────────────────────────────
+    // CATCH-ALL — Deny all other access
+    // Must be LAST. Any collection not matched above is denied.
+    // ──────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
     }
 
   }
