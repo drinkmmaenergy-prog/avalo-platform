@@ -106,7 +106,7 @@ function OwnProfileView() {
           {t('placeholder.profileTitle')}
         </h1>
         <Link
-          href="/account/profile"
+          href="/account"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink-500 text-white font-semibold rounded-lg hover:bg-pink-600 transition-colors shadow-sm"
         >
           <Pencil className="w-4 h-4" />

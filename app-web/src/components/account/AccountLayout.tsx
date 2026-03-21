@@ -20,7 +20,6 @@ export function AccountLayout({ children }: AccountLayoutProps) {
 
   const navItems = [
     { href: '/account', label: 'Overview', icon: '👤' },
-    { href: '/account/profile', label: 'Profile', icon: '✏️' },
     { href: '/account/billing', label: 'Billing', icon: '💳' },
     { href: '/account/tokens', label: 'Tokens', icon: '💎' },
     { href: '/account/security', label: 'Security', icon: '🔒' },

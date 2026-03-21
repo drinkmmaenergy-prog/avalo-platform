@@ -81,20 +81,13 @@ function FreeMessageBanner() {
   );
 }
 
-/** Loading skeleton matching the card layout */
+/** Loading skeleton matching the photo card layout */
 function CardSkeleton() {
   return (
-    <div className="card p-4 animate-pulse">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2" />
-          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-        </div>
-      </div>
-      <div className="flex gap-2 mt-3">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-16" />
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-20" />
+    <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 animate-pulse">
+      <div className="absolute inset-x-0 bottom-0 p-3 space-y-2">
+        <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
+        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/3" />
       </div>
     </div>
   );
@@ -163,7 +156,8 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-/** Single profile card — clicking navigates to /profile/[userId] */
+/** Single profile card — Tinder/Badoo-style photo card with name, age, city overlay.
+ *  Clicking navigates to /profile/[userId] */
 function ProfileCard({
   profile,
   onClick,
@@ -171,110 +165,83 @@ function ProfileCard({
   profile: PublicProfile;
   onClick: () => void;
 }) {
-  const initials = profile.displayName
-    ? profile.displayName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : '?';
+  const photoSrc = profile.photoURL || (profile.photos && profile.photos.length > 0 ? profile.photos[0] : null);
+
+  // Calculate age from dateOfBirth if available, otherwise fall back to pre-computed age field
+  const age = profile.dateOfBirth
+    ? Math.floor((Date.now() - new Date(profile.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : profile.age;
+
+  const initial = profile.displayName?.charAt(0)?.toUpperCase() || '?';
 
   return (
     <button
       onClick={onClick}
-      className="card p-4 text-left w-full hover:ring-2 hover:ring-primary-500/50 transition-all duration-200 cursor-pointer group"
+      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500"
     >
-      {/* Avatar row */}
-      <div className="flex items-start gap-3 mb-3">
-        <div className="relative flex-shrink-0">
-          {profile.photoURL ? (
-            <img
-              src={profile.photoURL}
-              alt={profile.displayName}
-              className="w-14 h-14 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700 group-hover:ring-primary-400 transition-all"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-primary-500 text-white flex items-center justify-center text-lg font-bold">
-              {initials}
-            </div>
-          )}
-          {/* Online indicator */}
-          {profile.online && (
-            <span
-              className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"
-              title="Online"
-            />
+      {/* Photo or gradient placeholder */}
+      {photoSrc ? (
+        <img
+          src={photoSrc}
+          alt={profile.displayName}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <span className="text-6xl font-bold text-white/80">{initial}</span>
+        </div>
+      )}
+
+      {/* Online indicator — top right */}
+      {profile.online && (
+        <span
+          className="absolute top-3 right-3 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-10"
+          title="Online"
+        />
+      )}
+
+      {/* Verified badge — top left */}
+      {profile.verified && (
+        <div className="absolute top-3 left-3 z-10">
+          <BadgeCheck className="w-5 h-5 text-blue-400 drop-shadow-lg" />
+        </div>
+      )}
+
+      {/* Earn-on / chat price badges — top right (below online dot) */}
+      {profile.earn_on && (
+        <div className="absolute top-10 right-3 flex flex-col gap-1 z-10">
+          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/80 text-white rounded-full backdrop-blur-sm">
+            <DollarSign className="w-2.5 h-2.5" />
+            Earn
+          </span>
+          {profile.chat_price > 0 && (
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/80 text-white rounded-full backdrop-blur-sm">
+              {profile.chat_price}t
+            </span>
           )}
         </div>
+      )}
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-              {profile.displayName}
-            </h3>
-            {profile.verified && (
-              <BadgeCheck className="w-4 h-4 text-primary-500 flex-shrink-0" />
-            )}
-          </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {profile.age !== null && profile.age > 0 && (
-              <span>{profile.age} y/o</span>
-            )}
-            {profile.age !== null && profile.age > 0 && profile.location && (
-              <span className="mx-1">·</span>
-            )}
-            {profile.location && <span>{profile.location}</span>}
+      {/* Dark gradient overlay at bottom for text readability */}
+      <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+
+      {/* Name + Age + City — bottom left over gradient */}
+      <div className="absolute inset-x-0 bottom-0 p-3 z-10">
+        <div className="flex items-center gap-1.5">
+          <p className="text-white font-bold text-base leading-snug drop-shadow-md truncate">
+            {profile.displayName}{age !== null && age > 0 ? `, ${age}` : ''}
           </p>
+          {profile.verified && (
+            <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0 drop-shadow-md" />
+          )}
         </div>
-      </div>
-
-      {/* Bio preview */}
-      {profile.bio && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">
-          {profile.bio}
-        </p>
-      )}
-
-      {/* Badges row */}
-      <div className="flex flex-wrap gap-1.5">
-        {profile.earn_on && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full">
-            <DollarSign className="w-3 h-3" />
-            Earn On
-          </span>
-        )}
-        {profile.earn_on && profile.chat_price > 0 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-full">
-            {profile.chat_price} tokens
-          </span>
-        )}
-        {profile.online && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
-            <Wifi className="w-3 h-3" />
-            Online
-          </span>
+        {profile.city && (
+          <p className="text-white/80 text-sm drop-shadow-md truncate mt-0.5">
+            {profile.city}
+          </p>
         )}
       </div>
-
-      {/* Stats row */}
-      {profile.stats && (
-        <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {formatCount(profile.stats.followers)}
-            </span>{' '}
-            followers
-          </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <span className="font-semibold text-gray-900 dark:text-white">
-              {formatCount(profile.stats.posts)}
-            </span>{' '}
-            posts
-          </div>
-        </div>
-      )}
     </button>
   );
 }
@@ -840,12 +807,12 @@ export default function DiscoverPage() {
   }, [filters]);
 
   // ── Client-side search filter (supplements server filters) ──────────
+  // Uses partial (case-insensitive) match on displayName and city fields
   const filteredProfiles = searchQuery.trim()
     ? profiles.filter(
         (p) =>
-          p.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (p.location &&
-            p.location.toLowerCase().includes(searchQuery.toLowerCase()))
+          p.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.city?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : profiles;
 

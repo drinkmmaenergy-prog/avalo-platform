@@ -796,7 +796,7 @@ export default function UserProfilePage() {
             <>
               {/* Own profile: Edit + Share */}
               <Link
-                href="/account/profile"
+                href="/account"
                 className="flex-1 min-w-[120px] py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold text-sm text-center flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 <Edit3 className="w-4 h-4" />
