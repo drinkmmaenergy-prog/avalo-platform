@@ -47,7 +47,7 @@ import {
 } from '@/lib/services/creatorService';
 import { MONETIZATION_SPLITS } from '@/config/monetizationSplits';
 import { requireDb } from '@/lib/firebase';
-import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { toast } from '@/components/ui/Toaster';
 import CreatorMediaSection, { type CreatorPhoto } from './CreatorMediaSection';
 import EarningsFilters, {
@@ -231,25 +231,68 @@ function getRadiusLabel(km: number): string {
 // SECTION 1: EARN STATUS CARD (ON/OFF toggle)
 // ============================================================================
 
+/** Info card explaining how creators earn — shown above StartEarningCTA when earn_on is null */
+function CreatorWelcomeCard() {
+  return (
+    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-6 max-w-lg mx-auto mb-6">
+      <h2 className="text-lg font-bold text-gray-900 mb-3">How creators earn on Avalo</h2>
+      <ul className="space-y-2 text-sm text-gray-700">
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">💬</span>
+          <span><strong>Chat</strong> — fans pay per message</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">💝</span>
+          <span><strong>Tips</strong> — supporters send tips anytime</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">🔒</span>
+          <span><strong>Media</strong> — sell exclusive locked photos and videos</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">📹</span>
+          <span><strong>Meetings</strong> — paid 1-on-1 video calls</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">🎫</span>
+          <span><strong>Events</strong> — sell tickets to your live events</span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="text-base leading-5">⭐</span>
+          <span><strong>Subscriptions</strong> — monthly fan memberships</span>
+        </li>
+      </ul>
+      <p className="mt-4 text-xs text-gray-500 leading-relaxed">
+        Post photos regularly and engage with fans — treat your Avalo like Instagram.
+      </p>
+    </div>
+  );
+}
+
 function StartEarningCTA({ onEnable, saving }: { onEnable: () => void; saving: boolean }) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center border border-gray-100">
-        <div className="text-6xl mb-6">💰</div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Earn with Avalo</h1>
-        <p className="text-gray-600 mb-6 leading-relaxed">
-          Start earning on Avalo by enabling earner mode. Monetize your chat, calls,
-          tips, media, live streams, subscriptions, meetings, and events.
-        </p>
-        <button
-          onClick={onEnable}
-          disabled={saving}
-          className="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700
-                     disabled:bg-gray-300 disabled:cursor-not-allowed text-white
-                     font-medium rounded-lg transition"
-        >
-          {saving ? 'Enabling…' : '🚀 Start Earning with Avalo'}
-        </button>
+      <div className="max-w-lg w-full">
+        {/* Creator welcome card */}
+        <CreatorWelcomeCard />
+
+        <div className="bg-white rounded-2xl shadow-lg p-10 text-center border border-gray-100">
+          <div className="text-6xl mb-6">💰</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Earn with Avalo</h1>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            Start earning on Avalo by enabling earner mode. Monetize your chat, calls,
+            tips, media, live streams, subscriptions, meetings, and events.
+          </p>
+          <button
+            onClick={onEnable}
+            disabled={saving}
+            className="inline-flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700
+                       disabled:bg-gray-300 disabled:cursor-not-allowed text-white
+                       font-medium rounded-lg transition"
+          >
+            {saving ? 'Enabling…' : '🚀 Start Earning with Avalo'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -787,6 +830,7 @@ export default function EarnWithAvaloPage() {
   const [contentStats, setContentStats] = useState<ContentStatsData>(DEFAULT_CONTENT_STATS);
   const [discoverySettings, setDiscoverySettings] = useState<DiscoverySettingsData>(DEFAULT_DISCOVERY_SETTINGS);
   const [creatorPhotos, setCreatorPhotos] = useState<CreatorPhoto[]>([]);
+  const [activeSurfaces, setActiveSurfaces] = useState<Record<string, boolean>>({});
   const [earningsFilters, setEarningsFilters] = useState<EarningsFilterState>(DEFAULT_EARNINGS_FILTERS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -802,6 +846,12 @@ export default function EarnWithAvaloPage() {
 
       try {
         setLoading(true);
+
+        // BUG 3 fix: Read earnSurfaces directly from users/{uid} on mount
+        const userDocSnap = await getDoc(doc(requireDb(), 'users', user.uid));
+        const userData = userDocSnap.data();
+        setActiveSurfaces(userData?.earnSurfaces ?? {});
+
         const [earningsData, analyticsData, settingsData, walletData, msgCount, statsData, discData, photosData] =
           await Promise.all([
             getCreatorEarningsSummary(user.uid).catch(() => null),
@@ -870,7 +920,10 @@ export default function EarnWithAvaloPage() {
       const newValue = !earnerSettings.earn_surfaces[surface];
       setSavingSurface(surface);
       try {
-        await setEarnSurface(user.uid, surface, newValue);
+        // BUG 3 fix: write directly to Firestore earnSurfaces field
+        const userRef = doc(requireDb(), 'users', user.uid);
+        await updateDoc(userRef, { [`earnSurfaces.${surface}`]: newValue });
+        setActiveSurfaces((prev) => ({ ...prev, [surface]: newValue }));
         setEarnerSettings((prev) =>
           prev
             ? {

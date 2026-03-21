@@ -41,6 +41,14 @@ export interface ProfileUpdatePayload {
   displayName?: string;
   bio?: string;
   photoURL?: string;
+  /** BUG 7: city → users/{uid}.location.city + public_profiles/{uid}.location.city */
+  city?: string;
+  /** BUG 7: gender → users/{uid}.profile.gender + public_profiles/{uid}.profile.gender */
+  gender?: string;
+  /** BUG 7: lookingFor → users/{uid}.preferences.lookingFor */
+  lookingFor?: string[];
+  /** BUG 7: interests → users/{uid}.profile.interests + public_profiles/{uid}.profile.interests */
+  interests?: string[];
 }
 
 export interface SessionInfo {
@@ -105,13 +113,26 @@ export async function updateUserProfile(
   if (payload.photoURL !== undefined) {
     firestoreUpdate.photoURL = payload.photoURL;
   }
+  // BUG 7: location, gender, preferences, interests
+  if (payload.city !== undefined) {
+    firestoreUpdate['location.city'] = payload.city;
+  }
+  if (payload.gender !== undefined) {
+    firestoreUpdate['profile.gender'] = payload.gender;
+  }
+  if (payload.lookingFor !== undefined) {
+    firestoreUpdate['preferences.lookingFor'] = payload.lookingFor;
+  }
+  if (payload.interests !== undefined) {
+    firestoreUpdate['profile.interests'] = payload.interests;
+  }
 
   const db = requireDb();
   const userRef = doc(db, 'users', user.uid);
   await setDoc(userRef, firestoreUpdate, { merge: true });
 
-  // BUG 3 fix: also write to Collection 2: public_profiles/{uid}
-  // so that displayName and bio are visible on the public profile
+  // Also write to Collection 2: public_profiles/{uid}
+  // so that displayName, bio, location, gender, interests are visible on the public profile
   const publicUpdate: Record<string, any> = {
     updatedAt: serverTimestamp(),
   };
@@ -120,6 +141,16 @@ export async function updateUserProfile(
   }
   if (payload.bio !== undefined) {
     publicUpdate.bio = payload.bio;
+  }
+  // BUG 7: sync to public_profiles
+  if (payload.city !== undefined) {
+    publicUpdate['location.city'] = payload.city;
+  }
+  if (payload.gender !== undefined) {
+    publicUpdate['profile.gender'] = payload.gender;
+  }
+  if (payload.interests !== undefined) {
+    publicUpdate['profile.interests'] = payload.interests;
   }
 
   if (Object.keys(publicUpdate).length > 1) {

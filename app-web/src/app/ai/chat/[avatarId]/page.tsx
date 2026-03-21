@@ -13,16 +13,24 @@
  *   - Shows deposit balance in tokens, words remaining in current session,
  *     cost per message.
  *
- * Uses existing functions: startAIChatSession, sendAIMessage, sendAIMessageCallable.
+ * BUG FIXES APPLIED:
+ *   BUG 1 — Language mirroring: system prompt instructs AI to detect and mirror user language.
+ *   BUG 2 — Avatar personality: loads ai_avatars/{avatarId} fields and builds character prompt.
+ *   BUG 3 — Direct Anthropic API: replaces sendAIMessageCallable with /api/ai/chat proxy.
+ *           Stores messages in Firestore: ai_chats/{chatId}/messages/{messageId}.
+ *   BUG 4 — "Later" button token gate: allows exactly 3 more messages after dismiss, then paywall again.
+ *   BUG 5 — Post-purchase return: detects ?resumed=true param and shows welcome-back toast.
+ *
  * Data source: Firestore 'ai_avatars/{avatarId}'
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { requireDb, requireFunctions } from '@/lib/firebase';
+import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { doc, getDoc } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { toast } from '@/components/ui/Toaster';
 import {
   AI_WORDS_PER_TOKEN,
   AI_FREE_MESSAGES,
@@ -60,7 +68,18 @@ interface ChatSessionState {
   tokenBalance: number;
   freeMessagesUsed: number;
   totalMessagesSent: number;
+  /** BUG 4: true when user clicked "Later" on the paywall modal */
+  freeExtended: boolean;
+  /** BUG 4: count of messages sent after clicking "Later" (max 3) */
+  laterMessageCount: number;
 }
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+/** BUG 4: maximum messages allowed after clicking "Later" on paywall */
+const LATER_FREE_MESSAGE_LIMIT = 3;
 
 // ============================================================================
 // HELPER
@@ -78,13 +97,41 @@ function countWords(text: string): number {
     .filter((w) => w.length > 0).length;
 }
 
+/**
+ * BUG 1 + BUG 2: Build system prompt from avatar data with language mirroring.
+ *
+ * - Loads avatar fields: name, age, personalityTraits, bio, backstory.
+ * - Instructs the AI to stay in character.
+ * - Instructs the AI to mirror the user's language.
+ */
+function buildSystemPrompt(avatar: AIAvatar): string {
+  const personalityStr =
+    avatar.personalityTraits.length > 0
+      ? avatar.personalityTraits.join(', ')
+      : 'Friendly and conversational';
+
+  const backstoryStr = avatar.backstory || 'A thoughtful AI companion.';
+
+  // BUG 2: Character prompt from avatar data
+  // BUG 1: Language mirroring instruction appended
+  return (
+    `You are ${avatar.name}, a ${avatar.age} year old AI companion. ` +
+    `Personality: ${personalityStr}. ` +
+    `Background: ${backstoryStr}. ` +
+    `Stay in character. Answer questions directly and naturally.\n\n` +
+    `Always respond in the same language the user writes in. ` +
+    `Detect language from each message and mirror it exactly.`
+  );
+}
+
 // ============================================================================
-// MAIN COMPONENT
+// INNER COMPONENT (needs useSearchParams inside Suspense)
 // ============================================================================
 
-export default function AIChatAvatarPage() {
+function AIChatAvatarPageInner() {
   const router = useRouter();
   const params = useParams()!;
+  const searchParams = useSearchParams();
   const avatarId = params.avatarId as string;
   const { user } = useAuth();
 
@@ -96,7 +143,28 @@ export default function AIChatAvatarPage() {
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
+  /** BUG 5: tracks whether resumed toast has been shown */
+  const resumedToastShown = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // ── BUG 5: Detect ?resumed=true and show toast ───────────────────
+  useEffect(() => {
+    if (resumedToastShown.current) return;
+    const resumed = searchParams?.get('resumed');
+    if (resumed === 'true') {
+      resumedToastShown.current = true;
+      toast({
+        type: 'success',
+        title: 'Welcome back!',
+        description: 'Your tokens have been added.',
+      });
+      // Clean up the URL param without navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete('resumed');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   // ── Load avatar + initialize session ─────────────────────────────────
   useEffect(() => {
@@ -118,11 +186,13 @@ export default function AIChatAvatarPage() {
       session &&
       session.tokenBalance < 5 &&
       session.state === 'PAID_ACTIVE' &&
-      session.freeMessagesUsed >= AI_FREE_MESSAGES
+      session.freeMessagesUsed >= AI_FREE_MESSAGES &&
+      // BUG 4: Don't auto-show if within "Later" allowance
+      !(session.freeExtended && session.laterMessageCount < LATER_FREE_MESSAGE_LIMIT)
     ) {
       setShowTokenModal(true);
     }
-  }, [session?.tokenBalance, session?.state, session?.freeMessagesUsed]);
+  }, [session?.tokenBalance, session?.state, session?.freeMessagesUsed, session?.freeExtended, session?.laterMessageCount]);
 
   const initializeChat = async () => {
     try {
@@ -191,6 +261,8 @@ export default function AIChatAvatarPage() {
         tokenBalance,
         freeMessagesUsed: 0,
         totalMessagesSent: 0,
+        freeExtended: false,
+        laterMessageCount: 0,
       };
 
       setSession(chatSession);
@@ -213,8 +285,22 @@ export default function AIChatAvatarPage() {
     }
   };
 
+  /**
+   * Get Firebase ID token for the current user.
+   * Used to authenticate requests to the /api/ai/chat route.
+   */
+  const getIdToken = useCallback(async (): Promise<string | null> => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return null;
+      return await currentUser.getIdToken();
+    } catch {
+      return null;
+    }
+  }, []);
+
   const handleSend = async () => {
-    if (!inputText.trim() || !session || sending) return;
+    if (!inputText.trim() || !session || !avatar || sending) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -235,122 +321,124 @@ export default function AIChatAvatarPage() {
       // Determine if this message is free
       const isFreeMessage = session.freeMessagesUsed < AI_FREE_MESSAGES;
 
-      // Check balance if not free
-      if (!isFreeMessage && session.tokenBalance < AI_COST_PER_MESSAGE) {
+      // BUG 4: Check if user is in "Later" extended mode
+      const isLaterFreeMessage =
+        !isFreeMessage &&
+        session.freeExtended &&
+        session.laterMessageCount < LATER_FREE_MESSAGE_LIMIT;
+
+      // Check balance if not free and not in "Later" allowance
+      if (!isFreeMessage && !isLaterFreeMessage && session.tokenBalance < AI_COST_PER_MESSAGE) {
         setShowTokenModal(true);
         setIsTyping(false);
         setSending(false);
         return;
       }
 
-      // Try to call backend sendAIMessage callable
-      try {
-        const sendAIMessageFn = httpsCallable(requireFunctions(), 'sendAIMessageCallable');
-        const result = await sendAIMessageFn({
-          avatarId: session.avatarId,
-          message: userMessage.content,
-        });
+      // BUG 2: Build system prompt from avatar data + BUG 1: Language mirroring
+      const systemPrompt = buildSystemPrompt(avatar);
 
-        const data = result.data as any;
-        if (data && data.reply) {
-          const wordCount = countWords(data.reply);
-          const tokenCost = isFreeMessage ? 0 : AI_COST_PER_MESSAGE;
+      // BUG 3: Build conversation history for Anthropic (excluding welcome messages)
+      const conversationHistory = messages
+        .filter((m) => m.id !== 'welcome')
+        .map((m) => ({
+          role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
+          content: m.content,
+        }));
 
-          const aiMessage: Message = {
-            id: `ai-${Date.now()}`,
-            role: 'ai',
-            content: data.reply,
-            timestamp: new Date(),
-            tokensCost: tokenCost,
-            wasFree: isFreeMessage,
-            wordCount,
-          };
-
-          setIsTyping(false);
-          setMessages((prev) => [...prev, aiMessage]);
-
-          setSession((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  tokenBalance: isFreeMessage
-                    ? prev.tokenBalance
-                    : prev.tokenBalance - tokenCost,
-                  freeMessagesUsed: isFreeMessage
-                    ? prev.freeMessagesUsed + 1
-                    : prev.freeMessagesUsed,
-                  totalMessagesSent: prev.totalMessagesSent + 1,
-                  state:
-                    !isFreeMessage && prev.tokenBalance - tokenCost <= 0
-                      ? 'AWAITING_DEPOSIT'
-                      : isFreeMessage &&
-                          prev.freeMessagesUsed + 1 >= AI_FREE_MESSAGES
-                        ? 'PAID_ACTIVE'
-                        : prev.state,
-                }
-              : null
-          );
-          return;
-        }
-      } catch (callableErr) {
-        // Backend not available — fall through to mock response
-        console.warn('[AIChatPage] Callable not available, using mock:', callableErr);
+      // BUG 3: Call server-side Anthropic proxy instead of httpsCallable
+      const idToken = await getIdToken();
+      if (!idToken) {
+        toast({ type: 'error', title: 'Authentication required', description: 'Please sign in to chat.' });
+        setIsTyping(false);
+        setSending(false);
+        return;
       }
 
-      // Mock AI response (fallback when backend callable is unavailable)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          systemPrompt,
+          messages: conversationHistory,
+          avatarId: session.avatarId,
+          userMessage: userMessage.content,
+        }),
+      });
 
-      const mockResponses = [
-        "That's a fascinating question! I'd love to explore this topic with you.",
-        "I understand what you mean. Let me share my thoughts on this.",
-        "That's really interesting! Tell me more about what you think.",
-        "I appreciate you sharing that with me. Here's what I think...",
-        "What a great point! I've been thinking about something similar.",
-      ];
-      const aiResponseText =
-        mockResponses[Math.floor(Math.random() * mockResponses.length)];
-      const wordCount = countWords(aiResponseText);
-      const tokenCost = isFreeMessage ? 0 : AI_COST_PER_MESSAGE;
+      const data = await response.json();
 
-      const aiMessage: Message = {
-        id: `ai-${Date.now()}`,
-        role: 'ai',
-        content: aiResponseText,
-        timestamp: new Date(),
-        tokensCost: tokenCost,
-        wasFree: isFreeMessage,
-        wordCount,
-      };
+      if (data.success && data.reply) {
+        const wordCount = countWords(data.reply);
+        const effectivelyFree = isFreeMessage || isLaterFreeMessage;
+        const tokenCost = effectivelyFree ? 0 : AI_COST_PER_MESSAGE;
 
+        const aiMessage: Message = {
+          id: `ai-${Date.now()}`,
+          role: 'ai',
+          content: data.reply,
+          timestamp: new Date(),
+          tokensCost: tokenCost,
+          wasFree: effectivelyFree,
+          wordCount,
+        };
+
+        setIsTyping(false);
+        setMessages((prev) => [...prev, aiMessage]);
+
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                tokenBalance: effectivelyFree
+                  ? prev.tokenBalance
+                  : prev.tokenBalance - tokenCost,
+                freeMessagesUsed: isFreeMessage
+                  ? prev.freeMessagesUsed + 1
+                  : prev.freeMessagesUsed,
+                totalMessagesSent: prev.totalMessagesSent + 1,
+                // BUG 4: Track "Later" message count
+                laterMessageCount: isLaterFreeMessage
+                  ? prev.laterMessageCount + 1
+                  : prev.laterMessageCount,
+                state:
+                  !effectivelyFree && prev.tokenBalance - tokenCost <= 0
+                    ? 'AWAITING_DEPOSIT'
+                    : isFreeMessage &&
+                        prev.freeMessagesUsed + 1 >= AI_FREE_MESSAGES
+                      ? 'PAID_ACTIVE'
+                      : prev.state,
+              }
+            : null
+        );
+
+        // BUG 4: Show paywall if "Later" messages exhausted
+        if (
+          isLaterFreeMessage &&
+          session.laterMessageCount + 1 >= LATER_FREE_MESSAGE_LIMIT
+        ) {
+          setShowTokenModal(true);
+        }
+
+        return;
+      }
+
+      // If the API call failed, show the error
+      const errorMsg = data.error || 'Failed to get AI response';
+      console.error('[AIChatPage] API error:', errorMsg);
+      toast({ type: 'error', title: 'AI Error', description: errorMsg });
       setIsTyping(false);
-      setMessages((prev) => [...prev, aiMessage]);
-
-      setSession((prev) =>
-        prev
-          ? {
-              ...prev,
-              tokenBalance: isFreeMessage
-                ? prev.tokenBalance
-                : prev.tokenBalance - tokenCost,
-              freeMessagesUsed: isFreeMessage
-                ? prev.freeMessagesUsed + 1
-                : prev.freeMessagesUsed,
-              totalMessagesSent: prev.totalMessagesSent + 1,
-              state:
-                !isFreeMessage && prev.tokenBalance - tokenCost <= 0
-                  ? 'AWAITING_DEPOSIT'
-                  : isFreeMessage &&
-                      prev.freeMessagesUsed + 1 >= AI_FREE_MESSAGES
-                    ? 'PAID_ACTIVE'
-                    : prev.state,
-            }
-          : null
-      );
     } catch (error: any) {
       setIsTyping(false);
       console.error('[AIChatPage] Failed to send message:', error);
+      toast({ type: 'error', title: 'Error', description: 'Failed to send message. Please try again.' });
     } finally {
       setSending(false);
+      // Auto-focus input after sending message
+      inputRef.current?.focus();
     }
   };
 
@@ -359,6 +447,47 @@ export default function AIChatAvatarPage() {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  /**
+   * BUG 4: Handle "Later" button click on the paywall modal.
+   * Sets freeExtended=true and allows exactly 3 more messages.
+   * If already extended, do not allow further bypass.
+   */
+  const handleLaterClick = () => {
+    setShowTokenModal(false);
+
+    if (session && !session.freeExtended) {
+      setSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              freeExtended: true,
+              laterMessageCount: 0,
+            }
+          : null
+      );
+    }
+    // If already extended (freeExtended === true), just close the modal.
+    // The user has exhausted their 3 extra messages and will be prompted again on next send.
+  };
+
+  /**
+   * BUG 5: Handle "Buy Tokens" button click in the paywall modal.
+   * Stores return-to info in sessionStorage and navigates to wallet.
+   */
+  const handleBuyTokensClick = () => {
+    setShowTokenModal(false);
+
+    // BUG 5: Store return path so wallet/success can redirect back
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(
+        'ai_chat_return_to',
+        `/ai/chat/${avatarId}?resumed=true`
+      );
+    }
+
+    router.push('/wallet/buy');
   };
 
   // ── Loading state ───────────────────────────────────────────────────
@@ -380,6 +509,11 @@ export default function AIChatAvatarPage() {
   // ── Computed display values ─────────────────────────────────────────
   const wordsRemaining = session.tokenBalance * AI_WORDS_PER_TOKEN;
   const freeMessagesLeft = Math.max(0, AI_FREE_MESSAGES - session.freeMessagesUsed);
+  // BUG 4: Show remaining "Later" messages if in extended mode
+  const laterMessagesLeft =
+    session.freeExtended
+      ? Math.max(0, LATER_FREE_MESSAGE_LIMIT - session.laterMessageCount)
+      : 0;
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
@@ -482,6 +616,18 @@ export default function AIChatAvatarPage() {
             </div>
           )}
 
+          {/* BUG 4: "Later" extended messages indicator */}
+          {session.freeExtended && laterMessagesLeft > 0 && freeMessagesLeft === 0 && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-4">
+              <div className="flex items-center">
+                <Sparkles className="w-4 h-4 text-yellow-600 mr-2" />
+                <span className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
+                  {laterMessagesLeft} extended free message{laterMessagesLeft !== 1 ? 's' : ''} left
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* View Profile link */}
           <button
             onClick={() => router.push(`/ai/profile/${avatar.id}`)}
@@ -565,6 +711,13 @@ export default function AIChatAvatarPage() {
                   {freeMessagesLeft} free
                 </span>
               )}
+              {/* BUG 4: Show "Later" allowance badge on mobile */}
+              {session.freeExtended && laterMessagesLeft > 0 && freeMessagesLeft === 0 && (
+                <span className="inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-bold bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  {laterMessagesLeft} extra
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -615,6 +768,7 @@ export default function AIChatAvatarPage() {
         <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4">
           <div className="flex items-end space-x-2 sm:space-x-3">
             <textarea
+              ref={inputRef}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -659,27 +813,65 @@ export default function AIChatAvatarPage() {
                 {session.tokenBalance <= 0 &&
                   ' Add more tokens to continue chatting.'}
               </p>
+              {/* BUG 4: Show "Later" allowance info if not yet extended */}
+              {!session.freeExtended && (
+                <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">
+                  You can dismiss this once and get {LATER_FREE_MESSAGE_LIMIT} more free messages.
+                </p>
+              )}
+              {session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT && (
+                <p className="text-red-500 dark:text-red-400 text-xs mt-2">
+                  You&apos;ve used all {LATER_FREE_MESSAGE_LIMIT} extended free messages. Please purchase tokens to continue.
+                </p>
+              )}
             </div>
             <div className="space-y-3">
+              {/* BUG 5: "Buy Tokens" stores return URL and navigates to wallet */}
               <button
-                onClick={() => {
-                  setShowTokenModal(false);
-                  router.push('/wallet');
-                }}
+                onClick={handleBuyTokensClick}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
               >
                 Buy Tokens
               </button>
+              {/* BUG 4: "Later" button — only allows bypass if not already exhausted */}
               <button
-                onClick={() => setShowTokenModal(false)}
-                className="w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 rounded-xl transition-colors"
+                onClick={handleLaterClick}
+                disabled={session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT}
+                className={`w-full font-semibold py-3 rounded-xl transition-colors ${
+                  session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT
+                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
+                }`}
               >
-                Later
+                {session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT
+                  ? 'No more free messages'
+                  : 'Later'}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+// ============================================================================
+// MAIN EXPORT (wraps inner component in Suspense for useSearchParams)
+// ============================================================================
+
+export default function AIChatAvatarPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Connecting...</p>
+          </div>
+        </div>
+      }
+    >
+      <AIChatAvatarPageInner />
+    </Suspense>
   );
 }

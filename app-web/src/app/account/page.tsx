@@ -26,6 +26,8 @@ import {
   updatePassportLocation,
 } from '@/lib/services/accountService';
 import type { DiscoverySettings, DiscoveryRadius, PassportLocation } from '@/lib/services/accountService';
+import { requireDb } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 
 import type { WalletBalance } from '../../../hooks/useWallet';
 import type { UserSubscription } from '../../../hooks/useSubscription';
@@ -49,6 +51,9 @@ export default function AccountPage() {
   // Passport location input state
   const [passportLocationInput, setPassportLocationInput] = useState<string>('');
 
+  // BUG 4 fix: real-time wallet balance from wallets/{uid}.tokenBalance
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +68,19 @@ export default function AccountPage() {
         console.warn('[Account] Failed to record session:', err);
       });
     }
+  }, [firebaseUser]);
+
+  // BUG 4 fix: real-time listener for wallet balance
+  useEffect(() => {
+    if (!firebaseUser) return;
+    const walletRef = doc(requireDb(), 'wallets', firebaseUser.uid);
+    const unsubscribe = onSnapshot(walletRef, (snap) => {
+      const data = snap.data();
+      setWalletBalance(data?.tokenBalance ?? data?.balance ?? 0);
+    }, (err) => {
+      console.warn('[Account] Wallet listener error:', err);
+    });
+    return () => unsubscribe();
   }, [firebaseUser]);
 
   const loadData = async () => {
@@ -527,13 +545,13 @@ export default function AccountPage() {
           <p className="text-purple-200 text-sm mb-2">Current Balance</p>
           <div className="flex items-baseline gap-3 mb-3">
             <h3 className="text-4xl font-bold">
-              {balance?.tokensBalance.toLocaleString() || '0'}
+              {walletBalance.toLocaleString()}
             </h3>
             <span className="text-xl text-purple-200">tokens</span>
           </div>
           <div className="pt-4 border-t border-purple-400">
             <p className="text-lg font-semibold">
-              ≈ {getFiatEquivalent(balance?.tokensBalance || 0)} PLN
+              ≈ {getFiatEquivalent(walletBalance)} PLN
             </p>
             <p className="text-sm text-purple-200">Estimated payout value</p>
           </div>

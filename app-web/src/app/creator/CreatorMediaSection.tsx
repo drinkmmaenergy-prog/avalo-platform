@@ -8,7 +8,7 @@
  *   - Grid display of photos
  *   - Hover-to-show red X remove button
  *   - Remove photo from Firestore array
- *   - Add photos via file picker (no file count limit, 100MB max per file)
+ *   - Add photos via file picker (no file count limit, 500MB max per file)
  *   - Upload via existing uploadImage Firebase callable function
  *   - Drag-to-reorder (first photo = cover/profile photo)
  *   - Optional caption per photo (max 100 characters)
@@ -16,9 +16,9 @@
  * Firestore schema: public_profiles/{uid}.photos = Array<{ url: string; caption?: string }>
  */
 import React, { useState, useRef, useCallback } from 'react';
-import { requireDb, requireFunctions } from '@/lib/firebase';
+import { requireDb, requireStorage } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // ============================================================================
 // TYPES
@@ -33,7 +33,7 @@ export interface CreatorPhoto {
 // CONSTANTS
 // ============================================================================
 
-const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
 const MAX_CAPTION_LENGTH = 100;
 
 // ============================================================================
@@ -96,10 +96,7 @@ export default function CreatorMediaSection({
       setUploading(true);
 
       const newPhotos: CreatorPhoto[] = [...photos];
-      const uploadFn = httpsCallable<
-        { imageData: string; type: string; userId: string },
-        { url: string; assetId: string }
-      >(requireFunctions(), 'uploadImage');
+      const storage = requireStorage();
 
       let uploaded = 0;
       const total = files.length;
@@ -109,7 +106,7 @@ export default function CreatorMediaSection({
 
         // Validate file size
         if (file.size > MAX_FILE_SIZE_BYTES) {
-          setError(`File "${file.name}" exceeds 100MB limit. Skipping.`);
+          setError(`File "${file.name}" exceeds 500MB limit. Skipping.`);
           continue;
         }
 
@@ -122,18 +119,14 @@ export default function CreatorMediaSection({
         try {
           setUploadProgress(`Uploading ${uploaded + 1} of ${total}...`);
 
-          // Convert file to base64
-          const base64 = await fileToBase64(file);
-
-          // Call uploadImage Firebase function
-          const result = await uploadFn({
-            imageData: base64,
-            type: 'profile',
-            userId,
-          });
+          // Upload directly to Firebase Storage
+          const path = `users/${userId}/photos/${Date.now()}_${file.name}`;
+          const storageRef = ref(storage, path);
+          const snapshot = await uploadBytes(storageRef, file);
+          const downloadURL = await getDownloadURL(snapshot.ref);
 
           newPhotos.push({
-            url: result.data.url,
+            url: downloadURL,
             caption: '',
           });
 
@@ -235,7 +228,7 @@ export default function CreatorMediaSection({
         <div>
           <h3 className="font-semibold text-gray-900 text-lg">Media</h3>
           <p className="text-sm text-gray-500">
-            Drag to reorder. First photo is your cover/profile photo.
+            Drag to reorder. First photo is your cover/profile photo. No limit &middot; Max 500MB per file.
           </p>
         </div>
         <button
@@ -379,20 +372,3 @@ export default function CreatorMediaSection({
   );
 }
 
-// ============================================================================
-// HELPER — Convert File to base64 (without data URL prefix)
-// ============================================================================
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Strip the data URL prefix (e.g., "data:image/jpeg;base64,")
-      const base64 = result.split(',')[1];
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}

@@ -29,27 +29,35 @@ import type {
 
 /**
  * Get creator earnings summary.
- * Calls backend function — NO local calculation.
+ * Reads directly from Firestore users/{uid} and wallets/{uid} docs.
+ * (BUG 2 fix: replaced httpsCallable('getPayoutState') with direct Firestore reads)
  */
 export async function getCreatorEarningsSummary(userId: string): Promise<CreatorEarningsSummary | null> {
-    
   try {
-    const getPayoutState = httpsCallable<{ userId: string }, any>(requireFunctions(), 'getPayoutState');
-    const result = await getPayoutState({ userId });
-    
-    if (!result.data || !result.data.earnings) {
+    const db = requireDb();
+    const [userSnap, walletSnap] = await Promise.all([
+      getDoc(doc(db, 'users', userId)),
+      getDoc(doc(db, 'wallets', userId)),
+    ]);
+
+    const userData = userSnap.data();
+    const walletData = walletSnap.data();
+
+    if (!userData && !walletData) {
       return null;
     }
-    
-    const { earnings } = result.data;
-    
+
+    const tokenBalance = walletData?.tokenBalance ?? walletData?.balance ?? 0;
+    const pendingTokens = walletData?.pendingTokens ?? walletData?.pending ?? 0;
+    const totalEarned = walletData?.totalEarned ?? walletData?.earned ?? 0;
+
     return {
       userId,
-      totalTokensEarnedAllTime: earnings.totalTokensEarnedAllTime || 0,
-      totalTokensEarnedThisMonth: earnings.withdrawableTokens || 0, // Backend provides this
-      withdrawableTokens: earnings.withdrawableTokens || 0,
-      pendingTokens: earnings.pendingTokens || 0,
-      availableForPayout: earnings.withdrawableTokens || 0, // Same as withdrawable
+      totalTokensEarnedAllTime: totalEarned,
+      totalTokensEarnedThisMonth: tokenBalance,
+      withdrawableTokens: tokenBalance,
+      pendingTokens,
+      availableForPayout: tokenBalance,
       lastUpdated: new Date(),
     };
   } catch (error) {
@@ -108,15 +116,15 @@ export async function getPayoutHistory(
 
 /**
  * Get Stripe Connect status for creator.
- * Calls backend function — NO local Stripe API calls.
+ * Reads directly from Firestore users/{uid} doc.
+ * (BUG 2 fix: replaced httpsCallable('getPayoutState') with direct Firestore read)
  */
 export async function getStripeConnectStatus(userId: string): Promise<CreatorStripeConnectInfo> {
-    
   try {
-    const getPayoutState = httpsCallable<{ userId: string }, any>(requireFunctions(), 'getPayoutState');
-    const result = await getPayoutState({ userId });
-    
-    if (!result.data) {
+    const db = requireDb();
+    const userSnap = await getDoc(doc(db, 'users', userId));
+
+    if (!userSnap.exists()) {
       return {
         status: 'NOT_CONNECTED',
         payoutsEnabled: false,
@@ -125,10 +133,11 @@ export async function getStripeConnectStatus(userId: string): Promise<CreatorStr
         lastChecked: new Date(),
       };
     }
-    
-    const account = result.data.account;
-    
-    if (!account) {
+
+    const data = userSnap.data();
+    const account = data.stripeConnect ?? data;
+
+    if (!account.stripeAccountId) {
       return {
         status: 'NOT_CONNECTED',
         payoutsEnabled: false,
@@ -137,8 +146,8 @@ export async function getStripeConnectStatus(userId: string): Promise<CreatorStr
         lastChecked: new Date(),
       };
     }
-    
-    // Map backend status to our types
+
+    // Map stored status to our types
     let status: CreatorStripeConnectInfo['status'] = 'NOT_CONNECTED';
     if (account.stripeAccountId) {
       if (account.stripeOnboardingComplete) {
@@ -147,7 +156,7 @@ export async function getStripeConnectStatus(userId: string): Promise<CreatorStr
         status = 'ONBOARDING_INCOMPLETE';
       }
     }
-    
+
     return {
       status,
       stripeAccountId: account.stripeAccountId,

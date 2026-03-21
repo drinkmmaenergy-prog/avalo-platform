@@ -11,7 +11,9 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/components/ui/Toaster';
 import { updateUserProfile } from '@/lib/services/accountService';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { requireStorage } from '@/lib/firebase';
+import { requireStorage, requireDb } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { INTEREST_OPTIONS } from '@/lib/types/publicProfile';
 
 const MAX_DISPLAY_NAME_LENGTH = 50;
 const MAX_BIO_LENGTH = 500;
@@ -26,6 +28,12 @@ export default function ProfileEditor() {
   const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+
+  // BUG 7: new profile fields
+  const [city, setCity] = useState('');
+  const [gender, setGender] = useState('');
+  const [lookingFor, setLookingFor] = useState<string[]>([]);
+  const [interests, setInterests] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -44,6 +52,27 @@ export default function ProfileEditor() {
       setPhotoURL(firebaseUser.photoURL || null);
     }
   }, [user, firebaseUser]);
+
+  // BUG 7: load extended profile fields from Firestore on mount
+  useEffect(() => {
+    if (!firebaseUser) return;
+    const loadExtendedFields = async () => {
+      try {
+        const db = requireDb();
+        const snap = await getDoc(doc(db, 'users', firebaseUser.uid));
+        const data = snap.data();
+        if (data) {
+          setCity(data.location?.city || '');
+          setGender(data.profile?.gender || '');
+          setLookingFor(data.preferences?.lookingFor || []);
+          setInterests(data.profile?.interests || []);
+        }
+      } catch (err) {
+        console.error('[ProfileEditor] Failed to load extended fields:', err);
+      }
+    };
+    void loadExtendedFields();
+  }, [firebaseUser]);
 
   // Validate form fields
   const validate = (): boolean => {
@@ -149,6 +178,11 @@ export default function ProfileEditor() {
         displayName: displayName.trim(),
         bio: bio.trim(),
         photoURL: finalPhotoURL || undefined,
+        // BUG 7: include new profile fields in save
+        city: city.trim(),
+        gender,
+        lookingFor,
+        interests,
       });
 
       // Refresh auth context to reflect changes
@@ -323,6 +357,102 @@ export default function ProfileEditor() {
             <span className="text-xs text-gray-400">
               {bio.length}/{MAX_BIO_LENGTH}
             </span>
+          </div>
+        </div>
+
+        {/* BUG 7: City */}
+        <div>
+          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+            City
+          </label>
+          <input
+            id="city"
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+            placeholder="Your city"
+          />
+        </div>
+
+        {/* BUG 7: Gender */}
+        <div>
+          <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
+            Gender
+          </label>
+          <select
+            id="gender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            disabled={isLoading}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+          >
+            <option value="">Select...</option>
+            <option value="Man">Man</option>
+            <option value="Woman">Woman</option>
+            <option value="Non-binary">Non-binary</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        {/* BUG 7: Looking for */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Looking for
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {['Men', 'Women', 'Everyone'].map((option) => (
+              <label key={option} className="flex items-center gap-2 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={lookingFor.includes(option)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setLookingFor((prev) => [...prev, option]);
+                    } else {
+                      setLookingFor((prev) => prev.filter((v) => v !== option));
+                    }
+                  }}
+                  disabled={isLoading}
+                  className="rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                />
+                {option}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* BUG 7: Interests — multi-select chips */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Interests
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {INTEREST_OPTIONS.map((opt) => {
+              const isSelected = interests.includes(opt);
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    if (isSelected) {
+                      setInterests((prev) => prev.filter((v) => v !== opt));
+                    } else {
+                      setInterests((prev) => [...prev, opt]);
+                    }
+                  }}
+                  disabled={isLoading}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                    isSelected
+                      ? 'bg-pink-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {opt}
+                </button>
+              );
+            })}
           </div>
         </div>
 

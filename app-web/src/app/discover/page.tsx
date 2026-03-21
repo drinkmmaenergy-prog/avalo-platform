@@ -112,20 +112,33 @@ function GridSkeleton() {
 }
 
 /** Empty state when no profiles match */
-function EmptyState({ hasFilters }: { hasFilters: boolean }) {
+function EmptyState({
+  hasFilters,
+  onSearchInternationally,
+}: {
+  hasFilters: boolean;
+  onSearchInternationally: () => void;
+}) {
   return (
     <div className="text-center py-16">
       <div className="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/30 mx-auto mb-4 flex items-center justify-center">
-        <Compass className="w-8 h-8 text-primary-500" />
+        <Search className="w-8 h-8 text-primary-500" />
       </div>
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {hasFilters ? 'No matches found' : 'Discovery is growing'}
+        🔍 No profiles found nearby
       </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+      <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto mb-4">
         {hasFilters
-          ? 'Try adjusting your filters to see more creators.'
-          : 'More creators join every day. Check back soon!'}
+          ? 'Try adjusting your filters or expand your search.'
+          : 'Try expanding your search.'}
       </p>
+      <button
+        onClick={onSearchInternationally}
+        className="inline-flex items-center px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition text-sm"
+      >
+        <MapPin className="w-4 h-4 mr-2" />
+        Search Internationally
+      </button>
     </div>
   );
 }
@@ -899,7 +912,10 @@ export default function DiscoverPage() {
 
       {/* Empty state */}
       {!loading && !error && filteredProfiles.length === 0 && (
-        <EmptyState hasFilters={hasActiveFilters} />
+        <EmptyState
+          hasFilters={hasActiveFilters}
+          onSearchInternationally={() => handleSearchRadiusChange('international')}
+        />
       )}
 
       {/* Profile grid */}

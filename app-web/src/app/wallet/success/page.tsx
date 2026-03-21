@@ -17,8 +17,11 @@
  * webhook was delivered (webhook may not reach localhost, or may be delayed).
  *
  * NO balance modification on the client — backend handles all crediting.
+ *
+ * BUG 5 (AI Chat): After successful fulfillment, if sessionStorage contains
+ * 'ai_chat_return_to', redirects the user back to the AI chat with ?resumed=true.
  */
-import React, { Suspense, useEffect, useState, useCallback } from 'react';
+import React, { Suspense, useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { fulfillCheckout, getPurchaseBySession } from '@/lib/api/tokens';
@@ -34,6 +37,27 @@ function WalletSuccessContent() {
   const sessionId = searchParams?.get('session_id');
   const { firebaseUser, loading: authLoading } = useAuth();
   const [state, setState] = useState<FulfillmentState>({ status: 'loading' });
+  /** BUG 5: Tracks whether AI chat redirect has been attempted */
+  const aiChatRedirectAttempted = useRef(false);
+
+  /**
+   * BUG 5: After successful fulfillment, check if the user came from AI chat.
+   * If sessionStorage has 'ai_chat_return_to', redirect there.
+   */
+  const maybeRedirectToAIChat = useCallback(() => {
+    if (aiChatRedirectAttempted.current) return;
+    if (typeof window === 'undefined') return;
+
+    const returnTo = sessionStorage.getItem('ai_chat_return_to');
+    if (returnTo) {
+      aiChatRedirectAttempted.current = true;
+      sessionStorage.removeItem('ai_chat_return_to');
+      // Short delay to let user see the success state briefly
+      setTimeout(() => {
+        window.location.href = returnTo;
+      }, 1500);
+    }
+  }, []);
 
   const runFulfillment = useCallback(async (sid: string) => {
     setState({ status: 'loading' });
@@ -47,6 +71,8 @@ function WalletSuccessContent() {
         tokens: fulfillResult.purchase.tokens,
         packageId: fulfillResult.purchase.packageId,
       });
+      // BUG 5: Redirect back to AI chat if applicable
+      maybeRedirectToAIChat();
       return;
     }
 
@@ -60,6 +86,8 @@ function WalletSuccessContent() {
           tokens: purchaseResult.purchase.tokens ?? 0,
           packageId: purchaseResult.purchase.packageId ?? 'unknown',
         });
+        // BUG 5: Redirect back to AI chat if applicable
+        maybeRedirectToAIChat();
         return;
       }
       // Fulfillment succeeded but purchase record not readable — show error, do NOT fake fulfilled
@@ -77,7 +105,7 @@ function WalletSuccessContent() {
     }
 
     setState({ status: 'error', message: 'Unable to confirm your purchase. Please check your wallet.' });
-  }, []);
+  }, [maybeRedirectToAIChat]);
 
   useEffect(() => {
     if (!sessionId) {

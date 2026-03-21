@@ -7,7 +7,7 @@
  *
  * Enhanced with:
  * - Photo gallery manager (drag-to-reorder, X remove, captions)
- * - Unlimited file count, 100MB per file
+ * - Unlimited file count, 500MB per file
  * - First photo = cover photo
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -33,7 +33,7 @@ interface PhotoItem {
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_SIZE_MB = 100;
+const MAX_SIZE_MB = 500;
 const MAX_CAPTION_LENGTH = 100;
 const ACCEPT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -284,8 +284,13 @@ function PhotoGalleryManager({ uid }: { uid: string }) {
           <div className="text-4xl mb-2">📷</div>
           <p className="text-gray-500 mb-1">No photos yet</p>
           <p className="text-gray-400 text-sm">
-            Upload photos to create your gallery. JPEG, PNG, WebP &middot; Max {MAX_SIZE_MB}MB each.
+            Upload photos to create your gallery. JPEG, PNG, WebP &middot; No limit &middot; Max {MAX_SIZE_MB}MB per file.
           </p>
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-800">
+              📸 Treat Avalo like Instagram — creators with 20+ photos get 3x more messages. No upload limit!
+            </p>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -357,6 +362,97 @@ function PhotoGalleryManager({ uid }: { uid: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// ProfileStrengthBar — horizontal progress bar with completion tips
+// ---------------------------------------------------------------------------
+
+function ProfileStrengthBar({ uid }: { uid: string }) {
+  const [strength, setStrength] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function compute() {
+      try {
+        const userRef = doc(requireDb(), 'users', uid);
+        const snap = await getDoc(userRef);
+        const data = snap.data();
+        if (!data || !active) return;
+
+        let pct = 0;
+
+        // bio = 20%
+        if (data.bio && typeof data.bio === 'string' && data.bio.trim().length > 0) {
+          pct += 20;
+        }
+
+        // name = 10%
+        if (data.displayName && typeof data.displayName === 'string' && data.displayName.trim().length > 0) {
+          pct += 10;
+        }
+
+        // avatar = 20%
+        if (data.avatarUrl || data.photoURL) {
+          pct += 20;
+        }
+
+        // 5+ photos = 25%
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        if (photos.length >= 5) {
+          pct += 25;
+        }
+
+        // earn_on = 25%
+        if (data.earn_on === true) {
+          pct += 25;
+        }
+
+        if (active) {
+          setStrength(pct);
+          setLoaded(true);
+        }
+      } catch (err) {
+        console.error('[ProfileStrengthBar] Failed to compute strength:', err);
+        if (active) setLoaded(true);
+      }
+    }
+
+    void compute();
+    return () => { active = false; };
+  }, [uid]);
+
+  if (!loaded) return null;
+
+  const barColor =
+    strength >= 80
+      ? 'bg-green-500'
+      : strength >= 50
+      ? 'bg-yellow-500'
+      : 'bg-red-500';
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-semibold text-gray-700">
+          Profile strength: {strength}%
+        </span>
+      </div>
+      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${strength}%` }}
+        />
+      </div>
+      {strength < 80 && (
+        <p className="text-xs text-gray-500 mt-2">
+          Complete your profile to appear in more searches
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Page
 // ---------------------------------------------------------------------------
 
@@ -391,6 +487,9 @@ export default function ProfileEditPage() {
   return (
     <AccountLayout>
       <div className="max-w-2xl mx-auto space-y-6">
+        {/* Profile Strength Bar */}
+        <ProfileStrengthBar uid={firebaseUser.uid} />
+
         {/* Profile Editor (name, bio, avatar) */}
         <ProfileEditor />
 
