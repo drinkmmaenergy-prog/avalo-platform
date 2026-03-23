@@ -38,11 +38,16 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import {
   doc,
   getDoc,
+  addDoc,
+  setDoc,
+  updateDoc,
+  increment,
   collection,
   query,
   orderBy,
   onSnapshot,
   getDocs,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { auth } from '@/lib/firebase';
@@ -61,6 +66,7 @@ import {
   Sparkles,
   Info,
 } from 'lucide-react';
+import VoiceRecorder from '@/components/chat/VoiceRecorder';
 
 // ============================================================================
 // TYPES
@@ -121,7 +127,7 @@ function countWords(text: string): number {
  * - 2.2: Prepends critical language detection instruction with UI locale.
  * - BUG 1: Instructs the AI to mirror the user's language.
  */
-function buildSystemPrompt(avatar: AIAvatar, locale: string): string {
+function buildSystemPrompt(avatar: AIAvatar, locale: string, sessionSummary?: string | null): string {
   const personalityStr =
     avatar.personalityTraits.length > 0
       ? avatar.personalityTraits.join(', ')
@@ -136,30 +142,99 @@ function buildSystemPrompt(avatar: AIAvatar, locale: string): string {
     `respond in whatever language the user writes in. Never default to English ` +
     `unless the user writes in English.\n\n`;
 
+  // FIX 45: Personality sliders prompt (if available)
+  const personalitySlidersPrompt = buildPersonalityPrompt(
+    (avatar as any).personalitySliders ?? null
+  );
+
+  // FIX 45: Session memory — prepend previous conversation context
+  const memorySection = sessionSummary
+    ? `Previous conversation context: ${sessionSummary}\n\n`
+    : '';
+
+  // FIX 52: Profession base prompt (if available)
+  const professionPrompt = (avatar as any).basePrompt
+    ? `${(avatar as any).basePrompt}\n\n`
+    : '';
+
+  // FIX 53: Game instructions
+  const gameInstructions =
+    `You can play interactive games when asked:\n` +
+    `- 20 Questions: Ask yes/no questions to guess what user is thinking\n` +
+    `- Movie Quiz: Describe movie plots for user to guess\n` +
+    `- Would You Rather: Present creative dilemma choices\n` +
+    `- Trivia: Ask fun trivia questions with multiple choice\n` +
+    `- Story Chain: Build a story together, alternating sentences\n` +
+    `- Emoji Riddles: Describe things with only emojis\n` +
+    `When playing games, stay in game mode until the user says they want to stop.\n\n`;
+
   // BUG 2: Character prompt from avatar data
   return (
     languageInstruction +
+    memorySection +
+    professionPrompt +
     `You are ${avatar.name}, a ${avatar.age} year old AI companion. ` +
     `Personality: ${personalityStr}. ` +
+    (personalitySlidersPrompt ? personalitySlidersPrompt + ' ' : '') +
     `Background: ${backstoryStr}. ` +
     `Stay in character. Answer questions directly and naturally.\n\n` +
+    gameInstructions +
     `Always respond in the same language the user writes in. ` +
     `Detect language from each message and mirror it exactly.`
   );
 }
 
 /**
- * 2.2: Get the current UI locale from the document or fallback to navigator.
+ * FIX 45/46: Build personality-shaping prompt from slider values.
+ * Sliders map: { humor, flirt, intellect, energy, empathy } each 0-10.
+ */
+function buildPersonalityPrompt(sliders: Record<string, number> | null): string {
+  if (!sliders) return '';
+  let prompt = '';
+  if (sliders.humor > 7) prompt += 'You love humor, jokes, and witty remarks. ';
+  else if (sliders.humor < 3) prompt += 'You are serious and straightforward. ';
+
+  if (sliders.flirt > 7) prompt += 'You are playfully flirty but always respectful. ';
+  else if (sliders.flirt < 3) prompt += 'You keep conversations purely friendly, no flirting. ';
+
+  if (sliders.intellect > 7) prompt += 'You enjoy deep, philosophical, and intellectual discussions. ';
+  else if (sliders.intellect < 3) prompt += 'You prefer simple, everyday conversation topics. ';
+
+  if (sliders.energy > 7) prompt += 'You are enthusiastic, use exclamation marks, and radiate positive energy! ';
+  else if (sliders.energy < 3) prompt += 'You are calm, measured, and speak softly. ';
+
+  if (sliders.empathy > 7) prompt += 'You are deeply caring, always ask how the person feels. ';
+  else if (sliders.empathy < 3) prompt += 'You focus on facts and topics rather than feelings. ';
+
+  return prompt;
+}
+
+/**
+ * 2.2: Get the current UI locale from the document, cookie, or fallback to navigator.
  */
 function getUILocale(): string {
   if (typeof document !== 'undefined') {
+    // 1. Check HTML lang attribute (set by Next.js i18n)
     const htmlLang = document.documentElement.lang;
-    if (htmlLang) return htmlLang;
+    if (htmlLang) return htmlLang.split('-')[0];
+    // 2. Check NEXT_LOCALE cookie
+    const cookieMatch = document.cookie.match(/NEXT_LOCALE=(\w+)/);
+    if (cookieMatch?.[1]) return cookieMatch[1];
   }
   if (typeof navigator !== 'undefined' && navigator.language) {
-    return navigator.language;
+    return navigator.language.split('-')[0];
   }
   return 'en';
+}
+
+/**
+ * Fix 4: Generate a language-aware welcome message.
+ */
+function getWelcomeMessage(name: string, bio: string, locale: string): string {
+  if (locale === 'pl') {
+    return `Cześć! Jestem ${name}. ${bio || 'Chętnie porozmawiam!'} Jak mogę Ci pomóc?`;
+  }
+  return `Hi! I'm ${name}. ${bio || "I'd love to chat with you!"} How can I help you today?`;
 }
 
 // ============================================================================
@@ -183,10 +258,23 @@ function AIChatAvatarPageInner() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   /** 2.3: Controls visibility of disclaimer tooltip */
   const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
+  /** FIX 45: Session summary from previous conversations */
+  const [sessionSummary, setSessionSummary] = useState<string | null>(null);
+  /** FIX 51: Rating state */
+  const [hasRated, setHasRated] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  /** FIX 53: Game menu state */
+  const [showGameMenu, setShowGameMenu] = useState(false);
+  /** FIX 54: Story mode indicator */
+  const [isStoryMode, setIsStoryMode] = useState(false);
   /** BUG 5: tracks whether resumed toast has been shown */
   const resumedToastShown = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  /** FIX 137: Queue for messages sent while AI is responding */
+  const pendingMessages = useRef<string[]>([]);
+  /** FIX 137: Ref to track if AI is currently processing (avoids stale closure issues) */
+  const processingRef = useRef(false);
 
   // ── BUG 5 + 2.7: Detect ?resumed=true or ?purchased=true and show toast ──
   useEffect(() => {
@@ -208,17 +296,53 @@ function AIChatAvatarPageInner() {
     }
   }, [searchParams]);
 
-  // ── 2.1: Real-time wallet balance via onSnapshot ─────────────────────
+  // ── 2.1: Real-time wallet balance via onSnapshot — matches /wallet page field priority ──
   useEffect(() => {
-    if (!user) return;
-    const unsub = onSnapshot(doc(requireDb(), 'wallets', user.uid), (snap) => {
-      const newBalance = snap.exists() ? snap.data().balance || 0 : 0;
-      setSession((prev) =>
-        prev ? { ...prev, tokenBalance: newBalance } : prev
-      );
-    });
-    return unsub;
-  }, [user]);
+    if (!user?.uid) return;
+    let active = true;
+
+    const refreshFromCallable = async () => {
+      try {
+        const { getTokenBalance } = await import('@/lib/services/tokenService');
+        const balance = await getTokenBalance(user.uid);
+        if (active) {
+          setSession((prev) =>
+            prev ? { ...prev, tokenBalance: balance } : prev
+          );
+        }
+      } catch {
+        // silent fallback
+      }
+    };
+
+    // Seed from callable so balance reflects post-checkout even if listener is restricted
+    void refreshFromCallable();
+
+    const unsub = onSnapshot(
+      doc(requireDb(), 'wallets', user.uid),
+      (snap) => {
+        if (snap.exists()) {
+          const newBalance = snap.data().tokensBalance ?? snap.data().tokenBalance ?? 0;
+          setSession((prev) =>
+            prev ? { ...prev, tokenBalance: newBalance } : prev
+          );
+        } else {
+          void refreshFromCallable();
+        }
+      },
+      (error) => {
+        if (error?.code !== 'permission-denied') {
+          console.warn('[AIChatPage] Wallet listener error:', error);
+        }
+        void refreshFromCallable();
+      }
+    );
+
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [user?.uid]);
 
   // ── Load avatar + initialize session ─────────────────────────────────
   useEffect(() => {
@@ -294,11 +418,20 @@ function AIChatAvatarPageInner() {
         totalConversations: d.totalConversations || 0,
         averageRating: d.averageRating || 0,
         ratingCount: d.ratingCount || 0,
+        conversationCount: d.conversationCount || d.totalConversations || 0,
+        totalRatings: d.totalRatings || d.ratingCount || 0,
+        profession: d.profession || '',
+        basePrompt: d.basePrompt || '',
         createdAt: d.createdAt || null,
         updatedAt: d.updatedAt || null,
       };
 
       setAvatar(loadedAvatar);
+
+      // FIX 51: Increment conversation count on chat start
+      updateDoc(doc(requireDb(), 'ai_avatars', avatarId), {
+        conversationCount: increment(1),
+      }).catch(() => {});
 
       // Load user's token balance from wallet (initial fetch; onSnapshot keeps it live)
       let tokenBalance = 0;
@@ -307,7 +440,7 @@ function AIChatAvatarPageInner() {
           const walletRef = doc(requireDb(), 'wallets', user.uid);
           const walletSnap = await getDoc(walletRef);
           if (walletSnap.exists()) {
-            tokenBalance = walletSnap.data().balance || 0;
+            tokenBalance = walletSnap.data().tokensBalance ?? walletSnap.data().tokenBalance ?? 0;
           }
         } catch (walletErr) {
           console.warn('[AIChatPage] Could not load wallet:', walletErr);
@@ -347,6 +480,21 @@ function AIChatAvatarPageInner() {
         } catch (chatErr) {
           console.warn('[AIChatPage] Could not load chat history:', chatErr);
         }
+
+        // FIX 45: Load session summary for cross-session memory
+        try {
+          const chatId = `${user.uid}_${avatarId}`;
+          const summaryRef = doc(requireDb(), 'ai_chats', chatId, 'meta', 'summary');
+          const summarySnap = await getDoc(summaryRef);
+          if (summarySnap.exists()) {
+            const summaryData = summarySnap.data();
+            if (summaryData?.text) {
+              setSessionSummary(summaryData.text);
+            }
+          }
+        } catch (summaryErr) {
+          console.warn('[AIChatPage] Could not load session summary:', summaryErr);
+        }
       }
 
       const chatSession: ChatSessionState = {
@@ -375,10 +523,12 @@ function AIChatAvatarPageInner() {
       if (persistedMessages.length > 0) {
         setMessages(persistedMessages);
       } else {
+        // Fix 4: Language-aware welcome message
+        const locale = getUILocale();
         const welcomeMsg: Message = {
           id: 'welcome',
           role: 'ai',
-          content: `Hi! I'm ${loadedAvatar.name}. ${loadedAvatar.bio || "I'd love to chat with you!"} How can I help you today?`,
+          content: getWelcomeMessage(loadedAvatar.name, loadedAvatar.bio || '', locale),
           timestamp: new Date(),
           tokensCost: 0,
           wasFree: true,
@@ -392,6 +542,46 @@ function AIChatAvatarPageInner() {
       setLoading(false);
     }
   };
+
+  // FIX 45: Save session summary on unmount (when user navigates away)
+  // Uses a ref to access latest messages without triggering re-renders
+  const messagesRef2 = useRef(messages);
+  messagesRef2.current = messages;
+  /** FIX 137: Ref for latest session state (used in processAIResponse for queue processing) */
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+
+  useEffect(() => {
+    return () => {
+      // Cleanup: generate and save session summary
+      const currentMessages = messagesRef2.current;
+      const uid = user?.uid;
+      if (!uid || !avatarId || currentMessages.length < 4) return;
+
+      const chatId = `${uid}_${avatarId}`;
+      const summaryPrompt = currentMessages
+        .filter((m) => m.id !== 'welcome')
+        .slice(-20)
+        .map((m) => `${m.role}: ${m.content}`)
+        .join('\n');
+
+      // Best-effort: save a simple summary of topics discussed
+      const topicSummary = currentMessages
+        .filter((m) => m.role === 'user' && m.id !== 'welcome')
+        .slice(-5)
+        .map((m) => m.content.slice(0, 100))
+        .join('; ');
+
+      const summaryText = `User discussed: ${topicSummary}. Total ${currentMessages.length} messages exchanged.`;
+
+      setDoc(
+        doc(requireDb(), 'ai_chats', chatId, 'meta', 'summary'),
+        { text: summaryText, updatedAt: serverTimestamp() },
+        { merge: true }
+      ).catch((err) => console.warn('[AIChatPage] Failed to save session summary:', err));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, avatarId]);
 
   /**
    * Get Firebase ID token for the current user.
@@ -407,49 +597,100 @@ function AIChatAvatarPageInner() {
     }
   }, []);
 
+  /**
+   * FIX 137: Non-blocking send handler — user can type and send freely at any speed.
+   * Messages appear instantly. Bot responses queue and process in order.
+   */
   const handleSend = async () => {
-    if (!inputText.trim() || !session || !avatar || sending) return;
+    if (!inputText.trim() || !session || !avatar) return;
+
+    // FIX 54: Detect "end the story" to disable story mode
+    if (isStoryMode && inputText.toLowerCase().includes('end the story')) {
+      setIsStoryMode(false);
+    }
+
+    const content = inputText.trim();
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: inputText.trim(),
+      content,
       timestamp: new Date(),
       tokensCost: 0,
       wasFree: false,
-      wordCount: countWords(inputText.trim()),
+      wordCount: countWords(content),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // FIX 137: Show user message IMMEDIATELY (optimistic)
+    setMessages((prev) => {
+      const updated = [...prev, userMessage];
+      messagesRef2.current = updated; // Keep ref in sync for queue processing
+      return updated;
+    });
     setInputText('');
+
+    // FIX 137: Persist user message to Firestore immediately (don't wait for bot)
+    if (user?.uid) {
+      const chatId = `${user.uid}_${avatarId}`;
+      const messagesCol = collection(requireDb(), 'ai_chats', chatId, 'messages');
+      addDoc(messagesCol, {
+        role: 'user',
+        content,
+        timestamp: serverTimestamp(),
+      }).catch((err) => console.warn('[AIChatPage] Failed to persist user message:', err));
+    }
+
+    // FIX 137: If bot is busy generating, queue this message and return
+    if (processingRef.current) {
+      pendingMessages.current.push(content);
+      return;
+    }
+
+    // FIX 137: Process this message (get AI response)
+    await processAIResponse(content);
+  };
+
+  /**
+   * FIX 137: Process AI response for a user message, with sequential queue draining.
+   * Preserves all existing business logic: free messages, token balance, "Later" mode.
+   */
+  const processAIResponse = async (userContent: string) => {
+    const currentSession = sessionRef.current;
+    if (!currentSession || !avatar) return;
+
+    processingRef.current = true;
     setSending(true);
     setIsTyping(true);
 
     try {
       // Determine if this message is free
-      const isFreeMessage = session.freeMessagesUsed < AI_FREE_MESSAGES;
+      const isFreeMessage = currentSession.freeMessagesUsed < AI_FREE_MESSAGES;
 
       // BUG 4: Check if user is in "Later" extended mode
       const isLaterFreeMessage =
         !isFreeMessage &&
-        session.freeExtended &&
-        session.laterMessageCount < LATER_FREE_MESSAGE_LIMIT;
+        currentSession.freeExtended &&
+        currentSession.laterMessageCount < LATER_FREE_MESSAGE_LIMIT;
 
       // Check balance if not free and not in "Later" allowance
-      if (!isFreeMessage && !isLaterFreeMessage && session.tokenBalance < AI_COST_PER_MESSAGE) {
+      if (!isFreeMessage && !isLaterFreeMessage && currentSession.tokenBalance < AI_COST_PER_MESSAGE) {
         setShowTokenModal(true);
         setIsTyping(false);
         setSending(false);
+        processingRef.current = false;
         return;
       }
 
-      // 2.2: Build system prompt with locale
+      // 2.2: Build system prompt with locale + FIX 45: session memory
       const locale = getUILocale();
-      const systemPrompt = buildSystemPrompt(avatar, locale);
+      const systemPrompt = buildSystemPrompt(avatar, locale, sessionSummary);
 
-      // BUG 3: Build conversation history for Anthropic (excluding welcome messages)
-      const conversationHistory = messages
+      // BUG 3 + FIX 45: Build conversation history for Anthropic (excluding welcome messages)
+      // Limit to last 20 messages to stay within context window
+      const currentMessages = messagesRef2.current;
+      const conversationHistory = currentMessages
         .filter((m) => m.id !== 'welcome')
+        .slice(-20)
         .map((m) => ({
           role: m.role === 'user' ? ('user' as const) : ('assistant' as const),
           content: m.content,
@@ -461,6 +702,7 @@ function AIChatAvatarPageInner() {
         toast({ type: 'error', title: 'Authentication required', description: 'Please sign in to chat.' });
         setIsTyping(false);
         setSending(false);
+        processingRef.current = false;
         return;
       }
 
@@ -473,8 +715,8 @@ function AIChatAvatarPageInner() {
         body: JSON.stringify({
           systemPrompt,
           messages: conversationHistory,
-          avatarId: session.avatarId,
-          userMessage: userMessage.content,
+          avatarId: currentSession.avatarId,
+          userMessage: userContent,
         }),
       });
 
@@ -496,38 +738,54 @@ function AIChatAvatarPageInner() {
         };
 
         setIsTyping(false);
-        setMessages((prev) => [...prev, aiMessage]);
+        setMessages((prev) => {
+          const updated = [...prev, aiMessage];
+          messagesRef2.current = updated; // Keep ref in sync for queue processing
+          return updated;
+        });
 
-        setSession((prev) =>
-          prev
-            ? {
-                ...prev,
-                tokenBalance: effectivelyFree
-                  ? prev.tokenBalance
-                  : prev.tokenBalance - tokenCost,
-                freeMessagesUsed: isFreeMessage
-                  ? prev.freeMessagesUsed + 1
-                  : prev.freeMessagesUsed,
-                totalMessagesSent: prev.totalMessagesSent + 1,
-                // BUG 4: Track "Later" message count
-                laterMessageCount: isLaterFreeMessage
-                  ? prev.laterMessageCount + 1
-                  : prev.laterMessageCount,
-                state:
-                  !effectivelyFree && prev.tokenBalance - tokenCost <= 0
-                    ? 'AWAITING_DEPOSIT'
-                    : isFreeMessage &&
-                        prev.freeMessagesUsed + 1 >= AI_FREE_MESSAGES
-                      ? 'PAID_ACTIVE'
-                      : prev.state,
-              }
-            : null
-        );
+        // FIX 137: Persist AI message to Firestore (user message already persisted in handleSend)
+        if (user?.uid) {
+          const chatId = `${user.uid}_${avatarId}`;
+          const messagesCol = collection(requireDb(), 'ai_chats', chatId, 'messages');
+          addDoc(messagesCol, {
+            role: 'ai',
+            content: data.reply,
+            timestamp: serverTimestamp(),
+          }).catch((err) => console.warn('[AIChatPage] Failed to persist AI message:', err));
+        }
+
+        setSession((prev) => {
+          if (!prev) return null;
+          const updated = {
+            ...prev,
+            tokenBalance: effectivelyFree
+              ? prev.tokenBalance
+              : prev.tokenBalance - tokenCost,
+            freeMessagesUsed: isFreeMessage
+              ? prev.freeMessagesUsed + 1
+              : prev.freeMessagesUsed,
+            totalMessagesSent: prev.totalMessagesSent + 1,
+            // BUG 4: Track "Later" message count
+            laterMessageCount: isLaterFreeMessage
+              ? prev.laterMessageCount + 1
+              : prev.laterMessageCount,
+            state:
+              !effectivelyFree && prev.tokenBalance - tokenCost <= 0
+                ? 'AWAITING_DEPOSIT' as const
+                : isFreeMessage &&
+                    prev.freeMessagesUsed + 1 >= AI_FREE_MESSAGES
+                  ? 'PAID_ACTIVE' as const
+                  : prev.state,
+          };
+          sessionRef.current = updated; // FIX 137: Keep ref in sync for queue processing
+          return updated;
+        });
 
         // BUG 4: Show paywall if "Later" messages exhausted
         if (
           isLaterFreeMessage &&
-          session.laterMessageCount + 1 >= LATER_FREE_MESSAGE_LIMIT
+          currentSession.laterMessageCount + 1 >= LATER_FREE_MESSAGE_LIMIT
         ) {
           setShowTokenModal(true);
         }
@@ -546,8 +804,15 @@ function AIChatAvatarPageInner() {
       toast({ type: 'error', title: 'Error', description: 'Failed to send message. Please try again.' });
     } finally {
       setSending(false);
+      processingRef.current = false;
       // Auto-focus input after sending message
       inputRef.current?.focus();
+
+      // FIX 137: Process next queued message if any
+      if (pendingMessages.current.length > 0) {
+        const nextMsg = pendingMessages.current.shift()!;
+        await processAIResponse(nextMsg);
+      }
     }
   };
 
@@ -579,6 +844,79 @@ function AIChatAvatarPageInner() {
     }
     // If already extended (freeExtended === true), just close the modal.
     // The user has exhausted their 3 extra messages and will be prompted again on next send.
+  };
+
+  /**
+   * FIX 51: Submit rating for the AI avatar.
+   * Updates averageRating and totalRatings in Firestore.
+   */
+  const submitRating = async (rating: number) => {
+    try {
+      const avatarRef = doc(requireDb(), 'ai_avatars', avatarId);
+      const avatarSnap = await getDoc(avatarRef);
+      const data = avatarSnap.data();
+      const totalRatings = (data?.totalRatings || 0) + 1;
+      const currentAvg = data?.averageRating || 0;
+      const newAvg = ((currentAvg * (totalRatings - 1)) + rating) / totalRatings;
+      await updateDoc(avatarRef, { averageRating: newAvg, totalRatings });
+      setHasRated(true);
+      toast({ type: 'success', title: 'Thank you!', description: `You rated this companion ${rating}/5` });
+    } catch (err) {
+      console.error('[AIChatPage] Failed to submit rating:', err);
+    }
+  };
+
+  /**
+   * FIX 53: Send a message programmatically (used by game menu).
+   * Also detects Story Chain to enable story mode (FIX 54).
+   * FIX 137: Non-blocking — delegates to processAIResponse with queue support.
+   */
+  const handleSendMessage = async (text: string) => {
+    if (!text.trim() || !session || !avatar) return;
+
+    // FIX 54: Detect Story Chain game
+    if (text.toLowerCase().includes('story chain')) {
+      setIsStoryMode(true);
+    }
+
+    const content = text.trim();
+
+    const userMessage: Message = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content,
+      timestamp: new Date(),
+      tokensCost: 0,
+      wasFree: false,
+      wordCount: countWords(content),
+    };
+
+    // FIX 137: Show user message IMMEDIATELY
+    setMessages((prev) => {
+      const updated = [...prev, userMessage];
+      messagesRef2.current = updated;
+      return updated;
+    });
+
+    // FIX 137: Persist user message to Firestore immediately
+    if (user?.uid) {
+      const chatId = `${user.uid}_${avatarId}`;
+      const messagesCol = collection(requireDb(), 'ai_chats', chatId, 'messages');
+      addDoc(messagesCol, {
+        role: 'user',
+        content,
+        timestamp: serverTimestamp(),
+      }).catch(() => {});
+    }
+
+    // FIX 137: If bot is busy generating, queue this message
+    if (processingRef.current) {
+      pendingMessages.current.push(content);
+      return;
+    }
+
+    // FIX 137: Process this message
+    await processAIResponse(content);
   };
 
   /**
@@ -842,6 +1180,13 @@ function AIChatAvatarPageInner() {
           </div>
         </div>
 
+        {/* FIX 54: Story mode indicator */}
+        {isStoryMode && (
+          <div className="text-center text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 py-1">
+            📖 Collaborative Story Mode — say &quot;end the story&quot; to finish
+          </div>
+        )}
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {messages.map((message) => (
@@ -884,9 +1229,58 @@ function AIChatAvatarPageInner() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* FIX 51: Rating prompt (after 5+ user messages) */}
+        {messages.filter(m => m.role === 'user').length >= 5 && !hasRated && (
+          <div className="text-center py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Rate this conversation</p>
+            <div className="flex justify-center gap-1">
+              {[1,2,3,4,5].map(star => (
+                <button key={star}
+                  onClick={() => submitRating(star)}
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="text-xl hover:scale-125 transition">
+                  {star <= hoverRating ? '⭐' : '☆'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Input Bar */}
-        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4 relative">
+          {/* FIX 53: Game menu popup */}
+          {showGameMenu && (
+            <div className="absolute bottom-16 left-4 bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 p-3 z-10 w-64">
+              <h4 className="font-medium text-sm text-gray-900 dark:text-white mb-2">Play a game!</h4>
+              {[
+                { id: 'twenty_questions', label: '20 Questions', emoji: '❓' },
+                { id: 'movie_quiz', label: 'Movie Quiz', emoji: '🎬' },
+                { id: 'would_you_rather', label: 'Would You Rather', emoji: '🤔' },
+                { id: 'trivia', label: 'Trivia', emoji: '🧠' },
+                { id: 'story_chain', label: 'Story Chain', emoji: '📖' },
+                { id: 'emoji_riddle', label: 'Emoji Riddles', emoji: '🎯' },
+              ].map(game => (
+                <button key={game.id} onClick={() => {
+                  const gamePrompt = `Let's play ${game.label}!`;
+                  handleSendMessage(gamePrompt);
+                  setShowGameMenu(false);
+                }}
+                  className="flex items-center gap-2 w-full p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg text-left">
+                  <span className="text-xl">{game.emoji}</span>
+                  <span className="text-sm text-gray-900 dark:text-white">{game.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-end space-x-2 sm:space-x-3">
+            {/* FIX 53: Games button */}
+            <button onClick={() => setShowGameMenu(!showGameMenu)}
+              className="p-2 text-gray-400 hover:text-[#E4458F] transition-colors rounded-full">
+              🎮
+            </button>
+
             <textarea
               ref={inputRef}
               value={inputText}
@@ -895,22 +1289,38 @@ function AIChatAvatarPageInner() {
               placeholder="Type a message..."
               className="flex-1 resize-none rounded-2xl bg-gray-100 dark:bg-gray-700 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 max-h-32"
               rows={1}
-              disabled={sending}
+              /* FIX 137: Input is ALWAYS enabled — no disabled prop */
             />
+
+            {/* FIX 55: Voice recorder */}
+            <VoiceRecorder onRecorded={async (blob, duration) => {
+              // MVP: AI bot receives placeholder for voice messages
+              // Persist voice message metadata
+              if (user?.uid) {
+                const chatId = `${user.uid}_${avatarId}`;
+                const messagesCol = collection(requireDb(), 'ai_chats', chatId, 'messages');
+                addDoc(messagesCol, {
+                  role: 'user',
+                  content: '[Voice message]',
+                  type: 'voice',
+                  voiceDuration: duration,
+                  timestamp: serverTimestamp(),
+                }).catch((err) => console.warn('[AIChatPage] Failed to persist voice message:', err));
+              }
+              // Send placeholder to AI via handleSendMessage
+              handleSendMessage('[User sent a voice message]');
+            }} />
+
             <button
               onClick={handleSend}
-              disabled={!inputText.trim() || sending}
+              disabled={!inputText.trim()} /* FIX 137: ONLY disabled when empty — never blocks on sending */
               className={`rounded-full p-2.5 ${
-                !inputText.trim() || sending
+                !inputText.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 hover:bg-purple-600'
               } text-white font-bold transition-colors`}
             >
-              {sending ? (
-                <div className="w-5 h-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
+              <Send className="w-5 h-5" />
             </button>
           </div>
         </div>

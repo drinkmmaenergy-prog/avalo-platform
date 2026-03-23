@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { Menu, X, Download, Sparkles } from 'lucide-react';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useAuthModal } from '@/components/AuthModal';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface NavLink {
   label: string;
@@ -96,13 +97,11 @@ export default function Navbar() {
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                 >
-                  {(user?.photoURL || firebaseUser.photoURL) ? (
-                    <img src={(user?.photoURL || firebaseUser.photoURL)!} alt="" className="w-8 h-8 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                      {(user?.displayName ?? firebaseUser.displayName ?? 'U')[0]?.toUpperCase()}
-                    </div>
-                  )}
+                  <Avatar
+                    src={user?.photoURL || firebaseUser.photoURL}
+                    name={user?.displayName ?? firebaseUser.displayName ?? 'U'}
+                    size={32}
+                  />
                   <span className="hidden md:inline">
                     {user?.displayName ?? firebaseUser.displayName ?? 'Profile'}
                   </span>

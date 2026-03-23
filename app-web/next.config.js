@@ -7,6 +7,11 @@ const nextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   images: {
     unoptimized: false,
+    remotePatterns: [
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'storage.googleapis.com' },
+      { protocol: 'https', hostname: '*.googleusercontent.com' },
+    ],
   },
   compiler: {
     removeConsole:

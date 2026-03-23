@@ -25,6 +25,8 @@ import {
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import ChatInterface from '@/components/chat/ChatInterface';
+import { Avatar } from '@/components/ui/Avatar';
+import { ConversationSkeleton, SkeletonList } from '@/components/ui/Skeleton';
 import {
   useUserChats,
   useChatMessages,
@@ -200,18 +202,8 @@ function ConversationItem({
           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border border-transparent'
       }`}
     >
-      {/* Avatar */}
-      {otherUserPhoto ? (
-        <img
-          src={otherUserPhoto}
-          alt={otherUserName}
-          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-        />
-      ) : (
-        <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-semibold text-lg flex-shrink-0">
-          {initial}
-        </div>
-      )}
+      {/* Avatar — FIX 113: Optimized image */}
+      <Avatar src={otherUserPhoto} name={otherUserName || initial} size={48} />
 
       {/* Content */}
       <div className="flex-1 min-w-0">

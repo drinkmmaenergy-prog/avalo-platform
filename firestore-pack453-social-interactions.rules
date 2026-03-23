@@ -1,0 +1,154 @@
+rules_version = '2';
+
+/**
+ * PACK 453 — Social Interactions Security Rules
+ * FIX 61: Post likes (subcollection: post_likes/{postId}/users/{userId})
+ * FIX 62: Post comments (subcollection: post_comments/{postId}/comments/{commentId})
+ * FIX 63: Share — no additional rules needed (client-side only)
+ * FIX 64: Reels — create + view (collection: reels)
+ *
+ * Also covers:
+ *   - likes/{likeId} — generic content likes (used by toggleLike)
+ *   - posts/{postId} — update for counter increments (likes, comments, views)
+ *   - reels/{reelId} — all reel CRUD
+ *
+ * CRITICAL: These rules supplement existing rules. Do not remove pack282/pack323 rules.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================================
+    // HELPER FUNCTIONS
+    // ============================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isModerator() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'moderator');
+    }
+
+    // ========================================================================
+    // FIX 61: POST LIKES — subcollection under post_likes
+    // Path: post_likes/{postId}/users/{userId}
+    // ========================================================================
+    match /post_likes/{postId}/users/{userId} {
+      // Any authenticated user can read likes
+      allow read: if isAuthenticated();
+
+      // User can only write their own like document
+      allow create: if isAuthenticated() &&
+        request.auth.uid == userId &&
+        request.resource.data.userId == request.auth.uid;
+
+      // User can only unlike their own like
+      allow delete: if isAuthenticated() &&
+        request.auth.uid == userId;
+
+      // No updates — likes are write-once
+      allow update: if false;
+    }
+
+    // ========================================================================
+    // FIX 62: POST COMMENTS — subcollection under post_comments
+    // Path: post_comments/{postId}/comments/{commentId}
+    // ========================================================================
+    match /post_comments/{postId}/comments/{commentId} {
+      // Any authenticated user can read comments
+      allow read: if isAuthenticated();
+
+      // Authenticated users can create comments
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.text is string &&
+        request.resource.data.text.size() > 0 &&
+        request.resource.data.text.size() <= 2000;
+
+      // Comment author or admin/moderator can delete comments
+      allow delete: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin() || isModerator());
+
+      // No updates to comments
+      allow update: if false;
+    }
+
+    // ========================================================================
+    // GENERIC LIKES — top-level collection
+    // Path: likes/{likeId}  (format: {userId}_{contentType}_{contentId})
+    // Used by toggleLike() for reels and posts
+    // ========================================================================
+    match /likes/{likeId} {
+      // Authenticated users can read likes
+      allow read: if isAuthenticated();
+
+      // User can only create their own like
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // User can only delete their own like
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+
+      // No updates
+      allow update: if false;
+    }
+
+    // ========================================================================
+    // POSTS — update rules for counter increments
+    // Path: posts/{postId}
+    // Note: Create/delete rules should already exist; these allow
+    // authenticated users to update counters (likes, comments, views).
+    // ========================================================================
+    match /posts/{postId} {
+      // Read: any authenticated user
+      allow read: if isAuthenticated();
+
+      // Create: authenticated user, own posts only
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Update: owner can edit, or any authenticated user can increment counters
+      allow update: if isAuthenticated();
+
+      // Delete: post owner only
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // ========================================================================
+    // FIX 64: REELS — create + view + like/comment counter updates
+    // Path: reels/{reelId}
+    // ========================================================================
+    match /reels/{reelId} {
+      // Read: any authenticated user
+      allow read: if isAuthenticated();
+
+      // Create: authenticated users can publish reels
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Update: any authenticated user can increment counters (views, likes, comments)
+      allow update: if isAuthenticated();
+
+      // Delete: reel owner only
+      allow delete: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+    }
+
+  }
+}

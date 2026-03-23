@@ -94,7 +94,7 @@ export default function CreatorAgreementScreen() {
           By accepting this Agreement and participating in the Avalo Creator Program,
           you acknowledge and agree that you are acting as an <Text style={styles.bold}>independent
           contractor (B2B - Business to Business)</Text> and NOT as an employee, agent,
-          partner, or joint venturer of Avalo sp. z o.o. ("Avalo" or the "Platform").
+          partner, or joint venturer of Avalo Inc. ("Avalo" or the "Platform").
         </Text>
         <Text style={styles.paragraph}>
           This Agreement establishes a business-to-business relationship between you
@@ -220,7 +220,7 @@ export default function CreatorAgreementScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>9. Contact Information</Text>
         <Text style={styles.paragraph}>
-          Avalo sp. z o.o.{'\n'}Warsaw, Poland{'\n'}creators@avalo.app{'\n'}legal@avalo.app
+          Avalo Inc.{'\n'}Registered in Delaware, USA{'\n'}creators@avalo.app{'\n'}legal@avalo.app
         </Text>
       </View>
 
@@ -247,7 +247,7 @@ export default function CreatorAgreementScreen() {
           Akceptując niniejszą Umowę i uczestnicząc w Programie Twórców Avalo,
           potwierdzasz i zgadzasz się, że działasz jako <Text style={styles.bold}>niezależny
           kontaktor (B2B - Business to Business)</Text> i NIE jako pracownik, agent,
-          partner ani współwłaściciel Avalo sp. z o.o. ("Avalo" lub "Platforma").
+          partner ani współwłaściciel Avalo Inc. ("Avalo" lub "Platforma").
         </Text>
       </View>
 
@@ -321,7 +321,7 @@ export default function CreatorAgreementScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>9. Kontakt</Text>
         <Text style={styles.paragraph}>
-          Avalo sp. z o.o.{'\n'}Warszawa, Polska{'\n'}creators@avalo.app{'\n'}legal@avalo.app
+          Avalo Inc.{'\n'}Zarejestrowana w Delaware, USA{'\n'}creators@avalo.app{'\n'}legal@avalo.app
         </Text>
       </View>
 

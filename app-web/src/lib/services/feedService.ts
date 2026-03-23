@@ -57,20 +57,18 @@ export async function fetchFeedPosts(
   filters: FeedFilters = {}
 ): Promise<PaginatedResult<Post>> {
   try {
-    const constraints: QueryConstraint[] = [
-      orderBy('createdAt', 'desc'),
-      limit(POSTS_PER_PAGE),
-    ];
+    const constraints: QueryConstraint[] = [];
 
-    // NSFW filter
-    if (!filters.includeNSFW) {
-      constraints.unshift(where('isNSFW', '==', false));
-    }
-
-    // User-specific posts
+    // User-specific posts (server-side filter)
     if (filters.userId) {
-      constraints.unshift(where('userId', '==', filters.userId));
+      constraints.push(where('userId', '==', filters.userId));
     }
+
+    // Fix 8: Removed server-side isNSFW filter — moved to client-side.
+    // This eliminates composite index requirements and handles posts without isNSFW field.
+
+    constraints.push(orderBy('createdAt', 'desc'));
+    constraints.push(limit(POSTS_PER_PAGE));
 
     if (lastDoc) {
       constraints.push(startAfter(lastDoc));
@@ -79,15 +77,20 @@ export async function fetchFeedPosts(
     const q = query(collection(requireDb(), 'posts'), ...constraints);
     const snapshot = await getDocs(q);
 
-    const posts = snapshot.docs.map(doc => ({
+    let posts = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     })) as Post[];
 
+    // Fix 8: Client-side NSFW filtering — handles missing isNSFW field gracefully
+    if (!filters.includeNSFW) {
+      posts = posts.filter((p) => !p.isNSFW);
+    }
+
     return {
       items: posts,
       lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
-      hasMore: posts.length === POSTS_PER_PAGE,
+      hasMore: snapshot.docs.length === POSTS_PER_PAGE,
     };
   } catch (error) {
     console.error('Error fetching feed posts:', error);
@@ -454,31 +457,31 @@ export async function fetchActiveStories(
   includeNSFW: boolean = false
 ): Promise<Story[]> {
   try {
-    const twentyFourHoursAgo = Timestamp.fromDate(
-      new Date(Date.now() - 24 * 60 * 60 * 1000)
-    );
-
+    // Fix 8: Simplified query — Firestore cannot do range filters on multiple fields.
+    // Use single range filter (expiresAt > now) server-side, filter rest client-side.
     const constraints: QueryConstraint[] = [
       where('expiresAt', '>', Timestamp.now()),
-      where('createdAt', '>', twentyFourHoursAgo),
-      orderBy('createdAt', 'desc'),
+      orderBy('expiresAt', 'desc'),
       limit(STORIES_PER_FETCH),
     ];
-
-    if (!includeNSFW) {
-      constraints.unshift(where('isNSFW', '==', false));
-    }
 
     const q = query(collection(requireDb(), 'stories'), ...constraints);
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map(doc => ({
+    let stories = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     })) as Story[];
+
+    // Fix 8: Client-side NSFW filtering — handles missing isNSFW field
+    if (!includeNSFW) {
+      stories = stories.filter((s) => !s.isNSFW);
+    }
+
+    return stories;
   } catch (error) {
     console.error('Error fetching stories:', error);
-    throw error;
+    return []; // Fix 8: return empty array instead of throwing to prevent feed from breaking
   }
 }
 

@@ -16,7 +16,7 @@
  *   - Loading skeleton and empty state
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useAuth } from '@/components/providers/AuthProvider';
@@ -39,6 +39,8 @@ import {
   fetchPublicProfiles,
   type PaginatedProfilesResult,
 } from '@/lib/services/discoveryService';
+import { calculateDistanceKm } from '@/lib/services/geocodingService';
+import { OptimizedImage } from '@/components/ui/Avatar';
 import type {
   PublicProfile,
   DiscoverFilters,
@@ -54,8 +56,11 @@ import {
   INTEREST_OPTIONS,
 } from '@/lib/types/publicProfile';
 import type { DocumentSnapshot } from 'firebase/firestore';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { requireDb } from '@/lib/firebase';
+import { doc, getDoc, setDoc, addDoc, collection, query, where, getDocs, serverTimestamp, limit } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { requireDb, functions } from '@/lib/firebase';
+import ActiveLivesBanner from '@/components/feed/ActiveLivesBanner';
+import SponsoredAdCard, { type SponsoredAd } from '@/components/ads/SponsoredAdCard';
 
 // ============================================================================
 // CONSTANTS
@@ -63,9 +68,82 @@ import { requireDb } from '@/lib/firebase';
 
 const SCROLL_THRESHOLD_PX = 300;
 
+// FIX 91: Discovery question cards — compatibility icebreaker questions
+const DISCOVERY_QUESTIONS = [
+  'What makes you laugh the most?',
+  'Where do you see yourself in 5 years?',
+  'What\'s your love language?',
+  'City life or countryside?',
+  'Morning person or night owl?',
+  'What\'s your guilty pleasure?',
+  'If you won the lottery tomorrow, what\'s the first thing you\'d do?',
+  'What quality do you value most in a partner?',
+];
+
 // ============================================================================
 // SUB-COMPONENTS
 // ============================================================================
+
+/**
+ * FIX 91: Discovery Question Card — icebreaker questions between profiles.
+ * Answers saved to users/{uid}/answers collection and visible on profile.
+ */
+function DiscoveryQuestionCard({
+  question,
+  userId,
+}: {
+  question: string;
+  userId: string | undefined;
+}) {
+  const [answer, setAnswer] = React.useState('');
+  const [submitted, setSubmitted] = React.useState(false);
+
+  const handleSubmit = async () => {
+    if (!answer.trim() || !userId) return;
+    try {
+      const db = requireDb();
+      await addDoc(collection(db, 'users', userId, 'answers'), {
+        question,
+        answer: answer.trim(),
+        createdAt: serverTimestamp(),
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error('[DiscoveryQuestionCard] Submit error:', err);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="col-span-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl my-2">
+        <p className="text-xs text-green-600 font-medium">✓ Answer shared on your profile!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="col-span-full p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl my-2">
+      <p className="text-xs text-[#E4458F] font-medium mb-1">Quick Question</p>
+      <p className="text-sm font-medium">{question}</p>
+      <div className="flex gap-2 mt-3">
+        <input
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          placeholder="Your answer..."
+          className="flex-1 px-3 py-1.5 border rounded-full text-sm"
+        />
+        <button
+          onClick={handleSubmit}
+          disabled={!answer.trim()}
+          className="px-3 py-1.5 bg-[#E4458F] text-white rounded-full text-xs disabled:opacity-50"
+        >
+          Share
+        </button>
+      </div>
+      <p className="text-[10px] text-gray-400 mt-1">Answers visible on your profile — great conversation starters!</p>
+    </div>
+  );
+}
 
 /** "First message is free" promotional banner */
 function FreeMessageBanner() {
@@ -161,9 +239,21 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
 function ProfileCard({
   profile,
   onClick,
+  userLocation,
+  onLike,
+  onSuperLike,
+  isLiked,
+  showFreeChatBadge,
+  onFreeChat,
 }: {
   profile: PublicProfile;
   onClick: () => void;
+  userLocation?: { lat: number; lng: number } | null;
+  onLike?: (uid: string) => void;
+  onSuperLike?: (uid: string) => void;
+  isLiked?: boolean;
+  showFreeChatBadge?: boolean;
+  onFreeChat?: (uid: string) => void;
 }) {
   const photoSrc = profile.photoURL || (profile.photos && profile.photos.length > 0 ? profile.photos[0] : null);
 
@@ -177,15 +267,24 @@ function ProfileCard({
   return (
     <button
       onClick={onClick}
-      className="relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm hover:shadow-md transition-shadow duration-200"
+      className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm hover:shadow-md transition-shadow duration-200 ${isLiked ? 'opacity-50' : ''}`}
     >
+      {/* FIX 72: Free Chat badge for less popular profiles */}
+      {showFreeChatBadge && (
+        <span className="absolute top-2 left-2 bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium z-20">
+          Free Chat
+        </span>
+      )}
+
       {/* Photo or gradient placeholder — edge-to-edge, no padding */}
       {photoSrc ? (
-        <img
+        <OptimizedImage
           src={photoSrc}
           alt={profile.displayName}
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
+          width={200}
+          height={250}
+          fill
+          className="group-hover:scale-105 transition-transform duration-300"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -239,7 +338,44 @@ function ProfileCard({
         {profile.city && (
           <p className="text-white/80 text-xs drop-shadow-md truncate mt-0.5">
             {profile.city}
+            {/* FIX 50D: Show distance if user location and profile location are available */}
+            {userLocation && profile.location && typeof profile.location !== 'string' && profile.location.lat && profile.location.lng && (
+              <span className="ml-1 text-white/70">
+                · {Math.round(calculateDistanceKm(userLocation.lat, userLocation.lng, profile.location.lat, profile.location.lng))} km
+              </span>
+            )}
           </p>
+        )}
+      </div>
+
+      {/* FIX 68: Like / SuperLike / FreeChat action buttons */}
+      <div className="absolute bottom-2 right-2 flex gap-1 z-20">
+        {showFreeChatBadge && onFreeChat && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onFreeChat(profile.uid); }}
+            className="w-10 h-10 rounded-full bg-white/90 shadow flex items-center justify-center hover:bg-green-50 transition"
+            title="Free Chat"
+          >
+            💬
+          </button>
+        )}
+        {onLike && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onLike(profile.uid); }}
+            className="w-10 h-10 rounded-full bg-white/90 shadow flex items-center justify-center hover:bg-pink-50 transition"
+            title="Like"
+          >
+            ❤️
+          </button>
+        )}
+        {onSuperLike && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onSuperLike(profile.uid); }}
+            className="w-10 h-10 rounded-full bg-white/90 shadow flex items-center justify-center hover:bg-yellow-50 transition"
+            title="SuperLike (50 tokens)"
+          >
+            ⭐
+          </button>
         )}
       </div>
     </button>
@@ -473,6 +609,7 @@ function FiltersPanel({
   const hasActiveFilters =
     filters.onlineOnly ||
     filters.earnOnOnly ||
+    filters.verifiedOnly ||
     filters.ageMin > 18 ||
     filters.ageMax < 99 ||
     filters.genders.length > 0 ||
@@ -483,6 +620,7 @@ function FiltersPanel({
   const activeCount = [
     filters.onlineOnly,
     filters.earnOnOnly,
+    filters.verifiedOnly,
     filters.ageMin > 18 || filters.ageMax < 99,
     filters.genders.length > 0,
     filters.bodyTypes.length > 0,
@@ -522,6 +660,21 @@ function FiltersPanel({
         >
           <DollarSign className="w-3 h-3" />
           Earn On
+        </button>
+
+        {/* FIX 78: Verified Only toggle */}
+        <button
+          onClick={() =>
+            onFiltersChange({ ...filters, verifiedOnly: !filters.verifiedOnly })
+          }
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+            filters.verifiedOnly
+              ? 'bg-blue-100 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-400'
+              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-750'
+          }`}
+        >
+          <BadgeCheck className="w-3 h-3" />
+          Verified Only
         </button>
 
         {/* Filters toggle button */}
@@ -661,9 +814,76 @@ export default function DiscoverPage() {
   const [searchRadius, setSearchRadius] =
     useState<SearchRadiusValue>(DEFAULT_SEARCH_RADIUS);
 
+  // FIX 50C: User location for distance filtering and display
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // FIX 59D: Blocked user IDs for client-side filtering
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
+
+  // FIX 68: Track liked profiles to gray them out
+  const [likedProfiles, setLikedProfiles] = useState<Set<string>>(new Set());
+
+  // FIX 68: Match animation overlay state
+  const [matchAnimation, setMatchAnimation] = useState<{ userId: string; chatId: string } | null>(null);
+
+  // FIX 74C: Sponsored ads for discover grid
+  const [discoverAds, setDiscoverAds] = useState<SponsoredAd[]>([]);
+
+  // FIX 72: Free daily chat usage tracking
+  const [freeChatUsedToday, setFreeChatUsedToday] = useState(false);
+
+  // FIX 126: Swipe card mode — Tinder-style alternative to grid
+  const [viewMode, setViewMode] = useState<'grid' | 'swipe'>('grid');
+  const [currentSwipeIndex, setCurrentSwipeIndex] = useState(0);
+  const [swipeDeltaX, setSwipeDeltaX] = useState(0);
+  const [swipeTouchStartX, setSwipeTouchStartX] = useState(0);
+  const [swipeAnimating, setSwipeAnimating] = useState<'left' | 'right' | null>(null);
+
   // Ref for infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingMoreRef = useRef(false);
+
+  // FIX 59D: Load blocked user IDs
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+    getDocs(query(collection(requireDb(), 'blocks'), where('blockerId', '==', firebaseUser.uid)))
+      .then((snap) => {
+        setBlockedIds(snap.docs.map(d => d.data().blockedId));
+      }).catch(() => {});
+  }, [firebaseUser?.uid]);
+
+  // FIX 74C: Load sponsored ads for discovery page
+  useEffect(() => {
+    const loadDiscoverAds = async () => {
+      try {
+        const fn = httpsCallable(functions, 'getAdForFeed');
+        const result = await fn({ placement: 'discover' });
+        setDiscoverAds(((result.data as any)?.ads || []) as SponsoredAd[]);
+      } catch {
+        try {
+          const q = query(
+            collection(requireDb(), 'ad_campaigns'),
+            where('status', '==', 'active'),
+            limit(3)
+          );
+          const snap = await getDocs(q);
+          setDiscoverAds(snap.docs.map((d) => ({ id: d.id, ...d.data() } as SponsoredAd)));
+        } catch {
+          // Ads not critical — fail silently
+        }
+      }
+    };
+    loadDiscoverAds();
+  }, []);
+
+  // FIX 72: Load free chat usage for today
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+    const todayKey = new Date().toISOString().split('T')[0];
+    getDoc(doc(requireDb(), 'users', firebaseUser.uid, 'daily_free_chats', todayKey)).then(snap => {
+      setFreeChatUsedToday(snap.exists());
+    }).catch(() => {});
+  }, [firebaseUser?.uid]);
 
   // ── Load saved search radius from Firestore ─────────────────────────
   useEffect(() => {
@@ -686,6 +906,35 @@ export default function DiscoverPage() {
     };
 
     void loadSavedRadius();
+  }, [firebaseUser?.uid]);
+
+  // FIX 50C: Load user location for distance calculation
+  useEffect(() => {
+    if (!firebaseUser?.uid) return;
+
+    // Try saved profile location first
+    const loadUserLocation = async () => {
+      try {
+        const profileDoc = await getDoc(doc(requireDb(), 'public_profiles', firebaseUser.uid));
+        const loc = profileDoc.data()?.location;
+        if (loc && loc.lat && loc.lng) {
+          setUserLocation({ lat: loc.lat, lng: loc.lng });
+          return;
+        }
+      } catch {
+        // Fall through to geolocation
+      }
+
+      // Fallback: request browser geolocation
+      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+          () => console.debug('[DiscoverPage] Geolocation denied or unavailable')
+        );
+      }
+    };
+
+    void loadUserLocation();
   }, [firebaseUser?.uid]);
 
   // ── Save search radius to Firestore ─────────────────────────────────
@@ -789,6 +1038,120 @@ export default function DiscoverPage() {
     setHasMore(true);
   }, []);
 
+  // ── FIX 68: Like handler — calls backend likeUserV1 ─────────────────
+  const handleLike = async (targetUserId: string) => {
+    if (!firebaseUser?.uid) return;
+    try {
+      const likeFn = httpsCallable(functions, 'likeUserV1');
+      const result = await likeFn({ targetUserId });
+      const data = result.data as any;
+
+      if (data.mutual) {
+        // MATCH! Show animation + notification
+        setMatchAnimation({ userId: targetUserId, chatId: data.chatId });
+        setTimeout(() => setMatchAnimation(null), 3000);
+      } else {
+        // Like sent silently — small heart animation on card
+        setLikedProfiles(prev => new Set([...prev, targetUserId]));
+      }
+    } catch (err: any) {
+      if (err.code === 'resource-exhausted') alert('Daily like limit reached!');
+      else if (err.code === 'already-exists') { /* silently ignore */ }
+      else console.error('Like failed:', err);
+    }
+  };
+
+  // ── FIX 68: SuperLike handler (50 tokens) ───────────────────────────
+  const handleSuperLike = async (targetUserId: string) => {
+    if (!firebaseUser?.uid) return;
+    // Check balance (50 tokens)
+    const walletSnap = await getDoc(doc(requireDb(), 'wallets', firebaseUser.uid));
+    const balance = walletSnap.data()?.balance || walletSnap.data()?.tokens || 0;
+    if (balance < 50) { alert('Need 50 tokens for SuperLike'); return; }
+    if (!confirm('Send SuperLike for 50 tokens?')) return;
+
+    try {
+      const superLikeFn = httpsCallable(functions, 'superLikeUser');
+      await superLikeFn({ targetUserId });
+      setLikedProfiles(prev => new Set([...prev, targetUserId]));
+    } catch (err) { console.error('SuperLike failed:', err); }
+  };
+
+  // ── FIX 71: Boost handler (2 hours, 50 tokens) ─────────────────────
+  const handleBoost = async () => {
+    if (!firebaseUser?.uid) return;
+    const walletSnap = await getDoc(doc(requireDb(), 'wallets', firebaseUser.uid));
+    const balance = walletSnap.data()?.balance || 0;
+    if (balance < 50) { alert('Need 50 tokens for Boost'); return; }
+    if (!confirm('Boost your profile for 2 hours? Cost: 50 tokens')) return;
+    try {
+      const boostFn = httpsCallable(functions, 'createBoostCampaignV1');
+      await boostFn({ type: 'DISCOVERY_PROFILE', tier: 'basic', durationMinutes: 120 });
+      alert('Profile boosted for 2 hours! 🚀');
+    } catch (err) { console.error(err); alert('Boost failed'); }
+  };
+
+  // ── FIX 72: Free chat with less popular profiles ────────────────────
+  const handleFreeChat = async (targetUserId: string) => {
+    if (!firebaseUser?.uid) return;
+    const todayKey = new Date().toISOString().split('T')[0];
+    await setDoc(doc(requireDb(), 'users', firebaseUser.uid, 'daily_free_chats', todayKey), {
+      targetUserId, usedAt: serverTimestamp()
+    });
+    // Create chat without escrow
+    const chatId = `dm_${[firebaseUser.uid, targetUserId].sort().join('_')}`;
+    await setDoc(doc(requireDb(), 'chats', chatId), {
+      participants: [firebaseUser.uid, targetUserId],
+      freeMessagesRemaining: 8, // FREE_MESSAGES_LESS_POPULAR = 8
+      status: 'pending_accept',
+      createdAt: serverTimestamp(),
+      metadata: { type: 'free_daily_chat' }
+    }, { merge: true });
+    setFreeChatUsedToday(true);
+    router.push(`/chat/${chatId}`);
+  };
+
+  // ── FIX 126: Swipe mode handlers ───────────────────────────────────
+  const handleSwipe = async (decision: 'like' | 'dislike') => {
+    const currentProfile = filteredProfiles[currentSwipeIndex];
+    if (!currentProfile) return;
+
+    // Animate card flying off screen
+    setSwipeAnimating(decision === 'like' ? 'right' : 'left');
+    await new Promise((r) => setTimeout(r, 300));
+    setSwipeAnimating(null);
+    setSwipeDeltaX(0);
+
+    if (decision === 'like') {
+      await handleLike(currentProfile.uid);
+    }
+    setCurrentSwipeIndex((prev) => Math.min(prev + 1, filteredProfiles.length - 1));
+
+    // Load more profiles when running low
+    if (currentSwipeIndex >= filteredProfiles.length - 5 && hasMore) {
+      void loadProfiles(false);
+    }
+  };
+
+  const handleSwipeTouchStart = (e: React.TouchEvent) => {
+    setSwipeTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleSwipeTouchMove = (e: React.TouchEvent) => {
+    const deltaX = e.touches[0].clientX - swipeTouchStartX;
+    setSwipeDeltaX(deltaX);
+  };
+
+  const handleSwipeTouchEnd = () => {
+    if (swipeDeltaX > 100) {
+      void handleSwipe('like');
+    } else if (swipeDeltaX < -100) {
+      void handleSwipe('dislike');
+    } else {
+      setSwipeDeltaX(0);
+    }
+  };
+
   // ── Card click → navigate to public profile ─────────────────────────
   const handleCardClick = useCallback(
     (uid: string) => {
@@ -808,7 +1171,7 @@ export default function DiscoverPage() {
 
   // ── Client-side search filter (supplements server filters) ──────────
   // Uses partial (case-insensitive) match on displayName and city fields
-  const filteredProfiles = searchQuery.trim()
+  const searchFilteredProfiles = searchQuery.trim()
     ? profiles.filter(
         (p) =>
           p.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -816,10 +1179,33 @@ export default function DiscoverPage() {
       )
     : profiles;
 
+  // FIX 59D: Filter out blocked users from discovery results
+  const unblockedProfiles = searchFilteredProfiles.filter(
+    (p) => !blockedIds.includes(p.uid)
+  );
+
+  // FIX 78: Apply verified-only filter client-side
+  const verifiedFilteredProfiles = filters.verifiedOnly
+    ? unblockedProfiles.filter((p) => p.verified === true)
+    : unblockedProfiles;
+
+  // FIX 50C: Apply distance filter client-side when user location is available
+  const filteredProfiles = verifiedFilteredProfiles.filter((p) => {
+    if (searchRadius === 'international') return true;
+    if (searchRadius === 'entire_country') return true;
+    if (!userLocation) return true; // Can't calculate distance, include all
+    const pLoc = p.location;
+    if (!pLoc || typeof pLoc === 'string' || !pLoc.lat || !pLoc.lng) return true; // No geo location, include
+    const dist = calculateDistanceKm(userLocation.lat, userLocation.lng, pLoc.lat, pLoc.lng);
+    const maxKm = typeof searchRadius === 'number' ? searchRadius : 9999;
+    return dist <= maxKm;
+  });
+
   // ── Check if any filters are active (for empty state) ───────────────
   const hasActiveFilters =
     filters.onlineOnly ||
     filters.earnOnOnly ||
+    filters.verifiedOnly ||
     filters.ageMin > 18 ||
     filters.ageMax < 99 ||
     filters.genders.length > 0 ||
@@ -831,6 +1217,9 @@ export default function DiscoverPage() {
   // ── Render ──────────────────────────────────────────────────────────
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* FIX 57B: LIVE banner — active lives from followed creators */}
+      <ActiveLivesBanner uid={firebaseUser?.uid ?? null} />
+
       {/* Free message banner */}
       <FreeMessageBanner />
 
@@ -871,6 +1260,40 @@ export default function DiscoverPage() {
         onSearchRadiusChange={handleSearchRadiusChange}
       />
 
+      {/* FIX 71: Boost button — 2 hours, 50 tokens */}
+      {firebaseUser && (
+        <div className="mb-4 flex justify-end">
+          <button onClick={handleBoost}
+            className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-full text-sm font-medium hover:from-amber-500 hover:to-orange-600 transition-all shadow">
+            🚀 Boost (2h) — 50 tokens
+          </button>
+        </div>
+      )}
+
+      {/* FIX 126: View mode toggle — Grid vs Swipe */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setViewMode('grid')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            viewMode === 'grid'
+              ? 'bg-[#E4458F] text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+          }`}
+        >
+          ▦ Grid
+        </button>
+        <button
+          onClick={() => setViewMode('swipe')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            viewMode === 'swipe'
+              ? 'bg-[#E4458F] text-white'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+          }`}
+        >
+          ◻️ Swipe
+        </button>
+      </div>
+
       {/* Loading state */}
       {loading && <GridSkeleton />}
 
@@ -885,15 +1308,127 @@ export default function DiscoverPage() {
         />
       )}
 
+      {/* FIX 126: Swipe card mode — Tinder-style */}
+      {viewMode === 'swipe' && !loading && !error && filteredProfiles.length > 0 && (
+        <div className="relative h-[70vh] max-w-sm mx-auto">
+          {currentSwipeIndex < filteredProfiles.length ? (
+            <>
+              {/* Current card */}
+              <div
+                className={`absolute inset-0 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden transition-transform ${
+                  swipeAnimating === 'right'
+                    ? 'translate-x-[120%] rotate-12 opacity-0'
+                    : swipeAnimating === 'left'
+                    ? '-translate-x-[120%] -rotate-12 opacity-0'
+                    : ''
+                }`}
+                style={{
+                  transform: !swipeAnimating && swipeDeltaX
+                    ? `translateX(${swipeDeltaX}px) rotate(${swipeDeltaX * 0.05}deg)`
+                    : undefined,
+                  transition: swipeAnimating ? 'transform 0.3s ease-out, opacity 0.3s ease-out' : swipeDeltaX ? 'none' : 'transform 0.2s ease',
+                }}
+                onTouchStart={handleSwipeTouchStart}
+                onTouchMove={handleSwipeTouchMove}
+                onTouchEnd={handleSwipeTouchEnd}
+              >
+                <img
+                  src={filteredProfiles[currentSwipeIndex]?.photoURL || (filteredProfiles[currentSwipeIndex] as any)?.photos?.[0] || ''}
+                  alt={filteredProfiles[currentSwipeIndex]?.displayName || ''}
+                  className="w-full h-3/4 object-cover"
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <h2 className="text-2xl font-bold text-white">
+                    {filteredProfiles[currentSwipeIndex]?.displayName}
+                    {(filteredProfiles[currentSwipeIndex] as any)?.age ? `, ${(filteredProfiles[currentSwipeIndex] as any).age}` : ''}
+                  </h2>
+                  <p className="text-white/70 text-sm">
+                    {(filteredProfiles[currentSwipeIndex] as any)?.city || (filteredProfiles[currentSwipeIndex] as any)?.location || ''}
+                  </p>
+                  <p className="text-white/60 text-xs mt-1 line-clamp-2">
+                    {(filteredProfiles[currentSwipeIndex] as any)?.bio || ''}
+                  </p>
+                </div>
+                {/* Swipe direction indicators */}
+                {swipeDeltaX > 50 && (
+                  <div className="absolute top-8 left-8 border-4 border-green-500 text-green-500 rounded-xl px-4 py-2 text-2xl font-black rotate-[-20deg]">
+                    LIKE
+                  </div>
+                )}
+                {swipeDeltaX < -50 && (
+                  <div className="absolute top-8 right-8 border-4 border-red-500 text-red-500 rounded-xl px-4 py-2 text-2xl font-black rotate-[20deg]">
+                    NOPE
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="absolute -bottom-6 inset-x-0 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => handleSwipe('dislike')}
+                  className="w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center text-2xl hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                >
+                  ✕
+                </button>
+                <button
+                  onClick={() => {
+                    const profile = filteredProfiles[currentSwipeIndex];
+                    if (profile) handleSuperLike(profile.uid);
+                  }}
+                  className="w-11 h-11 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center text-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition"
+                >
+                  ⭐
+                </button>
+                <button
+                  onClick={() => handleSwipe('like')}
+                  className="w-14 h-14 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center text-2xl hover:bg-green-50 dark:hover:bg-green-900/20 transition"
+                >
+                  ❤️
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <p className="text-4xl mb-3">🔍</p>
+                <p className="text-gray-500">No more profiles</p>
+                <p className="text-sm text-gray-400 mt-1">Try changing your filters</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Profile grid — 2-col mobile, 3-col tablet, 4-col desktop */}
-      {!loading && !error && filteredProfiles.length > 0 && (
+      {viewMode === 'grid' && !loading && !error && filteredProfiles.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filteredProfiles.map((profile) => (
-            <ProfileCard
-              key={profile.uid}
-              profile={profile}
-              onClick={() => handleCardClick(profile.uid)}
-            />
+          {filteredProfiles.map((profile, i) => (
+            <React.Fragment key={profile.uid}>
+              <ProfileCard
+                profile={profile}
+                onClick={() => handleCardClick(profile.uid)}
+                userLocation={userLocation}
+                onLike={handleLike}
+                onSuperLike={handleSuperLike}
+                isLiked={likedProfiles.has(profile.uid)}
+                showFreeChatBadge={!freeChatUsedToday && (profile as any).matchCount < 10}
+                onFreeChat={handleFreeChat}
+              />
+              {/* FIX 74C: Insert sponsored ad after every 8 profiles */}
+              {i > 0 && i % 8 === 7 && discoverAds[Math.floor(i / 8)] && (
+                <SponsoredAdCard
+                  ad={discoverAds[Math.floor(i / 8)]}
+                  variant="discover"
+                />
+              )}
+              {/* FIX 91: Insert question card every 6 profiles */}
+              {i > 0 && i % 6 === 5 && (
+                <DiscoveryQuestionCard
+                  question={DISCOVERY_QUESTIONS[Math.floor(i / 6) % DISCOVERY_QUESTIONS.length]}
+                  userId={firebaseUser?.uid}
+                />
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
@@ -918,6 +1453,27 @@ export default function DiscoverPage() {
 
       {/* Infinite scroll sentinel — invisible element observed by IntersectionObserver */}
       <div ref={sentinelRef} className="h-1" aria-hidden="true" />
+
+      {/* FIX 68: Match animation overlay */}
+      {matchAnimation && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center animate-fadeIn">
+          <div className="text-center">
+            <p className="text-6xl mb-4">🎉</p>
+            <h2 className="text-3xl font-bold text-white mb-2">It&apos;s a Match!</h2>
+            <p className="text-white/70 mb-6">You and this person liked each other</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => router.push(`/chat/${matchAnimation.chatId}`)}
+                className="px-6 py-3 bg-gradient-to-r from-[#E8593C] to-[#8B5CF6] text-white rounded-full font-medium">
+                Send Message
+              </button>
+              <button onClick={() => setMatchAnimation(null)}
+                className="px-6 py-3 bg-white/20 text-white rounded-full">
+                Keep Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

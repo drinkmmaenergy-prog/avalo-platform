@@ -215,8 +215,8 @@ export default function ProfileEditor() {
   const isLoading = saving || uploading;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
+    <div className="bg-white dark:bg-[#242424] rounded-lg shadow p-6">
+      <h1 className="text-2xl font-bold mb-6 dark:text-gray-100">Edit Profile</h1>
       <div className="space-y-6">
         {/* Avatar Section */}
         <div>

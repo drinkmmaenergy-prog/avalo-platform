@@ -68,11 +68,12 @@ service cloud.firestore {
       allow write: if false; // Only via Cloud Functions
     }
     
-    // PACK 68: Support tickets - read own, write via Cloud Functions
+    // PACK 68 + FIX 81: Support tickets - read own, create authenticated, update admin only
     match /support_tickets/{ticketId} {
       allow read: if isAuthenticated() &&
         (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if false; // Only via Cloud Functions
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
     }
     
     // PACK 68: Support ticket messages - read if ticket owner, write via Cloud Functions
@@ -150,6 +151,14 @@ service cloud.firestore {
     match /client_latency_reports/{reportId} {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow write: if false; // Only via Cloud Functions
+    }
+    
+    // FIX 82: Referrals — read own (as referrer or referred), write via Cloud Functions only
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.referrerId == request.auth.uid ||
+         resource.data.referredId == request.auth.uid || isAdmin());
+      allow write: if false; // Server-only — referral engine processes rewards
     }
   }
 }

@@ -50,6 +50,7 @@ import {
   Trash2,
   Image as ImageIcon,
 } from 'lucide-react';
+import { PROFESSIONS } from '@/lib/constants/aiProfessions';
 
 // ============================================================================
 // CONSTANTS
@@ -238,6 +239,13 @@ export default function CreatorAIPage() {
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
   const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
   const [galleryPhotoPreviews, setGalleryPhotoPreviews] = useState<string[]>([]);
+  // FIX 46: Personality intensity sliders
+  const [personality, setPersonality] = useState<Record<string, number>>({
+    humor: 5, flirt: 5, intellect: 5, energy: 5, empathy: 5,
+  });
+  // FIX 52: Profession preset state
+  const [profession, setProfession] = useState('custom');
+  const [basePrompt, setBasePrompt] = useState('');
 
   // ── Load creator's bots ──────────────────────────────────────────────
   useEffect(() => {
@@ -282,6 +290,10 @@ export default function CreatorAIPage() {
           totalConversations: d.totalConversations || 0,
           averageRating: d.averageRating || 0,
           ratingCount: d.ratingCount || 0,
+          conversationCount: d.conversationCount || d.totalConversations || 0,
+          totalRatings: d.totalRatings || d.ratingCount || 0,
+          profession: d.profession || '',
+          basePrompt: d.basePrompt || '',
           createdAt: d.createdAt || null,
           updatedAt: d.updatedAt || null,
         };
@@ -463,12 +475,19 @@ export default function CreatorAIPage() {
         profilePhoto: profilePhotoUrl ?? null,
         coverPhoto: resolvedCoverPhoto ?? null,
         voiceType: form.voiceType.trim(),
+        // FIX 46: Personality intensity sliders
+        personalitySliders: { ...personality },
+        // FIX 52: Profession preset and base prompt
+        profession,
+        basePrompt,
         creatorId: user.uid,
         creatorDisplayName,
         isAvaloPlatform: false,
         totalConversations: 0,
+        conversationCount: 0,
         averageRating: 0,
         ratingCount: 0,
+        totalRatings: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -477,6 +496,8 @@ export default function CreatorAIPage() {
 
       // Reset form and reload
       setForm(INITIAL_FORM_STATE);
+      setProfession('custom');
+      setBasePrompt('');
       setProfilePhotoPreview(null);
       setCoverPhotoPreview(null);
       setGalleryPhotoPreviews([]);
@@ -686,6 +707,56 @@ export default function CreatorAIPage() {
                 selected={form.personalityTraits}
                 onChange={(selected) => updateForm('personalityTraits', selected)}
               />
+
+              {/* FIX 46: Personality Intensity Sliders */}
+              <div className="mt-4 space-y-3">
+                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Personality Intensity</h4>
+
+                {[
+                  { id: 'humor', label: 'Humor', desc: 'Serious ← → Funny' },
+                  { id: 'flirt', label: 'Flirt', desc: 'Reserved ← → Playful' },
+                  { id: 'intellect', label: 'Intellect', desc: 'Casual ← → Deep' },
+                  { id: 'energy', label: 'Energy', desc: 'Calm ← → Energetic' },
+                  { id: 'empathy', label: 'Empathy', desc: 'Neutral ← → Caring' },
+                ].map(slider => (
+                  <div key={slider.id} className="flex items-center gap-3">
+                    <label className="w-20 text-sm text-gray-600 dark:text-gray-400">{slider.label}</label>
+                    <input type="range" min="0" max="10"
+                      value={personality[slider.id] || 5}
+                      onChange={e => setPersonality(prev => ({ ...prev, [slider.id]: Number(e.target.value) }))}
+                      className="flex-1 accent-purple-500" />
+                    <span className="w-8 text-center text-sm text-gray-700 dark:text-gray-300">{personality[slider.id] || 5}</span>
+                  </div>
+                ))}
+                <p className="text-xs text-gray-400">These values shape how the AI responds in conversations.</p>
+              </div>
+
+              {/* FIX 52: Profession / Personality Type Selector */}
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Personality Type</label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {PROFESSIONS.map(p => (
+                    <button key={p.id} type="button" onClick={() => {
+                      setProfession(p.id);
+                      if (p.id !== 'custom') setBasePrompt(p.prompt);
+                    }}
+                      className={`p-2 rounded-xl text-center text-sm border-2 transition ${
+                        profession === p.id
+                          ? 'border-[#E4458F] bg-pink-50 dark:bg-pink-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* FIX 52: Custom prompt textarea (only shown when Custom is selected) */}
+              {profession === 'custom' && (
+                <textarea value={basePrompt} onChange={e => setBasePrompt(e.target.value)}
+                  placeholder="Describe your bot's personality and expertise..."
+                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg resize-none bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" rows={4} />
+              )}
 
               {/* Bio */}
               <div>

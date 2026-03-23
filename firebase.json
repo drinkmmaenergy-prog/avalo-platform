@@ -65,6 +65,9 @@
       "cleanUrls": true
     }
   ],
+  "database": {
+    "rules": "database-presence-typing.rules.json"
+  },
   "storage": {
     "rules": "infrastructure/firebase/storage.rules"
   },

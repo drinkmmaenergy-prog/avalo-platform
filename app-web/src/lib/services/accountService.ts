@@ -32,6 +32,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { auth, requireDb } from '@/lib/firebase';
+import { geocodeCity } from '@/lib/services/geocodingService';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -132,12 +133,25 @@ export async function updateUserProfile(
     firestoreUpdate.dateOfBirth = payload.dateOfBirth;
   }
 
+  // FIX 50: Geocode city to lat/lng for distance filtering in Discovery
+  if (payload.city) {
+    try {
+      const coords = await geocodeCity(payload.city);
+      if (coords) {
+        firestoreUpdate.location = { lat: coords.lat, lng: coords.lng };
+      }
+    } catch (e) {
+      console.warn('[accountService] Geocoding failed for city:', payload.city, e);
+      // Non-blocking — profile save continues without coords
+    }
+  }
+
   const db = requireDb();
   const userRef = doc(db, 'users', user.uid);
   await setDoc(userRef, firestoreUpdate, { merge: true });
 
   // Dual-write to public_profiles/{uid} so Discovery can filter by these fields
-  await setDoc(doc(db, 'public_profiles', user.uid), {
+  const publicProfileUpdate: Record<string, any> = {
     uid: user.uid,
     displayName: payload.displayName ?? '',
     bio: payload.bio ?? '',
@@ -150,7 +164,12 @@ export async function updateUserProfile(
     discoverable: true,
     isHuman: true,
     updatedAt: serverTimestamp(),
-  }, { merge: true });
+  };
+  // FIX 50: Include location coords in public_profiles for distance filtering
+  if (firestoreUpdate.location) {
+    publicProfileUpdate.location = firestoreUpdate.location;
+  }
+  await setDoc(doc(db, 'public_profiles', user.uid), publicProfileUpdate, { merge: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +226,7 @@ export async function recordSession(): Promise<string> {
   const sessionRef = doc(requireDb(), 'users', user.uid, 'sessions', sessionId);
 
   await setDoc(sessionRef, {
+    userId: user.uid, // Fix 12: required by Firestore rules (request.resource.data.userId == request.auth.uid)
     deviceInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
     ipAddress: 'client-side', // IP is typically captured server-side
     lastActiveAt: serverTimestamp(),

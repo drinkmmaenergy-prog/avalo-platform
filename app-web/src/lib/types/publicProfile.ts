@@ -23,6 +23,9 @@ export interface PublicProfile {
   /** Cover photo URL */
   coverURL?: string | null;
 
+  /** FIX 25: Cover photo vertical position (0-100%, default 50) */
+  coverPosition?: number;
+
   /** Array of photo URLs for profile carousel */
   photos: string[];
 
@@ -47,8 +50,8 @@ export interface PublicProfile {
   /** Whether user is identity-verified */
   verified: boolean;
 
-  /** Location label (e.g. "Warsaw, PL") */
-  location: string;
+  /** Location label (e.g. "Warsaw, PL") or geo coords object */
+  location: string | { lat: number; lng: number } | null;
 
   /** City — flat top-level field written by profile editor for Discovery filtering */
   city?: string;
@@ -73,6 +76,20 @@ export interface PublicProfile {
 
   /** Whether user passed human verification */
   isHuman?: boolean;
+
+  /** FIX 80: Verification status breakdown (selfie, age, identity) */
+  verification?: {
+    selfie?: boolean;
+    selfieVerifiedAt?: any;
+    age?: boolean;
+    identity?: boolean;
+  };
+
+  /** Whether user is age-verified */
+  ageVerified?: boolean;
+
+  /** Whether user has completed KYC */
+  kycVerified?: boolean;
 
   /** Public stats */
   stats: {
@@ -220,6 +237,9 @@ export interface DiscoverFilters {
 
   /** Interest/hobby filter — empty array means all */
   interests: string[];
+
+  /** FIX 78: Show only verified (selfie-verified) profiles */
+  verifiedOnly: boolean;
 }
 
 /** Default filter state */
@@ -233,4 +253,5 @@ export const DEFAULT_DISCOVER_FILTERS: DiscoverFilters = {
   bodyTypes: [],
   hairColors: [],
   interests: [],
+  verifiedOnly: false,
 };

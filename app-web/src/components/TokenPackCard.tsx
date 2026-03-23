@@ -23,6 +23,8 @@ interface TokenPackCardProps {
   isLoading?: boolean;
   onSelect: (pack: CanonicalTokenPack) => void;
   disabled?: boolean;
+  /** FIX 112: Show +20% first-purchase bonus badge */
+  showFirstPurchaseBonus?: boolean;
 }
 
 export default function TokenPackCard({
@@ -33,6 +35,7 @@ export default function TokenPackCard({
   isLoading = false,
   onSelect,
   disabled = false,
+  showFirstPurchaseBonus = false,
 }: TokenPackCardProps) {
   const handleClick = () => {
     if (!disabled && !isLoading) {
@@ -69,6 +72,13 @@ export default function TokenPackCard({
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
           POPULAR
         </div>
+      )}
+
+      {/* FIX 112: First purchase +20% bonus badge */}
+      {showFirstPurchaseBonus && (
+        <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
+          +20%
+        </span>
       )}
 
       {/* Card Content */}

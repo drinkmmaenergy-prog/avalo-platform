@@ -458,7 +458,8 @@ export async function getCreatorMessageCount(userId: string): Promise<number> {
 
     return statsSnap.data().messageCount ?? 0;
   } catch (error) {
-    console.error('Error getting creator message count:', error);
+    // Fix 9: Downgrade to debug to suppress console noise when collection doesn't exist or rules deny
+    console.debug('[creatorService] Message count not available:', error);
     return 0;
   }
 }

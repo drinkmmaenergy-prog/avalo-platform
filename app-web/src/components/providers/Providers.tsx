@@ -7,6 +7,9 @@ import { AuthProvider } from './AuthProvider';
 import { I18nProvider } from './I18nProvider';
 import { NotificationProvider } from './NotificationProvider';
 import { AuthModalProvider } from '@/components/AuthModal';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { OfflineBanner } from '@/components/ui/OfflineFallback';
+import { ToastProvider } from '@/contexts/ToastContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -34,7 +37,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <AuthProvider>
             <AuthModalProvider>
               <NotificationProvider>
-                {children}
+                <ToastProvider>
+                  <ErrorBoundary>
+                    <OfflineBanner />
+                    {children}
+                  </ErrorBoundary>
+                </ToastProvider>
               </NotificationProvider>
             </AuthModalProvider>
           </AuthProvider>

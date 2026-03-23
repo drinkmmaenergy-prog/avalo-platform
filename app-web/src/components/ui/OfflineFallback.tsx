@@ -103,3 +103,36 @@ export function ConnectionStatusBadge() {
   );
 }
 
+/**
+ * OfflineBanner — FIX 117
+ *
+ * Top-bar offline banner that shows when the user loses connection.
+ * Designed to sit at the very top of the viewport with z-50.
+ */
+export function OfflineBanner() {
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    setIsOffline(!navigator.onLine);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (!isOffline) return null;
+
+  return (
+    <div className="fixed top-0 inset-x-0 bg-red-500 text-white text-center text-xs py-1 z-50">
+      You{'\u2019'}re offline {'\u2014'} some features may not work
+    </div>
+  );
+}
+

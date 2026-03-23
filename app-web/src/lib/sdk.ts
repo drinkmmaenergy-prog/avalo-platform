@@ -14,6 +14,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   OAuthProvider,
+  FacebookAuthProvider,
   sendPasswordResetEmail,
   signOut as firebaseSignOut,
   updateProfile,
@@ -25,6 +26,9 @@ import type { User } from '@/types';
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 const appleProvider = new OAuthProvider('apple.com');
+const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
 
 const sdk = {
   /**
@@ -58,6 +62,14 @@ const sdk = {
    */
   async signInWithApple() {
     return signInWithPopup(auth, appleProvider);
+  },
+
+  /**
+   * FIX 128: Sign in with Facebook popup.
+   * Key markets: Brazil, India, Indonesia, Philippines.
+   */
+  async signInWithFacebook() {
+    return signInWithPopup(auth, facebookProvider);
   },
 
   /**

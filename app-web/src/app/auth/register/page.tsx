@@ -9,6 +9,9 @@ import { toast } from '@/components/ui/Toaster';
 import { GoogleIcon, AppleIcon } from '@/components/icons/SocialIcons';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
+import { requireDb } from '@/lib/firebase';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,7 +23,15 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | 'facebook' | null>(null);
+
+  // FIX 82: Referral code state (optional, captured during registration)
+  const [referralCode, setReferralCode] = useState('');
+
+  // FIX 121: GDPR consent checkboxes — all required before registration
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   // Redirect authenticated users away from auth pages
   useEffect(() => {
@@ -57,7 +68,30 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // FIX 82: Persist referral code so onboarding can include it in user doc
+      if (referralCode.trim()) {
+        try { sessionStorage.setItem('avalo_referral_code', referralCode.trim()); } catch {}
+      }
+
       await sdk.registerWithEmail(email, password, displayName);
+
+      // FIX 121: Save consent timestamps to user doc on registration
+      try {
+        const auth = getAuth();
+        const uid = auth.currentUser?.uid;
+        if (uid) {
+          await updateDoc(doc(requireDb(), 'users', uid), {
+            consents: {
+              terms: { accepted: true, version: '1.0', timestamp: serverTimestamp() },
+              privacy: { accepted: true, version: '1.0', timestamp: serverTimestamp() },
+              ageConfirmation: { confirmed: true, timestamp: serverTimestamp() },
+            },
+          });
+        }
+      } catch (consentErr) {
+        console.warn('[Register] Failed to save consent timestamps (non-blocking):', consentErr);
+      }
+
       toast({
         type: 'success',
         title: t('auth.accountCreated'),
@@ -120,6 +154,32 @@ export default function RegisterPage() {
     }
   };
 
+  // FIX 128: Facebook register — key in developing markets
+  const handleFacebookRegister = async () => {
+    setSocialLoading('facebook');
+    try {
+      await sdk.signInWithFacebook();
+      toast({
+        type: 'success',
+        title: t('auth.welcomeToAvalo'),
+        description: 'Registered with Facebook',
+      });
+      // AuthProvider detects auth → if no user doc → needsOnboarding → redirect
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code !== 'auth/popup-closed-by-user') {
+        const message = err.message || 'Facebook registration failed';
+        toast({
+          type: 'error',
+          title: t('auth.registrationFailed'),
+          description: message,
+        });
+      }
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
   // Don't render auth page if already authenticated
   if (authLoading) {
     return (
@@ -174,6 +234,24 @@ export default function RegisterPage() {
                 <>
                   <AppleIcon className="w-5 h-5 mr-3" />
                   {t('auth.continueWithApple')}
+                </>
+              )}
+            </button>
+
+            {/* FIX 128: Facebook Login — key in developing markets */}
+            <button
+              onClick={handleFacebookRegister}
+              disabled={!!socialLoading}
+              className="w-full py-3 bg-[#1877F2] text-white rounded-xl flex items-center justify-center gap-3 hover:bg-[#166FE5] transition font-medium disabled:opacity-50"
+            >
+              {socialLoading === 'facebook' ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="white" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Continue with Facebook
                 </>
               )}
             </button>
@@ -276,13 +354,58 @@ export default function RegisterPage() {
                   className="input pl-10 w-full"
                   disabled={loading}
                 />
-              </div>
+               </div>
+            </div>
+
+            {/* FIX 82: Referral code input (optional) */}
+            <div>
+              <label htmlFor="referralCode" className="block text-sm font-medium mb-2">
+                Referral code (optional)
+              </label>
+              <input
+                id="referralCode"
+                type="text"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                placeholder="e.g., AVALO_ABC123"
+                className="input w-full"
+                disabled={loading}
+              />
+            </div>
+
+            {/* FIX 121: GDPR consent checkboxes — required before registration */}
+            <div className="space-y-3 my-4">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={termsAccepted}
+                  onChange={e => setTermsAccepted(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-gray-300" required />
+                <span className="text-xs text-gray-600">
+                  I agree to the <a href="/legal/terms" target="_blank" className="text-[#E4458F] underline">Terms of Service</a> *
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={privacyAccepted}
+                  onChange={e => setPrivacyAccepted(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-gray-300" required />
+                <span className="text-xs text-gray-600">
+                  I agree to the <a href="/legal/privacy" target="_blank" className="text-[#E4458F] underline">Privacy Policy</a>
+                  {' '}and consent to processing of my personal data *
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input type="checkbox" checked={ageConfirmed}
+                  onChange={e => setAgeConfirmed(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-gray-300" required />
+                <span className="text-xs text-gray-600">
+                  I confirm I am 18 years or older *
+                </span>
+              </label>
             </div>
 
             <button
               type="submit"
-              disabled={loading || !email || !password || !confirmPassword || !displayName}
-              className="btn btn-primary w-full h-11"
+              disabled={loading || !email || !password || !confirmPassword || !displayName || !termsAccepted || !privacyAccepted || !ageConfirmed}
+              className="btn btn-primary w-full h-11 disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

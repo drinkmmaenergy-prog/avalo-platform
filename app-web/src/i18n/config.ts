@@ -75,3 +75,30 @@ export const LOCALE_DISPLAY_NAMES: Record<SupportedLocale, string> = {
   ka: 'ქართული',
 };
 
+/** Emoji flags for the 20 primary launch locales. Used in LanguageSwitcher. */
+export const LOCALE_FLAGS: Partial<Record<SupportedLocale, string>> = {
+  en: '🇬🇧',
+  pl: '🇵🇱',
+  de: '🇩🇪',
+  fr: '🇫🇷',
+  es: '🇪🇸',
+  pt: '🇵🇹',
+  it: '🇮🇹',
+  nl: '🇳🇱',
+  sv: '🇸🇪',
+  ru: '🇷🇺',
+  uk: '🇺🇦',
+  tr: '🇹🇷',
+  ja: '🇯🇵',
+  ko: '🇰🇷',
+  zh: '🇨🇳',
+  ar: '🇸🇦',
+  hi: '🇮🇳',
+  th: '🇹🇭',
+  vi: '🇻🇳',
+  id: '🇮🇩',
+};
+
+/** RTL locales — used for dir="rtl" on <html>. */
+export const RTL_LOCALES: readonly SupportedLocale[] = ['ar', 'he'] as const;
+

@@ -34,6 +34,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "7.49.3",
     "react-intersection-observer": "9.5.3",
+    "recharts": "2.15.3",
     "sharp": "0.33.2",
     "simple-peer": "9.11.1",
     "socket.io-client": "4.6.1",

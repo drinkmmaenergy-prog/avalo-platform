@@ -51,12 +51,12 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <section className="relative overflow-hidden" style={{background: 'linear-gradient(135deg, rgba(232,89,60,0.08), rgba(228,69,143,0.10), rgba(139,92,246,0.08))'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* LEFT — Content */}
           <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E4458F]/10 dark:bg-[#E4458F]/20 text-[#E4458F] text-xs font-medium mb-6">
               <Sparkles className="w-3.5 h-3.5" />
               Premium Social & Creator Platform
             </div>
@@ -75,15 +75,16 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
                 onClick={handleStartDating}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-white text-lg font-semibold shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/30 transition-all duration-200 transform hover:-translate-y-0.5"
+                style={{background: 'linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6)'}}
               >
-                Start Dating
+                Join Avalo — It&apos;s Free
                 <ArrowRight className="w-5 h-5" />
               </button>
 
               <button
                 onClick={handleForCreators}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-lg font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-[#E4458F]/30 dark:border-[#E4458F]/40 text-[#E4458F] dark:text-[#E4458F] text-lg font-semibold hover:bg-[#E4458F]/5 dark:hover:bg-[#E4458F]/10 transition-all duration-200"
               >
                 <Sparkles className="w-5 h-5" />
                 For Creators

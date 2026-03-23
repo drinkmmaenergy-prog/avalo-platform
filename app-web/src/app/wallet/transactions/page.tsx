@@ -15,6 +15,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import EmptyState from '@/components/ui/EmptyState';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { requireDb } from '@/lib/firebase';
 import {
@@ -39,14 +40,29 @@ type TransactionType =
   | 'tip_sent'
   | 'tip_received'
   | 'chat'
+  | 'chat_charge'
   | 'chat_earning'
+  | 'chat_earned'
+  | 'call_charge'
+  | 'call_earned'
   | 'unlock'
   | 'content_unlock'
-  | 'call_earning'
+  | 'media_unlock'
+  | 'media_earned'
+  | 'subscription'
+  | 'event_ticket'
   | 'event_earning'
   | 'payout'
+  | 'boost'
+  | 'superlike'
+  | 'icebreaker'
+  | 'welcome_bonus'
+  | 'referral_bonus'
   | 'refund'
   | string;
+
+/** FIX 129: Filter categories for transaction history */
+type TransactionFilter = 'all' | 'purchases' | 'earnings' | 'tips' | 'calls' | 'events';
 
 interface TransactionRecord {
   id: string;
@@ -64,19 +80,63 @@ interface TransactionRecord {
 
 const PAGE_SIZE = 20;
 
+/** FIX 129: Emoji icons for each transaction type */
+function getTypeIcon(type: TransactionType): string {
+  const icons: Record<string, string> = {
+    purchase: '💳',
+    tip_sent: '🎁',
+    tip_received: '💰',
+    chat_charge: '💬',
+    chat_earned: '📨',
+    chat: '💬',
+    chat_earning: '📨',
+    call_charge: '📞',
+    call_earned: '📞',
+    call_earning: '📞',
+    media_unlock: '🔓',
+    media_earned: '📸',
+    unlock: '🔓',
+    content_unlock: '📸',
+    subscription: '⭐',
+    event_ticket: '🎫',
+    event_earning: '🎫',
+    payout: '🏦',
+    boost: '🚀',
+    superlike: '⭐',
+    icebreaker: '💡',
+    welcome_bonus: '🎉',
+    referral_bonus: '🎁',
+    refund: '↩️',
+  };
+  return icons[type] || '🔄';
+}
+
 /** Map raw Firestore type to a human-readable label. */
 function getTypeLabel(type: TransactionType): string {
   const map: Record<string, string> = {
     purchase: 'Purchase',
     tip_sent: 'Tip Sent',
     tip_received: 'Tip Received',
-    chat: 'Chat',
+    chat: 'Chat Message',
+    chat_charge: 'Chat Charge',
     chat_earning: 'Chat Earning',
-    unlock: 'Unlock',
-    content_unlock: 'Content Unlock',
+    chat_earned: 'Chat Earned',
+    call_charge: 'Call Charge',
+    call_earned: 'Call Earned',
     call_earning: 'Call Earning',
+    unlock: 'Media Unlock',
+    content_unlock: 'Content Unlock',
+    media_unlock: 'Media Unlock',
+    media_earned: 'Media Earned',
+    subscription: 'Subscription',
+    event_ticket: 'Event Ticket',
     event_earning: 'Event Earning',
     payout: 'Payout',
+    boost: 'Profile Boost',
+    superlike: 'SuperLike',
+    icebreaker: 'Icebreaker',
+    welcome_bonus: 'Welcome Bonus',
+    referral_bonus: 'Referral Bonus',
     refund: 'Refund',
   };
   return map[type] ?? type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -88,15 +148,30 @@ function isIncoming(type: TransactionType, amount: number): boolean {
     'purchase',
     'tip_received',
     'chat_earning',
-    'content_unlock',
+    'chat_earned',
+    'call_earned',
     'call_earning',
+    'content_unlock',
+    'media_earned',
     'event_earning',
+    'welcome_bonus',
+    'referral_bonus',
     'refund',
   ]);
   if (incomingTypes.has(type)) return true;
   // Fallback: positive amounts are incoming
   return amount > 0;
 }
+
+/** FIX 129: Filter type categories */
+const FILTER_TYPES: Record<TransactionFilter, Set<string> | null> = {
+  all: null,
+  purchases: new Set(['purchase', 'media_unlock', 'unlock', 'content_unlock', 'subscription', 'boost', 'superlike', 'icebreaker']),
+  earnings: new Set(['tip_received', 'chat_earning', 'chat_earned', 'call_earning', 'call_earned', 'media_earned', 'event_earning', 'welcome_bonus', 'referral_bonus']),
+  tips: new Set(['tip_sent', 'tip_received']),
+  calls: new Set(['call_charge', 'call_earned', 'call_earning']),
+  events: new Set(['event_ticket', 'event_earning']),
+};
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', {
@@ -120,6 +195,9 @@ export default function WalletTransactionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
+
+  // FIX 129: Filter state
+  const [filter, setFilter] = useState<TransactionFilter>('all');
 
   /** Parse a single Firestore doc into a TransactionRecord. */
   const parseDoc = useCallback((docSnap: QueryDocumentSnapshot<DocumentData>): TransactionRecord => {
@@ -160,6 +238,7 @@ export default function WalletTransactionsPage() {
           limit(PAGE_SIZE),
         ];
 
+        // FIX 129: Try both 'transactions' and 'walletTransactions' collections
         const q = afterDoc
           ? query(
               collection(requireDb(), 'transactions'),
@@ -171,7 +250,17 @@ export default function WalletTransactionsPage() {
               ...baseConstraints,
             );
 
-        const snapshot = await getDocs(q);
+        let snapshot = await getDocs(q);
+
+        // Fallback: if no results from 'transactions', try 'walletTransactions'
+        if (snapshot.empty && !afterDoc) {
+          const walletQ = query(
+            collection(requireDb(), 'walletTransactions'),
+            ...baseConstraints,
+          );
+          snapshot = await getDocs(walletQ);
+        }
+
         const docs = snapshot.docs;
         const records = docs.map(parseDoc);
 
@@ -214,6 +303,12 @@ export default function WalletTransactionsPage() {
     setLoadingMore(false);
   };
 
+  // FIX 129: Apply client-side filter
+  const filterSet = FILTER_TYPES[filter];
+  const filteredTransactions = filterSet
+    ? transactions.filter((tx) => filterSet.has(tx.type))
+    : transactions;
+
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -226,9 +321,26 @@ export default function WalletTransactionsPage() {
           <span className="text-gray-600">Transaction History</span>
         </nav>
 
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
           Transaction History
         </h1>
+
+        {/* FIX 129: Filter tabs */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
+          {(['all', 'purchases', 'earnings', 'tips', 'calls', 'events'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                filter === f
+                  ? 'bg-pink-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
 
         {/* Loading state */}
         {loading ? (
@@ -241,22 +353,14 @@ export default function WalletTransactionsPage() {
             <p className="text-red-700">{error}</p>
           </div>
         ) : transactions.length === 0 ? (
-          /* Empty state */
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-12 text-center">
-            <div className="text-5xl mb-4" aria-hidden="true">📜</div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No transactions yet
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              No transactions yet. Buy tokens to get started.
-            </p>
-            <Link
-              href="/wallet/buy"
-              className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-medium py-3 px-8 rounded-lg transition"
-            >
-              Buy Tokens
-            </Link>
-          </div>
+          /* Empty state — FIX 130 */
+          <EmptyState
+            icon="💰"
+            title="No transactions yet"
+            description="Buy tokens to send messages, unlock content, and boost your profile."
+            actionLabel="Buy Tokens"
+            actionHref="/wallet/buy"
+          />
         ) : (
           <>
             {/* Desktop Table */}
@@ -280,7 +384,7 @@ export default function WalletTransactionsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {transactions.map((tx) => {
+                    {filteredTransactions.map((tx) => {
                       const incoming = isIncoming(tx.type, tx.amount);
                       return (
                         <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
@@ -288,7 +392,8 @@ export default function WalletTransactionsPage() {
                             {formatDate(tx.createdAt)}
                           </td>
                           <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
-                            {getTypeLabel(tx.type)}
+                            <span className="mr-2">{getTypeIcon(tx.type)}</span>
+                            {tx.description || getTypeLabel(tx.type)}
                           </td>
                           <td
                             className={`px-6 py-4 text-sm text-right font-semibold ${
@@ -298,7 +403,7 @@ export default function WalletTransactionsPage() {
                             }`}
                           >
                             {incoming ? '+' : '-'}
-                            {Math.abs(tx.amount).toLocaleString()}
+                            {Math.abs(tx.amount).toLocaleString()} 🪙
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                             {tx.counterpartyName ?? '—'}
@@ -310,39 +415,41 @@ export default function WalletTransactionsPage() {
                 </table>
               </div>
 
-              {/* Mobile Card View */}
+              {/* Mobile Card View — FIX 129: Enhanced with icons and filtering */}
               <div className="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
-                {transactions.map((tx) => {
+                {filteredTransactions.map((tx) => {
                   const incoming = isIncoming(tx.type, tx.amount);
                   return (
-                    <div key={tx.id} className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {getTypeLabel(tx.type)}
-                        </span>
-                        <span
-                          className={`font-semibold ${
-                            incoming
-                              ? 'text-green-600 dark:text-green-400'
-                              : 'text-red-600 dark:text-red-400'
-                          }`}
-                        >
-                          {incoming ? '+' : '-'}
-                          {Math.abs(tx.amount).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-500 dark:text-gray-400">
+                    <div key={tx.id} className="flex items-center gap-3 p-4">
+                      <span className="text-xl flex-shrink-0">{getTypeIcon(tx.type)}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {tx.description || getTypeLabel(tx.type)}
+                        </p>
+                        <p className="text-xs text-gray-400">
                           {formatDate(tx.createdAt)}
-                        </span>
-                        <span className="text-gray-500 dark:text-gray-400">
-                          {tx.counterpartyName ?? '—'}
-                        </span>
+                        </p>
                       </div>
+                      <span
+                        className={`font-bold text-sm flex-shrink-0 ${
+                          incoming
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-500 dark:text-red-400'
+                        }`}
+                      >
+                        {incoming ? '+' : ''}{tx.amount} 🪙
+                      </span>
                     </div>
                   );
                 })}
               </div>
+
+              {/* FIX 129: Empty filter state */}
+              {filteredTransactions.length === 0 && transactions.length > 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <p>No {filter} transactions found</p>
+                </div>
+              )}
             </div>
 
             {/* Load More Button */}

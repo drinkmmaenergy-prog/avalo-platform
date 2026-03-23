@@ -149,6 +149,10 @@ export default function AIProfilePage() {
           totalConversations: d.totalConversations || 0,
           averageRating: d.averageRating || 0,
           ratingCount: d.ratingCount || 0,
+          conversationCount: d.conversationCount || d.totalConversations || 0,
+          totalRatings: d.totalRatings || d.ratingCount || 0,
+          profession: d.profession || '',
+          basePrompt: d.basePrompt || '',
           createdAt: d.createdAt || null,
           updatedAt: d.updatedAt || null,
         };

@@ -14,6 +14,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   SUPPORTED_LOCALES,
   LOCALE_DISPLAY_NAMES,
+  LOCALE_FLAGS,
   type SupportedLocale,
 } from '@/i18n/config';
 import { useI18n } from '@/components/providers/I18nProvider';
@@ -49,7 +50,7 @@ export default function LanguageSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <span className="text-base" aria-hidden="true">🌐</span>
+        <span className="text-base" aria-hidden="true">{LOCALE_FLAGS[locale] ?? '🌐'}</span>
         <span>{LOCALE_DISPLAY_NAMES[locale]}</span>
         <svg
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -80,6 +81,7 @@ export default function LanguageSwitcher() {
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
+              {LOCALE_FLAGS[loc] && <span className="mr-2" aria-hidden="true">{LOCALE_FLAGS[loc]}</span>}
               {LOCALE_DISPLAY_NAMES[loc]}
               {loc === locale && (
                 <span className="float-right text-pink-600 dark:text-pink-400">✓</span>

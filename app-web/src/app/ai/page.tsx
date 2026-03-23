@@ -18,11 +18,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
-import { AI_PERSONALITY_TRAITS } from '@/lib/aiEconomyConfig';
+import { AI_PERSONALITY_TRAITS, AI_FREE_MESSAGES } from '@/lib/aiEconomyConfig';
 import type { AIAvatar, AIDiscoveryFilters } from '@/lib/types/aiAvatar';
 import { DEFAULT_AI_DISCOVERY_FILTERS } from '@/lib/types/aiAvatar';
+import { PROFESSIONS } from '@/lib/constants/aiProfessions';
 import {
   Search,
   Bot,
@@ -33,6 +34,11 @@ import {
   Loader2,
   X,
 } from 'lucide-react';
+
+// ============================================================================
+// FIX 51: Sort options type
+// ============================================================================
+type SortOption = 'popular' | 'newest' | 'rating';
 
 // ============================================================================
 // CONSTANTS
@@ -181,6 +187,14 @@ function AICompanionCard({
           </div>
         )}
 
+        {/* FIX 51: Conversation count and rating */}
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span>{avatar.conversationCount || 0} chats</span>
+          {avatar.averageRating > 0 && (
+            <span>⭐ {avatar.averageRating.toFixed(1)}</span>
+          )}
+        </div>
+
         {/* Creator attribution */}
         {!avatar.isAvaloPlatform && avatar.creatorDisplayName && (
           <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-2 truncate">
@@ -216,6 +230,10 @@ export default function AIDiscoveryFeedPage() {
   // ── Filter state ────────────────────────────────────────────────────
   const [filters, setFilters] = useState<AIDiscoveryFilters>(DEFAULT_AI_DISCOVERY_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // FIX 51: Sort option state
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
+  // FIX 52: Profession category filter
+  const [filterProfession, setFilterProfession] = useState<string | null>(null);
 
   // ── Load all avatars from Firestore ─────────────────────────────────
   useEffect(() => {
@@ -227,7 +245,12 @@ export default function AIDiscoveryFeedPage() {
       setLoading(true);
       setError(null);
       const avatarsRef = collection(requireDb(), 'ai_avatars');
-      const q = query(avatarsRef, orderBy('createdAt', 'desc'));
+      // FIX 51: Default sort by conversationCount desc (popularity)
+      const q = query(
+        avatarsRef,
+        orderBy('conversationCount', 'desc'),
+        limit(50)
+      );
       const snapshot = await getDocs(q);
 
       const loaded: AIAvatar[] = snapshot.docs.map((docSnap) => {
@@ -253,6 +276,10 @@ export default function AIDiscoveryFeedPage() {
           totalConversations: d.totalConversations || 0,
           averageRating: d.averageRating || 0,
           ratingCount: d.ratingCount || 0,
+          conversationCount: d.conversationCount || d.totalConversations || 0,
+          totalRatings: d.totalRatings || d.ratingCount || 0,
+          profession: d.profession || '',
+          basePrompt: d.basePrompt || '',
           createdAt: d.createdAt || null,
           updatedAt: d.updatedAt || null,
         };
@@ -297,6 +324,11 @@ export default function AIDiscoveryFeedPage() {
       result = result.filter((a) => !a.isAvaloPlatform);
     }
 
+    // FIX 52: Profession category filter
+    if (filterProfession) {
+      result = result.filter((a) => a.profession === filterProfession);
+    }
+
     // Search query
     if (filters.searchQuery.trim()) {
       const q = filters.searchQuery.toLowerCase().trim();
@@ -308,15 +340,30 @@ export default function AIDiscoveryFeedPage() {
       );
     }
 
-    // Sort: platform bots first, then by createdAt desc
+    // FIX 51: Sort based on selected sort option
     result.sort((a, b) => {
+      // Platform bots always first
       if (a.isAvaloPlatform && !b.isAvaloPlatform) return -1;
       if (!a.isAvaloPlatform && b.isAvaloPlatform) return 1;
-      return 0; // preserve existing order (already sorted by createdAt desc)
+
+      // Then apply selected sort
+      switch (sortBy) {
+        case 'popular':
+          return (b.conversationCount || 0) - (a.conversationCount || 0);
+        case 'rating':
+          return (b.averageRating || 0) - (a.averageRating || 0);
+        case 'newest':
+          // createdAt is a Timestamp — compare seconds
+          const aTime = a.createdAt?.seconds ?? 0;
+          const bTime = b.createdAt?.seconds ?? 0;
+          return bTime - aTime;
+        default:
+          return 0;
+      }
     });
 
     return result;
-  }, [allAvatars, filters]);
+  }, [allAvatars, filters, sortBy, filterProfession]);
 
   const hasActiveFilters =
     filters.gender !== 'all' ||
@@ -532,14 +579,44 @@ export default function AIDiscoveryFeedPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* "First 3 messages FREE" banner */}
+        {/* "First N messages FREE" banner — uses AI_FREE_MESSAGES constant */}
         <div className="w-full rounded-xl bg-gradient-to-r from-purple-600 via-violet-500 to-pink-500 px-4 py-2.5 mb-6">
           <div className="flex items-center justify-center gap-2">
             <MessageCircle className="w-4 h-4 text-white/90" />
             <p className="text-sm font-medium text-white">
-              First 3 messages are FREE — try any AI companion!
+              {`First ${AI_FREE_MESSAGES} messages are FREE — try any AI companion!`}
             </p>
           </div>
+        </div>
+
+        {/* FIX 51: Sort options */}
+        <div className="flex gap-2 mb-4">
+          <button onClick={() => setSortBy('popular')}
+            className={`px-3 py-1 rounded-full text-sm ${sortBy === 'popular' ? 'bg-[#E4458F] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
+            Most Popular
+          </button>
+          <button onClick={() => setSortBy('newest')}
+            className={`px-3 py-1 rounded-full text-sm ${sortBy === 'newest' ? 'bg-[#E4458F] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
+            Newest
+          </button>
+          <button onClick={() => setSortBy('rating')}
+            className={`px-3 py-1 rounded-full text-sm ${sortBy === 'rating' ? 'bg-[#E4458F] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
+            Top Rated
+          </button>
+        </div>
+
+        {/* FIX 52: Profession category filter */}
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+          <button onClick={() => setFilterProfession(null)}
+            className={`px-3 py-1 rounded-full text-xs whitespace-nowrap ${!filterProfession ? 'bg-[#E4458F] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
+            All
+          </button>
+          {PROFESSIONS.filter(p => p.id !== 'custom').map(p => (
+            <button key={p.id} onClick={() => setFilterProfession(p.id)}
+              className={`px-3 py-1 rounded-full text-xs whitespace-nowrap ${filterProfession === p.id ? 'bg-[#E4458F] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
+              {p.label}
+            </button>
+          ))}
         </div>
 
         {loading ? (

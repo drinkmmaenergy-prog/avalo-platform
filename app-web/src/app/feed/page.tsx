@@ -6,14 +6,19 @@
  * stories from 'stories' collection, and reels from 'reels' collection.
  *
  * Extended: Follow state for inline Follow/Unfollow buttons, followed-first feed ordering.
+ *
+ * FIX 92: Drops — limited-time exclusive content/offers from creators.
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { DocumentSnapshot } from 'firebase/firestore';
+import { DocumentSnapshot, collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, Plus } from 'lucide-react';
+import { httpsCallable } from 'firebase/functions';
 
 import { useAuth } from '@/components/providers/AuthProvider';
+import { requireDb, functions } from '@/lib/firebase';
 import { useI18n } from '@/components/providers/I18nProvider';
+import EmptyState from '@/components/ui/EmptyState';
 import { Post } from '@/lib/types';
 import {
   fetchFeedPosts,
@@ -33,6 +38,8 @@ import { Story, Reel } from '@/lib/types';
 import PostCard from '@/components/feed/PostCard';
 import StoriesViewer from '@/components/feed/StoriesViewer';
 import ReelsPlayer from '@/components/feed/ReelsPlayer';
+import ActiveLivesBanner from '@/components/feed/ActiveLivesBanner';
+import SponsoredAdCard, { type SponsoredAd } from '@/components/ads/SponsoredAdCard';
 
 export default function FeedPage() {
   const { t } = useI18n();
@@ -66,6 +73,75 @@ export default function FeedPage() {
   // Infinite scroll sentinel ref
   const sentinelRef = useRef<HTMLDivElement>(null);
   const currentUserId = firebaseUser?.uid || null;
+
+  // FIX 59D: Blocked user IDs for client-side filtering
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
+
+  // FIX 74B: Sponsored ads for feed
+  const [feedAds, setFeedAds] = useState<SponsoredAd[]>([]);
+
+  // FIX 92: Active drops — limited-time content/offers
+  const [activeDrops, setActiveDrops] = useState<any[]>([]);
+
+  // FIX 99: Trending hashtags for discovery bar
+  const [trendingHashtags] = useState<string[]>([
+    '#summer', '#fitness', '#travel', '#cooking',
+    '#fashion', '#dating', '#music', '#art',
+  ]);
+
+  // FIX 92: Load active drops
+  useEffect(() => {
+    const loadDrops = async () => {
+      try {
+        const q = query(
+          collection(requireDb(), 'drops'),
+          where('status', '==', 'active'),
+          where('expiresAt', '>', new Date()),
+          orderBy('expiresAt', 'asc'),
+          limit(5)
+        );
+        const snap = await getDocs(q);
+        setActiveDrops(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch {
+        // Drops not critical — fail silently
+      }
+    };
+    loadDrops();
+  }, []);
+
+  // FIX 59D: Load blocked user IDs
+  useEffect(() => {
+    if (!currentUserId) return;
+    getDocs(query(collection(requireDb(), 'blocks'), where('blockerId', '==', currentUserId)))
+      .then((snap) => {
+        setBlockedIds(snap.docs.map(d => d.data().blockedId));
+      }).catch(() => {});
+  }, [currentUserId]);
+
+  // FIX 74B: Load sponsored ads targeted for feed
+  useEffect(() => {
+    const loadAds = async () => {
+      try {
+        const fn = httpsCallable(functions, 'getAdForFeed');
+        const result = await fn({});
+        setFeedAds(((result.data as any)?.ads || []) as SponsoredAd[]);
+      } catch {
+        // Fallback: load active campaigns directly from Firestore
+        try {
+          const q = query(
+            collection(requireDb(), 'ad_campaigns'),
+            where('status', '==', 'active'),
+            limit(3)
+          );
+          const snap = await getDocs(q);
+          setFeedAds(snap.docs.map((d) => ({ id: d.id, ...d.data() } as SponsoredAd)));
+        } catch {
+          // Ads not critical — fail silently
+        }
+      }
+    };
+    loadAds();
+  }, []);
 
   // ========================================================================
   // Feed ordering: posts from followed users first, then rest by createdAt desc
@@ -284,12 +360,62 @@ export default function FeedPage() {
         {t('placeholder.feedTitle')}
       </h1>
 
+      {/* FIX 57B: LIVE banner — active lives from followed creators */}
+      <ActiveLivesBanner uid={currentUserId} />
+
+      {/* FIX 92: Active Drops — limited-time offers from creators */}
+      {activeDrops.length > 0 && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-sm">🔥 Active Drops</h3>
+            <span className="text-xs text-[#E4458F]">Limited time</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {activeDrops.map(drop => (
+              <div key={drop.id} className="flex-shrink-0 w-48 border rounded-xl overflow-hidden">
+                {drop.imageURL && (
+                  <img src={drop.imageURL} alt={drop.title || 'Drop'} className="w-full h-24 object-cover" />
+                )}
+                <div className="p-2">
+                  <p className="text-sm font-medium">{drop.title}</p>
+                  <p className="text-xs text-gray-500">{drop.description?.slice(0, 50)}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs font-bold text-[#E4458F]">{drop.price} tokens</span>
+                    <span className="text-[10px] text-red-500">
+                      ⏰ {Math.max(0, Math.ceil(((drop.expiresAt?.toDate ? drop.expiresAt.toDate().getTime() : new Date(drop.expiresAt).getTime()) - Date.now()) / 3600000))}h left
+                    </span>
+                  </div>
+                  <button className="mt-1 w-full py-1 bg-[#E4458F] text-white rounded-lg text-xs">
+                    Get Now
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stories Row */}
       <StoriesViewer
         stories={stories}
         profiles={profiles}
         currentUserId={currentUserId}
       />
+
+      {/* FIX 99: Trending hashtags bar — drives discovery + search */}
+      {trendingHashtags.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto px-1 py-2 mb-4 border-b border-gray-100 dark:border-gray-800">
+          {trendingHashtags.map(h => (
+            <a
+              key={h}
+              href={`/search?q=${encodeURIComponent(h)}`}
+              className="px-3 py-1 bg-pink-50 dark:bg-pink-900/20 text-[#E4458F] rounded-full text-xs whitespace-nowrap hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors"
+            >
+              {h}
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Reels Row */}
       {reels.length > 0 && (
@@ -318,16 +444,24 @@ export default function FeedPage() {
       {/* Feed Posts */}
       {posts.length > 0 ? (
         <div className="flex flex-col gap-4">
-          {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              author={profiles[post.userId] || null}
-              currentUserId={currentUserId}
-              initialLiked={likedMap[post.id] || false}
-              initialFollowing={followingMap[post.userId] || false}
-              onFollowChange={handleFollowChange}
-            />
+          {posts.filter((post) => !blockedIds.includes(post.userId)).map((post, i) => (
+            <React.Fragment key={post.id}>
+              <PostCard
+                post={post}
+                author={profiles[post.userId] || null}
+                currentUserId={currentUserId}
+                initialLiked={likedMap[post.id] || false}
+                initialFollowing={followingMap[post.userId] || false}
+                onFollowChange={handleFollowChange}
+              />
+              {/* FIX 74B: Insert sponsored ad after every 5 posts */}
+              {i > 0 && i % 5 === 4 && feedAds[Math.floor(i / 5)] && (
+                <SponsoredAdCard
+                  ad={feedAds[Math.floor(i / 5)]}
+                  variant="feed"
+                />
+              )}
+            </React.Fragment>
           ))}
 
           {/* Infinite scroll sentinel */}
@@ -348,18 +482,14 @@ export default function FeedPage() {
           )}
         </div>
       ) : (
-        /* Empty state — FIX 36: Wire "+" to /create/post */
-        <div className="card p-12 text-center rounded-xl cursor-pointer" onClick={() => router.push('/create/post')}>
-          <div className="w-16 h-16 rounded-full bg-primary-50 dark:bg-primary-900/30 mx-auto mb-4 flex items-center justify-center">
-            <Plus className="w-8 h-8 text-primary-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {t('placeholder.feedTitle')}
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto">
-            {t('placeholder.feedDesc')}
-          </p>
-        </div>
+        /* Empty state — FIX 36 + FIX 130: Professional empty state */
+        <EmptyState
+          icon="📸"
+          title="Your feed is empty"
+          description="Follow people to see their posts, or create your own!"
+          actionLabel="Create Post"
+          actionHref="/create/post"
+        />
       )}
     </div>
   );

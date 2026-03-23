@@ -74,6 +74,18 @@ export interface AIAvatar {
   /** Number of ratings */
   ratingCount: number;
 
+  /** FIX 51: Conversation count — incremented on each chat start */
+  conversationCount: number;
+
+  /** FIX 51: Total ratings count (alias used by ranking system) */
+  totalRatings: number;
+
+  /** FIX 52: Profession preset id (e.g. 'artist', 'coder', 'custom') */
+  profession: string;
+
+  /** FIX 52: Base prompt from profession preset or custom text */
+  basePrompt: string;
+
   /** Creation timestamp */
   createdAt: Timestamp | null;
 

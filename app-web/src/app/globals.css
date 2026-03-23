@@ -14,6 +14,15 @@
     --avalo-pink: #E4458F;
     --avalo-violet: #8B5CF6;
     --avalo-gradient: linear-gradient(135deg, #E8593C, #E4458F, #8B5CF6);
+
+    /* FIX 48: Dark mode CSS custom properties */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-card: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-color: #e5e7eb;
   }
 
   .dark {
@@ -22,6 +31,21 @@
     --card: 17 24 39;               /* gray-900 */
     --border: 55 65 81;             /* gray-700 */
     --ring: 168 85 247;
+
+    /* FIX 48: Dark mode overrides */
+    --bg-primary: #0f0f0f;
+    --bg-secondary: #1a1a1a;
+    --bg-card: #242424;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --border-color: #333333;
+  }
+
+  /* FIX 48: Apply dark mode variables to body */
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
   }
 }
 
@@ -129,4 +153,69 @@
   @apply bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800;
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── FIX 96B-B: RTL support for Arabic and other RTL locales ── */
+[dir="rtl"] .flex-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .text-left {
+  text-align: right;
+}
+
+[dir="rtl"] .text-right {
+  text-align: left;
+}
+
+[dir="rtl"] .ml-auto {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+[dir="rtl"] .mr-auto {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+[dir="rtl"] .pl-4 {
+  padding-right: 1rem;
+  padding-left: 0;
+}
+
+[dir="rtl"] .pr-4 {
+  padding-left: 1rem;
+  padding-right: 0;
+}
+
+[dir="rtl"] .ml-2 {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .mr-2 {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+[dir="rtl"] .ml-3 {
+  margin-right: 0.75rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .mr-3 {
+  margin-left: 0.75rem;
+  margin-right: 0;
+}
+
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
+}
+
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 1;
 }

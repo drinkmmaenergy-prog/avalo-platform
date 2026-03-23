@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================================================
+    // FIX 39: Locked Media (PPV) — creator uploads + fan purchases
+    // ========================================================================
+
+    // Helper: check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: check if user is admin
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.admin == true;
+    }
+
+    // locked_media/{mediaId} — creator-uploaded locked content
+    match /locked_media/{mediaId} {
+      // Read: any authenticated user can view metadata (media is blurred client-side)
+      allow read: if isAuthenticated();
+
+      // Create: only the creator (creatorId must match auth uid)
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == request.auth.uid;
+
+      // Update: creator can update own media, admin can also update
+      allow update: if isAuthenticated() &&
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+
+      // Delete: only the creator can delete their own media
+      allow delete: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid;
+    }
+
+    // media_purchases/{purchaseId} — fan purchase records
+    match /media_purchases/{purchaseId} {
+      // Read: buyer can see own purchases, creator can see purchases of their content, admin can see all
+      allow read: if isAuthenticated() &&
+        (resource.data.buyerId == request.auth.uid ||
+         resource.data.creatorId == request.auth.uid ||
+         isAdmin());
+
+      // Create: any authenticated user can create a purchase record
+      allow create: if isAuthenticated() &&
+        request.resource.data.buyerId == request.auth.uid;
+
+      // Update/Delete: not allowed from client (server-only)
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

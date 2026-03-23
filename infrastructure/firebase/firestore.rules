@@ -156,14 +156,14 @@ service cloud.firestore {
     }
 
     // ──────────────────────────────────────────────
-    // BLOCK 12: Likes
+    // BLOCK 12: Likes (content likes — legacy)
     // ──────────────────────────────────────────────
     match /likes/{likeId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() &&
-        resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() &&
+        (resource.data.fromUserId == request.auth.uid ||
+         resource.data.toUserId == request.auth.uid ||
+         resource.data.userId == request.auth.uid);
+      allow write: if false; // Server-only (created by likeUserV1)
     }
 
     // ──────────────────────────────────────────────
@@ -379,6 +379,219 @@ service cloud.firestore {
     // ──────────────────────────────────────────────
     match /analytics/{document=**} {
       allow read, write: if isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 33: AI Chats — Fix 5 chat history persistence
+    // ──────────────────────────────────────────────
+    match /ai_chats/{chatId} {
+      allow read, write: if isAuthenticated();
+
+      match /messages/{msgId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 34: Calendar Bookings
+    // ──────────────────────────────────────────────
+    match /calendarBookings/{bookingId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.hostId == request.auth.uid ||
+         resource.data.guestId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.hostId == request.auth.uid ||
+         resource.data.guestId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 35: Calendars (availability settings)
+    // ──────────────────────────────────────────────
+    match /calendars/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 36: Events
+    // ──────────────────────────────────────────────
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.earnerId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() &&
+        (resource.data.earnerId == request.auth.uid || isAdmin());
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 37: Event Tickets
+    // ──────────────────────────────────────────────
+    match /eventTickets/{ticketId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid ||
+         resource.data.earnerId == request.auth.uid || isAdmin());
+      allow write: if false; // Server-only
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 38: Locked Media (PPV) — FIX 39
+    // ──────────────────────────────────────────────
+    match /locked_media/{mediaId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+        request.resource.data.creatorId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() &&
+        resource.data.creatorId == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────────────
+    // BLOCK 39: Media Purchases — FIX 39
+    // ──────────────────────────────────────────────
+    match /media_purchases/{purchaseId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.buyerId == request.auth.uid ||
+         resource.data.creatorId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.buyerId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 40: Video Calls — WebRTC signaling
+    // ──────────────────────────────────────────────
+    match /calls/{callId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if false;
+
+      match /candidates/{peerId}/ice/{candidateId} {
+        allow read, write: if isAuthenticated();
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 41: Live Sessions — real-time chat with gift economy
+    // ──────────────────────────────────────────────
+    match /live_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if false;
+
+      match /messages/{msgId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 42: Subscriptions — token-based monthly recurring
+    // ──────────────────────────────────────────────
+    match /subscriptions/{subId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.subscriberId == request.auth.uid ||
+         resource.data.creatorId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.subscriberId == request.auth.uid || isAdmin());
+      allow delete: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 73: Matches — server-only writes (created by likeUserV1)
+    // ──────────────────────────────────────────────
+    match /matches/{matchId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId1 == request.auth.uid ||
+         resource.data.userId2 == request.auth.uid);
+      allow write: if false; // Server-only (created by likeUserV1)
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 73: Daily Free Chats — user's own subcollection
+    // ──────────────────────────────────────────────
+    match /users/{userId}/daily_free_chats/{dateKey} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 74E: Ad Campaigns — advertising system
+    // Revenue: 100% Avalo
+    // ──────────────────────────────────────────────
+    match /ad_campaigns/{campaignId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.advertiserId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 81: Support Tickets
+    // ──────────────────────────────────────────────
+    match /support_tickets/{ticketId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isModerator());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isModerator());
+      allow delete: if isAdmin();
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 82: Referrals
+    // ──────────────────────────────────────────────
+    match /referrals/{referralId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.referrerId == request.auth.uid ||
+         resource.data.referredId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if false; // Server-only updates
+      allow delete: if false;
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 92/138: Drops — limited-time offers
+    // ──────────────────────────────────────────────
+    match /drops/{dropId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.creatorId == request.auth.uid;
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 138: Active Lives — live streaming presence
+    // ──────────────────────────────────────────────
+    match /active_lives/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 138: Post Likes — social interactions
+    // ──────────────────────────────────────────────
+    match /post_likes/{postId}/users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ──────────────────────────────────────────────
+    // FIX 138: Post Comments — social interactions
+    // ──────────────────────────────────────────────
+    match /post_comments/{postId}/comments/{commentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() &&
+        (resource.data.authorId == request.auth.uid || isModerator());
     }
 
     // ──────────────────────────────────────────────

@@ -31,6 +31,7 @@ import TokenPackCard from '@/components/TokenPackCard';
 import { getAvailableTokenPacks, formatPackPrice } from '@/lib/services/phase33';
 import { createCheckoutSession, redirectToCheckout } from '@/lib/api/tokens';
 import type { CanonicalTokenPack } from '@/types/phase33.types';
+import { useFirstPurchaseStatus } from '@/components/wallet/FirstPurchaseIncentive';
 
 type Currency = 'USD' | 'EUR' | 'PLN' | 'GBP';
 
@@ -55,6 +56,10 @@ function WalletBuyContent() {
   const [currency, setCurrency] = useState<Currency>('USD');
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // FIX 112: Check if this is the user's first purchase
+  const hasPurchased = useFirstPurchaseStatus();
+  const showFirstPurchaseBonus = hasPurchased === false;
   
   const tokenPacks = useMemo(() => getAvailableTokenPacks(), []);
   
@@ -181,6 +186,7 @@ function WalletBuyContent() {
                 isLoading={purchasing && selectedPack === pack.packId}
                 onSelect={handlePurchase}
                 disabled={purchasing}
+                showFirstPurchaseBonus={showFirstPurchaseBonus}
               />
             ))}
           </div>

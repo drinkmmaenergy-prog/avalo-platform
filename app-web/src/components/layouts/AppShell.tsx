@@ -36,12 +36,21 @@ import {
   Palette,
   Menu,
   X,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react';
+import { doc, collection, query, orderBy, limit, onSnapshot, updateDoc } from 'firebase/firestore';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useI18n } from '@/components/providers/I18nProvider';
 import { useAuthModal } from '@/components/AuthModal';
+import { Avatar } from '@/components/ui/Avatar';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { requireDb } from '@/lib/firebase';
+import { useFCM } from '@/hooks/useFCM';
+import { initPresence } from '@/lib/presenceService';
+import NotificationPrompt from '@/components/notifications/NotificationPrompt';
+import InstallPrompt from '@/components/pwa/InstallPrompt';
+import DailyMissions from '@/components/missions/DailyMissions';
 
 /* ─── Nav definitions ──────────────────────────────────────────────────── */
 
@@ -56,16 +65,22 @@ interface NavItem {
 const CENTER_NAV: NavItem[] = [
   { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
   { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
+  { key: 'messages', href: '/messages', icon: MessageCircle, labelKey: 'nav.messages' },
   { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
   { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creatorHub' },
 ];
 
-/** Bottom navigation for mobile — quick access (6 items) */
-const BOTTOM_NAV: NavItem[] = [
+/** Bottom navigation for mobile — base items (creator conditional via FIX 20) */
+const BOTTOM_NAV_BASE: NavItem[] = [
   { key: 'feed', href: '/feed', icon: Newspaper, labelKey: 'nav.feed' },
   { key: 'discover', href: '/discover', icon: Compass, labelKey: 'nav.discover' },
+  { key: 'messages', href: '/messages', icon: MessageCircle, labelKey: 'nav.messages' },
   { key: 'ai', href: '/ai', icon: Bot, labelKey: 'nav.ai' },
-  { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creator' },
+];
+
+const BOTTOM_NAV_CREATOR: NavItem = { key: 'creator', href: '/creator', icon: Palette, labelKey: 'nav.creator' };
+
+const BOTTOM_NAV_TAIL: NavItem[] = [
   { key: 'wallet', href: '/wallet', icon: Wallet, labelKey: 'nav.wallet' },
   { key: 'profile', href: '/profile', icon: UserCircle, labelKey: 'nav.profile' },
 ];
@@ -84,9 +99,73 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, firebaseUser, loading, needsOnboarding, signOut } = useAuth();
   const { t } = useI18n();
   const { openAuthModal } = useAuthModal();
+
+  // FIX 56A: Initialize Firebase Cloud Messaging for push notifications
+  useFCM(firebaseUser?.uid ?? null);
+
+  // FIX 102: Initialize online presence (green dot + last seen) via RTDB
+  useEffect(() => {
+    if (firebaseUser?.uid) {
+      initPresence(firebaseUser.uid);
+    }
+  }, [firebaseUser?.uid]);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // FIX 35: Notification Center state
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // FIX 20: Conditionally show Kreator in bottom nav based on earn_on
+  const [earnOn, setEarnOn] = useState(false);
+
+  useEffect(() => {
+    const uid = firebaseUser?.uid;
+    if (!uid) return;
+    let active = true;
+    try {
+      const unsub = onSnapshot(doc(requireDb(), 'users', uid), (snap) => {
+        if (active) setEarnOn(snap.data()?.earn_on === true);
+      });
+      return () => { active = false; unsub(); };
+    } catch {
+      return () => { active = false; };
+    }
+  }, [firebaseUser?.uid]);
+
+  // FIX 35: Real-time notification listener
+  useEffect(() => {
+    const uid = firebaseUser?.uid;
+    if (!uid) return;
+    let active = true;
+    try {
+      const q = query(
+        collection(requireDb(), 'notifications', uid, 'items'),
+        orderBy('createdAt', 'desc'),
+        limit(20)
+      );
+      const unsub = onSnapshot(q, (snap) => {
+        if (!active) return;
+        const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setNotifications(items);
+        setUnreadCount(items.filter((n: any) => !n.read).length);
+      });
+      return () => { active = false; unsub(); };
+    } catch {
+      return () => { active = false; };
+    }
+  }, [firebaseUser?.uid]);
+
+  // FIX 20: Compute bottom nav items dynamically
+  const bottomNavItems: NavItem[] = [
+    ...BOTTOM_NAV_BASE,
+    ...(earnOn ? [BOTTOM_NAV_CREATOR] : []),
+    ...BOTTOM_NAV_TAIL,
+  ];
 
   // Auth guard — show modal instead of redirect
   useEffect(() => {
@@ -102,21 +181,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [loading, firebaseUser, needsOnboarding, router]);
 
-  // Close user menu on outside click
+  // Close user menu and notification panel on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifPanel(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close mobile nav on route change
+  // Close mobile nav and panels on route change
   useEffect(() => {
     setMobileNavOpen(false);
     setMenuOpen(false);
+    setShowNotifPanel(false);
   }, [pathname]);
 
   const handleSignOut = async () => {
@@ -124,6 +207,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setMobileNavOpen(false);
     await signOut();
     router.replace('/');
+  };
+
+  // FIX 35: Notification helpers
+  const formatTimeAgo = (ts: any): string => {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const s = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (s < 60) return 'just now';
+    if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+    if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+    return `${Math.floor(s / 86400)}d ago`;
+  };
+
+  const handleNotifClick = async (n: any) => {
+    if (!n.read) {
+      try {
+        await updateDoc(doc(requireDb(), 'notifications', firebaseUser!.uid, 'items', n.id), { read: true });
+      } catch { /* silent — read-mark is best-effort */ }
+    }
+    if (['message', 'priority_message'].includes(n.type)) {
+      router.push(`/chat/${n.chatId || n.senderId}`);
+    } else if (['follow', 'like', 'comment'].includes(n.type)) {
+      router.push(`/profile/${n.senderId}`);
+    } else if (['booking', 'booking_confirmed', 'booking_cancelled', 'booking_reminder'].includes(n.type)) {
+      router.push('/calendar');
+    } else if (n.type === 'tip' || n.type === 'payout_completed') {
+      router.push('/wallet');
+    } else if (n.type === 'event_ticket') {
+      router.push('/calendar');
+    }
+    setShowNotifPanel(false);
+  };
+
+  const markAllRead = async () => {
+    try {
+      await Promise.all(
+        notifications
+          .filter((n: any) => !n.read)
+          .map((n: any) =>
+            updateDoc(doc(requireDb(), 'notifications', firebaseUser!.uid, 'items', n.id), { read: true })
+          )
+      );
+    } catch { /* silent — best-effort */ }
   };
 
   // Loading state
@@ -166,9 +292,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
 
-          {/* CENTER — Primary navigation (desktop only) */}
+          {/* CENTER — Primary navigation (desktop only) — FIX 20: Creator link conditional */}
           <nav className="hidden lg:flex items-center gap-1">
-            {CENTER_NAV.map((item) => {
+            {CENTER_NAV.filter(item => item.key !== 'creator' || earnOn).map((item) => {
               const active = isActive(item.href);
               const Icon = item.icon;
               return (
@@ -233,14 +359,67 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               <span>{t('nav.wallet')}</span>
             </Link>
 
-            {/* Notifications bell */}
-            <Link
-              href="/account"
-              className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-            </Link>
+            {/* FIX 35: Notifications bell + dropdown */}
+            <div ref={notifRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setShowNotifPanel(!showNotifPanel)}
+                className="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifPanel && (
+                <div className="absolute right-0 top-12 w-80 max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-800 shadow-xl rounded-2xl border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-xs text-[#E4458F] hover:underline">Mark all read</button>
+                    )}
+                  </div>
+                  {notifications.length === 0 ? (
+                    <p className="text-gray-400 text-center py-8 text-sm">No notifications yet</p>
+                  ) : (
+                    notifications.map((n: any) => (
+                      <div
+                        key={n.id}
+                        onClick={() => handleNotifClick(n)}
+                        className={`flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 ${!n.read ? 'bg-pink-50 dark:bg-pink-900/20' : ''}`}
+                      >
+                        <Avatar src={n.senderPhotoURL} name={n.senderName} size={40} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-900 dark:text-gray-100">
+                            <strong>{n.senderName || 'Someone'}</strong>{' '}
+                            {n.type === 'like' && 'liked your post'}
+                            {n.type === 'follow' && 'started following you'}
+                            {n.type === 'tip' && `sent you a ${n.amount || ''} token tip`}
+                            {n.type === 'message' && 'sent you a message'}
+                            {n.type === 'priority_message' && 'sent a priority message'}
+                            {n.type === 'booking' && 'booked a meeting with you'}
+                            {n.type === 'booking_confirmed' && 'confirmed your meeting'}
+                            {n.type === 'booking_cancelled' && 'cancelled a meeting'}
+                            {n.type === 'booking_reminder' && 'Meeting reminder'}
+                            {n.type === 'mismatch_report' && 'reported appearance mismatch'}
+                            {n.type === 'subscription' && 'subscribed to you'}
+                            {n.type === 'comment' && 'commented on your post'}
+                            {n.type === 'event_ticket' && 'bought a ticket to your event'}
+                            {n.type === 'payout_completed' && 'Payout processed'}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">{formatTimeAgo(n.createdAt)}</p>
+                        </div>
+                        {!n.read && <div className="w-2 h-2 rounded-full bg-[#E4458F] flex-shrink-0 mt-2" />}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* User menu (profile dropdown) */}
             <div ref={menuRef} className="relative">
@@ -250,17 +429,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 aria-label={t('appShell.userMenu')}
               >
-                {photoURL ? (
-                  <img
-                    src={photoURL}
-                    alt={displayName}
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs font-semibold">
-                    {initials}
-                  </div>
-                )}
+                {/* FIX 21 + FIX 113: Avatar thumbnail in navbar */}
+                <Avatar src={photoURL} name={displayName || 'U'} size={32} className="ring-2 ring-gray-200 dark:ring-gray-700" />
               </button>
 
               {menuOpen && (
@@ -441,10 +611,29 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
+      {/* FIX 65C: Compact legal footer links — Terms, Privacy, Contact */}
+      <footer className="border-t border-gray-200 dark:border-gray-800 mt-8 py-4 px-6 text-center text-xs text-gray-400 dark:text-gray-500 hidden lg:block">
+        <div className="flex justify-center gap-4">
+          <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Terms of Service</a>
+          <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Privacy Policy</a>
+          <a href="mailto:support@avalo.app" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">Contact</a>
+        </div>
+        <p className="mt-2">&copy; 2026 Avalo. All rights reserved.</p>
+      </footer>
+
+      {/* FIX 56C: Notification permission prompt — shown once after login */}
+      <NotificationPrompt uid={firebaseUser?.uid ?? null} />
+
+      {/* FIX 67D: PWA install prompt — shown after 30s on supported browsers */}
+      <InstallPrompt />
+
+      {/* FIX 108: Daily Missions floating card — visible for logged-in users */}
+      {firebaseUser && <DailyMissions />}
+
       {/* ─── Bottom Navigation — mobile & tablet only ─────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 lg:hidden safe-area-pb">
         <div className="max-w-lg mx-auto flex items-center justify-around h-16">
-          {BOTTOM_NAV.map((item) => {
+          {bottomNavItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
             return (

@@ -27,6 +27,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 import { getTokenBalance } from '@/lib/services/tokenService';
+import FirstPurchaseIncentive from '@/components/wallet/FirstPurchaseIncentive';
 
 interface CreatorEarnings {
   totalTokensEarnedAllTime: number;
@@ -109,6 +110,9 @@ export default function WalletPage() {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {t('wallet.title')}
       </h1>
+
+      {/* FIX 112: First purchase incentive — shown when balance is 0 and no prior purchase */}
+      <FirstPurchaseIncentive balance={tokenBalance} />
 
       {/* Token Balance Card */}
       <div className="card p-6 mb-6">

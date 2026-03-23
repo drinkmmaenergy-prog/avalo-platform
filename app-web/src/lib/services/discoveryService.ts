@@ -43,6 +43,24 @@ import { DEFAULT_DISCOVER_FILTERS } from '../types/publicProfile';
 const PROFILES_PER_PAGE = 20;
 const COLLECTION_NAME = 'public_profiles';
 
+/**
+ * Fix 7: Calculate age from dateOfBirth string (YYYY-MM-DD).
+ * Falls back to pre-computed age field if dateOfBirth is missing.
+ */
+function calculateAge(dob: string | undefined, fallbackAge: number | null): number | null {
+  if (dob) {
+    const birth = new Date(dob);
+    if (!isNaN(birth.getTime())) {
+      const now = new Date();
+      let age = now.getFullYear() - birth.getFullYear();
+      const m = now.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+      return age;
+    }
+  }
+  return fallbackAge;
+}
+
 // ============================================================================
 // PAGINATED DISCOVER QUERY
 // ============================================================================
@@ -117,14 +135,12 @@ export async function fetchPublicProfiles(
       items = items.filter((p) => p.gender && (filters.genders as string[]).includes(p.gender));
     }
 
-    // Age range
+    // Age range — Fix 7: calculate age from dateOfBirth, fall back to p.age
     if (filters.ageMin > 18 || filters.ageMax < 99) {
-      items = items.filter(
-        (p) =>
-          p.age !== null &&
-          p.age >= filters.ageMin &&
-          p.age <= filters.ageMax
-      );
+      items = items.filter((p) => {
+        const age = calculateAge(p.dateOfBirth, p.age);
+        return age !== null && age >= filters.ageMin && age <= filters.ageMax;
+      });
     }
 
     // Body type

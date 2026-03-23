@@ -10,6 +10,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { requireDb } from '@/lib/firebase';
+import EmptyState from '@/components/ui/EmptyState';
 
 // ============================================================================
 // TYPES
@@ -348,15 +349,13 @@ export default function AIDiscoveryPage() {
 
         {/* Empty State */}
         {filteredCompanions.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              No AI Companions Found
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your filters
-            </p>
-          </div>
+          <EmptyState
+            icon="🤖"
+            title="Meet AI companions"
+            description="Chat with AI personalities — first 7 messages free!"
+            actionLabel="Browse AI"
+            actionHref="/ai/discovery"
+          />
         )}
       </div>
     </div>

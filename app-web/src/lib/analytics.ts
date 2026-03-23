@@ -1,6 +1,6 @@
 "use client";
 
-import { logEvent, getAnalytics } from 'firebase/analytics';
+import { logEvent, getAnalytics, type Analytics } from 'firebase/analytics';
 import { getFirebaseApp } from './firebase';
 
 export enum AnalyticsEvent {
@@ -80,3 +80,87 @@ export const getUTMParameters = (): Record<string, string> => {
     utm_content: params.get('utm_content') || '',
   };
 };
+
+// =============================================================================
+// FIX 132: Consent-aware product analytics event tracking
+// =============================================================================
+
+let consentAnalytics: Analytics | null = null;
+
+/**
+ * Initialize analytics only after cookie consent is granted.
+ * Listens for 'consent_granted' custom event and checks localStorage.
+ */
+export function initProductAnalytics() {
+  if (typeof window === 'undefined') return;
+  try {
+    const consent = localStorage.getItem('cookie_consent');
+    if (consent === 'all') {
+      consentAnalytics = getAnalytics(getFirebaseApp());
+    }
+  } catch {
+    // Analytics unavailable — silently degrade
+  }
+}
+
+// Auto-initialize on module load (client-side only)
+if (typeof window !== 'undefined') {
+  window.addEventListener('consent_granted', initProductAnalytics);
+  initProductAnalytics();
+}
+
+/**
+ * Track a product event (consent-aware).
+ * No-ops if analytics not initialized (no consent).
+ */
+export function trackProductEvent(name: string, params?: Record<string, string | number | boolean>) {
+  if (!consentAnalytics) return;
+  try {
+    logEvent(consentAnalytics, name, params);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[ProductAnalytics]', name, params);
+    }
+  } catch {
+    // Silently degrade
+  }
+}
+
+/**
+ * Predefined product events for key user actions.
+ * Import and call: Events.like(targetId)
+ */
+export const Events = {
+  // Auth
+  signUp: (method: string) => trackProductEvent('sign_up', { method }),
+  login: (method: string) => trackProductEvent('login', { method }),
+
+  // Discovery
+  profileView: (profileId: string) => trackProductEvent('profile_view', { profileId }),
+  like: (targetId: string) => trackProductEvent('like', { targetId }),
+  superLike: (targetId: string) => trackProductEvent('super_like', { targetId }),
+  match: (targetId: string) => trackProductEvent('match', { targetId }),
+  boost: () => trackProductEvent('boost_activated'),
+  swipe: (direction: 'like' | 'dislike') => trackProductEvent('swipe', { direction }),
+
+  // Chat
+  messageSent: (chatType: 'match' | 'paid' | 'ai') => trackProductEvent('message_sent', { chatType }),
+  mediaUnlocked: (price: number) => trackProductEvent('media_unlocked', { price }),
+  icebreakerUsed: () => trackProductEvent('icebreaker_used'),
+
+  // Monetization
+  tokenPurchase: (pack: string, tokens: number) => trackProductEvent('purchase', { pack, tokens }),
+  tipSent: (amount: number) => trackProductEvent('tip_sent', { amount }),
+  subscriptionStarted: (creatorId: string) => trackProductEvent('subscription_started', { creatorId }),
+  callStarted: (type: 'voice' | 'video') => trackProductEvent('call_started', { type }),
+
+  // Engagement
+  postCreated: (type: 'post' | 'reel' | 'story') => trackProductEvent('content_created', { type }),
+  challengeJoined: (challengeId: string) => trackProductEvent('challenge_joined', { challengeId }),
+  clubJoined: (clubId: string) => trackProductEvent('club_joined', { clubId }),
+  missionCompleted: (missionId: string) => trackProductEvent('mission_completed', { missionId }),
+
+  // Retention
+  dailyActive: () => trackProductEvent('daily_active'),
+  sessionStart: () => trackProductEvent('session_start'),
+  referralShared: () => trackProductEvent('referral_shared'),
+} as const;

@@ -1,12 +1,12 @@
 {
   "name": "Avalo",
   "short_name": "Avalo",
-  "description": "Connect with creators, explore exclusive content, and engage in meaningful conversations",
+  "description": "Connect, create, earn — the social platform for authentic connections",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#a855f7",
-  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#E4458F",
+  "orientation": "portrait",
   "scope": "/",
   "icons": [
     {

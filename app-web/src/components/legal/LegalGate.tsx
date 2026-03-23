@@ -10,7 +10,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { LEGAL_DOCS, getAllLegalDocKeys } from '../../lib/legal/legalRegistry';
 import type { LegalDocKey } from '../../lib/legal/legalRegistry';
 import { doc, getDoc } from 'firebase/firestore';
-import { requireDb } from '../../lib/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { requireDb, requireFunctions } from '../../lib/firebase';
 import { useAuth } from '../providers/AuthProvider';
 
 interface LegalAcceptance {
@@ -106,22 +107,12 @@ export default function LegalGate({ onAccepted }: LegalGateProps) {
     try {
       setAccepting(true);
 
-      const token = await firebaseUser.getIdToken();
-      const response = await fetch(
-        `https://us-central1-${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.cloudfunctions.net/pack338a_acceptLegal`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ lang }),
-        }
+      // FIX 37: Use httpsCallable instead of raw fetch to avoid CORS errors
+      const acceptLegalFn = httpsCallable<{ lang: string }, { success: boolean }>(
+        requireFunctions(),
+        'pack338a_acceptLegal'
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to save acceptance');
-      }
+      await acceptLegalFn({ lang });
 
       setVisible(false);
       onAccepted?.();

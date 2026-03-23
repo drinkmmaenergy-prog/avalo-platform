@@ -27,7 +27,7 @@ import Footer from '@/components/Footer';
 import { useAuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { useRouter } from 'next/navigation';
-import { Coins, Palette, Shield, Globe } from 'lucide-react';
+import { Users, Bot, Coins, CalendarCheck } from 'lucide-react';
 
 export default function HomePage() {
   const { openAuthModal } = useAuthModal();
@@ -44,34 +44,35 @@ export default function HomePage() {
     }
   };
 
+  /* FIX 66: Updated value propositions to match actual platform features */
   const features = [
     {
-      icon: Coins,
-      title: 'Token Economy',
-      desc: 'Buy, earn, and withdraw tokens seamlessly.',
-      href: '/features/token-economy',
-      requireAuth: false,
+      icon: Users,
+      title: 'Meet Real People',
+      desc: 'Discovery with verified profiles and authentic connections.',
+      href: '/discover',
+      requireAuth: true,
     },
     {
-      icon: Palette,
-      title: 'Creator Tools',
-      desc: 'Analytics, payouts, and audience management.',
+      icon: Bot,
+      title: 'Chat with AI Companions',
+      desc: 'AI personality system — practice, connect, and explore.',
+      href: '/ai',
+      requireAuth: true,
+    },
+    {
+      icon: Coins,
+      title: 'Earn as a Creator',
+      desc: '8 monetization surfaces: tips, subscriptions, media, events, and more.',
       href: '/creator',
       requireAuth: true,
     },
     {
-      icon: Shield,
-      title: 'Safety First',
-      desc: 'AI-powered moderation and verified profiles.',
-      href: '/legal/safety',
-      requireAuth: false,
-    },
-    {
-      icon: Globe,
-      title: 'Global Platform',
-      desc: 'Multi-language, multi-currency support.',
-      href: '/features',
-      requireAuth: false,
+      icon: CalendarCheck,
+      title: 'Safe Meetings',
+      desc: 'Calendar with escrow payments and built-in safety features.',
+      href: '/calendar',
+      requireAuth: true,
     },
   ];
 
@@ -101,10 +102,10 @@ export default function HomePage() {
                 <button
                   key={feature.title}
                   onClick={() => handleFeatureClick(feature.href, feature.requireAuth)}
-                  className="group text-left p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-purple-200 dark:hover:border-purple-800 transition-all duration-200"
+                  className="group text-left p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:border-[#E4458F]/30 dark:hover:border-[#E4458F]/40 transition-all duration-200"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Icon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform" style={{background: 'linear-gradient(135deg, rgba(232,89,60,0.12), rgba(228,69,143,0.12), rgba(139,92,246,0.12))'}}>
+                    <Icon className="w-6 h-6 text-[#E4458F]" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     {feature.title}
@@ -115,6 +116,13 @@ export default function HomePage() {
                 </button>
               );
             })}
+          </div>
+
+          {/* FIX 66: Social proof placeholder — no fake numbers */}
+          <div className="mt-14 text-center">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              Trusted by creators worldwide
+            </p>
           </div>
         </div>
       </section>
@@ -133,11 +141,13 @@ export default function HomePage() {
               { href: '/legal/safety', label: 'Safety' },
               { href: '/download', label: 'Download App' },
               { href: '/features/token-economy', label: 'Token Economy' },
+              { href: '/terms', label: 'Terms of Service' },
+              { href: '/privacy', label: 'Privacy Policy' },
             ].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition"
+                className="text-sm font-medium text-[#E4458F] hover:text-[#E8593C] transition"
               >
                 {link.label}
               </Link>

@@ -13,6 +13,15 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { requireDb, requireStorage } from '@/lib/firebase';
 
+/**
+ * FIX 99: Extract hashtags from caption text.
+ * Returns lowercase array of hashtag strings (e.g. ['#summer', '#fitness']).
+ */
+function extractHashtags(text: string): string[] {
+  const matches = text.match(/#\w+/g);
+  return matches ? matches.map(h => h.toLowerCase()) : [];
+}
+
 export default function CreatePostPage() {
   const { user, firebaseUser } = useAuth();
   const router = useRouter();
@@ -56,6 +65,7 @@ export default function CreatePostPage() {
         authorId: uid,
         userId: uid,
         caption: caption || '',
+        hashtags: extractHashtags(caption), // FIX 99: Store hashtags for search
         mediaUrl: mediaUrls[0] || '',
         mediaUrls,
         mediaType: files[0]?.type.startsWith('video') ? 'video' : 'image',

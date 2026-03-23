@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /profile/*
+Allow: /legal/*
+Disallow: /account
+Disallow: /wallet
+Disallow: /chat
+Disallow: /admin
+Disallow: /moderator
+
+Sitemap: https://avalo.app/sitemap.xml

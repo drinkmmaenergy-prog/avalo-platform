@@ -1,6 +1,7 @@
 export const FIREBASE_CONFIG = {
   apiKey: "AIzaSyANQ6LpHgcbynuL8lKlK8GJduuxiri1V0s",
   authDomain: "avalostaging.firebaseapp.com",
+  databaseURL: "https://avalostaging-default-rtdb.firebaseio.com",
   projectId: "avalostaging",
   storageBucket: "avalostaging.firebasestorage.app",
   messagingSenderId: "1097334032970",

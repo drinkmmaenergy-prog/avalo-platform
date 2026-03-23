@@ -24,6 +24,7 @@ import {
 import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
+  RTL_LOCALES,
   type SupportedLocale,
 } from '@/i18n/config';
 
@@ -131,9 +132,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       if (!cancelled) {
         setMessages(msgs);
         setReady(true);
-        // Update html lang attribute
+        // Update html lang and dir attributes
         if (typeof document !== 'undefined') {
           document.documentElement.lang = locale;
+          document.documentElement.dir = (RTL_LOCALES as readonly string[]).includes(locale) ? 'rtl' : 'ltr';
         }
       }
     });

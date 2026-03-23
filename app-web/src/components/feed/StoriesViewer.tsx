@@ -12,6 +12,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { X, ChevronLeft, ChevronRight, Lock, Plus } from 'lucide-react';
+import { doc, setDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
+import { requireDb } from '@/lib/firebase';
 import { Story } from '@/lib/types';
 import { FeedUserProfile, incrementStoryViews } from '@/lib/services/feedService';
 
@@ -102,6 +104,30 @@ export default function StoriesViewer({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeStoryIndex, goNext, goPrev, closeStory]);
+
+  // FIX 100: Save story to highlight collection
+  const saveToHighlight = useCallback(async (story: Story) => {
+    if (!currentUserId || story.userId !== currentUserId) return;
+    const name = prompt('Highlight name (e.g., Travel, Food, Gym):');
+    if (!name || !name.trim()) return;
+
+    try {
+      const db = requireDb();
+      await setDoc(
+        doc(db, 'users', currentUserId, 'highlights', name.toLowerCase().trim()),
+        {
+          name: name.trim(),
+          stories: arrayUnion(story.id),
+          coverURL: story.mediaUrl, // Use this story's media as cover
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      alert(`Saved to "${name.trim()}" highlight!`);
+    } catch (err) {
+      console.error('[StoriesViewer] Failed to save highlight:', err);
+    }
+  }, [currentUserId]);
 
   // Group stories by userId for the carousel
   const storyUserIds = [...new Set(stories.map((s) => s.userId))];
@@ -214,6 +240,16 @@ export default function StoriesViewer({
               {profiles[activeStory.userId]?.displayName || 'User'}
             </span>
           </div>
+
+          {/* FIX 100: Save to Highlight button — own stories only */}
+          {currentUserId && activeStory.userId === currentUserId && (
+            <button
+              onClick={() => saveToHighlight(activeStory)}
+              className="absolute bottom-8 right-4 z-10 text-white text-xs bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 hover:bg-white/30 transition-colors"
+            >
+              💾 Save to Highlight
+            </button>
+          )}
 
           {/* Navigation areas */}
           <button

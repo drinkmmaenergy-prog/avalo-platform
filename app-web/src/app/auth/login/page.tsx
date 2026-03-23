@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const [socialLoading, setSocialLoading] = useState<'google' | 'apple' | 'facebook' | null>(null);
 
   // Redirect authenticated users away from auth pages
   useEffect(() => {
@@ -99,6 +99,32 @@ export default function LoginPage() {
     }
   };
 
+  // FIX 128: Facebook login — key in developing markets
+  const handleFacebookLogin = async () => {
+    setSocialLoading('facebook');
+    try {
+      await sdk.signInWithFacebook();
+      toast({
+        type: 'success',
+        title: t('auth.welcomeBack'),
+        description: 'Signed in with Facebook',
+      });
+      // AuthProvider will detect auth state → redirect via useEffect
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code !== 'auth/popup-closed-by-user') {
+        const message = err.message || 'Facebook sign-in failed';
+        toast({
+          type: 'error',
+          title: t('auth.signInFailed'),
+          description: message,
+        });
+      }
+    } finally {
+      setSocialLoading(null);
+    }
+  };
+
   // Don't render auth page if already authenticated
   if (authLoading) {
     return (
@@ -153,6 +179,24 @@ export default function LoginPage() {
                 <>
                   <AppleIcon className="w-5 h-5 mr-3" />
                   {t('auth.continueWithApple')}
+                </>
+              )}
+            </button>
+
+            {/* FIX 128: Facebook Login — key in developing markets */}
+            <button
+              onClick={handleFacebookLogin}
+              disabled={!!socialLoading}
+              className="w-full py-3 bg-[#1877F2] text-white rounded-xl flex items-center justify-center gap-3 hover:bg-[#166FE5] transition font-medium disabled:opacity-50"
+            >
+              {socialLoading === 'facebook' ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="white" viewBox="0 0 24 24">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Continue with Facebook
                 </>
               )}
             </button>

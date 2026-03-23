@@ -31,6 +31,7 @@ import {
   estimateTokenCost,
   getDepositAmount,
 } from '@/lib/services/chatService';
+import { Avatar } from '@/components/ui/Avatar';
 
 // ============================================================================
 // TYPES
@@ -137,22 +138,10 @@ function UserAvatar({
 }) {
   const sizeClass = size === 'md' ? 'w-10 h-10 text-sm' : 'w-8 h-8 text-xs';
 
-  if (user?.photoURL) {
-    return (
-      <img
-        src={user.photoURL}
-        alt={user.displayName ?? 'User'}
-        className={`${sizeClass} rounded-full object-cover flex-shrink-0`}
-      />
-    );
-  }
+  const pixelSize = size === 'md' ? 40 : 32;
 
   return (
-    <div
-      className={`${sizeClass} rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center font-semibold flex-shrink-0`}
-    >
-      {getAvatarInitial(user?.displayName)}
-    </div>
+    <Avatar src={user?.photoURL} name={user?.displayName} size={pixelSize} />
   );
 }
 

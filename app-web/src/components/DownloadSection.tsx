@@ -95,6 +95,24 @@ export default function DownloadSection() {
             </Link>
           </div>
         </div>
+
+        {/* FIX 139: QR Code — scan to open Avalo PWA */}
+        <div className="text-center mt-8 p-6 bg-gray-50 dark:bg-gray-800 rounded-2xl max-w-sm mx-auto">
+          <h3 className="font-bold text-lg mb-2">Scan to Open Avalo</h3>
+          <p className="text-sm text-gray-500 mb-4">Open on your phone — works like a native app</p>
+          <div className="w-48 h-48 mx-auto bg-white p-3 rounded-xl shadow-sm">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent('https://avalo.app')}&bgcolor=FFFFFF&color=E4458F`}
+              alt="QR Code — Open Avalo"
+              className="w-full h-full"
+              width={200}
+              height={200}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-3">
+            Progressive Web App — install directly from your browser
+          </p>
+        </div>
       </div>
     </section>
   );
