@@ -10,11 +10,13 @@
 import { useState, useEffect } from 'react';
 
 export default function AgeGate({ children }: { children: React.ReactNode }) {
-  const [verified, setVerified] = useState(true); // Default true to avoid flash
+  const [verified, setVerified] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const ageVerified = localStorage.getItem('age_verified');
     setVerified(!!ageVerified);
+    setLoaded(true);
   }, []);
 
   const handleConfirm = (isAdult: boolean) => {
@@ -26,6 +28,7 @@ export default function AgeGate({ children }: { children: React.ReactNode }) {
     }
   };
 
+  if (!loaded) return null;
   if (verified) return <>{children}</>;
 
   return (

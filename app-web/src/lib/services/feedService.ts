@@ -473,6 +473,12 @@ export async function fetchActiveStories(
       ...doc.data(),
     })) as Story[];
 
+    // Normalize legacy mediaURL field to mediaUrl
+    stories = stories.map(s => ({
+      ...s,
+      mediaUrl: (s as any).mediaUrl || (s as any).mediaURL || '',
+    }));
+
     // Fix 8: Client-side NSFW filtering — handles missing isNSFW field
     if (!includeNSFW) {
       stories = stories.filter((s) => !s.isNSFW);
@@ -511,10 +517,18 @@ export async function fetchUserStories(
     const q = query(collection(requireDb(), 'stories'), ...constraints);
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map(doc => ({
+    let stories = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
     })) as Story[];
+
+    // Normalize legacy mediaURL field to mediaUrl
+    stories = stories.map(s => ({
+      ...s,
+      mediaUrl: (s as any).mediaUrl || (s as any).mediaURL || '',
+    }));
+
+    return stories;
   } catch (error) {
     console.error('Error fetching user stories:', error);
     throw error;
