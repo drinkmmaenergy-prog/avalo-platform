@@ -1612,6 +1612,27 @@ export default function UserProfilePage() {
         )}
 
         {/* ================================================================
+            PROFILE PHOTOS GALLERY — renders photos[] from public_profiles
+            ================================================================ */}
+        {profile.photos && profile.photos.length > 0 && (
+          <div className="mt-4">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Photos</h3>
+            <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden">
+              {profile.photos.map((photoUrl, idx) => (
+                <div key={idx} className="relative aspect-square bg-gray-100 dark:bg-gray-800">
+                  <img
+                    src={photoUrl}
+                    alt={`${profile.displayName} photo ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================
             CONTENT TABS
             ================================================================ */}
         <div className="mt-6 border-b border-gray-200 dark:border-gray-700">
