@@ -321,7 +321,7 @@ function AIChatAvatarPageInner() {
     void refreshFromCallable();
 
     const unsub = onSnapshot(
-      doc(requireDb(), 'wallets', user.uid),
+      doc(requireDb(), 'balances', user.uid, 'wallet', 'main'),
       (snap) => {
         if (snap.exists()) {
           const newBalance = snap.data().tokensBalance ?? snap.data().tokenBalance ?? 0;
@@ -349,8 +349,10 @@ function AIChatAvatarPageInner() {
   // ── Load avatar + initialize session ─────────────────────────────────
   useEffect(() => {
     if (!avatarId) return;
-    initializedRef.current = null;
     initializeChat();
+    return () => {
+      initializedRef.current = null;  // Reset on unmount/avatarId change, NOT on every run
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatarId]);
 
@@ -447,10 +449,17 @@ function AIChatAvatarPageInner() {
       let tokenBalance = 0;
       if (user?.uid) {
         try {
-          const walletRef = doc(requireDb(), 'wallets', user.uid);
+          const walletRef = doc(requireDb(), 'balances', user.uid, 'wallet', 'main');
           const walletSnap = await getDoc(walletRef);
           if (walletSnap.exists()) {
-            tokenBalance = walletSnap.data().tokensBalance ?? walletSnap.data().tokenBalance ?? 0;
+            tokenBalance = walletSnap.data().tokensBalance ?? walletSnap.data().tokenBalance ?? walletSnap.data().balance ?? 0;
+          } else {
+            // fallback path
+            const fallbackRef = doc(requireDb(), 'balances', user.uid);
+            const fallbackSnap = await getDoc(fallbackRef);
+            if (fallbackSnap.exists()) {
+              tokenBalance = fallbackSnap.data().tokensBalance ?? fallbackSnap.data().tokenBalance ?? fallbackSnap.data().balance ?? 0;
+            }
           }
         } catch (walletErr) {
           console.warn('[AIChatPage] Could not load wallet:', walletErr);
