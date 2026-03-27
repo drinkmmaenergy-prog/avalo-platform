@@ -265,8 +265,11 @@ function ProfileCard({
   const initial = profile.displayName?.charAt(0)?.toUpperCase() || '?';
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
       className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-sm hover:shadow-md transition-shadow duration-200 ${isLiked ? 'opacity-50' : ''}`}
     >
       {/* FIX 72: Free Chat badge for less popular profiles */}
@@ -378,7 +381,7 @@ function ProfileCard({
           </button>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 

@@ -30,6 +30,16 @@ service cloud.firestore {
     }
 
     // ──────────────────────────────────────────────
+    
+    // ──────────────────────────────────────────────
+    // BLOCK 1B: Public Profiles — discoverable user data
+    // ──────────────────────────────────────────────
+    match /public_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
     // BLOCK 1: Users
     // ──────────────────────────────────────────────
     match /users/{userId} {
@@ -48,15 +58,6 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if false;
       }
-    }
-
-    // ──────────────────────────────────────────────
-    // BLOCK 2: Public Profiles — discovery
-    // Owner can write (dual-write from profile edit).
-    // ──────────────────────────────────────────────
-    match /public_profiles/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
     }
 
     // ──────────────────────────────────────────────
@@ -604,3 +605,4 @@ service cloud.firestore {
 
   }
 }
+
