@@ -110,3 +110,5 @@ stripe_webhook_secret_cli.txt
 audit-out/
 
 pnpm-lock.yaml
+
+service-account.json

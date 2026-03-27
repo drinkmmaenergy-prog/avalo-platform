@@ -386,6 +386,9 @@ function AIChatAvatarPageInner() {
     try {
       setLoading(true);
 
+      // FIX: Clear messages on re-entry to prevent duplication
+      setMessages([]);
+
       // Load avatar profile
       const avatarRef = doc(requireDb(), 'ai_avatars', avatarId);
       const snap = await getDoc(avatarRef);

@@ -273,8 +273,6 @@ export default function StoriesViewer({
                   Unlock for {activeStory.unlockPrice || 0} tokens
                 </p>
               </div>
-            ) : !activeStory.mediaUrl ? (
-              <div className="w-full h-full bg-gray-900 rounded-full" />
             ) : activeStory.mediaType === 'video' ? (
               <video
                 src={activeStory.mediaUrl}
