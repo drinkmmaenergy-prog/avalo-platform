@@ -43,8 +43,14 @@ export default function CreateStoryPage() {
 
       await addDoc(collection(db, 'stories'), {
         userId: uid,
-        mediaURL,
+        mediaUrl: mediaURL,
+        mediaType: file.type.startsWith('video/') ? 'video' : 'photo',
         text: text || '',
+        duration: 5,
+        isNSFW: false,
+        isPremium: false,
+        unlockPrice: 0,
+        viewCount: 0,
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
