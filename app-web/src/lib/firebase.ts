@@ -26,7 +26,7 @@
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence, type Auth } from 'firebase/auth';
-import { getFirestore, enableMultiTabIndexedDbPersistence, type Firestore } from 'firebase/firestore';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getFunctions, type Functions } from 'firebase/functions';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getDatabase, type Database } from 'firebase/database';
@@ -74,16 +74,13 @@ export function requireDb(): Firestore {
 }
 
 /**
- * FIX 117: Enable Firestore offline persistence.
- * Allows cached data to render when the user is offline.
- * Silently ignores errors (e.g. if multi-tab persistence already enabled).
+ * FIX 117: Firestore offline persistence — DISABLED.
+ * enableMultiTabIndexedDbPersistence() was removed because it is deprecated
+ * and causes "FIRESTORE INTERNAL ASSERTION FAILED: Unexpected state" when
+ * the module is re-evaluated (React Strict Mode, HMR, or SSR hydration).
+ * Firestore works correctly without it; re-enable only with the new
+ * `initializeFirestore(app, { localCache: persistentLocalCache(...) })` API.
  */
-if (typeof window !== 'undefined') {
-  const _offlineDb = getFirestore(app);
-  void enableMultiTabIndexedDbPersistence(_offlineDb).catch(() => {
-    /* Silently ignore — persistence may already be enabled or unsupported */
-  });
-}
 
 /**
  * Firestore convenience export.
