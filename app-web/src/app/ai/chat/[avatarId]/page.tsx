@@ -275,6 +275,8 @@ function AIChatAvatarPageInner() {
   const pendingMessages = useRef<string[]>([]);
   /** FIX 137: Ref to track if AI is currently processing (avoids stale closure issues) */
   const processingRef = useRef(false);
+  /** Strict Mode guard: prevent double-invoke of initializeChat for the same avatarId */
+  const initializedRef = useRef<string | null>(null);
 
   // ── BUG 5 + 2.7: Detect ?resumed=true or ?purchased=true and show toast ──
   useEffect(() => {
@@ -347,6 +349,7 @@ function AIChatAvatarPageInner() {
   // ── Load avatar + initialize session ─────────────────────────────────
   useEffect(() => {
     if (!avatarId) return;
+    initializedRef.current = null;
     initializeChat();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatarId]);
@@ -383,6 +386,10 @@ function AIChatAvatarPageInner() {
   }, [session?.tokenBalance, session?.state, session?.freeMessagesUsed, session?.freeExtended, session?.laterMessageCount]);
 
   const initializeChat = async () => {
+    // Strict Mode guard: skip if already initialized for this avatarId
+    if (initializedRef.current === avatarId) return;
+    initializedRef.current = avatarId;
+
     try {
       setLoading(true);
 
