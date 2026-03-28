@@ -267,6 +267,11 @@ function AIChatAvatarPageInner() {
   const [showGameMenu, setShowGameMenu] = useState(false);
   /** FIX 54: Story mode indicator */
   const [isStoryMode, setIsStoryMode] = useState(false);
+  /** Escrow system state */
+  const [escrowBalance, setEscrowBalance] = useState<number>(0);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(50);
+  const [walletBalanceForDeposit, setWalletBalanceForDeposit] = useState(0);
   /** BUG 5: tracks whether resumed toast has been shown */
   const resumedToastShown = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -457,6 +462,33 @@ function AIChatAvatarPageInner() {
         } catch (walletErr) {
           console.warn('[AIChatPage] Could not load wallet:', walletErr);
         }
+
+        // Load escrow status
+        const chatId = `${user.uid}_${avatarId}`;
+        try {
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            const idToken = await currentUser.getIdToken();
+            const escrowRes = await fetch('/api/ai/escrow', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+              body: JSON.stringify({ action: 'status', chatId }),
+            });
+            const escrowData = await escrowRes.json();
+            if (escrowData.success && escrowData.status === 'active' && escrowData.remainingTokens > 0) {
+              setEscrowBalance(escrowData.remainingTokens);
+            } else {
+              // No active escrow — show deposit modal after init
+              setShowDepositModal(true);
+            }
+          } else {
+            setShowDepositModal(true);
+          }
+        } catch {
+          setShowDepositModal(true);
+        }
+
+        setWalletBalanceForDeposit(tokenBalance);
       }
 
       // 2.8: Load persisted messages from ai_chats/{chatId}/messages
@@ -718,6 +750,7 @@ function AIChatAvatarPageInner() {
         return;
       }
 
+      const chatId = `${user?.uid}_${avatarId}`;
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
@@ -729,10 +762,15 @@ function AIChatAvatarPageInner() {
           messages: conversationHistory,
           avatarId: currentSession.avatarId,
           userMessage: userContent,
+          chatId,
         }),
       });
 
       const data = await response.json();
+
+      if (data.remainingTokens !== undefined) {
+        setEscrowBalance(data.remainingTokens);
+      }
 
       if (data.success && data.reply) {
         const wordCount = countWords(data.reply);
@@ -832,6 +870,53 @@ function AIChatAvatarPageInner() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const depositToEscrow = async (amount: number) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser || !user?.uid) return;
+    try {
+      const idToken = await currentUser.getIdToken();
+      const chatId = `${user.uid}_${avatarId}`;
+      const res = await fetch('/api/ai/escrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'deposit', chatId, amount }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEscrowBalance(data.remainingTokens);
+        setSession(prev => prev ? { ...prev, tokenBalance: data.walletBalance } : prev);
+        setShowDepositModal(false);
+      } else {
+        toast({ type: 'error', title: 'Deposit failed', description: data.error });
+      }
+    } catch {
+      toast({ type: 'error', title: 'Deposit failed', description: 'Please try again' });
+    }
+  };
+
+  const endChatWithRefund = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser || !user?.uid) return;
+    try {
+      const idToken = await currentUser.getIdToken();
+      const chatId = `${user.uid}_${avatarId}`;
+      const res = await fetch('/api/ai/escrow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+        body: JSON.stringify({ action: 'refund', chatId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast({ type: 'success', title: `${data.refundedTokens} tokens returned to wallet` });
+        setSession(prev => prev ? { ...prev, tokenBalance: data.walletBalance } : prev);
+        setEscrowBalance(0);
+        setShowDepositModal(true);
+      }
+    } catch {
+      toast({ type: 'error', title: 'Refund failed', description: 'Please try again' });
     }
   };
 
@@ -1062,7 +1147,7 @@ function AIChatAvatarPageInner() {
                   Balance:
                 </span>
                 <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                  {session.tokenBalance} tokens
+                  {escrowBalance} tokens (in escrow)
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -1082,6 +1167,14 @@ function AIChatAvatarPageInner() {
                 </span>
               </div>
             </div>
+            {escrowBalance > 0 && (
+              <button
+                onClick={endChatWithRefund}
+                className="w-full mt-2 py-1.5 px-3 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                End Chat & Refund {escrowBalance} tokens
+              </button>
+            )}
           </div>
 
           {/* Free messages indicator */}
@@ -1338,75 +1431,42 @@ function AIChatAvatarPageInner() {
         </div>
       </div>
 
-      {/* 2.6: Token Purchase / Use Wallet Modal */}
-      {showTokenModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md mx-4 shadow-2xl">
-            <div className="text-center mb-6">
-              <Coins className="w-12 h-12 text-purple-500 mx-auto mb-3" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {session.tokenBalance <= 0
-                  ? 'No Tokens Remaining'
-                  : 'Low Token Balance'}
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                You have <strong>{session.tokenBalance} tokens</strong> remaining.
-                {session.tokenBalance <= 0 &&
-                  ' Add more tokens to continue chatting.'}
-              </p>
-              {/* BUG 4: Show "Later" allowance info if not yet extended */}
-              {!session.freeExtended && (
-                <p className="text-gray-500 dark:text-gray-500 text-xs mt-2">
-                  You can dismiss this once and get {LATER_FREE_MESSAGE_LIMIT} more free messages.
-                </p>
-              )}
-              {session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT && (
-                <p className="text-red-500 dark:text-red-400 text-xs mt-2">
-                  You&apos;ve used all {LATER_FREE_MESSAGE_LIMIT} extended free messages. Please purchase tokens to continue.
-                </p>
-              )}
+      {/* Old paywall modal replaced by escrow deposit modal */}
+
+      {/* Escrow Deposit Modal */}
+      {showDepositModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full">
+            <h2 className="text-xl font-bold mb-2">Start Chat</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Allocate tokens to this conversation. Unused tokens are refunded when you end the chat.
+            </p>
+            <div className="mb-4">
+              <label className="text-sm font-medium">Wallet balance: {session?.tokenBalance ?? walletBalanceForDeposit} tokens</label>
+              <div className="flex items-center gap-3 mt-2">
+                <input
+                  type="range"
+                  min={10}
+                  max={Math.min(500, session?.tokenBalance ?? 500)}
+                  value={depositAmount}
+                  onChange={e => setDepositAmount(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-lg font-bold w-16 text-right">{depositAmount}</span>
+              </div>
             </div>
-            <div className="space-y-3">
-              {/* 2.6: If wallet has tokens, show "Use tokens" as PRIMARY */}
-              {session.tokenBalance > 0 ? (
-                <>
-                  <button
-                    onClick={handleUseWalletTokens}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
-                  >
-                    Use tokens from wallet ({session.tokenBalance} available)
-                  </button>
-                  <button
-                    onClick={handleBuyTokensClick}
-                    className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-3 rounded-xl transition-colors text-sm"
-                  >
-                    Buy more tokens
-                  </button>
-                </>
-              ) : (
-                /* 2.6: If wallet is empty, show only "Buy tokens" */
-                <button
-                  onClick={handleBuyTokensClick}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
-                >
-                  Buy Tokens
-                </button>
-              )}
-              {/* BUG 4: "Later" button — only allows bypass if not already exhausted */}
-              <button
-                onClick={handleLaterClick}
-                disabled={session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT}
-                className={`w-full font-semibold py-3 rounded-xl transition-colors ${
-                  session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT
-                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                    : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
-                }`}
-              >
-                {session.freeExtended && session.laterMessageCount >= LATER_FREE_MESSAGE_LIMIT
-                  ? 'No more free messages'
-                  : 'Later'}
-              </button>
-            </div>
+            <button
+              onClick={() => depositToEscrow(depositAmount)}
+              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+            >
+              Deposit {depositAmount} tokens
+            </button>
+            <button
+              onClick={() => window.history.back()}
+              className="w-full py-2 mt-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       )}

@@ -35,6 +35,7 @@ interface ChatRequestBody {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
   avatarId: string;
   userMessage: string;
+  chatId?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // ── Parse request body ────────────────────────────────────────────
     const body: ChatRequestBody = await request.json();
-    const { systemPrompt, messages, avatarId, userMessage } = body;
+    const { systemPrompt, messages, avatarId, userMessage, chatId } = body;
 
     if (!systemPrompt || !avatarId || !userMessage) {
       return NextResponse.json(
@@ -123,12 +124,12 @@ export async function POST(request: NextRequest) {
     // ── Store messages in Firestore ───────────────────────────────────
     // Collection: ai_chats/{chatId}/messages/{messageId}
     // chatId is deterministic: `${userId}_${avatarId}`
-    const chatId = `${userId}_${avatarId}`;
+    const storageChatId = `${userId}_${avatarId}`;
     const db = getAdminFirestore();
-    const messagesRef = db.collection('ai_chats').doc(chatId).collection('messages');
+    const messagesRef = db.collection('ai_chats').doc(storageChatId).collection('messages');
 
     // Ensure parent chat document exists
-    const chatDocRef = db.collection('ai_chats').doc(chatId);
+    const chatDocRef = db.collection('ai_chats').doc(storageChatId);
     await chatDocRef.set(
       {
         userId,
@@ -152,9 +153,32 @@ export async function POST(request: NextRequest) {
       timestamp: FieldValue.serverTimestamp(),
     });
 
+    // Deduct 1 token from escrow if chatId provided
+    let remainingTokens: number | undefined;
+    if (chatId) {
+      try {
+        await db.runTransaction(async (tx) => {
+          const escrowRef = db.collection('chat_escrows').doc(chatId);
+          const escrowSnap = await tx.get(escrowRef);
+          if (escrowSnap.exists) {
+            const current = escrowSnap.data()!.remainingTokens ?? 0;
+            remainingTokens = Math.max(0, current - 1);
+            tx.update(escrowRef, {
+              remainingTokens: remainingTokens,
+              spentTokens: (escrowSnap.data()!.spentTokens ?? 0) + 1,
+            });
+          }
+        });
+      } catch (escrowErr) {
+        console.warn('[/api/ai/chat] Escrow deduction failed:', escrowErr);
+        // Non-fatal — do not block the response
+      }
+    }
+
     return NextResponse.json({
       success: true,
       reply: aiReply,
+      ...(remainingTokens !== undefined && { remainingTokens }),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal server error';
