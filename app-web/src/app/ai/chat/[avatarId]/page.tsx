@@ -282,6 +282,8 @@ function AIChatAvatarPageInner() {
   const processingRef = useRef(false);
   /** Strict Mode guard: prevent double-invoke of initializeChat for the same avatarId */
   const initializedRef = useRef<string | null>(null);
+  /** FIX 2: Prevent message duplication — track which chatId has had messages loaded */
+  const messagesLoadedRef = useRef<string | null>(null);
 
   // ── BUG 5 + 2.7: Detect ?resumed=true or ?purchased=true and show toast ──
   useEffect(() => {
@@ -564,9 +566,10 @@ function AIChatAvatarPageInner() {
       setSession(chatSession);
 
       // 2.8: If persisted messages exist, use them; otherwise show welcome message
-      if (persistedMessages.length > 0) {
-        setMessages(persistedMessages);
-      } else {
+      // FIX 2: Only set messages once per chatId to prevent duplication on re-render
+      const chatIdForMessages = user?.uid ? `${user.uid}_${avatarId}` : avatarId;
+      if (messagesLoadedRef.current !== chatIdForMessages) {
+        messagesLoadedRef.current = chatIdForMessages;
         // Fix 4: Language-aware welcome message
         const locale = getUILocale();
         const welcomeMsg: Message = {
@@ -578,7 +581,7 @@ function AIChatAvatarPageInner() {
           wasFree: true,
           wordCount: 0,
         };
-        setMessages([welcomeMsg]);
+        setMessages(persistedMessages.length > 0 ? persistedMessages : [welcomeMsg]);
       }
     } catch (error: any) {
       console.error('[AIChatPage] Failed to initialize chat:', error);
@@ -646,6 +649,10 @@ function AIChatAvatarPageInner() {
    * Messages appear instantly. Bot responses queue and process in order.
    */
   const handleSend = async () => {
+    if (escrowBalance <= 0) {
+      setShowDepositModal(true);
+      return;
+    }
     if (!inputText.trim() || !session || !avatar) return;
 
     // FIX 54: Detect "end the story" to disable story mode
@@ -1352,6 +1359,16 @@ function AIChatAvatarPageInner() {
           </div>
         )}
 
+        {/* Escrow empty indicator */}
+        {escrowBalance <= 0 && (
+          <p className="text-xs text-center text-orange-500 mb-1">
+            No tokens in escrow —{' '}
+            <button onClick={() => setShowDepositModal(true)} className="underline font-medium">
+              deposit tokens to continue
+            </button>
+          </p>
+        )}
+
         {/* Input Bar */}
         <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4 relative">
           {/* FIX 53: Game menu popup */}
@@ -1418,9 +1435,9 @@ function AIChatAvatarPageInner() {
 
             <button
               onClick={handleSend}
-              disabled={!inputText.trim()} /* FIX 137: ONLY disabled when empty — never blocks on sending */
+              disabled={sending || escrowBalance <= 0}
               className={`rounded-full p-2.5 ${
-                !inputText.trim()
+                sending || escrowBalance <= 0
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 hover:bg-purple-600'
               } text-white font-bold transition-colors`}
