@@ -80,6 +80,7 @@ interface Message {
   tokensCost: number;
   wasFree: boolean;
   wordCount: number;
+  imageUrl?: string;
 }
 
 interface ChatSessionState {
@@ -668,7 +669,7 @@ function AIChatAvatarPageInner() {
       setShowDepositModal(true);
       return;
     }
-    if (!inputText.trim() || !session || !avatar) return;
+    if ((!inputText.trim() && !selectedImage) || !session || !avatar) return;
 
     // FIX 54: Detect "end the story" to disable story mode
     if (isStoryMode && inputText.toLowerCase().includes('end the story')) {
@@ -680,7 +681,8 @@ function AIChatAvatarPageInner() {
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content,
+      content: content || '📷 Image',
+      imageUrl: imagePreview ?? undefined,
       timestamp: new Date(),
       tokensCost: 0,
       wasFree: false,
@@ -1369,6 +1371,13 @@ function AIChatAvatarPageInner() {
                 }`}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
+                {message.imageUrl && (
+                  <img
+                    src={message.imageUrl}
+                    alt="attachment"
+                    className="mt-2 max-w-[200px] rounded-lg border border-white/20"
+                  />
+                )}
 
                 {message.role === 'ai' && message.tokensCost > 0 && (
                   <div className="mt-1.5 text-[10px] opacity-75 bg-black/10 dark:bg-white/10 px-2 py-0.5 rounded inline-block">
@@ -1525,9 +1534,9 @@ function AIChatAvatarPageInner() {
 
             <button
               onClick={handleSend}
-              disabled={sending || escrowBalance <= 0}
+              disabled={sending || escrowBalance <= 0 || (!inputText.trim() && !selectedImage)}
               className={`rounded-full p-2.5 ${
-                sending || escrowBalance <= 0
+                sending || escrowBalance <= 0 || (!inputText.trim() && !selectedImage)
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 hover:bg-purple-600'
               } text-white font-bold transition-colors`}
