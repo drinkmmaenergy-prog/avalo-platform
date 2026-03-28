@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     const { systemPrompt, messages, avatarId, userMessage, chatId } = body;
     const tokensToDeduct = Math.max(1, Math.min(100, body.tokensToDeduct ?? 1));
 
-    if (!systemPrompt || !avatarId || !userMessage) {
+    if (!systemPrompt || !avatarId || (!userMessage && !imageFile)) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields: systemPrompt, avatarId, userMessage.' },
         { status: 400 }
@@ -110,14 +110,30 @@ export async function POST(request: NextRequest) {
     console.log('[AI chat] userContent type:', typeof userContent);
     if (imageFile) {
       const imageBuffer = await imageFile.arrayBuffer();
+
+      // Detect actual media type from magic bytes
+      const bytes = new Uint8Array(imageBuffer);
+      let detectedType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' = 'image/jpeg';
+      if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        detectedType = 'image/png';
+      } else if (bytes[0] === 0xFF && bytes[1] === 0xD8) {
+        detectedType = 'image/jpeg';
+      } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+        detectedType = 'image/gif';
+      } else if (
+        bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+      ) {
+        detectedType = 'image/webp';
+      }
+
       const base64 = Buffer.from(imageBuffer).toString('base64');
-      const mediaType = imageFile.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+      const mediaType = detectedType;
       userContent = [
         {
           type: 'image',
           source: { type: 'base64', media_type: mediaType, data: base64 },
         },
-        { type: 'text', text: userMessage },
+        { type: 'text', text: body.userMessage || 'Please describe this image.' },
       ];
     }
 
