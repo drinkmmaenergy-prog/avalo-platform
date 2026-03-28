@@ -519,6 +519,15 @@ function AIChatAvatarPageInner() {
               };
             });
 
+            // Deduplicate by role+content to handle React Strict Mode double-writes
+            const seen = new Set<string>();
+            persistedMessages = persistedMessages.filter(msg => {
+              const key = `${msg.role}:::${typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
             // Count how many user messages were sent (for freeMessagesUsed tracking)
             persistedTotalSent = persistedMessages.filter((m) => m.role === 'user').length;
             persistedFreeUsed = Math.min(persistedTotalSent, AI_FREE_MESSAGES);
@@ -805,11 +814,22 @@ function AIChatAvatarPageInner() {
         if (user?.uid) {
           const chatId = `${user.uid}_${avatarId}`;
           const messagesCol = collection(requireDb(), 'ai_chats', chatId, 'messages');
-          addDoc(messagesCol, {
-            role: 'ai',
-            content: data.reply,
-            timestamp: serverTimestamp(),
-          }).catch((err) => console.warn('[AIChatPage] Failed to persist AI message:', err));
+          const recentMsgs = messagesRef2?.current ?? messages;
+          const aiReplyText = data.reply;
+          const alreadySaved = recentMsgs.slice(-3).some(
+            m => m.role === 'ai' &&
+            (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)) ===
+            (typeof aiReplyText === 'string' ? aiReplyText : JSON.stringify(aiReplyText))
+          );
+          if (alreadySaved) {
+            // skip addDoc — message already in state, likely Strict Mode duplicate
+          } else {
+            addDoc(messagesCol, {
+              role: 'ai',
+              content: data.reply,
+              timestamp: serverTimestamp(),
+            }).catch((err) => console.warn('[AIChatPage] Failed to persist AI message:', err));
+          }
         }
 
         setSession((prev) => {
