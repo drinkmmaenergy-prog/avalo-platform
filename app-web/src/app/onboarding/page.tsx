@@ -66,7 +66,8 @@ export default function OnboardingPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Earn on state (step 7) ───────────────────────────────────────
-  const [earnOnChoice, setEarnOnChoice] = useState<'connect' | 'earn' | null>(null);
+  const [wantsConnect, setWantsConnect] = useState(false);
+  const [wantsEarn, setWantsEarn] = useState(false);
   const [selectedSurfaces, setSelectedSurfaces] = useState<Partial<Record<EarnSurfaceKey, boolean>>>({
     chat: true,
     tips: true,
@@ -153,7 +154,11 @@ export default function OnboardingPage() {
       }
       setStep(7);
     } else if (step === 7) {
-      // earn_on step — user can skip (earnOnChoice=null treated as 'connect')
+      // earn_on step — at least one mode must be selected
+      if (!wantsConnect && !wantsEarn) {
+        toast({ type: 'warning', title: 'Please select at least one option' });
+        return;
+      }
       setStep(8);
     } else if (step === 8) {
       // FIX 95: Photos — minimum 3 required
@@ -285,7 +290,8 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const isEarner = earnOnChoice === 'earn';
+      const mode = wantsEarn ? (wantsConnect ? 'both' : 'earn') : 'connect';
+      const isEarner = wantsEarn;
 
       // Build earn_surfaces object (only if earner)
       const earn_surfaces = isEarner
@@ -355,6 +361,8 @@ export default function OnboardingPage() {
         earn_on: isEarner,
         earn_surfaces,
         earn_profile,
+        // Combined onboarding mode: 'connect' | 'earn' | 'both'
+        onboardingMode: mode,
         // Backward-compatible fields
         earnOn: isEarner,
         modes: {
@@ -690,9 +698,9 @@ export default function OnboardingPage() {
                 {/* Option A: Connect & Meet */}
                 <button
                   type="button"
-                  onClick={() => setEarnOnChoice('connect')}
+                  onClick={() => setWantsConnect(prev => !prev)}
                   className={`text-left p-4 rounded-xl border-2 transition-all ${
-                    earnOnChoice === 'connect'
+                    wantsConnect
                       ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                       : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                   }`}
@@ -711,9 +719,9 @@ export default function OnboardingPage() {
                 {/* Option B: Earn with Avalo */}
                 <button
                   type="button"
-                  onClick={() => setEarnOnChoice('earn')}
+                  onClick={() => setWantsEarn(prev => !prev)}
                   className={`text-left p-4 rounded-xl border-2 transition-all ${
-                    earnOnChoice === 'earn'
+                    wantsEarn
                       ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20'
                       : 'border-gray-200 hover:border-gray-300 dark:border-gray-700'
                   }`}
@@ -731,7 +739,7 @@ export default function OnboardingPage() {
               </div>
 
               {/* Surface selection (shown only if 'earn' chosen) */}
-              {earnOnChoice === 'earn' && (
+              {wantsEarn && (
                 <div className="space-y-3">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     Select which surfaces to activate (you can change these later):
@@ -765,9 +773,9 @@ export default function OnboardingPage() {
               )}
 
               {/* Skip hint */}
-              {!earnOnChoice && (
+              {!wantsConnect && !wantsEarn && (
                 <p className="text-xs text-center text-muted-foreground">
-                  You can skip this step — earning can be enabled later from Settings.
+                  Please select at least one option to continue.
                 </p>
               )}
             </div>
@@ -840,11 +848,26 @@ export default function OnboardingPage() {
                 <p className="text-sm"><strong>Photos:</strong> {photos.length} uploaded</p>
               </div>
 
-              {/* Show earn_on summary */}
-              {earnOnChoice === 'earn' && (
+              {/* Show mode summary */}
+              {wantsConnect && wantsEarn && (
+                <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3 text-left">
+                  <p className="text-sm font-medium text-purple-800 dark:text-purple-300">
+                    🚀 Full mode — Connect, Meet & Earn
+                  </p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    Active surfaces:{' '}
+                    {surfaceKeys
+                      .filter((k) => selectedSurfaces[k])
+                      .map((k) => EARN_SURFACE_META[k].label)
+                      .join(', ') || 'None selected'}
+                  </p>
+                </div>
+              )}
+
+              {wantsEarn && !wantsConnect && (
                 <div className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-lg p-3 text-left">
                   <p className="text-sm font-medium text-pink-800 dark:text-pink-300">
-                    💰 Earning mode enabled
+                    💰 Creator mode — Earn with Avalo
                   </p>
                   <p className="text-xs text-pink-600 dark:text-pink-400 mt-1">
                     Active surfaces:{' '}
@@ -856,7 +879,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {earnOnChoice === 'connect' && (
+              {wantsConnect && !wantsEarn && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 text-left">
                   <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
                     🤝 Social mode — Connect & Meet
@@ -980,7 +1003,7 @@ export default function OnboardingPage() {
                   onClick={handleNextStep}
                   className="btn btn-primary px-6 py-2 text-sm"
                 >
-                  {step === 7 && !earnOnChoice ? 'Skip' : t('onboarding.next')}
+                  {step === 7 && !wantsConnect && !wantsEarn ? 'Skip' : t('onboarding.next')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </button>
               ) : (

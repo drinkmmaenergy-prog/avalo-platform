@@ -82,6 +82,7 @@ interface AICompanionFormState {
   backstory: string;
   interests: string[];
   voiceType: string;
+  costPerMessage: number;
   profilePhotoFile: File | null;
   coverPhotoFile: File | null;
   galleryPhotoFiles: File[];
@@ -100,6 +101,7 @@ const INITIAL_FORM_STATE: AICompanionFormState = {
   backstory: '',
   interests: [],
   voiceType: '',
+  costPerMessage: 1,
   profilePhotoFile: null,
   coverPhotoFile: null,
   galleryPhotoFiles: [],
@@ -199,6 +201,9 @@ function BotCard({
             {avatar.totalConversations} conversations · ⭐{' '}
             {avatar.averageRating > 0 ? avatar.averageRating.toFixed(1) : '—'}
           </p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">
+            {avatar.costPerMessage ?? 1} token/msg
+          </p>
         </div>
       </button>
       {/* BUG 8: Delete Bot button */}
@@ -294,6 +299,7 @@ export default function CreatorAIPage() {
           totalRatings: d.totalRatings || d.ratingCount || 0,
           profession: d.profession || '',
           basePrompt: d.basePrompt || '',
+          costPerMessage: d.costPerMessage ?? 1,
           createdAt: d.createdAt || null,
           updatedAt: d.updatedAt || null,
         };
@@ -480,6 +486,7 @@ export default function CreatorAIPage() {
         // FIX 52: Profession preset and base prompt
         profession,
         basePrompt,
+        costPerMessage: form.costPerMessage ?? 1,
         creatorId: user.uid,
         creatorDisplayName,
         isAvaloPlatform: false,
@@ -794,6 +801,26 @@ export default function CreatorAIPage() {
                 selected={form.interests}
                 onChange={(selected) => updateForm('interests', selected)}
               />
+
+              {/* Cost per message */}
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Cost per message (tokens)
+                </label>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  How many tokens users spend per message. Default is 1. Higher = more earnings per conversation.
+                </p>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={form.costPerMessage ?? 1}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, costPerMessage: Math.max(1, Number(e.target.value)) }))
+                  }
+                  className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-center focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
 
               {/* Voice Type */}
               <div>

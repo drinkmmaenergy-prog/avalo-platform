@@ -36,6 +36,7 @@ interface ChatRequestBody {
   avatarId: string;
   userMessage: string;
   chatId?: string;
+  tokensToDeduct?: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -72,9 +73,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ── Parse request body ────────────────────────────────────────────
-    const body: ChatRequestBody = await request.json();
+    // ── Parse request body (JSON or FormData with image) ──────────────
+    const contentType = request.headers.get('content-type') ?? '';
+    let body: ChatRequestBody;
+    let imageFile: File | null = null;
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      body = {
+        systemPrompt: formData.get('systemPrompt') as string,
+        messages: JSON.parse(formData.get('messages') as string),
+        avatarId: formData.get('avatarId') as string,
+        userMessage: formData.get('userMessage') as string,
+        chatId: formData.get('chatId') as string || undefined,
+        tokensToDeduct: Number(formData.get('tokensToDeduct')) || 1,
+      };
+      imageFile = formData.get('image') as File | null;
+    } else {
+      body = await request.json();
+    }
+
     const { systemPrompt, messages, avatarId, userMessage, chatId } = body;
+    const tokensToDeduct = Math.max(1, Math.min(100, body.tokensToDeduct ?? 1));
 
     if (!systemPrompt || !avatarId || !userMessage) {
       return NextResponse.json(
@@ -83,13 +103,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ── Build user message content (text or text+image) ───────────────
+    let userContent: any = userMessage;
+    if (imageFile) {
+      const imageBuffer = await imageFile.arrayBuffer();
+      const base64 = Buffer.from(imageBuffer).toString('base64');
+      const mediaType = imageFile.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+      userContent = [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: mediaType, data: base64 },
+        },
+        { type: 'text', text: userMessage },
+      ];
+    }
+
     // ── Build Anthropic messages array ────────────────────────────────
     const anthropicMessages = [
       ...(messages || []).map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
-      { role: 'user' as const, content: userMessage },
+      { role: 'user' as const, content: userContent },
     ];
 
     // ── Call Anthropic API ────────────────────────────────────────────
@@ -153,7 +188,7 @@ export async function POST(request: NextRequest) {
       timestamp: FieldValue.serverTimestamp(),
     });
 
-    // Deduct 1 token from escrow if chatId provided
+    // Deduct tokensToDeduct from escrow if chatId provided
     let remainingTokens: number | undefined;
     if (chatId) {
       try {
@@ -162,10 +197,13 @@ export async function POST(request: NextRequest) {
           const escrowSnap = await tx.get(escrowRef);
           if (escrowSnap.exists) {
             const current = escrowSnap.data()!.remainingTokens ?? 0;
-            remainingTokens = Math.max(0, current - 1);
+            if (current < tokensToDeduct) {
+              throw new Error('Insufficient escrow tokens');
+            }
+            remainingTokens = current - tokensToDeduct;
             tx.update(escrowRef, {
               remainingTokens: remainingTokens,
-              spentTokens: (escrowSnap.data()!.spentTokens ?? 0) + 1,
+              spentTokens: (escrowSnap.data()!.spentTokens ?? 0) + tokensToDeduct,
             });
           }
         });
@@ -179,6 +217,7 @@ export async function POST(request: NextRequest) {
       success: true,
       reply: aiReply,
       ...(remainingTokens !== undefined && { remainingTokens }),
+      tokensToDeduct,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal server error';

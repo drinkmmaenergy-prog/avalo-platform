@@ -83,6 +83,9 @@ export interface AIAvatar {
   /** FIX 52: Profession preset id (e.g. 'artist', 'coder', 'custom') */
   profession: string;
 
+  /** Cost per message in tokens — overrides AI_COST_PER_MESSAGE for this bot. Min 1, default 1. */
+  costPerMessage?: number;
+
   /** FIX 52: Base prompt from profession preset or custom text */
   basePrompt: string;
 

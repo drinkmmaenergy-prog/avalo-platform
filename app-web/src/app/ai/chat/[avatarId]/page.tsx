@@ -249,6 +249,7 @@ function AIChatAvatarPageInner() {
   const { user } = useAuth();
 
   const [avatar, setAvatar] = useState<AIAvatar | null>(null);
+  const [avatarData, setAvatarData] = useState<AIAvatar | null>(null);
   const [session, setSession] = useState<ChatSessionState | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -284,6 +285,10 @@ function AIChatAvatarPageInner() {
   const initializedRef = useRef<string | null>(null);
   /** FIX 2: Prevent message duplication — track which chatId has had messages loaded */
   const messagesLoadedRef = useRef<string | null>(null);
+  /** Image upload state for AI chat */
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── BUG 5 + 2.7: Detect ?resumed=true or ?purchased=true and show toast ──
   useEffect(() => {
@@ -446,6 +451,7 @@ function AIChatAvatarPageInner() {
       };
 
       setAvatar(loadedAvatar);
+      setAvatarData(loadedAvatar);
 
       // FIX 51: Increment conversation count on chat start
       updateDoc(doc(requireDb(), 'ai_avatars', avatarId), {
@@ -767,20 +773,26 @@ function AIChatAvatarPageInner() {
       }
 
       const chatId = `${user?.uid}_${avatarId}`;
+      const formData = new FormData();
+      formData.append('systemPrompt', systemPrompt);
+      formData.append('messages', JSON.stringify(conversationHistory));
+      formData.append('avatarId', currentSession.avatarId);
+      formData.append('userMessage', userContent);
+      formData.append('chatId', chatId ?? '');
+      formData.append('tokensToDeduct', String((avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)));
+      if (selectedImage) {
+        formData.append('image', selectedImage);
+      }
+
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`,
         },
-        body: JSON.stringify({
-          systemPrompt,
-          messages: conversationHistory,
-          avatarId: currentSession.avatarId,
-          userMessage: userContent,
-          chatId,
-        }),
+        body: formData,
       });
+
+      clearImage();
 
       const data = await response.json();
 
@@ -891,6 +903,29 @@ function AIChatAvatarPageInner() {
         await processAIResponse(nextMsg);
       }
     }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ type: 'error', title: 'Only images allowed' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ type: 'error', title: 'Image too large', description: 'Max 5MB' });
+      return;
+    }
+    setSelectedImage(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -1182,7 +1217,7 @@ function AIChatAvatarPageInner() {
                   Cost:
                 </span>
                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {AI_COST_PER_MESSAGE} token / message
+                  {avatarData?.costPerMessage ?? 1} token{(avatarData?.costPerMessage ?? 1) > 1 ? 's' : ''} / message
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -1391,6 +1426,29 @@ function AIChatAvatarPageInner() {
 
         {/* Input Bar */}
         <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 sm:p-4 relative">
+          {/* Image preview */}
+          {imagePreview && (
+            <div className="px-4 pb-2 flex items-center gap-2">
+              <div className="relative">
+                <img src={imagePreview} alt="attachment" className="h-16 w-16 object-cover rounded-lg border border-gray-200" />
+                <button
+                  onClick={clearImage}
+                  className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
+                >×</button>
+              </div>
+              <span className="text-xs text-gray-500">+3 tokens for image</span>
+            </div>
+          )}
+
+          {/* Hidden file input for image upload */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+
           {/* FIX 53: Game menu popup */}
           {showGameMenu && (
             <div className="absolute bottom-16 left-4 bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-200 dark:border-gray-700 p-3 z-10 w-64">
@@ -1433,6 +1491,18 @@ function AIChatAvatarPageInner() {
               rows={1}
               /* FIX 137: Input is ALWAYS enabled — no disabled prop */
             />
+
+            {/* Image attach button */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-gray-400 hover:text-purple-500 transition-colors"
+              title="Attach image (+3 tokens)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
 
             {/* FIX 55: Voice recorder */}
             <VoiceRecorder onRecorded={async (blob, duration) => {
