@@ -392,6 +392,10 @@ service cloud.firestore {
       match /messages/{msgId} {
         allow read, write: if isAuthenticated();
       }
+
+      match /meta/{metaDoc} {
+        allow read, write: if isAuthenticated();
+      }
     }
 
     // ──────────────────────────────────────────────
