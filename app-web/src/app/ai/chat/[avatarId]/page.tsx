@@ -519,6 +519,7 @@ function AIChatAvatarPageInner() {
                 id: docSnap.id,
                 role: data.role === 'user' ? 'user' as const : 'ai' as const,
                 content: data.content || '',
+                imageUrl: data.imageUrl ?? undefined,
                 timestamp: data.timestamp?.toDate?.() || new Date(),
                 tokensCost: 0,
                 wasFree: idx < AI_FREE_MESSAGES * 2, // approximate: first N exchanges are free
@@ -704,6 +705,7 @@ function AIChatAvatarPageInner() {
       addDoc(messagesCol, {
         role: 'user',
         content,
+        imageUrl: imagePreview ?? null,
         timestamp: serverTimestamp(),
       }).catch((err) => console.warn('[AIChatPage] Failed to persist user message:', err));
     }
@@ -775,13 +777,16 @@ function AIChatAvatarPageInner() {
       }
 
       const chatId = `${user?.uid}_${avatarId}`;
+      const imageCost = selectedImage ? 3 : 0;
+      const totalCost = (avatarData?.costPerMessage ?? 1) + imageCost;
+
       const formData = new FormData();
       formData.append('systemPrompt', systemPrompt);
       formData.append('messages', JSON.stringify(conversationHistory));
       formData.append('avatarId', currentSession.avatarId);
       formData.append('userMessage', userContent);
       formData.append('chatId', chatId ?? '');
-      formData.append('tokensToDeduct', String((avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)));
+      formData.append('tokensToDeduct', String(totalCost));
       if (selectedImage) {
         formData.append('image', selectedImage);
       }

@@ -93,6 +93,8 @@ export async function POST(request: NextRequest) {
       body = await request.json();
     }
 
+    console.log('[AI chat] imageFile:', imageFile?.name, imageFile?.size, imageFile?.type);
+
     const { systemPrompt, messages, avatarId, userMessage, chatId } = body;
     const tokensToDeduct = Math.max(1, Math.min(100, body.tokensToDeduct ?? 1));
 
@@ -105,6 +107,7 @@ export async function POST(request: NextRequest) {
 
     // ── Build user message content (text or text+image) ───────────────
     let userContent: any = userMessage;
+    console.log('[AI chat] userContent type:', typeof userContent);
     if (imageFile) {
       const imageBuffer = await imageFile.arrayBuffer();
       const base64 = Buffer.from(imageBuffer).toString('base64');
