@@ -666,7 +666,8 @@ function AIChatAvatarPageInner() {
    * Messages appear instantly. Bot responses queue and process in order.
    */
   const handleSend = async () => {
-    if (escrowBalance <= 0) {
+    const messageCost = (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0);
+    if (escrowBalance < messageCost) {
       setShowDepositModal(true);
       return;
     }
@@ -1429,9 +1430,9 @@ function AIChatAvatarPageInner() {
         )}
 
         {/* Escrow empty indicator */}
-        {escrowBalance <= 0 && (
+        {escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) && (
           <p className="text-xs text-center text-orange-500 mb-1">
-            No tokens in escrow —{' '}
+            Not enough tokens (need {(avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)}, have {escrowBalance}) —{' '}
             <button onClick={() => setShowDepositModal(true)} className="underline font-medium">
               deposit tokens to continue
             </button>
@@ -1539,9 +1540,9 @@ function AIChatAvatarPageInner() {
 
             <button
               onClick={handleSend}
-              disabled={sending || escrowBalance <= 0 || (!inputText.trim() && !selectedImage)}
+              disabled={sending || escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) || (!inputText.trim() && !selectedImage)}
               className={`rounded-full p-2.5 ${
-                sending || escrowBalance <= 0 || (!inputText.trim() && !selectedImage)
+                sending || escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) || (!inputText.trim() && !selectedImage)
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 hover:bg-purple-600'
               } text-white font-bold transition-colors`}
