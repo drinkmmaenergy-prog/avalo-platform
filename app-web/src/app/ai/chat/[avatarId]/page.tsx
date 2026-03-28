@@ -321,10 +321,10 @@ function AIChatAvatarPageInner() {
     void refreshFromCallable();
 
     const unsub = onSnapshot(
-      doc(requireDb(), 'balances', user.uid, 'wallet', 'main'),
+      doc(requireDb(), 'wallets', user.uid),
       (snap) => {
         if (snap.exists()) {
-          const newBalance = snap.data().tokensBalance ?? snap.data().tokenBalance ?? 0;
+          const newBalance = snap.data().tokensBalance ?? snap.data().tokenBalance ?? snap.data().balance ?? 0;
           setSession((prev) =>
             prev ? { ...prev, tokenBalance: newBalance } : prev
           );
@@ -449,17 +449,10 @@ function AIChatAvatarPageInner() {
       let tokenBalance = 0;
       if (user?.uid) {
         try {
-          const walletRef = doc(requireDb(), 'balances', user.uid, 'wallet', 'main');
+          const walletRef = doc(requireDb(), 'wallets', user.uid);
           const walletSnap = await getDoc(walletRef);
           if (walletSnap.exists()) {
             tokenBalance = walletSnap.data().tokensBalance ?? walletSnap.data().tokenBalance ?? walletSnap.data().balance ?? 0;
-          } else {
-            // fallback path
-            const fallbackRef = doc(requireDb(), 'balances', user.uid);
-            const fallbackSnap = await getDoc(fallbackRef);
-            if (fallbackSnap.exists()) {
-              tokenBalance = fallbackSnap.data().tokensBalance ?? fallbackSnap.data().tokenBalance ?? fallbackSnap.data().balance ?? 0;
-            }
           }
         } catch (walletErr) {
           console.warn('[AIChatPage] Could not load wallet:', walletErr);
