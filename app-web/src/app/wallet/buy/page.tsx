@@ -153,26 +153,9 @@ function WalletBuyContent() {
           </div>
         )}
         
-        {/* Currency Selector */}
+        {/* Token Packs */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Select Currency</h2>
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              {(['USD', 'EUR', 'PLN', 'GBP'] as Currency[]).map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-                    currency === c
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Choose a Token Pack</h2>
           
           {/* Token Pack Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -190,6 +173,9 @@ function WalletBuyContent() {
               />
             ))}
           </div>
+          <p className="text-xs text-center text-gray-500 mt-4">
+            All prices are in USD. Payments processed securely via Stripe.
+          </p>
         </div>
         
         {/* Information Cards */}

@@ -487,14 +487,16 @@ function AIChatAvatarPageInner() {
             if (escrowData.success && escrowData.status === 'active' && escrowData.remainingTokens > 0) {
               setEscrowBalance(escrowData.remainingTokens);
             } else {
-              // No active escrow — show deposit modal after init
-              setShowDepositModal(true);
+              // Only show deposit modal if free messages are exhausted
+              // Free messages are tracked in session state after init
+              // Don't show deposit modal here — let the session state determine it
+              // The deposit modal will show when user tries to send after free messages run out
             }
           } else {
-            setShowDepositModal(true);
+            // No current user — deposit modal will show when needed
           }
         } catch {
-          setShowDepositModal(true);
+          // Escrow check failed — deposit modal will show when needed
         }
 
         setWalletBalanceForDeposit(tokenBalance);
@@ -666,10 +668,13 @@ function AIChatAvatarPageInner() {
    * Messages appear instantly. Bot responses queue and process in order.
    */
   const handleSend = async () => {
-    const messageCost = (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0);
-    if (escrowBalance < messageCost) {
-      setShowDepositModal(true);
-      return;
+    const isFree = (session?.freeMessagesUsed ?? 0) < AI_FREE_MESSAGES;
+    if (!isFree) {
+      const messageCost = (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0);
+      if (escrowBalance < messageCost) {
+        setShowDepositModal(true);
+        return;
+      }
     }
     if ((!inputText.trim() && !selectedImage) || !session || !avatar) return;
 
@@ -928,6 +933,15 @@ function AIChatAvatarPageInner() {
     const reader = new FileReader();
     reader.onload = (ev) => setImagePreview(ev.target?.result as string);
     reader.readAsDataURL(file);
+
+    // Check if balance is sufficient for image message (only if free messages exhausted)
+    const isFreeMsg = session?.freeMessagesUsed !== undefined && session.freeMessagesUsed < AI_FREE_MESSAGES;
+    if (!isFreeMsg) {
+      const imageCost = (avatarData?.costPerMessage ?? 1) + 3;
+      if (escrowBalance < imageCost) {
+        setShowDepositModal(true);
+      }
+    }
   };
 
   const clearImage = () => {
@@ -944,6 +958,10 @@ function AIChatAvatarPageInner() {
   };
 
   const depositToEscrow = async (amount: number) => {
+    if ((session?.tokenBalance ?? 0) === 0) {
+      window.location.href = `/wallet/buy?from_chat=${encodeURIComponent(avatarId ?? '')}`;
+      return;
+    }
     const currentUser = auth.currentUser;
     if (!currentUser || !user?.uid) return;
     try {
@@ -1430,7 +1448,8 @@ function AIChatAvatarPageInner() {
         )}
 
         {/* Escrow empty indicator */}
-        {escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) && (
+        {(session?.freeMessagesUsed ?? 0) >= AI_FREE_MESSAGES &&
+         escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) && (
           <p className="text-xs text-center text-orange-500 mb-1">
             Not enough tokens (need {(avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)}, have {escrowBalance}) —{' '}
             <button onClick={() => setShowDepositModal(true)} className="underline font-medium">
@@ -1451,7 +1470,9 @@ function AIChatAvatarPageInner() {
                   className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs"
                 >×</button>
               </div>
-              <span className="text-xs text-gray-500">+3 tokens for image</span>
+              <span className="text-xs text-gray-500">
+                {avatarData?.costPerMessage ?? 1} + 3 = {(avatarData?.costPerMessage ?? 1) + 3} tokens total
+              </span>
             </div>
           )}
 
@@ -1540,9 +1561,17 @@ function AIChatAvatarPageInner() {
 
             <button
               onClick={handleSend}
-              disabled={sending || escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) || (!inputText.trim() && !selectedImage)}
+              disabled={sending || (
+                session?.freeMessagesUsed !== undefined &&
+                session.freeMessagesUsed >= AI_FREE_MESSAGES &&
+                escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)
+              ) || (!inputText.trim() && !selectedImage)}
               className={`rounded-full p-2.5 ${
-                sending || escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0) || (!inputText.trim() && !selectedImage)
+                sending || (
+                  session?.freeMessagesUsed !== undefined &&
+                  session.freeMessagesUsed >= AI_FREE_MESSAGES &&
+                  escrowBalance < (avatarData?.costPerMessage ?? 1) + (selectedImage ? 3 : 0)
+                ) || (!inputText.trim() && !selectedImage)
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-purple-500 hover:bg-purple-600'
               } text-white font-bold transition-colors`}
@@ -1577,12 +1606,21 @@ function AIChatAvatarPageInner() {
                 <span className="text-lg font-bold w-16 text-right">{depositAmount}</span>
               </div>
             </div>
-            <button
-              onClick={() => depositToEscrow(depositAmount)}
-              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
-            >
-              Deposit {depositAmount} tokens
-            </button>
+            {(session?.tokenBalance ?? 0) === 0 ? (
+              <button
+                onClick={() => { window.location.href = `/wallet/buy?from_chat=${encodeURIComponent(avatarId ?? '')}`; }}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+              >
+                Buy Tokens First
+              </button>
+            ) : (
+              <button
+                onClick={() => depositToEscrow(depositAmount)}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors"
+              >
+                Deposit {depositAmount} tokens
+              </button>
+            )}
             <button
               onClick={() => window.history.back()}
               className="w-full py-2 mt-2 text-sm text-gray-500 hover:text-gray-700"
