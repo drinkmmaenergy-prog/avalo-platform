@@ -144,10 +144,11 @@ export const calculateMessageCost = async (
       };
     }
 
-    // After free messages, charge per message
-    return {
-      shouldCharge: true,
-      cost: MESSAGING_CONFIG.MESSAGE_COST,
+    // After free messages, do not charge here.
+// Canonical paid human chat uses escrow + word billing in chat/escrow services.
+return {
+      shouldCharge: false,
+      cost: 0,
       messageNumber,
       isFreeMessage: false,
     };

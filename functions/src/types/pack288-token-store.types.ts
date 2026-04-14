@@ -204,7 +204,7 @@ import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 export interface PayoutRequest {
   userId: string;
   amountTokens: number;
-  payoutMethod: 'stripe_connect' | 'bank_transfer' | 'wise' | 'paypal';
+  payoutMethod: 'stripe_connect';
   payoutDetails: {
     accountId?: string;
     iban?: string;
@@ -387,6 +387,9 @@ export function isValidCurrency(currency: string): boolean {
   const validCurrencies = ['USD', 'USD', 'USD', 'USD'];
   return validCurrencies.includes(currency);
 }
+
+
+
 
 
 

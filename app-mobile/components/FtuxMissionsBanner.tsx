@@ -358,3 +358,4 @@ const styles = StyleSheet.create({
     color: '#40E0D0',
   },
 });
+

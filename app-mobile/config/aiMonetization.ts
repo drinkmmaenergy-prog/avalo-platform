@@ -3,8 +3,8 @@
  * Priority: Avalo MUST earn more than creators
  * 
  * Rules enforced in this config:
- * - 35% instant platform fee on deposits
- * - 35% ongoing revenue share from consumed tokens
+ * - reference instant platform fee on deposits
+ * - reference platform share from consumed tokens
  * - Push users toward paid chat aggressively
  * - VIP/Royal discounts to drive subscriptions
  */
@@ -57,19 +57,19 @@ export const AI_CHAT_DEPOSIT = {
 } as const;
 
 // ============================================================================
-// REVENUE SPLIT (from consumed escrow)
+// Reference split display (from consumed escrow)
 // ============================================================================
 
 export const AI_REVENUE_SPLIT = {
   /**
-   * Creator receives 65% of consumed tokens.
+   * Creator earnings are displayed using up to 65% reference rate.
    * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
    * Changed from 80/20 to align with canonical AI economy config.
    */
   CREATOR_PERCENT: 65,
   
   /**
-   * Avalo receives 35% of consumed tokens.
+   * Platform portion is displayed as a reference value.
    * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
    * Changed from 20 to 35 to align with canonical AI economy config.
    */
@@ -295,7 +295,7 @@ export function calculateAIMessageCost(
 
 /**
  * Calculate creator earnings from consumed tokens.
- * Business rule: 65% to bot owner (earner), 35% to Avalo platform.
+ * Business rule: bot-owner earnings use reference-rate display and final payout depends on fees and deductions.
  * Updated from 80/20 to 65/35 to align with canonical AI economy config.
  */
 export function calculateCreatorEarnings(consumedTokens: number): {
@@ -314,7 +314,7 @@ export function calculateCreatorEarnings(consumedTokens: number): {
  *   - Instant platform fee: 35% of deposit (non-refundable)
  *   - Revenue share: 35% of consumed escrow tokens
  *   - Total Avalo take per fully-consumed 100-token deposit: 57 tokens
- * Updated from 20% revenue share to 35% to align with canonical AI economy config.
+ * Updated to align with canonical AI economy config.
  */
 export function calculateAvaloTotalEarnings(
   depositAmount: number,
@@ -426,3 +426,4 @@ export default {
   formatTokens,
   calculateEarningsPreview,
 };
+

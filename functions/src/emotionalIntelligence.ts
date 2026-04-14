@@ -652,3 +652,5 @@ function calculateIntensityTrend(states: EmotionalState[]): number {
 
 
 
+
+

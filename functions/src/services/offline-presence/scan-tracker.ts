@@ -291,3 +291,5 @@ export const getRecentScansSummary = ScanTracker.getRecentScansSummary.bind(Scan
 
 
 
+
+

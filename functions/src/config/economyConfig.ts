@@ -1,151 +1,77 @@
-import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
+import { MONETIZATION_SPLITS } from "../config/monetizationSplits";
 
 /**
- * ECONOMY CONFIG — Canonical Single Source of Truth (USD-only)
- *
- * RULES (Avalo SoT):
- * - Backend monetary logic uses USD only.
- * - No PLN/EUR/GBP calculations in functions.
- * - Token retail prices come from Stripe Products/Prices (pack277 token packs).
- * - Creator payouts use TOKEN_PAYOUT_USD only.
- * - Historical transactions are not recalculated.
- *
- * Canonical:
- * - TOKEN_PAYOUT_USD: earner payout per earned token (USD)
- *
- * @module config/economyConfig
- * @version 2.0.0 — Extended with SPLITS, CHAT_PRICING, governance hooks
+ * FUNCTIONS ECONOMY CONFIG
+ * Source of truth: shared/config/canonicalEconomy.ts
  */
 
-// ============================================================================
-// PAYOUT RATE
-// ============================================================================
-
-export const TOKEN_PAYOUT_USD = 0.03;
-
-/**
- * Alias for naming parity across packs/modules
- */
+export const TOKEN_PAYOUT_USD = CANONICAL_ECONOMY.payout.tokenPayoutUsd;
 export const PAYOUT_PER_TOKEN_USD = TOKEN_PAYOUT_USD;
 
 /**
- * Platform payout fee (taken from earner payout amount; charged to earner side)
- * NOTE: You explicitly decided this is NOT covered by Avalo.
+ * Stripe USD only.
  */
-export const PAYOUT_FEE_PLATFORM_PERCENT = 0.05;
-
-// ============================================================================
-// PLATFORM LAYOUT FEE (chat deposit fee, non-refundable)
-// ============================================================================
+export const PAYOUT_FEE_PLATFORM_PERCENT =
+  CANONICAL_ECONOMY.payout.payoutFeePlatformPercent;
 
 /**
- * Platform fee percentage on chat deposits (MONETIZATION_SPLITS.CHAT.platform = 35%).
- * Charged at deposit time, non-refundable.
+ * Legacy name preserved for compatibility.
+ * Canonical meaning: non-refundable platform fee on chat deposit.
  */
-export const PLATFORM_LAYOUT_FEE = 0.05;
+export const PLATFORM_LAYOUT_FEE =
+  CANONICAL_ECONOMY.chat.depositPlatformFeePct;
 
-// ============================================================================
-// MINIMUM CHAT CHARGE
-// ============================================================================
+export const MIN_CHAT_CHARGE_TOKENS =
+  CANONICAL_ECONOMY.chat.minChatChargeTokens;
 
-/**
- * Minimum tokens for a chat deposit.
- * chargedTokens = max(MIN_CHAT_CHARGE_TOKENS, computedCost)
- */
-export const MIN_CHAT_CHARGE_TOKENS = 100;
-
-// ============================================================================
-// SPLITS BY SURFACE
-// ============================================================================
-
-/**
- * Revenue split per surface.
- * { earner: decimal (0–1), platform: decimal (0–1) }
- * earner + platform MUST equal 1.0 for each surface.
- *
- * These values are discovered from the canonical implementations.
- * See docs/SOT_SPLITS_MATRIX.md for conflict report.
- */
 export const SPLITS_BY_SURFACE = {
-  CHAT:           { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
-  CALLS_VOICE:    { earner: MONETIZATION_SPLITS.CALL.earner, platform: MONETIZATION_SPLITS.CALL.platform },
-  CALLS_VIDEO:    { earner: MONETIZATION_SPLITS.VIDEO_CALL.earner, platform: MONETIZATION_SPLITS.VIDEO_CALL.platform },
-  CALENDAR:       { earner: MONETIZATION_SPLITS.CALENDAR_MEETING.earner, platform: MONETIZATION_SPLITS.CALENDAR_MEETING.platform },
-  EVENTS:         { earner: MONETIZATION_SPLITS.EVENT_TICKET.earner, platform: MONETIZATION_SPLITS.EVENT_TICKET.platform },
-  TIPS:           { earner: MONETIZATION_SPLITS.TIPS.earner, platform: MONETIZATION_SPLITS.TIPS.platform },
-  SUBSCRIPTIONS:  { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
-  LIVE_STREAMS:   { earner: MONETIZATION_SPLITS.LIVE_GIFTS.earner, platform: MONETIZATION_SPLITS.LIVE_GIFTS.platform },
-  LIVE_VIP:       { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
-  AI_COMPANIONS:  { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
-  BOOSTS_CREATOR: { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
-  BOOSTS_PROMO:   { earner: 0.00, platform: 1.00 },
-  DIGITAL_PRODUCTS: { earner: MONETIZATION_SPLITS.UNLOCK_MEDIA.earner, platform: MONETIZATION_SPLITS.UNLOCK_MEDIA.platform },
-  DROPS:          { earner: MONETIZATION_SPLITS.SUBSCRIPTION.earner, platform: MONETIZATION_SPLITS.SUBSCRIPTION.platform },
-  MARKETPLACE:    { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform },
+  CHAT: { ...MONETIZATION_SPLITS.CHAT },
+  CALLS_VOICE: { ...MONETIZATION_SPLITS.CALL },
+  CALLS_VIDEO: { ...MONETIZATION_SPLITS.VIDEO_CALL },
+  CALENDAR: { ...MONETIZATION_SPLITS.CALENDAR_MEETING },
+  EVENTS: { ...MONETIZATION_SPLITS.EVENT_TICKET },
+  TIPS: { ...MONETIZATION_SPLITS.TIPS },
+  SUBSCRIPTIONS: { ...MONETIZATION_SPLITS.SUBSCRIPTION },
+  LIVE_STREAMS: { ...MONETIZATION_SPLITS.LIVE_GIFTS },
+  LIVE_VIP: { ...MONETIZATION_SPLITS.CHAT },
+  AI_COMPANIONS: { earner: 0, platform: 1 },
+  BOOSTS_CREATOR: { earner: 0, platform: 1 },
+  BOOSTS_PROMO: { earner: 0, platform: 1 },
+  DIGITAL_PRODUCTS: { ...MONETIZATION_SPLITS.UNLOCK_MEDIA },
+  DROPS: { ...MONETIZATION_SPLITS.CHAT },
+  MARKETPLACE: { ...MONETIZATION_SPLITS.CHAT },
 } as const;
 
 export type SurfaceKey = keyof typeof SPLITS_BY_SURFACE;
 
-/**
- * Get split for a given surface. Returns default (65/35) if surface unknown.
- */
 export function getSplitForSurface(surface: string): { earner: number; platform: number } {
-  const key = surface.toUpperCase().replace(/-/g, '_') as SurfaceKey;
-  return SPLITS_BY_SURFACE[key] ?? { earner: MONETIZATION_SPLITS.CHAT.earner, platform: MONETIZATION_SPLITS.CHAT.platform };
+  const key = surface.toUpperCase().replace(/-/g, "_") as SurfaceKey;
+  return SPLITS_BY_SURFACE[key] ?? { ...MONETIZATION_SPLITS.CHAT };
 }
 
-// Build-time invariant check
 for (const [key, split] of Object.entries(SPLITS_BY_SURFACE)) {
   if (Math.abs(split.earner + split.platform - 1.0) > 0.001) {
     throw new Error(`CRITICAL: SPLITS_BY_SURFACE.${key} does not sum to 1.0`);
   }
 }
 
-// ============================================================================
-// CHAT PRICING
-// ============================================================================
-
-/**
- * Chat pricing configuration per earner mode.
- * wordsPerToken: how many earner words = 1 token bucket
- * burnMultipliers: allowed multiplier values (from canonical-chat.types)
- */
 export const CHAT_PRICING = {
   STANDARD: {
-    wordsPerToken: 11,
-    freeMessagesPerUser: 9,
+    wordsPerToken: CANONICAL_ECONOMY.chat.tiers.STANDARD.wordsPerToken,
+    freeMessagesPerUser: CANONICAL_ECONOMY.chat.tiers.STANDARD.freeMessagesPerUser,
   },
   ROYAL: {
-    wordsPerToken: 7,
-    freeMessagesPerUser: 5,
+    wordsPerToken: CANONICAL_ECONOMY.chat.tiers.ROYAL.wordsPerToken,
+    freeMessagesPerUser: CANONICAL_ECONOMY.chat.tiers.ROYAL.freeMessagesPerUser,
   },
-  /** Allowed burn multiplier enum values */
-  BURN_MULTIPLIERS: [1, 2, 3, 4, 5, 7, 10, 12, 15, 20] as const,
-  /** Default deposit tokens */
-  DEFAULT_DEPOSIT_TOKENS: 100,
-  /** Chat expiry inactivity hours */
-  CHAT_EXPIRY_HOURS: 48,
-  /** Platform fee on deposit (MONETIZATION_SPLITS.CHAT.platform = 35%, non-refundable) */
-  DEPOSIT_PLATFORM_FEE_PCT: MONETIZATION_SPLITS.CHAT.platform,
-  /** Escrow from deposit (MONETIZATION_SPLITS.CHAT.earner = 65%, refundable unused) */
-  DEPOSIT_ESCROW_PCT: MONETIZATION_SPLITS.CHAT.earner,
+  BURN_MULTIPLIERS: CANONICAL_ECONOMY.chat.allowedBurnMultipliers,
+  DEFAULT_DEPOSIT_TOKENS: CANONICAL_ECONOMY.chat.defaultDepositTokens,
+  CHAT_EXPIRY_HOURS: CANONICAL_ECONOMY.chat.chatExpiryInactivityHours,
+  DEPOSIT_PLATFORM_FEE_PCT: CANONICAL_ECONOMY.chat.depositPlatformFeePct,
+  DEPOSIT_ESCROW_PCT: CANONICAL_ECONOMY.chat.depositEscrowPct,
 } as const;
 
-// ============================================================================
-// GOVERNANCE HOOKS (audit log entry points)
-// ============================================================================
-
-/**
- * Governance audit hook.
- * Call this function before any economy-critical mutation to create an audit trail.
- * 
- * This is the ENTRY POINT for audit logging of economy changes.
- * The actual Firestore write is delegated to the caller (no admin UI implemented here).
- *
- * @param event - Type of economy event
- * @param metadata - Context for the event
- * @returns Audit entry object (caller must persist)
- */
 export function createEconomyAuditEntry(
   event: EconomyAuditEvent,
   metadata: Record<string, unknown>
@@ -163,13 +89,13 @@ export function createEconomyAuditEntry(
 }
 
 export type EconomyAuditEvent =
-  | 'DEPOSIT_CREATED'
-  | 'ESCROW_CONSUMED'
-  | 'REFUND_ISSUED'
-  | 'PAYOUT_REQUESTED'
-  | 'PAYOUT_COMPLETED'
-  | 'SPLIT_APPLIED'
-  | 'FEE_CAPTURED';
+  | "DEPOSIT_CREATED"
+  | "ESCROW_CONSUMED"
+  | "REFUND_ISSUED"
+  | "PAYOUT_REQUESTED"
+  | "PAYOUT_COMPLETED"
+  | "SPLIT_APPLIED"
+  | "FEE_CAPTURED";
 
 export interface EconomyAuditRecord {
   event: EconomyAuditEvent;
@@ -181,48 +107,5 @@ export interface EconomyAuditRecord {
     MIN_CHAT_CHARGE_TOKENS: number;
   };
 }
-
-// ============================================================================
-// PAYOUT FX RATES (display-only, backend authority)
-// ============================================================================
-
-/**
- * FX rates for payout display. Backend is source of truth.
- * These are INFORMATIONAL — actual conversion uses live rates at payout time.
- */
-export const PAYOUT_FX_RATES = {
-  USD_TO_USD: 1.0,
-  USD_TO_EUR: 0.92,
-  USD_TO_GBP: 0.79,
-  USD_TO_PLN: 4.05,
-} as const;
-
-
-
-export const TOKEN_PAYOUT_PLN = TOKEN_PAYOUT_USD * 4.0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

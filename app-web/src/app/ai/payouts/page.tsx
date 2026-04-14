@@ -25,7 +25,7 @@ import { getAuth } from 'firebase/auth';
 import { requireDb } from '@/lib/firebase';
 
 const MIN_PAYOUT_TOKENS = 1000;
-const TOKEN_TO_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+const TOKEN_TO_PLN = MONETIZATION_SPLITS.EVENT_TICKET.platform;
 const MIN_PAYOUT_PLN = MIN_PAYOUT_TOKENS * TOKEN_TO_PLN; // 200 PLN
 
 interface PayoutRequest {
@@ -373,6 +373,7 @@ export default function AIPayoutsWebPage() {
     </div>
   );
 }
+
 
 
 

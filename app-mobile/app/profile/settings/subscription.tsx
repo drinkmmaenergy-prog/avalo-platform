@@ -22,8 +22,8 @@ interface SubscriptionDetails {
 }
 
 interface SubscriptionPerks {
-  voiceDiscountPercent: number;
-  videoDiscountPercent: number;
+  voicelockedPercent: number;
+  videolockedPercent: number;
   chatWordBucket: number;
   hasAdvancedAnalytics: boolean;
   hasAdsDashboard: boolean;
@@ -220,17 +220,17 @@ export default function SubscriptionScreen() {
             <View className="mt-4 space-y-2">
               <Text className="text-white text-lg font-semibold mb-2">Your Perks</Text>
               
-              {perks.voiceDiscountPercent > 0 && (
+              {perks.voicelockedPercent > 0 && (
                 <View className="flex-row items-center">
                   <Text className="text-green-400 mr-2">✓</Text>
-                  <Text className="text-gray-300">{perks.voiceDiscountPercent}% off voice calls</Text>
+                  <Text className="text-gray-300">{perks.voicelockedPercent}% off voice calls</Text>
                 </View>
               )}
               
-              {perks.videoDiscountPercent > 0 && (
+              {perks.videolockedPercent > 0 && (
                 <View className="flex-row items-center">
                   <Text className="text-green-400 mr-2">✓</Text>
-                  <Text className="text-gray-300">{perks.videoDiscountPercent}% off video calls</Text>
+                  <Text className="text-gray-300">{perks.videolockedPercent}% off video calls</Text>
                 </View>
               )}
               

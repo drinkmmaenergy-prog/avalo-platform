@@ -14,7 +14,7 @@ export const VOICE_PRICING = {
   basePrice: 25,
 } as const;
 
-// Revenue split: 65% to creator, 35% to Avalo
+// Reference split display: up to 65% creator reference rate / platform reference portion
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 
@@ -149,7 +149,7 @@ export async function chargeForVoiceMessage(
     // Deduct tokens from user
     await deductTokens(userId, finalCost);
 
-    // Calculate revenue split (65/35)
+    // Calculate Reference split display model (up to 65% reference rate)
     const creatorEarned = Math.floor(finalCost * CREATOR_SHARE);
     const avaloEarned = finalCost - creatorEarned;
 
@@ -431,4 +431,5 @@ export default {
   requestVoiceReply,
   VOICE_PRICING,
 };
+
 

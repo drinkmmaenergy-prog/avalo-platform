@@ -288,7 +288,7 @@ export default function CollectionModal({
       <View style={styles.infoCard}>
         <Ionicons name="information-circle" size={24} color={GOLD} />
         <Text style={styles.infoText}>
-          {t('creatorCollections.revenueSplit')}: 65% {t('creatorCollections.creator')} / 35% Avalo
+          {t('creatorCollections.revenueSplit')}: estimated at reference rate
         </Text>
       </View>
     </View>
@@ -732,3 +732,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 });
+
+
+

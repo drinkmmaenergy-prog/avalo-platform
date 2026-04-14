@@ -14,9 +14,9 @@ import { TOKEN_PAYOUT_USD } from "./economyConfig";
 
 export type PayoutMethodType =
   | "STRIPE"
-  | "WISE"
+  
   // Legacy identifiers still referenced in code paths:
-  | "BANK_TRANSFER"
+  
   | "STRIPE_CONNECT";
 
 export type PayoutStatus =
@@ -42,7 +42,7 @@ export interface PayoutConfig {
   payoutFeePlatformPercent: number; // 0.05 => 5%
 
   // Canonical token->USD rate for payout calculations (display/requests validation)
-  PAYOUT_TOKEN_TO_USD_RATE: number; // must equal TOKEN_PAYOUT_USD (0.03)
+  PAYOUT_TOKEN_TO_USD_RATE: number; // must equal TOKEN_PAYOUT_USD (0.04)
 
   // Compatibility arrays referenced in payoutRequests.ts
   SUPPORTED_PAYOUT_METHODS: readonly PayoutMethodType[];
@@ -63,7 +63,7 @@ export const PAYOUT_CONFIG: PayoutConfig = {
 
   PAYOUT_TOKEN_TO_USD_RATE: TOKEN_PAYOUT_USD,
 
-  SUPPORTED_PAYOUT_METHODS: ["STRIPE","WISE","BANK_TRANSFER","STRIPE_CONNECT"] as const,
+  SUPPORTED_PAYOUT_METHODS: ['STRIPE_CONNECT'] as const as const,
   SUPPORTED_CURRENCIES: ["USD"] as const,
 
   ALLOWED_STATUS_TRANSITIONS: {
@@ -92,6 +92,12 @@ export async function ensurePayoutConfig(): Promise<PayoutConfig> {
   await ref.set(PAYOUT_CONFIG, { merge: false });
   return PAYOUT_CONFIG;
 }
+
+
+
+
+
+
 
 
 

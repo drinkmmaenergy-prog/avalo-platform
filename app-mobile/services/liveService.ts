@@ -55,7 +55,7 @@ const STORAGE_KEYS = {
 // Constants
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
-const VIP_DISCOUNT = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 20% discount for VIP
+const VIP_DISCOUNT = 0; // canonical: no VIP discount for live entry
 
 // Types
 export interface LiveSession {
@@ -266,7 +266,7 @@ export async function setEntryFee(
 export function calculateEntryPrice(basePrice: number, isVip: boolean): number {
   if (!isVip) return basePrice;
   
-  // VIP gets 20% discount, but NEVER 100% free
+  // canonical: no VIP discount for live entry
   const discountedPrice = Math.round(basePrice * (1 - VIP_DISCOUNT));
   return Math.max(discountedPrice, 1); // Minimum 1 token
 }
@@ -492,7 +492,7 @@ export async function getCreatorTotalEarnings(creatorId: string): Promise<number
  * Format earnings display text
  */
 export function formatEarnings(amount: number): string {
-  return `+${amount} tokens • 65% after commission`;
+  return `+${amount} tokens • up to 65% (reference rate)`;
 }
 
 /**
@@ -516,4 +516,5 @@ export default {
   formatEarnings,
   ENTRY_FEE_PRESETS,
 };
+
 

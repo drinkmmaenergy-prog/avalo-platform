@@ -41,3 +41,5 @@ export type DataRightsType = 'ACCESS' | 'DELETE' | 'EXPORT' | 'RECTIFY';
 
 
 
+
+

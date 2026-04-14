@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "appName": "Avalo",
     "loading": "読み込み中...",
@@ -121,15 +121,15 @@
     "buyTokensDesc": "Purchase token packs via Stripe",
     "purchaseHistory": "Purchase History",
     "purchaseHistoryDesc": "View all your past transactions",
-    "creatorEarnings": "Creator Earnings",
-    "availableForPayout": "Available for Payout",
+    "creatorEarnings": "Reference Creator Earnings Preview",
+    "availableForPayout": "Estimated Available for Payout",
     "readyToWithdraw": "Ready to withdraw",
     "pending": "Pending",
     "processingPeriod": "Processing period",
-    "allTimeEarned": "All-Time Earned",
-    "totalLifetimeEarnings": "Total lifetime earnings",
+    "allTimeEarned": "Estimated All-Time Earned",
+    "totalLifetimeEarnings": "Reference lifetime earnings preview",
     "managePayouts": "Manage Payouts",
-    "noEarnings": "No earnings data yet. Start creating to earn tokens!"
+    "noEarnings": "No earnings data yet. Earnings shown in Avalo are reference estimates and may vary."
   },
   "buy": {
     "title": "Buy Tokens",
@@ -159,13 +159,16 @@
     "noPurchasesDesc": "You haven't purchased any token packs yet."
   },
   "payout": {
-    "title": "Payout Preview",
+    "title": "Reference Payout Preview",
     "tokensEarned": "Tokens earned",
     "displayCurrency": "Display currency",
-    "creatorReceives": "Creator receives (65%)",
-    "platformKeeps": "Platform keeps (35%)",
+    "creatorReceives": "Creator may earn up to the reference rate",
+    "platformKeeps": "Platform reference portion",
     "rate": "Rate",
-    "fxNote": "Internal conversion rates. Final payout may vary."
+    "fxNote": "Reference values are based on net token value excluding VAT. Final payout may be lower depending on taxes, fees, deductions, usage conditions and platform dynamics.",
+    "referenceNotice": "Shown earnings are reference estimates only and are benchmarked conservatively from the 10,000-token pack.",
+    "notGuaranteed": "Top-tier earnings assume optimal conditions and are not guaranteed.",
+    "legalPrevails": "In case of inconsistency, the English legal version prevails."
   },
   "legal": {
     "terms": "Terms of Service",
@@ -262,5 +265,9 @@
     "checkIn": "Check In",
     "complete": "Complete",
     "bookMeeting": "Book Meeting"
+  },
+  "dashboard": {
+    "payouts": "Payouts",
+    "earnWithAvalo": "Earn with Avalo"
   }
 }

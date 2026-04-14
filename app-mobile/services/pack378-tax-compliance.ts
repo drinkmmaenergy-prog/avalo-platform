@@ -334,8 +334,8 @@ export async function calculateEffectiveEarning(
   netEarning: number;
   takeHomePercentage: number;
 }> {
-  // Platform fee (e.g., 20%)
-  const platformFee = grossEarning * MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+  // Platform fee (default creator lane = 35%)
+  const platformFee = grossEarning * MONETIZATION_SPLITS.CHAT.avalo;
   const afterPlatformFee = grossEarning - platformFee;
 
   // Withholding tax

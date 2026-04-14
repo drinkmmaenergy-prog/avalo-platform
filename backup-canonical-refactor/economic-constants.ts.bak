@@ -1,0 +1,323 @@
+import { MONETIZATION_SPLITS, SPLITS, getSplit } from '';
+/**
+ * PACK 267 — Global Economics & Split Rules (Core Constants)
+ * 
+ * Single source of truth for all Avalo economic rules.
+ * NO future module should redefine these constants or splits.
+ * 
+ * @package avaloapp
+ * @version 1.0.0
+ */
+
+// ============================================================================
+// 1. REVENUE SPLIT CONSTANTS
+// ============================================================================
+
+/**
+ * Chat monetization split between platform and creator
+ * Platform: 35%, Creator: 65%
+ */
+export const AVALO_SPLIT_CHAT = {
+  platform: MONETIZATION_SPLITS.CHAT.avalo,
+  creator: MONETIZATION_SPLITS.CHAT.creator,
+} as const;
+
+/**
+ * Calendar booking split between platform and creator
+ * Platform: 20%, Creator: 80%
+ */
+export const AVALO_SPLIT_CALENDAR = {
+  platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  creator: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+} as const;
+
+/**
+ * Event monetization split between platform and creator
+ * Platform: 20%, Creator: 80%
+ */
+export const AVALO_SPLIT_EVENTS = {
+  platform: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  creator: MONETIZATION_SPLITS.EVENT_TICKET.creator,
+} as const;
+
+// ============================================================================
+// 2. PAYOUT RATE
+// ============================================================================
+
+/**
+ * Token to PLN conversion rate for payouts
+ * 1 token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
+ * This rate is FIXED for payouts and does NOT vary by purchase pack
+ */
+export const AVALO_PAYOUT_RATE_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo;
+
+// ============================================================================
+// 3. CHAT BASE PRICES
+// ============================================================================
+
+/**
+ * Standard chat entry cost in tokens
+ */
+export const CHAT_BASE_PRICE_TOKENS = 100;
+
+/**
+ * Minimum chat price with moderation in tokens
+ */
+export const CHAT_MIN_PRICE_TOKENS = 100;
+
+/**
+ * Maximum chat price with moderation in tokens
+ */
+export const CHAT_MAX_PRICE_TOKENS = 500;
+
+/**
+ * Voice call price per minute in tokens
+ */
+export const VOICE_CALL_PRICE_PER_MIN_TOKENS = 10;
+
+/**
+ * Video call price per minute in tokens
+ */
+export const VIDEO_CALL_PRICE_PER_MIN_TOKENS = 20;
+
+// ============================================================================
+// 4. TOKEN PACKS (PURCHASE ONLY)
+// ============================================================================
+
+/**
+ * Token pack structure
+ */
+export interface TokenPack {
+  id: string;
+  tokens: number;
+  pricePLN: number;
+}
+
+/**
+ * Available token packs for purchase
+ * These prices are used ONLY for purchases
+ * They do NOT affect payout value (always MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN/token)
+ */
+export const TOKEN_PACKS: readonly TokenPack[] = [
+  { id: "mini", tokens: 100, pricePLN: 31.99 },
+  { id: "basic", tokens: 300, pricePLN: 85.99 },
+  { id: "standard", tokens: 500, pricePLN: 134.99 },
+  { id: "premium", tokens: 1000, pricePLN: 244.99 },
+  { id: "pro", tokens: 2000, pricePLN: 469.99 },
+  { id: "elite", tokens: 5000, pricePLN: 1125.99 },
+  { id: "royal", tokens: 10000, pricePLN: 2149.99 },
+] as const;
+
+// ============================================================================
+// 5. FREE MESSAGES & LOW-POPULARITY RULES
+// ============================================================================
+
+/**
+ * Free messages for low-popularity creators (per unique user)
+ * Total = 20 messages (10 per user, assuming 2 users)
+ */
+export const FREE_MESSAGES_LOW_POPULARITY_PER_USER = 10;
+
+/**
+ * Free messages for Royal Club members (per unique user)
+ * Total = 12 messages (6 per user, assuming 2 users)
+ */
+export const FREE_MESSAGES_ROYAL_PER_USER = 6;
+
+/**
+ * Free messages for standard profiles (per unique user)
+ * Total = 16 messages (8 per user, assuming 2 users)
+ * Added in PACK 285
+ */
+export const FREE_MESSAGES_STANDARD_PER_USER = 8;
+
+/**
+ * Thresholds for determining low-popularity status
+ * Used to enable free messages for struggling creators
+ */
+export const LOW_POPULARITY_THRESHOLD = {
+  /** Swipe right rate threshold (5% or less) */
+  swipeRightRate: 0.05,
+  /** Matches per day threshold */
+  matchesPerDay: 1,
+  /** Active chats per week threshold */
+  activeChatsPerWeek: 2,
+} as const;
+
+// ============================================================================
+// 6. REFUND RULES (FLAGS ONLY)
+// ============================================================================
+
+/**
+ * Refund policy flags for different monetization types
+ * Actual refund logic is implemented in respective packs
+ */
+export const REFUND_RULES = {
+  /** Chat refund policies */
+  chat: {
+    /** Only refund unused message tokens, not the entire chat fee */
+    refundUnusedWordsOnly: true,
+    /** Do not refund the platform fee (35%) */
+    refundPlatformFee: false,
+  },
+  /** Calendar booking refund policies */
+  calendar: {
+    /** Refund platform fee if host cancels */
+    refundPlatformFeeOnHostCancel: true,
+    /** Refund platform fee if there's a calendar mismatch */
+    refundPlatformFeeOnMismatch: true,
+  },
+  /** Event refund policies */
+  events: {
+    /** Refund platform fee if organizer cancels */
+    refundPlatformFeeOnOrganizerCancel: true,
+    /** Refund platform fee if there's an event mismatch */
+    refundPlatformFeeOnMismatch: true,
+  },
+} as const;
+
+// ============================================================================
+// 7. SPLIT HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Result of a revenue split calculation
+ */
+export interface SplitResult {
+  platform: number;
+  creator: number;
+}
+
+/**
+ * Apply chat revenue split (35% platform, 65% creator)
+ * @param grossTokens Total tokens to split
+ * @returns Split amounts for platform and creator
+ */
+export function applyChatSplit(grossTokens: number): SplitResult {
+  const platform = Math.floor(grossTokens * AVALO_SPLIT_CHAT.platform);
+  const creator = grossTokens - platform;
+  return { platform, creator };
+}
+
+/**
+ * Apply calendar booking revenue split (20% platform, 80% creator)
+ * @param grossTokens Total tokens to split
+ * @returns Split amounts for platform and creator
+ */
+export function applyCalendarSplit(grossTokens: number): SplitResult {
+  const platform = Math.floor(grossTokens * AVALO_SPLIT_CALENDAR.platform);
+  const creator = grossTokens - platform;
+  return { platform, creator };
+}
+
+/**
+ * Apply event revenue split (20% platform, 80% creator)
+ * @param grossTokens Total tokens to split
+ * @returns Split amounts for platform and creator
+ */
+export function applyEventSplit(grossTokens: number): SplitResult {
+  const platform = Math.floor(grossTokens * AVALO_SPLIT_EVENTS.platform);
+  const creator = grossTokens - platform;
+  return { platform, creator };
+}
+
+// ============================================================================
+// 8. PAYOUT HELPER FUNCTION
+// ============================================================================
+
+/**
+ * Convert tokens to PLN for payout calculations
+ * Uses fixed rate of MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token
+ * FX conversion (PLN → local currency) is handled in wallet/payout pack
+ * 
+ * @param tokens Number of tokens to convert
+ * @returns PLN value
+ */
+export function tokensToPLN(tokens: number): number {
+  return tokens * AVALO_PAYOUT_RATE_PLN;
+}
+
+// ============================================================================
+// 9. VALIDATION HELPERS
+// ============================================================================
+
+/**
+ * Validate that a split configuration sums to 1.0
+ * @param split Split configuration to validate
+ * @returns True if valid, false otherwise
+ */
+export function validateSplit(split: { platform: number; creator: number }): boolean {
+  const total = split.platform + split.creator;
+  return Math.abs(total - 1.0) < 0.0001; // Allow for floating point precision
+}
+
+/**
+ * Get token pack by ID
+ * @param packId Token pack identifier
+ * @returns Token pack or undefined if not found
+ */
+export function getTokenPackById(packId: string): TokenPack | undefined {
+  return TOKEN_PACKS.find((pack) => pack.id === packId);
+}
+
+/**
+ * Calculate effective price per token for a pack (for display purposes only)
+ * Note: This does NOT affect payout calculations
+ * @param pack Token pack
+ * @returns Price per token in PLN
+ */
+export function getPricePerToken(pack: TokenPack): number {
+  return pack.pricePLN / pack.tokens;
+}
+
+/**
+ * Check if a creator qualifies for low-popularity benefits
+ * @param metrics Creator's profile metrics
+ * @returns True if creator qualifies for low-popularity benefits
+ */
+export function isLowPopularity(metrics: {
+  swipeRightRate: number;
+  matchesPerDay: number;
+  activeChatsPerWeek: number;
+}): boolean {
+  return (
+    metrics.swipeRightRate <= LOW_POPULARITY_THRESHOLD.swipeRightRate ||
+    metrics.matchesPerDay <= LOW_POPULARITY_THRESHOLD.matchesPerDay ||
+    metrics.activeChatsPerWeek <= LOW_POPULARITY_THRESHOLD.activeChatsPerWeek
+  );
+}
+
+// ============================================================================
+// 10. TYPE EXPORTS
+// ============================================================================
+
+/**
+ * Type for split configuration
+ */
+export type SplitConfig = typeof AVALO_SPLIT_CHAT;
+
+/**
+ * Type for low popularity threshold configuration
+ */
+export type LowPopularityThreshold = typeof LOW_POPULARITY_THRESHOLD;
+
+/**
+ * Type for refund rules configuration
+ */
+export type RefundRules = typeof REFUND_RULES;
+
+// ============================================================================
+// VALIDATION ON MODULE LOAD
+// ============================================================================
+
+// Validate all splits sum to 1.0
+if (!validateSplit(AVALO_SPLIT_CHAT)) {
+  console.error("CRITICAL: AVALO_SPLIT_CHAT does not sum to 1.0!");
+}
+if (!validateSplit(AVALO_SPLIT_CALENDAR)) {
+  console.error("CRITICAL: AVALO_SPLIT_CALENDAR does not sum to 1.0!");
+}
+if (!validateSplit(AVALO_SPLIT_EVENTS)) {
+  console.error("CRITICAL: AVALO_SPLIT_EVENTS does not sum to 1.0!");
+}
+

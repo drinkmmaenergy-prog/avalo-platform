@@ -1,4 +1,4 @@
-# PACK 57 — Dispute & Evidence Center Implementation
+﻿# PACK 57 — Dispute & Evidence Center Implementation
 
 **Status**: ✅ COMPLETE  
 **Date**: 2025-11-24  
@@ -323,7 +323,7 @@ await sendDisputeMessage(userId, disputeId, "Additional info...");
 
 - ❌ **NO** token price changes
 - ❌ **NO** split ratio changes (65/35 preserved)
-- ❌ **NO** free tokens/credits/discounts
+- ❌ **NO** free tokens/credits/pricing
 - ❌ **NO** automatic refunds (all explicit and recorded)
 - ❌ **NO** silent payout modifications
 

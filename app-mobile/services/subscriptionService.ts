@@ -4,7 +4,7 @@ import { MONETIZATION_SPLITS } from '';
  * Phase 33-3: UI-only subscription management for creators
  * 
  * Handles monthly subscriptions with AsyncStorage persistence.
- * Revenue split: 65% creator / 35% Avalo (UI simulation only)
+ * Reference split display: up to 65% creator reference rate / platform reference portion (UI simulation only)
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -314,4 +314,5 @@ export default {
   AVALO_COMMISSION,
   CREATOR_EARNINGS,
 };
+
 

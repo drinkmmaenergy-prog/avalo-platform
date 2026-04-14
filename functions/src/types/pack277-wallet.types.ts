@@ -155,13 +155,13 @@ export interface VerifyReceiptResponse {
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 /** @deprecated Use TOKEN_PAYOUT_USD from config/economyConfig.ts — kept for backward-compat re-exports */
-export const PAYOUT_RATE = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
+export const PAYOUT_RATE = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.04 USD)
 export const MIN_PAYOUT_TOKENS = 1000; // Minimum 200 USD payout
 
 export interface PayoutRequest {
   userId: string;
   amountTokens: number;
-  payoutMethod: 'stripe_connect' | 'bank_transfer' | 'wise';
+  payoutMethod: 'stripe_connect';
   payoutDetails: {
     accountId?: string;
     iban?: string;
@@ -266,6 +266,10 @@ export interface RefundTokensResponse {
   newBalance?: number;
   error?: string;
 }
+
+
+
+
 
 
 

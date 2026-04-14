@@ -6,7 +6,7 @@
  * - Local data only (AsyncStorage)
  * - No backend, no Firestore, no Functions
  * - Deterministic pricing (no randomness)
- * - 65/35 revenue split
+ * - 65/35 Reference split display
  * - No free tokens / no free trials / no discounts
  * - Conversion-first UX
  *

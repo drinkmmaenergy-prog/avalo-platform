@@ -1,5 +1,5 @@
-/**
- * PACK 327 — Promo Bundles Store (Mobile)
+﻿/**
+ * PACK 327 — Offer Bundles Store (Mobile)
  * Subscriptions + Boosts + Tokens in One Purchase
  */
 
@@ -23,7 +23,7 @@ const functions = getFunctions();
 const auth = getAuth();
 
 // Type definitions (inline to avoid import errors)
-interface PromoBundle {
+interface OfferBundle {
   id: string;
   title: string;
   description: string;
@@ -43,7 +43,7 @@ interface PromoBundle {
 interface PurchaseBundleResponse {
   success: boolean;
   purchaseId: string;
-  bundle: PromoBundle;
+  bundle: OfferBundle;
   applied: {
     subscription?: {
       type: string;
@@ -61,9 +61,9 @@ interface PurchaseBundleResponse {
   error?: string;
 }
 
-export default function PromoBundlesScreen() {
+export default function OfferBundlesScreen() {
   const router = useRouter();
-  const [bundles, setBundles] = useState<PromoBundle[]>([]);
+  const [bundles, setBundles] = useState<OfferBundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
 
@@ -74,7 +74,7 @@ export default function PromoBundlesScreen() {
   const loadBundles = async () => {
     try {
       setLoading(true);
-      const getBundles = httpsCallable(functions, 'promoBundles_getBundles');
+      const getBundles = httpsCallable(functions, 'offerBundles_getBundles');
       const result = await getBundles();
       const data = result.data as any;
       
@@ -83,13 +83,13 @@ export default function PromoBundlesScreen() {
       }
     } catch (error) {
       console.error('Error loading bundles:', error);
-      Alert.alert('Error', 'Failed to load promo bundles');
+      Alert.alert('Error', 'Failed to load offer bundles');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePurchase = async (bundle: PromoBundle) => {
+  const handlePurchase = async (bundle: OfferBundle) => {
     try {
       setPurchasing(bundle.id);
 
@@ -107,7 +107,7 @@ export default function PromoBundlesScreen() {
                 // For now, we'll simulate the purchase
                 const platform = Platform.OS === 'ios' ? 'IOS' : 'ANDROID';
                 
-                const purchaseBundle = httpsCallable(functions, 'promoBundles_purchase');
+                const purchaseBundle = httpsCallable(functions, 'offerBundles_purchase');
                 const result = await purchaseBundle({
                   bundleId: bundle.id,
                   platform,
@@ -136,7 +136,7 @@ export default function PromoBundlesScreen() {
     }
   };
 
-  const formatBundleIncludes = (bundle: PromoBundle): string => {
+  const formatBundleIncludes = (bundle: OfferBundle): string => {
     const items: string[] = [];
     
     if (bundle.includes.subscriptionType && bundle.includes.subscriptionDays) {
@@ -154,7 +154,7 @@ export default function PromoBundlesScreen() {
     return items.join('\n');
   };
 
-  const showSuccessModal = (bundle: PromoBundle, applied: any) => {
+  const showSuccessModal = (bundle: OfferBundle, applied: any) => {
     const benefits: string[] = [];
     
     if (applied.subscription) {
@@ -178,7 +178,7 @@ export default function PromoBundlesScreen() {
     );
   };
 
-  const getBundleBadge = (bundle: PromoBundle): string | null => {
+  const getBundleBadge = (bundle: OfferBundle): string | null => {
     if (bundle.title.includes('VIP')) return '⭐ POPULAR';
     if (bundle.title.includes('Royal')) return '👑 BEST VALUE';
     if (bundle.title.includes('Starter')) return '🚀 STARTER';
@@ -198,7 +198,7 @@ export default function PromoBundlesScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Promo Bundles',
+          title: 'Offer Bundles',
           headerBackTitle: 'Store',
         }}
       />
@@ -441,3 +441,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

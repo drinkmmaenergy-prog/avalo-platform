@@ -326,6 +326,6 @@ export function getUpgradeSuggestion(
 export function calculateAnnualSavings(tier: FanClubTier): number {
   const monthlyPrice = getTierDisplayInfo(tier).price;
   const annualPrice = monthlyPrice * 12;
-  const discountedAnnualPrice = annualPrice * 0.8; // 20% discount
+  const discountedAnnualPrice = annualPrice * 0.8; // 
   return annualPrice - discountedAnnualPrice;
 }

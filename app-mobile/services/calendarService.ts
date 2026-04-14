@@ -1,6 +1,6 @@
 /**
  * Calendar Service
- * Handles calendar bookings with escrow system (20% Avalo / 80% Host split)
+ * Handles calendar bookings with escrow system (20% Avalo / host reference-rate lane)
  */
 
 import {

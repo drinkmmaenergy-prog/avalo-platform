@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 61: Promotion Create Screen
  * Create a new promotion campaign
  */
@@ -20,7 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { createCampaign, PromotionPlacement } from '../../services/promotionService';
 
-export default function PromotionCreateScreen() {
+export default function OfferCreateScreen() {
   const router = useRouter();
   const { user } = useAuth();
   
@@ -394,3 +394,4 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   }
 });
+

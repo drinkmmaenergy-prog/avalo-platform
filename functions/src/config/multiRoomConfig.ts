@@ -214,3 +214,5 @@ export function isValidGuaranteedReplyOffer(tokens: number): boolean {
 export function isValidCapacity(maxParticipants: number | null): boolean {
   return (MULTI_ROOM_CONFIG.CAPACITY.OPTIONS as readonly (number | null)[]).includes(maxParticipants);
 }
+
+

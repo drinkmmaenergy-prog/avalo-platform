@@ -116,7 +116,7 @@ describe('PACK 303 — Creator Earnings Dashboard & Monthly Statements', () => {
   describe('Constants & Configuration', () => {
     
     it('should have correct payout rate', () => {
-      // TOKEN_TOKEN_PAYOUT_USD is derived from TOKEN_PAYOUT_USD (0.03) × USD_TO_USD (4.0)
+      // TOKEN_TOKEN_PAYOUT_USD is derived from TOKEN_PAYOUT_USD (0.04) × USD_TO_USD (4.0)
       expect(TOKEN_TOKEN_PAYOUT_USD).toBe(TOKEN_PAYOUT_USD);
     });
     
@@ -381,6 +381,9 @@ describe('PACK 303 — Export Formats', () => {
     expect(STATEMENT_EXPORT_CONFIG.expirationHours).toBe(24);
   });
 });
+
+
+
 
 
 

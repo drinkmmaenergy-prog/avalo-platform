@@ -231,7 +231,7 @@ export default function AdsPage() {
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Spring Sale — 20% Off"
+              placeholder="e.g., Spring Sale — "
               className="w-full mt-1 p-2 border rounded-lg"
             />
           </div>

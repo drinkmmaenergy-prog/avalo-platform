@@ -1,7 +1,7 @@
 import { MONETIZATION_SPLITS } from '';
 /**
  * Message Pricing Service
- * Phase 33-2: Monetized Chat - Dynamic Pricing + Revenue Split
+ * Phase 33-2: Monetized Chat - Dynamic Pricing + Reference split display
  * 
  * Handles per-chat message pricing for creators.
  * UI-only implementation - no backend integration.
@@ -168,4 +168,5 @@ export default {
   getAvailablePriceOptions,
   AVALO_COMMISSION,
 };
+
 

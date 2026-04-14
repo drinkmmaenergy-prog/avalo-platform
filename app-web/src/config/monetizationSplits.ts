@@ -1,14 +1,15 @@
+import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
+
 export const MONETIZATION_SPLITS = {
-  CHAT: { creator: 0.65, avalo: 0.35 },
-  CALL: { creator: 0.65, avalo: 0.35 },
-  VIDEO_CALL: { creator: 0.65, avalo: 0.35 },
-  TIPS: { creator: 0.65, avalo: 0.35 },
-  UNLOCK_MEDIA: { creator: 0.65, avalo: 0.35 },
-  LIVE_GIFTS: { creator: 0.65, avalo: 0.35 },
-
-  EVENT_TICKET: { creator: 0.80, avalo: 0.20 },
-  CALENDAR_MEETING: { creator: 0.80, avalo: 0.20 },
-
-  SUBSCRIPTION: { creator: 0.70, avalo: 0.30 }
+  CHAT: { ...CANONICAL_ECONOMY.splits.chat },
+  CALL: { ...CANONICAL_ECONOMY.splits.callVoice },
+  VIDEO_CALL: { ...CANONICAL_ECONOMY.splits.callVideo },
+  TIPS: { ...CANONICAL_ECONOMY.splits.tips },
+  UNLOCK_MEDIA: { ...CANONICAL_ECONOMY.splits.chat },
+  LIVE_GIFTS: { ...CANONICAL_ECONOMY.splits.chat },
+  EVENT_TICKET: { ...CANONICAL_ECONOMY.splits.eventTicket },
+  CALENDAR_MEETING: { ...CANONICAL_ECONOMY.splits.calendarMeeting },
+  SUBSCRIPTION: { ...CANONICAL_ECONOMY.splits.subscription },
 } as const;
 
+export const SPLITS = MONETIZATION_SPLITS;

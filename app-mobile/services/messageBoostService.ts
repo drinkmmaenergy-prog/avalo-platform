@@ -7,7 +7,7 @@
  * - No backend, no Firestore, no Functions
  * - Deterministic pricing (no randomness)
  * - No free tokens / no free trials / no discounts
- * - 65/35 revenue split remains
+ * - 65/35 Reference split display remains
  * - Additive only - no refactoring existing modules
  */
 

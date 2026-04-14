@@ -275,7 +275,7 @@ export interface TrackAffiliateConversionResponse {
 
 export interface WithdrawAffiliateEarningsRequest {
   amount: number;
-  payoutMethod: string;  // 'stripe' | 'bank_transfer' | 'crypto'
+  payoutMethod: 'stripe';  // 'stripe' | 'bank_transfer' | 'crypto'
 }
 
 export interface WithdrawAffiliateEarningsResponse {
@@ -318,6 +318,9 @@ export interface RevenueSplitValidation {
   referralPercentage: number;
   platformFee: number;
 }
+
+
+
 
 
 

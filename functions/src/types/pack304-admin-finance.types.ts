@@ -257,7 +257,7 @@ export interface AnomalyDetectionResult {
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const FINANCE_CONSTANTS = {
-  // Tokenomics — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  // Tokenomics — derived from TOKEN_PAYOUT_USD (0.04 USD) via economyConfig.ts
   TOKEN_PAYOUT_USD_PER_TOKEN: TOKEN_PAYOUT_USD,
   
   // Revenue Splits (read-only, from existing packs)
@@ -329,6 +329,9 @@ export interface MonthlyFinanceExportData {
     earnerTokens: number;
   }[];
 }
+
+
+
 
 
 

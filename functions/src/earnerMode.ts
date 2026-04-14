@@ -10,3 +10,5 @@ export async function processReferralReward(){return true}
 export async function requestWithdrawalV1(){return true}
 export async function getWithdrawalHistoryV1(){return []}
 export async function getTopFansV1(){return []}
+
+

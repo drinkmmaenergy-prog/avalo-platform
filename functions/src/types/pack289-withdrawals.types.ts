@@ -83,14 +83,13 @@ export interface Address {
 }
 
 export type PayoutMethodType = 
-  | 'WISE' 
-  | 'BANK_TRANSFER';
+  | 'STRIPE_CONNECT';
 
 export interface PayoutMethod {
   type: PayoutMethodType;
   currency: string;  // USD, USD, USD, etc.
   iban?: string;
-  wiseRecipientId?: string;
+  
 }
 
 export interface KYCProfile {
@@ -133,8 +132,7 @@ export type WithdrawalStatus =
   | 'CANCELLED';        // User cancelled
 
 export type WithdrawalProvider = 
-  | 'WISE' 
-  | 'BANK_TRANSFER' 
+  | 'STRIPE_CONNECT' 
   | 'MANUAL';
 
 export interface KYCSnapshot {
@@ -500,6 +498,10 @@ export function isWithdrawalEditable(status: WithdrawalStatus): boolean {
 export function isWithdrawalFinal(status: WithdrawalStatus): boolean {
   return ['PAID', 'REJECTED', 'CANCELLED'].includes(status);
 }
+
+
+
+
 
 
 

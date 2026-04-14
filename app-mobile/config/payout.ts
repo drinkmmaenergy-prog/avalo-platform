@@ -1,246 +1,133 @@
 /**
- * Payout Configuration
- * Single source of truth for all payout-related values in the Avalo app.
- * 
- * @description This file contains token conversion rates, withdrawal fees, 
- * and payout limits. Edit these values to update payout settings globally.
+ * MOBILE PAYOUT CONFIG
+ * Canonical payout rules for Avalo mobile.
+ *
+ * IMPORTANT:
+ * - All payout values are reference values only.
+ * - Final withdrawable amounts may be reduced by taxes, processor fees,
+ *   payout fees, regulatory deductions, FX effects, refunds, chargebacks
+ *   and other external costs.
+ * - Canonical payout benchmark is derived conservatively from the cheapest
+ *   token economics of the 10,000-token pack.
+ * - Stripe payout fee of 5% is charged to the withdrawing user.
  */
 
-// ============================================================================
-// TOKEN TO CURRENCY CONVERSION
-// ============================================================================
+import { CANONICAL_ECONOMY } from './canonicalEconomy';
 
-/**
- * Global token to EUR conversion rate
- * 1 token = X EUR
- */
-export const TOKEN_TO_EUR_RATE = 0.05; // 1 token = €0.05
-
-/**
- * Convert tokens to EUR
- */
-export function tokensToEUR(tokens: number): number {
-  return tokens * TOKEN_TO_EUR_RATE;
-}
-
-/**
- * Convert EUR to tokens
- */
-export function eurToTokens(eur: number): number {
-  return Math.floor(eur / TOKEN_TO_EUR_RATE);
-}
-
-// ============================================================================
-// WITHDRAWAL METHODS
-// ============================================================================
-
-export type PayoutMethod = 'paypal' | 'bank' | 'revolut' | 'crypto';
+export type PayoutMethod = 'stripe';
 
 export interface WithdrawalFee {
-  /** Fee type: 'percent' for percentage-based, 'flat' for fixed amount */
-  type: 'percent' | 'flat';
-  
-  /** Fee value (percentage as decimal or flat EUR amount) */
+  type: 'percent';
   value: number;
-  
-  /** Minimum fee amount in EUR (for percentage-based fees) */
-  minFee?: number;
-  
-  /** Maximum fee amount in EUR (for percentage-based fees) */
-  maxFee?: number;
 }
 
 export interface PayoutMethodConfig {
-  /** Method identifier */
   method: PayoutMethod;
-  
-  /** Display name */
   displayName: string;
-  
-  /** Fee configuration */
   fee: WithdrawalFee;
-  
-  /** Minimum withdrawal amount in tokens */
   minWithdrawal: number;
-  
-  /** Maximum withdrawal amount in tokens */
   maxWithdrawal: number;
-  
-  /** Processing time in business days */
   processingDays: string;
-  
-  /** Whether this method is currently enabled */
   enabled: boolean;
+  referenceOnly: boolean;
 }
 
-// ============================================================================
-// PAYOUT METHOD CONFIGURATIONS
-// ============================================================================
+export const TOKEN_PAYOUT_RATE_USD = CANONICAL_ECONOMY.payout.tokenPayoutUsd;
+export const PAYOUT_FEE_PERCENT = CANONICAL_ECONOMY.payout.payoutFeePlatformPercent;
+
+export function tokensToUSD(tokens: number): number {
+  return tokens * TOKEN_PAYOUT_RATE_USD;
+}
+
+export function usdToTokens(usd: number): number {
+  if (TOKEN_PAYOUT_RATE_USD <= 0) return 0;
+  return Math.floor(usd / TOKEN_PAYOUT_RATE_USD);
+}
 
 export const PAYOUT_METHODS: Record<PayoutMethod, PayoutMethodConfig> = {
-  paypal: {
-    method: 'paypal',
-    displayName: 'PayPal',
+  stripe: {
+    method: 'stripe',
+    displayName: 'Stripe Payout',
     fee: {
       type: 'percent',
-      value: 0.07, // 7%
-      minFee: 0.50, // Minimum €0.50
-      maxFee: 50.00, // Maximum €50.00
+      value: PAYOUT_FEE_PERCENT,
     },
-    minWithdrawal: 100, // 100 tokens = €5.00
-    maxWithdrawal: 100000, // 100,000 tokens = €5,000
-    processingDays: '1-3',
+    minWithdrawal: 100,
+    maxWithdrawal: 250000,
+    processingDays: '3-7',
     enabled: true,
-  },
-  
-  bank: {
-    method: 'bank',
-    displayName: 'Bank Transfer (SEPA)',
-    fee: {
-      type: 'flat',
-      value: 4.00, // Fixed €4.00 fee
-    },
-    minWithdrawal: 200, // 200 tokens = €10.00
-    maxWithdrawal: 200000, // 200,000 tokens = €10,000
-    processingDays: '3-5',
-    enabled: true,
-  },
-  
-  revolut: {
-    method: 'revolut',
-    displayName: 'Revolut',
-    fee: {
-      type: 'percent',
-      value: 0.05, // 5%
-      minFee: 0.25, // Minimum €0.25
-      maxFee: 25.00, // Maximum €25.00
-    },
-    minWithdrawal: 100, // 100 tokens = €5.00
-    maxWithdrawal: 150000, // 150,000 tokens = €7,500
-    processingDays: '1-2',
-    enabled: true,
-  },
-  
-  crypto: {
-    method: 'crypto',
-    displayName: 'Cryptocurrency (USDT/USDC)',
-    fee: {
-      type: 'percent',
-      value: 0.02, // 2%
-      minFee: 1.00, // Minimum €1.00 (network fees)
-      maxFee: 100.00, // Maximum €100.00
-    },
-    minWithdrawal: 200, // 200 tokens = €10.00
-    maxWithdrawal: 500000, // 500,000 tokens = €25,000
-    processingDays: '1',
-    enabled: true,
+    referenceOnly: true,
   },
 };
 
-// ============================================================================
-// WITHDRAWAL LIMITS
-// ============================================================================
-
 export const WITHDRAWAL_LIMITS = {
-  /** Minimum tokens required to request any withdrawal */
-  GLOBAL_MIN_TOKENS: 100, // €5.00
-  
-  /** Maximum daily withdrawal in tokens */
-  MAX_DAILY_TOKENS: 50000, // €2,500
-  
-  /** Maximum monthly withdrawal in tokens */
-  MAX_MONTHLY_TOKENS: 400000, // €20,000
-  
-  /** Maximum number of pending withdrawal requests per user */
+  GLOBAL_MIN_TOKENS: 100,
+  MAX_DAILY_TOKENS: 50000,
+  MAX_MONTHLY_TOKENS: 400000,
   MAX_PENDING_REQUESTS: 3,
-  
-  /** Cooldown period between withdrawals in hours */
   WITHDRAWAL_COOLDOWN_HOURS: 24,
 } as const;
 
-// ============================================================================
-// WITHDRAWAL THRESHOLDS & VERIFICATION
-// ============================================================================
-
 export const VERIFICATION_REQUIREMENTS = {
-  /** Withdrawal amount that requires basic verification (in tokens) */
-  BASIC_VERIFICATION_THRESHOLD: 10000, // €500
-  
-  /** Withdrawal amount that requires enhanced verification (in tokens) */
-  ENHANCED_VERIFICATION_THRESHOLD: 50000, // €2,500
-  
-  /** Total monthly volume that triggers additional checks (in tokens) */
-  MONTHLY_VOLUME_REVIEW_THRESHOLD: 200000, // €10,000
+  BASIC_VERIFICATION_THRESHOLD: 10000,
+  ENHANCED_VERIFICATION_THRESHOLD: 50000,
+  MONTHLY_VOLUME_REVIEW_THRESHOLD: 200000,
 } as const;
 
-// ============================================================================
-// FEE CALCULATION FUNCTIONS
-// ============================================================================
+export const PAYOUT_LEGAL_NOTICE_EN = `All payout values, token value references, split percentages, creator earnings previews and revenue estimates in Avalo are informational reference values only. Final withdrawable amounts may be reduced by VAT, payout processing fees, payment provider fees, taxes, statutory deductions, refunds, chargebacks, regulatory costs, compliance obligations, FX effects and other external costs.
 
-/**
- * Calculate withdrawal fee for a specific method and amount
- */
+The canonical payout benchmark is calculated conservatively using the cheapest token economics derived from the 10,000-token pack.
+
+Stripe payout fee of 5% is deducted from the withdrawing user's payout.
+
+Canonical payout benchmark: 0.04 USD/token.`;
+
+export const PAYOUT_LEGAL_NOTICE_PL = `Wszystkie prezentowane w Avalo wartości payoutu, wartości tokena, splitów, szacowanych zarobków i prognoz przychodów mają charakter orientacyjny i referencyjny. Ostateczna kwota wypłaty może zostać pomniejszona o VAT, opłaty operatorów płatniczych, payout fee, podatki, obowiązkowe potrącenia prawne, refundy, chargebacki, koszty regulacyjne, obowiązki compliance, różnice kursowe i inne koszty zewnętrzne.
+
+Referencyjna wartość tokena dla potrzeb payoutu i prezentacji szacunkowych zarobków jest liczona konserwatywnie na podstawie ekonomiki najtańszego tokena wynikającego z zakupu paczki 10 000 tokenów.
+
+Opłata payout fee operatora płatniczego w wysokości 5% jest potrącana z wypłaty użytkownika.
+
+Kanoniczny benchmark payoutu: 0.04 USD/token.`;
+
 export function calculateWithdrawalFee(
   tokens: number,
-  method: PayoutMethod
-): { feeEUR: number; feeTokens: number } {
+  method: PayoutMethod = 'stripe'
+): { feeUSD: number; feeTokens: number } {
   const config = PAYOUT_METHODS[method];
-  const amountEUR = tokensToEUR(tokens);
-  
-  let feeEUR: number;
-  
-  if (config.fee.type === 'percent') {
-    // Calculate percentage-based fee
-    feeEUR = amountEUR * config.fee.value;
-    
-    // Apply min/max limits
-    if (config.fee.minFee && feeEUR < config.fee.minFee) {
-      feeEUR = config.fee.minFee;
-    }
-    if (config.fee.maxFee && feeEUR > config.fee.maxFee) {
-      feeEUR = config.fee.maxFee;
-    }
-  } else {
-    // Flat fee
-    feeEUR = config.fee.value;
-  }
-  
-  // Convert fee back to tokens for display
-  const feeTokens = eurToTokens(feeEUR);
-  
+  const grossUSD = tokensToUSD(tokens);
+  const feeUSD = grossUSD * config.fee.value;
+  const feeTokens = usdToTokens(feeUSD);
+
   return {
-    feeEUR: Math.round(feeEUR * 100) / 100, // Round to 2 decimals
+    feeUSD: Math.round(feeUSD * 100) / 100,
     feeTokens,
   };
 }
 
-/**
- * Calculate net payout amount after fees
- */
 export function calculateNetPayout(
   tokens: number,
-  method: PayoutMethod
+  method: PayoutMethod = 'stripe'
 ): {
-  grossEUR: number;
-  feeEUR: number;
-  netEUR: number;
+  grossUSD: number;
+  feeUSD: number;
+  netUSD: number;
   feeTokens: number;
+  referenceOnly: boolean;
 } {
-  const grossEUR = tokensToEUR(tokens);
-  const { feeEUR, feeTokens } = calculateWithdrawalFee(tokens, method);
-  const netEUR = Math.max(0, grossEUR - feeEUR);
-  
+  const grossUSD = tokensToUSD(tokens);
+  const { feeUSD, feeTokens } = calculateWithdrawalFee(tokens, method);
+  const netUSD = Math.max(0, grossUSD - feeUSD);
+
   return {
-    grossEUR: Math.round(grossEUR * 100) / 100,
-    feeEUR: Math.round(feeEUR * 100) / 100,
-    netEUR: Math.round(netEUR * 100) / 100,
+    grossUSD: Math.round(grossUSD * 100) / 100,
+    feeUSD: Math.round(feeUSD * 100) / 100,
+    netUSD: Math.round(netUSD * 100) / 100,
     feeTokens,
+    referenceOnly: true,
   };
 }
 
-/**
- * Validate withdrawal request
- */
 export function validateWithdrawal(
   tokens: number,
   method: PayoutMethod,
@@ -251,47 +138,42 @@ export function validateWithdrawal(
   errorCode?: string;
 } {
   const config = PAYOUT_METHODS[method];
-  
-  // Check if method is enabled
+
   if (!config.enabled) {
     return {
       valid: false,
-      error: `${config.displayName} withdrawals are currently unavailable`,
+      error: `${config.displayName} payouts are currently unavailable`,
       errorCode: 'METHOD_DISABLED',
     };
   }
-  
-  // Check minimum withdrawal
+
   if (tokens < config.minWithdrawal) {
-    const minEUR = tokensToEUR(config.minWithdrawal);
+    const minUSD = tokensToUSD(config.minWithdrawal);
     return {
       valid: false,
-      error: `Minimum withdrawal for ${config.displayName} is ${config.minWithdrawal} tokens (€${minEUR.toFixed(2)})`,
+      error: `Minimum withdrawal for ${config.displayName} is ${config.minWithdrawal} tokens ($${minUSD.toFixed(2)} reference value)`,
       errorCode: 'BELOW_MINIMUM',
     };
   }
-  
-  // Check maximum withdrawal
+
   if (tokens > config.maxWithdrawal) {
-    const maxEUR = tokensToEUR(config.maxWithdrawal);
+    const maxUSD = tokensToUSD(config.maxWithdrawal);
     return {
       valid: false,
-      error: `Maximum withdrawal for ${config.displayName} is ${config.maxWithdrawal} tokens (€${maxEUR.toFixed(2)})`,
+      error: `Maximum withdrawal for ${config.displayName} is ${config.maxWithdrawal} tokens ($${maxUSD.toFixed(2)} reference value)`,
       errorCode: 'ABOVE_MAXIMUM',
     };
   }
-  
-  // Check global minimum
+
   if (tokens < WITHDRAWAL_LIMITS.GLOBAL_MIN_TOKENS) {
-    const minEUR = tokensToEUR(WITHDRAWAL_LIMITS.GLOBAL_MIN_TOKENS);
+    const minUSD = tokensToUSD(WITHDRAWAL_LIMITS.GLOBAL_MIN_TOKENS);
     return {
       valid: false,
-      error: `Minimum withdrawal amount is ${WITHDRAWAL_LIMITS.GLOBAL_MIN_TOKENS} tokens (€${minEUR.toFixed(2)})`,
+      error: `Minimum withdrawal amount is ${WITHDRAWAL_LIMITS.GLOBAL_MIN_TOKENS} tokens ($${minUSD.toFixed(2)} reference value)`,
       errorCode: 'BELOW_GLOBAL_MINIMUM',
     };
   }
-  
-  // Check balance
+
   if (tokens > currentBalance) {
     return {
       valid: false,
@@ -299,71 +181,39 @@ export function validateWithdrawal(
       errorCode: 'INSUFFICIENT_BALANCE',
     };
   }
-  
-  // Check daily limit
+
   if (tokens > WITHDRAWAL_LIMITS.MAX_DAILY_TOKENS) {
-    const maxEUR = tokensToEUR(WITHDRAWAL_LIMITS.MAX_DAILY_TOKENS);
+    const maxUSD = tokensToUSD(WITHDRAWAL_LIMITS.MAX_DAILY_TOKENS);
     return {
       valid: false,
-      error: `Daily withdrawal limit is ${WITHDRAWAL_LIMITS.MAX_DAILY_TOKENS} tokens (€${maxEUR.toFixed(2)})`,
+      error: `Daily withdrawal limit is ${WITHDRAWAL_LIMITS.MAX_DAILY_TOKENS} tokens ($${maxUSD.toFixed(2)} reference value)`,
       errorCode: 'EXCEEDS_DAILY_LIMIT',
     };
   }
-  
+
   return { valid: true };
 }
 
-/**
- * Get recommended payout method based on amount
- */
 export function getRecommendedPayoutMethod(tokens: number): {
   method: PayoutMethod;
   reason: string;
 } {
-  const amountEUR = tokensToEUR(tokens);
-  
-  // For small amounts, recommend lowest fee
-  if (amountEUR < 20) {
-    return {
-      method: 'crypto',
-      reason: 'Lowest fees for small amounts',
-    };
-  }
-  
-  // For medium amounts, recommend Revolut
-  if (amountEUR < 100) {
-    return {
-      method: 'revolut',
-      reason: 'Fast processing with competitive fees',
-    };
-  }
-  
-  // For large amounts, recommend bank transfer
-  if (amountEUR >= 100) {
-    return {
-      method: 'bank',
-      reason: 'Fixed fee best for larger amounts',
-    };
-  }
-  
   return {
-    method: 'paypal',
-    reason: 'Popular and widely accepted',
+    method: 'stripe',
+    reason: 'Canonical payout rail for Avalo. Final payout is a reference value and may be reduced by fees, taxes and other deductions.',
   };
 }
 
-// ============================================================================
-// EXPORT ALL CONFIGS
-// ============================================================================
-
 export default {
-  TOKEN_TO_EUR_RATE,
+  TOKEN_PAYOUT_RATE_USD,
+  PAYOUT_FEE_PERCENT,
   PAYOUT_METHODS,
   WITHDRAWAL_LIMITS,
   VERIFICATION_REQUIREMENTS,
-  // Helper functions
-  tokensToEUR,
-  eurToTokens,
+  PAYOUT_LEGAL_NOTICE_EN,
+  PAYOUT_LEGAL_NOTICE_PL,
+  tokensToUSD,
+  usdToTokens,
   calculateWithdrawalFee,
   calculateNetPayout,
   validateWithdrawal,

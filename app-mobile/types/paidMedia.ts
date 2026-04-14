@@ -409,14 +409,14 @@ export function getPricingTiers(): PricingTier[] {
 }
 
 /**
- * Calculate earnings for creator (65% after 35% commission)
+ * Calculate creator reference-rate earnings
  */
 export function calculateCreatorEarnings(priceTokens: number): number {
   return Math.floor(priceTokens * PAID_MEDIA_CONFIG.CREATOR_SHARE);
 }
 
 /**
- * Calculate Avalo commission (35%)
+ * Calculate platform reference portion
  */
 export function calculateAvaloCommission(priceTokens: number): number {
   return Math.floor(priceTokens * PAID_MEDIA_CONFIG.AVALO_COMMISSION);
@@ -486,4 +486,5 @@ export function validateMediaFile(
 
   return { isValid: true };
 }
+
 

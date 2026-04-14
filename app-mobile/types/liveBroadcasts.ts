@@ -255,8 +255,8 @@ export interface LiveStreamTransaction {
   userId: string;
   creatorId: string;
   amount: number; // Total amount
-  creatorAmount: number; // 65% to creator
-  avaloAmount: number; // 35% to Avalo
+  creatorAmount: number; // reference-rate creator amount
+  avaloAmount: number; // reference platform portion
   giftType?: GiftType;
   giftName?: string;
   status: 'pending' | 'completed' | 'failed';
@@ -509,7 +509,7 @@ export function getGiftsByType(type: GiftType): GiftCatalogItem[] {
 }
 
 /**
- * Calculate revenue split (65/35)
+ * Calculate Reference split display model (up to 65% reference rate)
  */
 export function calculateRevenueSplit(totalAmount: number): {
   creatorAmount: number;
@@ -674,4 +674,5 @@ export function getWarningColor(warningCount: number): string {
   };
   return colors[severity];
 }
+
 

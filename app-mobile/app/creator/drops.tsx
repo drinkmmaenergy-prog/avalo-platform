@@ -561,7 +561,7 @@ export default function CreatorDropsScreen() {
             • {t('creatorDrops.info3') || 'VIP subscribers get 5% off'}
           </Text>
           <Text style={styles.infoText}>
-            • {t('creatorDrops.info4') || 'You earn 65% of all sales'}
+            • {t('creatorDrops.info4') || 'You may earn up to 65% of sales before applicable deductions.'}
           </Text>
           <Text style={styles.infoText}>
             • {t('creatorDrops.info5') || 'Max 1 active drop per creator'}
@@ -995,3 +995,4 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+

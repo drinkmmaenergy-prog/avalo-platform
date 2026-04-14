@@ -179,7 +179,7 @@ export interface TaxProfile {
     taxType?: TaxType;
   };
   payoutInfo?: {
-    method: 'stripe' | 'wise' | 'bank';
+    method: 'stripe';
     accountId?: string;
     bankDetails?: {
       accountNumber?: string;
@@ -298,6 +298,8 @@ export interface ContractTemplate {
   updatedAt: Date;
   usageCount: number;
 }
+
+
 
 
 

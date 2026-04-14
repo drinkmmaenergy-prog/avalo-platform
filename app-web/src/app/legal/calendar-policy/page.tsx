@@ -1,4 +1,4 @@
-/**
+﻿/**
  * /legal/calendar-policy — Calendar / Meeting Policy
  *
  * CRITICAL legal document for the Avalo Calendar feature.
@@ -148,7 +148,7 @@ export default function CalendarPolicyPage() {
               <tbody>
                 <tr>
                   <td>Guest cancels &gt;72h before</td>
-                  <td>100% refund of host share (Avalo keeps 20% fee)</td>
+                  <td>100% refund of host share (reference platform portion 20% fee)</td>
                 </tr>
                 <tr>
                   <td>Guest cancels 24–72h before</td>
@@ -230,3 +230,4 @@ export default function CalendarPolicyPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Home Screen - Main Discovery Interface
  * Includes: Wallet summary, Discovery grid, Swipe deck, and Feed list
  * Phase 27: Optimized with skeleton loaders and performance improvements
@@ -54,8 +54,8 @@ import {
   type UserTier,
   type UserProfile as AdUserProfile,
 } from "@/services/sponsoredAdsService";
-import BottomSheetPromo from "@/components/BottomSheetPromo";
-import { DiscountOffer } from "@/shared/types/discounts";
+import BottomSheetOffer from "@/components/BottomSheetOffer";
+import { DiscountOffer } from "@/shared/types/pricing";
 import {
   evaluateDiscountEligibility,
   retrieveActiveDiscount,
@@ -106,7 +106,7 @@ export default function HomeScreen() {
   
   // Phase 31C: Discount states
   const [activeDiscount, setActiveDiscount] = useState<DiscountOffer | null>(null);
-  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
   
   // Phase 32-4: FTUX Missions
   const { t } = useTranslation();
@@ -510,7 +510,7 @@ export default function HomeScreen() {
     const stored = retrieveActiveDiscount();
     if (stored) {
       setActiveDiscount(stored);
-      setShowPromoModal(true);
+      setShowOfferModal(true);
       return;
     }
 
@@ -539,8 +539,8 @@ export default function HomeScreen() {
     if (offer) {
       storeActiveDiscount(offer);
       setActiveDiscount(offer);
-      // Show promo after a short delay (2 seconds) to not be intrusive
-      setTimeout(() => setShowPromoModal(true), 2000);
+      // Show offer after a short delay (2 seconds) to not be intrusive
+      setTimeout(() => setShowOfferModal(true), 2000);
     }
   };
 
@@ -551,8 +551,8 @@ export default function HomeScreen() {
     return false;
   };
 
-  // Handle promo activation
-  const handlePromoActivate = () => {
+  // Handle offer activation
+  const handleOfferActivate = () => {
     // Navigate to the relevant purchase screen based on discount target
     if (activeDiscount) {
       switch (activeDiscount.target) {
@@ -856,12 +856,12 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Phase 31C: Promo Bottom Sheet */}
-      <BottomSheetPromo
-        visible={showPromoModal}
+      {/* Phase 31C: Offer Bottom Sheet */}
+      <BottomSheetOffer
+        visible={showOfferModal}
         offer={activeDiscount}
-        onClose={() => setShowPromoModal(false)}
-        onActivate={handlePromoActivate}
+        onClose={() => setShowOfferModal(false)}
+        onActivate={handleOfferActivate}
         locale="en"
       />
       
@@ -1087,4 +1087,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
 });
+
+
 

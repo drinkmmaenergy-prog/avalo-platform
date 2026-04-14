@@ -3,7 +3,7 @@
  * Phase 33-2: Monetized Chat - Earnings Display
  * 
  * Displays earnings indicator below paid messages on the creator's side.
- * Shows the tokens earned after Avalo commission (35%) is deducted.
+ * Shows estimated creator earnings using a reference-rate display model.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -104,7 +104,7 @@ export const MessageEarningIndicator: React.FC<MessageEarningIndicatorProps> = (
       </View>
       <View style={styles.detailsContainer}>
         <Text style={styles.details}>
-          {messagePrice} tokens • 65% after commission
+          {messagePrice} tokens • estimated at reference rate
         </Text>
       </View>
     </Animated.View>
@@ -149,3 +149,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+

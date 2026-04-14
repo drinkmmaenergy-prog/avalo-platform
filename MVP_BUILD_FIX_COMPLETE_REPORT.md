@@ -1,4 +1,4 @@
-# AVALO MVP BUILD FIX - AUTOMATED COMPLETION REPORT
+﻿# AVALO MVP BUILD FIX - AUTOMATED COMPLETION REPORT
 
 **Date:** 2026-01-05  
 **Project:** app-mobile/ (Expo SDK 54, Router v6, TypeScript)  
@@ -84,7 +84,7 @@ app-mobile/package.json (line 70)
 - 74 imports from `../shared/` directories
 - Missing modules:
   - `shared/theme`
-  - `shared/types/discounts`
+  - `shared/types/pricing`
   - `shared/utils/discountEngine`
   - `shared/types/support`
   - `shared/types/legal.types`
@@ -108,7 +108,7 @@ export const radius = { sm: 4, md: 8, lg: 12, ... };
 
 #### 2. Discount Types & Utils
 ```typescript
-// app-mobile/shared/types/discounts.ts
+// app-mobile/shared/types/pricing.ts
 export interface DiscountOffer { id: string; code?: string; ... }
 export interface ActiveDiscount { offerId: string; ... }
 
@@ -131,7 +131,7 @@ export interface HelpArticle { articleId, title, content, ... }
 ### Files Created (STUBS)
 ```
 app-mobile/shared/theme.ts
-app-mobile/shared/types/discounts.ts
+app-mobile/shared/types/pricing.ts
 app-mobile/shared/utils/discountEngine.ts
 app-mobile/shared/types/support.ts
 ```
@@ -217,7 +217,7 @@ npx expo start --android  # or --ios
 
 ### Created Files (4 total)
 1. `app-mobile/shared/theme.ts` - Theme stubs
-2. `app-mobile/shared/types/discounts.ts` - Discount types
+2. `app-mobile/shared/types/pricing.ts` - Discount types
 3. `app-mobile/shared/utils/discountEngine.ts` - Discount utilities
 4. `app-mobile/shared/types/support.ts` - Support/Ticket types 
 
@@ -324,3 +324,4 @@ All critical blocking issues resolved through automated fixes and stub generatio
 *Files Modified: 7*  
 *Files Created: 4*  
 *Issues Fixed: Router (5), Icons (1), Types (1), Stubs (4)*
+

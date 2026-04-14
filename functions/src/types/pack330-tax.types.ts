@@ -240,7 +240,7 @@ export interface PayoutComplianceCheck {
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const TAX_CONFIG = {
-  // Conversion rate — derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+  // Conversion rate — derived from TOKEN_PAYOUT_USD (0.04 USD) via economyConfig.ts
   TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,
   
   // Report periods
@@ -296,6 +296,9 @@ export type TaxSourceField =
   | 'tipsTokens'
   | 'aiCompanionsTokens'
   | 'digitalProductsTokens';
+
+
+
 
 
 

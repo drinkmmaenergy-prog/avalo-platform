@@ -3,7 +3,7 @@
  * Phase 33-4: Displays creator earnings for unlocked PPV posts
  * 
  * Features:
- * - Shows "+X tokens • 65% after commission"
+ * - Shows "+X tokens • up to 65% (reference rate)"
  * - Gold text with fade + slide animation
  * - Only visible to creators viewing their own unlocked media
  */
@@ -143,3 +143,4 @@ const styles = StyleSheet.create({
     color: '#40E0D0',
   },
 });
+

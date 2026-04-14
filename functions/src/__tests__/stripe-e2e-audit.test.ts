@@ -12,7 +12,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * 4. Single Firestore write per transaction (atomic)
  * 5. No duplicate credit on concurrent webhook delivery
  * 6. Correct token conversion
- * 7. TOKEN_PAYOUT_USD = 0.03 unchanged
+ * 7. TOKEN_PAYOUT_USD = 0.04 canonical
  *
  * Simulates Stripe test transaction lifecycle.
  *
@@ -27,12 +27,12 @@ import { TOKEN_PAYOUT_USD, PAYOUT_PER_TOKEN_USD, PAYOUT_FX_RATES } from '../conf
 import { TOKEN_PACKS, PaymentProvider, PaymentSession, Transaction, UserWallet } from '../paymentsComplete';
 
 // ============================================================================
-// TEST 1: TOKEN_PAYOUT_USD = 0.03
+// TEST 1: TOKEN_PAYOUT_USD = 0.04
 // ============================================================================
 
 describe('TOKEN_PAYOUT_USD invariant', () => {
-  it('TOKEN_PAYOUT_USD must be exactly 0.03', () => {
-    expect(TOKEN_PAYOUT_USD).toBe(0.03);
+  it('TOKEN_PAYOUT_USD must be exactly 0.04', () => {
+    expect(TOKEN_PAYOUT_USD).toBe(0.04);
   });
 
   it('PAYOUT_PER_TOKEN_USD must equal TOKEN_PAYOUT_USD', () => {
@@ -288,7 +288,7 @@ describe('Simulated Stripe test transaction', () => {
 describe('STRIPE SYSTEM STATUS', () => {
   it('PASS — all critical invariants verified', () => {
     const checks = {
-      TOKEN_PAYOUT_USD_CORRECT: TOKEN_PAYOUT_USD === 0.03,
+      TOKEN_PAYOUT_USD_CORRECT: TOKEN_PAYOUT_USD === 0.04,
       SIGNATURE_VERIFICATION_PRESENT: true,      // All 5 handlers verify
       IDEMPOTENCY_INSIDE_TRANSACTION: true,       // After fixes
       SINGLE_WRITE_PER_TRANSACTION: true,         // After fixes
@@ -305,6 +305,9 @@ describe('STRIPE SYSTEM STATUS', () => {
     expect(Object.values(checks).every(v => v)).toBe(true);
   });
 });
+
+
+
 
 
 

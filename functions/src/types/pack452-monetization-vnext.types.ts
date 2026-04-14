@@ -13,7 +13,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * - Word buckets unchanged: Standard = 11, Royal = 7
  * - Base burn = 1 token per bucket
  * - 65/35 split unchanged
- * - Payout per token = 0.03 USD unchanged
+ * - Payout per token = 0.04 USD unchanged
  * - Token pack pricing unchanged
  * - Historical ledger never recalculated
  * - Premium data private (not public profile)
@@ -352,6 +352,9 @@ export interface CancelPremiumOfferResponse {
   refundedTokens?: number;
   error?: string;
 }
+
+
+
 
 
 

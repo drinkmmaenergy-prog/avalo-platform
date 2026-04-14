@@ -13,26 +13,16 @@ import { admin } from '../runtime';
 // PAYOUT METHOD TYPES
 // ============================================================================
 
-export interface BankTransferDetails {
-  iban: string;
-  accountHolderName: string;
-  bankName: string;
-  country: string;
-  bic?: string; // Optional SWIFT/BIC code
-}
 
-export interface WiseDetails {
-  wiseProfileId: string;
-  email: string;
-  recipientId?: string; // Wise recipient ID for faster transfers
-}
+
+
 
 export interface StripeConnectDetails {
   stripeAccountId: string;
   email?: string;
 }
 
-export type PayoutMethodDetails = BankTransferDetails | WiseDetails | StripeConnectDetails;
+export type PayoutMethodDetails = StripeConnectDetails
 
 export interface PayoutMethod {
   id: string;
@@ -129,23 +119,9 @@ export interface PayoutConfigResponse {
 // VALIDATION HELPERS
 // ============================================================================
 
-export function isBankTransferDetails(details: any): details is BankTransferDetails {
-  return (
-    typeof details === 'object' &&
-    typeof details.iban === 'string' &&
-    typeof details.accountHolderName === 'string' &&
-    typeof details.bankName === 'string' &&
-    typeof details.country === 'string'
-  );
-}
 
-export function isWiseDetails(details: any): details is WiseDetails {
-  return (
-    typeof details === 'object' &&
-    typeof details.wiseProfileId === 'string' &&
-    typeof details.email === 'string'
-  );
-}
+
+
 
 export function isStripeConnectDetails(details: any): details is StripeConnectDetails {
   return (
@@ -160,15 +136,22 @@ export function validatePayoutMethodDetails(
 ): details is PayoutMethodDetails {
   switch (type) {
     case 'BANK_TRANSFER':
-      return isBankTransferDetails(details);
+      return REMOVED(details);
     case 'WISE':
-      return isWiseDetails(details);
+      return REMOVED(details);
     case 'STRIPE_CONNECT':
       return isStripeConnectDetails(details);
     default:
       return false;
   }
 }
+
+
+
+
+
+
+
 
 
 

@@ -4,7 +4,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * PACK 56 — Payout Background Processor
  * 
  * Scheduled function to process pending payout requests.
- * Integrates with Stripe Connect, Wise, and AML monitoring.
+ * Integrates with Stripe Connect, , and AML monitoring.
  */
 
 
@@ -13,11 +13,7 @@ import {
   createStripeTransfer,
   getStripeTransfer,
 } from "../integrations/stripeConnect";
-import {
-  createWiseTransfer,
-  getWiseTransferStatus,
-  getWiseProfileId,
-} from "../integrations/wise";
+
 import type { PayoutRequest } from "../payouts";
 import { FieldValue, functions, increment, onSchedule } from '../runtime';
 
@@ -72,6 +68,10 @@ export const processPendingPayouts = onSchedule(
  * Process a single payout request.
  */
 async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   console.log(`Processing payout ${payout.requestId} for user ${payout.userId}`);
 
   try {
@@ -113,11 +113,7 @@ async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
       const result = await executeStripeTransfer(payout);
       transferId = result.transferId;
       transferStatus = result.status;
-    } else if (payout.rail === "WISE") {
-      const result = await executeWiseTransfer(payout);
-      transferId = result.transferId;
-      transferStatus = result.status;
-    } else {
+    }  else {
       throw new Error(`Unknown payout rail: ${payout.rail}`);
     }
 
@@ -155,6 +151,10 @@ async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
  * Execute Stripe Connect transfer.
  */
 async function executeStripeTransfer(payout: PayoutRequest) {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   // Get payout account
   const accountDoc = await db.collection("payout_accounts").doc(payout.userId).get();
   if (!accountDoc.exists) {
@@ -195,51 +195,8 @@ async function executeStripeTransfer(payout: PayoutRequest) {
 }
 
 /**
- * Execute Wise transfer.
+ * Execute 
  */
-async function executeWiseTransfer(payout: PayoutRequest) {
-  // Get payout account
-  const accountDoc = await db.collection("payout_accounts").doc(payout.userId).get();
-  if (!accountDoc.exists) {
-    throw new Error("Payout account not found");
-  }
-
-  const account = accountDoc.data();
-  const wiseRecipientId = account?.wise?.recipientId;
-
-  if (!wiseRecipientId) {
-    throw new Error("Wise recipient not configured");
-  }
-
-  // Get Wise profile ID
-  const profileId = getWiseProfileId();
-  if (!profileId) {
-    throw new Error("Wise profile ID not configured");
-  }
-
-  // Create transfer
-  const result = await createWiseTransfer({
-    recipientId: wiseRecipientId,
-    profileId,
-    amountFiat: payout.amountFiatNetToUser,
-    currency: payout.currency,
-    reference: `Avalo payout ${payout.requestId}`,
-    metadata: {
-      platformRequestId: payout.requestId,
-      platformUserId: payout.userId,
-      tokensRequested: payout.tokensRequested.toString(),
-    },
-  });
-
-  const transferResult = {
-    transferId: result.transferId,
-    status: result.status as "PENDING" | "PROCESSING" | "PAID" | "FAILED",
-  };
-  console.log('Scheduled job result:', transferResult);
-
-
-  return transferResult;
-}
 
 /**
  * Mark payout for manual review.
@@ -248,6 +205,10 @@ async function markPayoutForReview(
   payout: PayoutRequest,
   reason: string
 ): Promise<void> {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   await db.collection("payout_requests").doc(payout.requestId).update({
     status: "FAILED",
     updatedAt: serverTimestamp(),
@@ -285,6 +246,10 @@ async function markPayoutForReview(
  * Refund tokens for failed payout.
  */
 async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   try {
     await db.collection("earner_earnings").doc(payout.userId).update({
       tokensPaidOut: admin.firestore.FieldValue.increment(-payout.tokensRequested),
@@ -301,6 +266,10 @@ async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
  * Update AML profile with payout activity.
  */
 async function updateAMLProfileForPayout(payout: PayoutRequest): Promise<void> {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   try {
     const amlRef = db.collection("aml_profiles").doc(payout.userId);
     const amlDoc = await amlRef.get();
@@ -381,16 +350,17 @@ export const checkPayoutStatus = onSchedule(
  * Check the status of a processing payout transfer.
  */
 async function checkPayoutTransferStatus(payout: PayoutRequest): Promise<void> {
+  // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
+  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+    throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
+  }
   try {
     let transferStatus: "PENDING" | "PROCESSING" | "PAID" | "FAILED";
 
     if (payout.rail === "STRIPE" && payout.providerData.stripeTransferId) {
       const result = await getStripeTransfer(payout.providerData.stripeTransferId);
       transferStatus = result.status;
-    } else if (payout.rail === "WISE" && payout.providerData.wiseTransferId) {
-      const result = await getWiseTransferStatus(payout.providerData.wiseTransferId);
-      transferStatus = result.status;
-    } else {
+    }  else {
       console.warn(`No transfer ID found for payout ${payout.requestId}`);
       return;
     }
@@ -423,6 +393,14 @@ async function checkPayoutTransferStatus(payout: PayoutRequest): Promise<void> {
     console.error(`Error checking payout status for ${payout.requestId}:`, error);
   }
 }
+
+
+
+
+
+
+
+
 
 
 

@@ -91,3 +91,5 @@ export const acceptLegalDocuments = functions.https.onCall(async (request) => {
 
 
 
+
+

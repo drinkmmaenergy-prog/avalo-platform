@@ -228,7 +228,7 @@
       "pricePerMinute": "{{price}} tokenów/minutę",
       "totalCost": "Całkowity koszt: {{tokens}} tokenów",
       "duration": "Czas trwania: {{duration}}",
-      "avaloFee": "Opłata platformy (35%): {{fee}} tokenów",
+      "avaloFee": "Referencyjna część platformy: {{fee}} tokenów",
       "confirm": "Rozpocznij udostępnianie",
       "insufficientTokens": "Niewystarczająca liczba tokenów",
       "insufficientMessage": "Potrzebujesz {{required}} tokenów, aby rozpocząć udostępnianie lokalizacji. Masz {{current}} tokenów.",

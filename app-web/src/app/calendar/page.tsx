@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * Calendar Page — Bookings, Availability, Events, Policy & Rules
@@ -432,7 +432,7 @@ export default function CalendarPage() {
           <p className="text-gray-400 text-center py-8 text-sm">
             No events yet. Create your first event to sell tickets.
           </p>
-          {/* FIX 93: Speed Dating promotional card */}
+          {/* FIX 93: Speed Dating offeral card */}
           <div className="p-4 bg-gradient-to-r from-red-50 to-pink-50 border border-pink-200 rounded-xl mb-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">⚡</span>
@@ -492,21 +492,21 @@ export default function CalendarPage() {
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
                   &gt;72h
                 </span>
-                <span>100% refund of host share (80%). Avalo keeps 20% fee.</span>
+                <span>100% refund of the host reference portion (up to 80%). Reference platform portion: up to 20% fee.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
                   24-72h
                 </span>
                 <span>
-                  50% refund of host share. Remaining 50% goes to host. Avalo keeps 20%.
+                  50% refund of the host reference portion. The remaining reference host portion may be paid out under platform rules. Reference platform portion: up to 20%. Not guaranteed.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
                   &lt;24h
                 </span>
-                <span>No refund. Host receives full 80%. Avalo keeps 20%.</span>
+                <span>No refund. You may earn up to 80% before applicable deductions. Reference platform portion: up to 20%. Not guaranteed.</span>
               </li>
             </ul>
           </div>
@@ -525,7 +525,7 @@ export default function CalendarPage() {
             <h3 className="font-semibold text-amber-800 mb-2">No-Show Policy</h3>
             <ul className="text-sm text-amber-700 space-y-1">
               <li>
-                • <strong>Guest no-show:</strong> Host receives 80%. No refund. Avalo keeps 20%.
+                • <strong>Guest no-show:</strong> You may earn up to 80% before applicable deductions. No refund. Reference platform portion: up to 20%. Not guaranteed.
               </li>
               <li>
                 • <strong>Host no-show:</strong> Full refund to guest including Avalo fee.
@@ -614,3 +614,5 @@ export default function CalendarPage() {
     </div>
   );
 }
+
+

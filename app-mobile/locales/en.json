@@ -228,7 +228,7 @@
       "pricePerMinute": "{{price}} tokens/minute",
       "totalCost": "Total cost: {{tokens}} tokens",
       "duration": "Duration: {{duration}}",
-      "avaloFee": "Platform fee (35%): {{fee}} tokens",
+      "avaloFee": "Platform reference portion: {{fee}} tokens",
       "confirm": "Start Sharing",
       "insufficientTokens": "Insufficient tokens",
       "insufficientMessage": "You need {{required}} tokens to start location sharing. You have {{current}} tokens.",

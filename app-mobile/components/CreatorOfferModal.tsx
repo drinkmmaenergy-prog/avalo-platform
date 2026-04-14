@@ -224,7 +224,7 @@ export default function CreatorOfferModal({
 
               <View style={styles.pricingRow}>
                 <Text style={styles.pricingSubLabel}>
-                  {t('creatorOffers.creatorEarns') || 'Creator gets (65%):'}
+                  {t('creatorOffers.creatorEarns') || 'Creator can earn estimated at reference rate:'}
                 </Text>
                 <Text style={styles.pricingSubValue}>
                   {creatorEarnings} {t('common.tokens') || 'tokens'}
@@ -233,7 +233,7 @@ export default function CreatorOfferModal({
 
               <View style={styles.pricingRow}>
                 <Text style={styles.pricingSubLabel}>
-                  {t('creatorOffers.avaloFee') || 'Avalo fee (35%):'}
+                  {t('creatorOffers.avaloFee') || 'Avalo reference portion:'}
                 </Text>
                 <Text style={styles.pricingSubValue}>
                   {avaloFee} {t('common.tokens') || 'tokens'}
@@ -465,4 +465,6 @@ const styles = StyleSheet.create({
     height: 20,
   },
 });
+
+
 

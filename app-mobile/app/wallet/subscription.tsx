@@ -312,7 +312,7 @@ export default function SubscriptionScreen() {
             • Cancel anytime before renewal{'\n'}
             • Benefits apply immediately{'\n'}
             • Subscription managed via app store (mobile) or Stripe (web){'\n'}
-            • Discounts apply to all eligible activities{'\n'}
+            • No Pricing Policy apply to activities{'\n'}
             • 18+ required for subscription
           </Text>
         </View>

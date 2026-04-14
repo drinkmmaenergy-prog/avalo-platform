@@ -373,7 +373,7 @@ export default function AICompanionSettingsScreen() {
                       💰 {t('aiVoice.pricingInfo')}
                     </Text>
                     <Text style={styles.voicePricingDetail}>
-                      {t('aiVoice.vipDiscountInfo')}
+                      {t('aiVoice.vipBenefitInfo')}
                     </Text>
                   </View>
                 </>

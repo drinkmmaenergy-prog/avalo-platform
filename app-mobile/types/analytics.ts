@@ -18,7 +18,7 @@ export interface CreatorAnalyticsDaily {
   id: string;                      // ${creatorId}_${YYYYMMDD}
   creatorId: string;
   date: string;                    // YYYY-MM-DD
-  totalNetTokens: number;          // Net earnings (65% share) for that day
+  totalNetTokens: number;          // Net earnings at reference rate for that day
   giftNetTokens: number;           // Sum from gifts
   storyNetTokens: number;          // Sum from premium stories
   paidMediaNetTokens: number;      // Sum from paid media

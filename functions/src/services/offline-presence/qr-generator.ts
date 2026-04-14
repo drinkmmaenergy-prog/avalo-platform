@@ -193,3 +193,5 @@ export const generateQRimageUrl = QRGenerator.generateQRimageUrl.bind(QRGenerato
 
 
 
+
+

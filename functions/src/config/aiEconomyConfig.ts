@@ -82,7 +82,7 @@ export const AI_ECONOMY = {
   PAYMENT: {
     GATEWAY: 'STRIPE_WEB_ONLY' as const,
     MOBILE_REDIRECT_URL: 'avaloapp.com/wallet/buy',
-    TOKEN_PAYOUT_USD: 0.03,
+    TOKEN_PAYOUT_USD: 0.04,
     NO_IAP: true,
   },
 } as const;
@@ -146,3 +146,6 @@ export function getVoicePriceTokens(memberTier: 'STANDARD' | 'VIP' | 'ROYAL'): n
 export function isSubTierNSFW(tier: 'FREE' | 'CONNECT' | 'PREMIUM'): boolean {
   return AI_ECONOMY.AVALO_AI.SUBSCRIPTION[tier].nsfwAccess;
 }
+
+
+

@@ -1,81 +1,97 @@
-import { MONETIZATION_SPLITS } from "@constants/monetization";
-/**
- * Monetization Configuration for Avalo Web
- * Matches mobile app-mobile/config/monetization.ts
- */
+import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
 
-export interface TokenPack {
+export type TokenPack = {
   packId: string;
   tokens: number;
   price: number;
   displayName: string;
   popular?: boolean;
   bonus?: number;
-}
+};
 
-export const TOKEN_PACKS: TokenPack[] = [
-  { packId: 'mini', tokens: 100, price: 7.99, displayName: 'Mini', bonus: 0 },
-  { packId: 'basic', tokens: 300, price: 21.49, displayName: 'Basic', bonus: 0 },
-  { packId: 'standard', tokens: 500, price: 33.74, displayName: 'Standard', popular: true, bonus: 0 },
-  { packId: 'premium', tokens: 1000, price: 61.24, displayName: 'Premium', bonus: 0 },
-  { packId: 'pro', tokens: 2000, price: 117.49, displayName: 'Pro', bonus: 0 },
-  { packId: 'elite', tokens: 5000, price: 281.49, displayName: 'Elite', bonus: 0 },
-  { packId: 'royal', tokens: 10000, price: 537.49, displayName: 'Royal', bonus: 0 },
+export type TokenPackView = {
+  packId: string;
+  tokens: number;
+  price: number;
+  displayName: string;
+  popular?: boolean;
+  bonus?: number;
+};
+
+export const TOKEN_PACKS: TokenPackView[] = [
+  { packId: "mini_100", tokens: 100, price: 9.99, displayName: "Mini 100", popular: false, bonus: 0 },
+  { packId: "basic_300", tokens: 300, price: 26.99, displayName: "Basic 300", popular: false, bonus: 0 },
+  { packId: "standard_500", tokens: 500, price: 42.99, displayName: "Standard 500", popular: true, bonus: 0 },
+  { packId: "premium_1000", tokens: 1000, price: 76.99, displayName: "Premium 1000", popular: false, bonus: 0 },
+  { packId: "pro_2000", tokens: 2000, price: 147.99, displayName: "Pro 2000", popular: false, bonus: 0 },
+  { packId: "elite_5000", tokens: 5000, price: 353.99, displayName: "Elite 5000", popular: false, bonus: 0 },
+  { packId: "royal_10000", tokens: 10000, price: 674.99, displayName: "Royal 10000", popular: false, bonus: 0 },
 ];
 
 export const CALL_CONFIG = {
   VOICE: {
-    BASE_COST_VIP: 10,
-    BASE_COST_ROYAL: 6,
-    BASE_COST_STANDARD: 10,
-    AVALO_CUT_PERCENT: 20,
-    EARNER_CUT_PERCENT: 80,
+    AVALO_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVoice.platform,
+    EARNER_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVoice.earner,
+    BASE_COST_STANDARD: 1,
+    BASE_COST_VIP: 1,
+    BASE_COST_ROYAL: 1,
   },
   VIDEO: {
-    BASE_COST_VIP: 15,
-    BASE_COST_ROYAL: 10,
-    BASE_COST_STANDARD: 15,
-    AVALO_CUT_PERCENT: 20,
-    EARNER_CUT_PERCENT: 80,
+    AVALO_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVideo.platform,
+    EARNER_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVideo.earner,
+    BASE_COST_STANDARD: 1,
+    BASE_COST_VIP: 1,
+    BASE_COST_ROYAL: 1,
   },
-  AUTO_DISCONNECT_IDLE_MINUTES: 6,
-};
-
-export const CHAT_CONFIG = {
-  FREE_MESSAGES_PER_PARTICIPANT: 3,
-  WORDS_PER_TOKEN_ROYAL: 7,
-  WORDS_PER_TOKEN_STANDARD: 11,
-  CHAT_DEPOSIT_TOKENS: 100,
-  PLATFORM_FEE_PERCENT: 35,
-  ESCROW_PERCENT: 65,
-};
-
-export const CONTENT_CONFIG = {
-  FEED_PHOTO_UNLOCK_COST: 20,
-  FEED_VIDEO_UNLOCK_COST: 50,
-  PREMIUM_STORY_MIN: 50,
-  PREMIUM_STORY_MAX: 500,
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator,
-  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo,
-};
-
-export const CALENDAR_CONFIG = {
-  MIN_BOOKING_PRICE: 100,
-  MAX_BOOKING_PRICE: 100000,
-  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator,
-  AVALO_FEE_PERCENT: 20,
-  BOOKING_REQUIRES_VIP_OR_ROYAL: true,
-};
+} as const;
 
 export const AI_CHAT_CONFIG = {
   BASIC_MESSAGE_COST: 1,
   PREMIUM_MESSAGE_COST: 2,
   NSFW_MESSAGE_COST: 4,
-};
+} as const;
 
-export type CallType = 'VOICE' | 'VIDEO';
-export type UserStatus = 'STANDARD' | 'VIP' | 'ROYAL';
-export type AICompanionTier = 'basic' | 'premium' | 'nsfw';
+export const CHAT_PRICING = {
+  STANDARD: {
+    wordsPerToken: CANONICAL_ECONOMY.chat.tiers.STANDARD.wordsPerToken,
+    freeMessagesPerUser: CANONICAL_ECONOMY.chat.tiers.STANDARD.freeMessagesPerUser,
+  },
+  ROYAL: {
+    wordsPerToken: CANONICAL_ECONOMY.chat.tiers.ROYAL.wordsPerToken,
+    freeMessagesPerUser: CANONICAL_ECONOMY.chat.tiers.ROYAL.freeMessagesPerUser,
+  },
+  DEFAULT_DEPOSIT_TOKENS: CANONICAL_ECONOMY.chat.defaultDepositTokens,
+  DEPOSIT_PLATFORM_FEE_PCT: CANONICAL_ECONOMY.chat.depositPlatformFeePct,
+  DEPOSIT_ESCROW_PCT: CANONICAL_ECONOMY.chat.depositEscrowPct,
+  CHAT_EXPIRY_HOURS: CANONICAL_ECONOMY.chat.chatExpiryInactivityHours,
+  BURN_MULTIPLIERS: CANONICAL_ECONOMY.chat.allowedBurnMultipliers,
+} as const;
+
+export function getTokenPackById(packId: string): TokenPackView | null {
+  return TOKEN_PACKS.find((p) => p.packId === packId) ?? null;
+}
+
+export function getTotalTokensForPack(packId: string): number {
+  return getTokenPackById(packId)?.tokens ?? 0;
+}
+
+export function isValidBurnMultiplier(value: number): boolean {
+  return CANONICAL_ECONOMY.chat.allowedBurnMultipliers.includes(value as never);
+}
+
+export const CHAT_CONFIG = {
+  STANDARD: CHAT_PRICING.STANDARD,
+  ROYAL: CHAT_PRICING.ROYAL,
+  DEFAULT_DEPOSIT_TOKENS: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
+  CHAT_DEPOSIT_TOKENS: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
+  PLATFORM_FEE_PERCENT: CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT * 100,
+  ESCROW_PERCENT: CHAT_PRICING.DEPOSIT_ESCROW_PCT * 100,
+  DEPOSIT_PLATFORM_FEE_PCT: CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT,
+  DEPOSIT_ESCROW_PCT: CHAT_PRICING.DEPOSIT_ESCROW_PCT,
+  CHAT_EXPIRY_HOURS: CHAT_PRICING.CHAT_EXPIRY_HOURS,
+  BURN_MULTIPLIERS: CHAT_PRICING.BURN_MULTIPLIERS,
+} as const;
+
 
 
 

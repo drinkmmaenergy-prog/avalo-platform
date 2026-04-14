@@ -25,7 +25,7 @@ type SimulationResult = {
   effectiveEarnerUsdPerHour: number
 }
 
-const TOKEN_PAYOUT_USD = 0.03
+const TOKEN_PAYOUT_USD = 0.04
 const PLATFORM_FEE_PCT = 0.35
 
 const WORDS_STANDARD = 11
@@ -143,6 +143,9 @@ function run() {
 }
 
 run()
+
+
+
 
 
 

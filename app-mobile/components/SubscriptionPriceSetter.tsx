@@ -123,7 +123,7 @@ export function SubscriptionPriceSetter({
                 {t('subscriptions.youEarn')}:
               </Text>
               <Text style={styles.revenueCreator}>
-                {creatorEarnings} tokens (65%)
+                {creatorEarnings} tokens (estimated at subscription reference rate)
               </Text>
             </View>
             <View style={styles.revenueRow}>
@@ -131,7 +131,7 @@ export function SubscriptionPriceSetter({
                 {t('subscriptions.avaloFee')}:
               </Text>
               <Text style={styles.revenueAvalo}>
-                {avaloCommission} tokens (35%)
+                {avaloCommission} tokens (platform reference portion)
               </Text>
             </View>
           </View>
@@ -419,3 +419,5 @@ const styles = StyleSheet.create({
     color: '#0F0F0F',
   },
 });
+
+

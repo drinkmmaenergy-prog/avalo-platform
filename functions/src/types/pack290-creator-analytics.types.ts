@@ -31,7 +31,7 @@ import { admin } from '../runtime';
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 export const CREATOR_ANALYTICS_CONSTANTS = {
-  TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,  // derived from TOKEN_PAYOUT_USD (0.03 USD)
+  TOKEN_PAYOUT_USD: TOKEN_PAYOUT_USD,  // derived from TOKEN_PAYOUT_USD (0.04 USD)
   DEFAULT_TIME_RANGE_DAYS: 30,
   MAX_TIME_RANGE_DAYS: 365,
   TOP_PAYERS_LIMIT: 10,
@@ -374,6 +374,9 @@ export function isSpendingTransaction(type: string): boolean {
   ];
   return spendingTypes.includes(type);
 }
+
+
+
 
 
 

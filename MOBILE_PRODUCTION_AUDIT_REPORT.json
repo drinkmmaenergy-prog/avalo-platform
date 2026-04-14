@@ -1,4 +1,4 @@
-{
+﻿{
   "auditDate": "2026-03-17T19:14:00Z",
   "auditor": "KiloCode Staff Engineer",
   "scope": "avalo/app-mobile — Expo/React Native mobile app production readiness",
@@ -205,7 +205,7 @@
       "status": "TODO — IAP purchase commented out, no actual purchase"
     },
     {
-      "file": "avalo/app-mobile/app/store/promo-bundles.tsx",
+      "file": "avalo/app-mobile/app/store/offer-bundles.tsx",
       "status": "TODO — IAP purchase not implemented"
     },
     {
@@ -535,3 +535,4 @@
     "10. ASB-002: Implement IAP for iOS (cannot use external Stripe for digital goods)"
   ]
 }
+

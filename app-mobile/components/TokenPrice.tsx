@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { Text, View, StyleSheet } from 'react-native';
 import { useLocaleContext } from '../contexts/LocaleContext';
-import { DiscountOffer } from '../../shared/types/discounts';
+import { DiscountOffer } from '../../shared/types/pricing';
 import { applyDiscountToPrice, isDiscountValid } from '../../shared/utils/discountEngine';
 
 interface TokenPriceProps {
@@ -134,3 +134,4 @@ const styles = StyleSheet.create({
 });
 
 export default TokenPrice;
+

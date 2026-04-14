@@ -205,9 +205,9 @@ async function saveDiscoverySettings(
 // ============================================================================
 
 function getSplitForSurface(surfaceKey: string): number {
-  const splits = MONETIZATION_SPLITS as Record<string, { creator: number; avalo: number }>;
+  const splits = MONETIZATION_SPLITS as Record<string, { earner: number; platform: number }>;
   const entry = splits[surfaceKey];
-  return entry ? Math.round(entry.creator * 100) : 65;
+  return entry ? Math.round(entry.earner * 100) : 65;
 }
 
 // ============================================================================
@@ -1256,3 +1256,4 @@ export default function EarnWithAvaloPage() {
     </div>
   );
 }
+

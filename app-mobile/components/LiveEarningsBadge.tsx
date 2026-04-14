@@ -3,7 +3,7 @@
  * PACK 33-5: VIP Live Streaming with Token Entry Fees
  * 
  * Displays earnings updates inside chat overlay for creators.
- * Shows "+X tokens • 65% after commission" badge.
+ * Shows "+X tokens • estimated at reference rate" badge.
  */
 
 import React, { useEffect, useState } from 'react';
@@ -121,7 +121,7 @@ export function LiveEarningsBadge({
               +{totalEarnings} tokens
             </Text>
             <Text style={styles.commissionText}>
-              65% after commission
+              estimated at reference rate
             </Text>
           </View>
         </View>
@@ -256,7 +256,7 @@ export function LiveEarningsSummary({
         <View style={summaryStyles.statBox}>
           <Text style={summaryStyles.statValue}>{totalEarnings}</Text>
           <Text style={summaryStyles.statLabel}>Tokens Earned</Text>
-          <Text style={summaryStyles.statSub}>65% after commission</Text>
+          <Text style={summaryStyles.statSub}>estimated at reference rate</Text>
         </View>
 
         <View style={summaryStyles.statBox}>
@@ -273,17 +273,17 @@ export function LiveEarningsSummary({
       </View>
 
       <View style={summaryStyles.breakdown}>
-        <Text style={summaryStyles.breakdownTitle}>Revenue Breakdown</Text>
+        <Text style={summaryStyles.breakdownTitle}>Reference earnings preview</Text>
         <View style={summaryStyles.breakdownRow}>
-          <Text style={summaryStyles.breakdownLabel}>Your share (65%)</Text>
+          <Text style={summaryStyles.breakdownLabel}>Estimated your share</Text>
           <Text style={summaryStyles.breakdownValue}>
             +{totalEarnings} tokens
           </Text>
         </View>
         <View style={summaryStyles.breakdownRow}>
-          <Text style={summaryStyles.breakdownLabel}>Platform fee (35%)</Text>
+          <Text style={summaryStyles.breakdownLabel}>Platform reference fee</Text>
           <Text style={summaryStyles.breakdownValue}>
-            {Math.round(totalEarnings / MONETIZATION_SPLITS.CHAT.creator * MONETIZATION_SPLITS.CHAT.avalo)} tokens
+            Reference platform portion
           </Text>
         </View>
         <View style={[summaryStyles.breakdownRow, summaryStyles.breakdownTotal]}>
@@ -384,4 +384,7 @@ const summaryStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
+
 

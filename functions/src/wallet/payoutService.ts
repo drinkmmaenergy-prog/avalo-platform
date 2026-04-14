@@ -3,7 +3,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
 /**
  * PAYOUT SERVICE — Unified Payout with State Machine + Fee Deduction
  *
- * Payout conversion uses TOKEN_PAYOUT_USD (0.03 now, can change later).
+ * Payout conversion uses TOKEN_PAYOUT_USD (0.04 canonical benchmark).
  *
  * KEY RULE: Payout fees (Stripe/transfer fees) are charged to the withdrawing
  * user. Fees are deducted from the payout amount, NOT from platform margin.
@@ -466,6 +466,9 @@ export async function getPendingPayouts(
 
   return snap.docs.map((doc) => doc.data() as PayoutRequestDocument);
 }
+
+
+
 
 
 

@@ -4,7 +4,7 @@ import { MONETIZATION_SPLITS } from '';
  * Phase 33-4: UI-only PPV media monetization for creators
  * 
  * Handles per-media PPV pricing and unlocks with AsyncStorage persistence.
- * Revenue split: 65% creator / 35% Avalo (UI simulation only)
+ * Reference split display: up to 65% creator reference rate / platform reference portion (UI simulation only)
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,7 +15,7 @@ const PPV_PRICING_KEY = '@avalo_ppv_media_prices';
 const PPV_EARNINGS_KEY = '@avalo_ppv_earnings';
 const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% commission
 const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
-const VIP_DISCOUNT = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 20% discount for VIP subscribers
+const VIP_DISCOUNT = 0; // canonical: no VIP discount for PPV
 
 export interface PPVPurchase {
   mediaId: string;
@@ -90,7 +90,7 @@ export async function setPrice(
 }
 
 /**
- * Calculate discounted price for VIP subscribers
+ * Canonical: PPV has no VIP discount
  */
 export function calculateVIPPrice(basePrice: number): number {
   if (basePrice === 0) return 0;
@@ -98,7 +98,7 @@ export function calculateVIPPrice(basePrice: number): number {
 }
 
 /**
- * Get effective price for a user (with VIP discount if applicable)
+ * Get effective price for a user (canonical: no VIP discount for PPV)
  */
 export async function getEffectivePrice(
   mediaId: string,
@@ -376,4 +376,5 @@ export default {
   CREATOR_EARNINGS,
   VIP_DISCOUNT,
 };
+
 

@@ -54,7 +54,7 @@ export default function TicketViewScreen() {
       'Cancel Ticket',
       'Are you sure you want to cancel this ticket?\n\n' +
       '⚠️ NO REFUND will be issued.\n' +
-      'The organizer will still receive 80% and Avalo keeps 20%.',
+      'The organizer reference portion remains 80% before applicable deductions, with a 20% reference platform portion.',
       [
         { text: 'Keep Ticket', style: 'cancel' },
         {
@@ -386,3 +386,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -204,7 +204,7 @@ export default function IncomeBreakdownScreen() {
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>Total Earnings</Text>
           <Text style={styles.totalAmount}>{totalEarnings.toLocaleString()}</Text>
-          <Text style={styles.totalSubtext}>tokens (65% creator share)</Text>
+          <Text style={styles.totalSubtext}>tokens (up to 65% creator portion)</Text>
         </View>
 
         {/* Source Summaries */}
@@ -562,3 +562,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
+
+

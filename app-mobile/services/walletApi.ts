@@ -29,6 +29,7 @@ import {
 } from 'firebase/firestore';
 import { db, functions } from '../lib/firebase';
 import { Linking } from 'react-native';
+import { CANONICAL_ECONOMY } from '../config/canonicalEconomy';
 
 // =============================================================================
 // TYPES
@@ -37,9 +38,7 @@ import { Linking } from 'react-native';
 export interface TokenPack {
   id: string;
   tokens: number;
-  basePricePLN: number;
   priceUSD: number;
-  priceEUR: number;
   bonus?: number;
   popular?: boolean;
   displayName?: string;
@@ -272,15 +271,14 @@ export async function getTokenPacks(): Promise<TokenPack[]> {
  * Prices MUST match backend exactly
  */
 function getDefaultTokenPacks(): TokenPack[] {
-  return [
-    { id: 'mini', tokens: 100, basePricePLN: 31.99, priceUSD: 8.00, priceEUR: 7.50, displayName: 'Mini' },
-    { id: 'basic', tokens: 300, basePricePLN: 85.99, priceUSD: 21.50, priceEUR: 20.00, displayName: 'Basic' },
-    { id: 'standard', tokens: 500, basePricePLN: 134.99, priceUSD: 34.00, priceEUR: 31.50, displayName: 'Standard', popular: true },
-    { id: 'premium', tokens: 1000, basePricePLN: 244.99, priceUSD: 61.50, priceEUR: 57.50, displayName: 'Premium' },
-    { id: 'pro', tokens: 2000, basePricePLN: 469.99, priceUSD: 118.00, priceEUR: 110.00, displayName: 'Pro' },
-    { id: 'elite', tokens: 5000, basePricePLN: 1125.99, priceUSD: 282.50, priceEUR: 264.00, displayName: 'Elite' },
-    { id: 'royal', tokens: 10000, basePricePLN: 2149.99, priceUSD: 539.00, priceEUR: 504.00, displayName: 'Royal' },
-  ];
+  return CANONICAL_ECONOMY.tokenPacks.map((pack) => ({
+    id: pack.id,
+    tokens: pack.tokens,
+    priceUSD: pack.usdPrice,
+    bonus: 0,
+    popular: pack.id === 'standard_500',
+    displayName: pack.name,
+  }));
 }
 
 // =============================================================================
@@ -404,3 +402,5 @@ export const WalletApi = {
 };
 
 export default WalletApi;
+
+

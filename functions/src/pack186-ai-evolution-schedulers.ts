@@ -375,3 +375,5 @@ async function generateSeasonalUpdate(character: any, eventType: GrowthEventType
 
 
 
+
+

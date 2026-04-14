@@ -88,8 +88,8 @@ export interface MediaPurchase {
   
   // Transaction details
   priceTokens: number;
-  creatorEarnings: number;         // 65% of price
-  platformFee: number;             // 35% of price
+  creatorEarnings: number; // reference-rate creator amount
+  platformFee: number; // reference platform portion
   
   // Product snapshot (in case product is deleted later)
   productSnapshot: {
@@ -201,7 +201,7 @@ export interface CreatorMediaEarning {
   productId: string;
   
   // Earnings
-  tokensEarned: number;            // 65% of sale
+  tokensEarned: number; // reference-rate earned tokens
   
   // Status
   status: 'PENDING' | 'SETTLED' | 'REFUNDED';
@@ -346,7 +346,7 @@ export const PAID_MEDIA_CONFIG = {
   MIN_PRICE_TOKENS: 80,
   MAX_PRICE_TOKENS: 1000,
   
-  // Revenue split
+  // Reference split display
   CREATOR_CUT_PERCENT: 65,
   AVALO_CUT_PERCENT: 35,
   

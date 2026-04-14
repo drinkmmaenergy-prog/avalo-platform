@@ -1,6 +1,6 @@
-/**
- * PACK 61: Promotions Overview Screen
- * Lists all promotion campaigns for a creator
+﻿/**
+ * PACK 61: Offers Overview Screen
+ * Lists all offer campaigns for a creator
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,14 +17,14 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
-import { getMyCampaigns, PromotionCampaign } from '../../services/promotionService';
+import { getMyCampaigns, OfferCampaign } from '../../services/offerService';
 
-export default function PromotionsOverviewScreen() {
+export default function OffersOverviewScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   
-  const [campaigns, setCampaigns] = useState<PromotionCampaign[]>([]);
+  const [campaigns, setCampaigns] = useState<OfferCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -61,23 +61,23 @@ export default function PromotionsOverviewScreen() {
     }
   };
 
-  const getBudgetRemaining = (campaign: PromotionCampaign) => {
+  const getBudgetRemaining = (campaign: OfferCampaign) => {
     return campaign.budgetTokensTotal - campaign.budgetTokensSpent;
   };
 
-  const renderCampaignCard = (campaign: PromotionCampaign) => (
+  const renderCampaignCard = (campaign: OfferCampaign) => (
     <TouchableOpacity
       key={campaign.campaignId}
       style={styles.card}
       onPress={() => router.push({
-        pathname: '/creator/promotion-details',
+        pathname: '/creator/offer-details',
         params: { campaignId: campaign.campaignId }
       })}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.campaignName}>{campaign.name}</Text>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(campaign.status) }]}>
-          <Text style={styles.statusText}>{t(`promotions.status.${campaign.status}`)}</Text>
+          <Text style={styles.statusText}>{t(`offers.status.${campaign.status}`)}</Text>
         </View>
       </View>
       
@@ -86,19 +86,19 @@ export default function PromotionsOverviewScreen() {
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Ionicons name="eye-outline" size={16} color="#6b7280" />
-          <Text style={styles.statLabel}>{t('promotions.impressions')}</Text>
+          <Text style={styles.statLabel}>{t('offers.impressions')}</Text>
           <Text style={styles.statValue}>{campaign.impressions}</Text>
         </View>
         
         <View style={styles.statItem}>
           <Ionicons name="hand-left-outline" size={16} color="#6b7280" />
-          <Text style={styles.statLabel}>{t('promotions.clicks')}</Text>
+          <Text style={styles.statLabel}>{t('offers.clicks')}</Text>
           <Text style={styles.statValue}>{campaign.clicks}</Text>
         </View>
         
         <View style={styles.statItem}>
           <Ionicons name="wallet-outline" size={16} color="#6b7280" />
-          <Text style={styles.statLabel}>{t('promotions.budget')}</Text>
+          <Text style={styles.statLabel}>{t('offers.budget')}</Text>
           <Text style={styles.statValue}>{getBudgetRemaining(campaign)} / {campaign.budgetTokensTotal}</Text>
         </View>
       </View>
@@ -106,7 +106,7 @@ export default function PromotionsOverviewScreen() {
       <View style={styles.placementsRow}>
         {campaign.placementTypes.map((placement) => (
           <View key={placement} style={styles.placementBadge}>
-            <Text style={styles.placementText}>{t(`promotions.placement.${placement.toLowerCase()}`)}</Text>
+            <Text style={styles.placementText}>{t(`offers.placement.${placement.toLowerCase()}`)}</Text>
           </View>
         ))}
       </View>
@@ -127,10 +127,10 @@ export default function PromotionsOverviewScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('promotions.title')}</Text>
+        <Text style={styles.headerTitle}>{t('offers.title')}</Text>
         <TouchableOpacity
           style={styles.createButton}
-          onPress={() => router.push('/creator/promotion-create')}
+          onPress={() => router.push('/creator/offer-create')}
         >
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
@@ -147,13 +147,13 @@ export default function PromotionsOverviewScreen() {
             <Ionicons name="megaphone-outline" size={64} color="#d1d5db" />
             <Text style={styles.emptyTitle}>No campaigns yet</Text>
             <Text style={styles.emptyText}>
-              Create your first promotion campaign to boost your visibility
+              Create your first offer campaign to boost your visibility
             </Text>
             <TouchableOpacity
               style={styles.createFirstButton}
-              onPress={() => router.push('/creator/promotion-create')}
+              onPress={() => router.push('/creator/offer-create')}
             >
-              <Text style={styles.createFirstButtonText}>{t('promotions.createCampaign')}</Text>
+              <Text style={styles.createFirstButtonText}>{t('offers.createCampaign')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -318,3 +318,5 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   }
 });
+
+

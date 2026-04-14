@@ -1,4 +1,4 @@
-# PACK 67 — Remote Config, Feature Flags & Experimentation Implementation
+﻿# PACK 67 — Remote Config, Feature Flags & Experimentation Implementation
 
 **Status**: ✅ **COMPLETE**  
 **Date**: 2025-11-25  
@@ -573,7 +573,7 @@ console.assert(
 - Boost prices
 - Media unlock prices
 - Promotion costs
-- Any free tokens/credits/discounts
+- Any free tokens/credits/pricing
 
 ---
 

@@ -1,155 +1,50 @@
-/**
- * =====================================================
- * AVALO MONETIZATION SPLITS
- * =====================================================
- *
- * Canonical economic configuration used across:
- *
- * - Chat billing
- * - Calls
- * - Video calls
- * - Tips
- * - Media unlock
- * - Live gifts
- * - Event tickets
- * - Calendar meetings
- * - Subscriptions
- *
- * Platform model:
- * Earners receive percentage of tokens
- * Platform retains treasury share
- *
- * All values expressed as fractions (0-1)
- * =====================================================
- */
-
+import { CANONICAL_ECONOMY, type Split } from "../../../shared/config/canonicalEconomy";
 
 /**
- * Legacy compatibility structure
- * Some older modules still reference earner / platform
+ * FUNCTIONS CANONICAL SPLITS BRIDGE
+ * Source of truth: shared/config/canonicalEconomy.ts
  */
 
 export const MONETIZATION_SPLITS = {
-
   CHAT: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.chat.earner,
+    platform: CANONICAL_ECONOMY.splits.chat.platform,
   },
-
   CALL: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.callVoice.earner,
+    platform: CANONICAL_ECONOMY.splits.callVoice.platform,
   },
-
   VIDEO_CALL: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.callVideo.earner,
+    platform: CANONICAL_ECONOMY.splits.callVideo.platform,
   },
-
   TIPS: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.tips.earner,
+    platform: CANONICAL_ECONOMY.splits.tips.platform,
   },
-
   UNLOCK_MEDIA: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.chat.earner,
+    platform: CANONICAL_ECONOMY.splits.chat.platform,
   },
-
   LIVE_GIFTS: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.chat.earner,
+    platform: CANONICAL_ECONOMY.splits.chat.platform,
   },
-
   EVENT_TICKET: {
-    earner: 0.80,
-    platform: 0.20
+    earner: CANONICAL_ECONOMY.splits.eventTicket.earner,
+    platform: CANONICAL_ECONOMY.splits.eventTicket.platform,
   },
-
   CALENDAR_MEETING: {
-    earner: 0.80,
-    platform: 0.20
+    earner: CANONICAL_ECONOMY.splits.calendarMeeting.earner,
+    platform: CANONICAL_ECONOMY.splits.calendarMeeting.platform,
   },
-
   SUBSCRIPTION: {
-    earner: 0.70,
-    platform: 0.30
-  }
-
-}
-
-
-/**
- * =====================================================
- * NEW STANDARD SPLIT MODEL
- * =====================================================
- *
- * Used by all new economic engines:
- *
- * - Wallet Engine
- * - Escrow Engine
- * - Chat Billing
- * - Creator payouts
- *
- * earner   → person receiving tokens
- * platform → Avalo treasury
- */
-
-export const SPLITS = {
-
-  CHAT: {
-    earner: 0.65,
-    platform: 0.35
+    earner: CANONICAL_ECONOMY.splits.subscription.earner,
+    platform: CANONICAL_ECONOMY.splits.subscription.platform,
   },
+} as const;
 
-  CALL: {
-    earner: 0.65,
-    platform: 0.35
-  },
-
-  VIDEO_CALL: {
-    earner: 0.65,
-    platform: 0.35
-  },
-
-  TIPS: {
-    earner: 0.65,
-    platform: 0.35
-  },
-
-  UNLOCK_MEDIA: {
-    earner: 0.65,
-    platform: 0.35
-  },
-
-  LIVE_GIFTS: {
-    earner: 0.65,
-    platform: 0.35
-  },
-
-  EVENT_TICKET: {
-    earner: 0.80,
-    platform: 0.20
-  },
-
-  CALENDAR_MEETING: {
-    earner: 0.80,
-    platform: 0.20
-  },
-
-  SUBSCRIPTION: {
-    earner: 0.70,
-    platform: 0.30
-  }
-
-}
-
-
-/**
- * =====================================================
- * TYPE HELPERS
- * =====================================================
- */
+export const SPLITS = MONETIZATION_SPLITS;
 
 export type MonetizationType =
   | "CHAT"
@@ -160,11 +55,12 @@ export type MonetizationType =
   | "LIVE_GIFTS"
   | "EVENT_TICKET"
   | "CALENDAR_MEETING"
-  | "SUBSCRIPTION"
+  | "SUBSCRIPTION";
 
+export type SplitStructure = Split;
 
-export type SplitStructure = {
-  earner: number
-  platform: number
+export function getSplit(type: MonetizationType): SplitStructure {
+  return SPLITS[type];
 }
+
 

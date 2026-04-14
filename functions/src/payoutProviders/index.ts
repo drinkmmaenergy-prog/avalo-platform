@@ -7,7 +7,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
 
 export interface PayoutProvider {
   name: string;
-  type: 'stripe' | 'wise' | 'sepa' | 'ach' | 'local' | 'crypto';
+  type: 'stripe';
   initialize(config: any): Promise<void>;
   executePayout(payload: PayoutPayload): Promise<PayoutResult>;
   getStatus(transactionId: string): Promise<PayoutStatus>;
@@ -57,10 +57,14 @@ export interface PayoutStatus {
 
 // Export provider implementations
 export { StripeProvider } from './stripe';
-export { WiseProvider } from './wise';
+
 export { SEPAProvider } from './sepa';
 export { ACHProvider } from './ach';
 export { LocalProvider } from './local';
+
+
+
+
 
 
 

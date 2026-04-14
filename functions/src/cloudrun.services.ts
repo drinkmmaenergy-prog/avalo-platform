@@ -516,3 +516,5 @@ logger.info('✅ Cloud Run services client loaded - Heavy task offloading ready'
 
 
 
+
+

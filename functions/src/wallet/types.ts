@@ -191,7 +191,7 @@ export const PAYOUT_STATE_TRANSITIONS: Record<PayoutStatus, PayoutStatus[]> = {
 /**
  * Payout request document stored at `payout_requests/{payoutId}`.
  *
- * Payout conversion uses TOKEN_PAYOUT_USD (0.03 currently).
+ * Payout conversion uses TOKEN_PAYOUT_USD (0.04 canonical benchmark).
  * All Stripe/transfer fees are charged to the withdrawing user.
  */
 export interface PayoutRequestDocument {
@@ -334,6 +334,9 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
  * Payout requests collection.
  */
 export const PAYOUT_REQUESTS_COLLECTION = 'payout_requests';
+
+
+
 
 
 

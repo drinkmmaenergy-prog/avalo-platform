@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 166: Digital Product Scalability Engine - Main Dashboard
  * 
  * Overview screen showing all scalability tools and metrics
@@ -204,7 +204,7 @@ export default function ScalabilityDashboard() {
 
         <TouchableOpacity
           style={styles.toolCard}
-          onPress={() => router.push('/creator/scalability/discounts')}
+          onPress={() => router.push('/creator/scalability/pricing')}
         >
           <View style={styles.toolHeader}>
             <Text style={styles.toolIcon}>🏷️</Text>
@@ -388,3 +388,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

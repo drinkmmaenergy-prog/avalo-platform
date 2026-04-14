@@ -1,0 +1,525 @@
+export type CurrencyCode = "USD";
+
+export type Split = {
+  earner: number;
+  platform: number;
+};
+
+export type TokenPack = {
+  id:
+    | "mini_100"
+    | "basic_300"
+    | "standard_500"
+    | "premium_1000"
+    | "pro_2000"
+    | "elite_5000"
+    | "royal_10000";
+  name: string;
+  tokens: number;
+  usdPrice: number;
+};
+
+export type BurnMultiplier =
+  | 2
+  | 3
+  | 4
+  | 5
+  | 7
+  | 10
+  | 12
+  | 15
+  | 20;
+
+export type ChatTier = "STANDARD" | "ROYAL";
+
+export type ReservationCancellationPolicy = {
+  payerRefundPct: number;
+  earnerPayoutPct: number;
+};
+
+export type ReservationWindowPolicy = {
+  gt48h: ReservationCancellationPolicy;
+  h24to48h: ReservationCancellationPolicy;
+  lt24h: ReservationCancellationPolicy;
+};
+
+export type PresenceProofMethod =
+  | "QR"
+  | "GPS"
+  | "MANUAL_REVIEW";
+
+export type MismatchPolicy = {
+  reportWindow: "IMMEDIATE_OR_FEW_MINUTES_ONLY";
+  autoAcceptAfterWindow: true;
+  requiresPresenceProof: true;
+  refundIfConfirmed: 1;
+  payoutIfConfirmed: 0;
+  refundIfRejected: 0;
+  payoutIfRejected: 1;
+};
+
+export const CANONICAL_ECONOMY_VERSION = "2026-04-06-canonical-v1" as const;
+
+/**
+ * AVALO — CANONICAL ECONOMY SOURCE OF TRUTH
+ *
+ * HARD RULES:
+ * - Backend canonical currency is USD only.
+ * - Stripe USD is canonical for token purchases and payouts.
+ * - No EUR / PLN / GBP / PayPal / Revolut / crypto authority in business logic.
+ * - Legacy per-message paid chat is invalid.
+ * - Legacy Starter/Popular/Value packs are invalid.
+ * - Legacy 75/25 booking logic is invalid.
+ * - Legacy 80/20 chat/call/tips logic is invalid.
+ */
+export const CANONICAL_ECONOMY = {
+  meta: {
+    version: CANONICAL_ECONOMY_VERSION,
+    canonicalCurrency: "USD" as CurrencyCode,
+    stripePayoutsOnly: true,
+    stripePayoutCurrency: "USD" as CurrencyCode,
+    legacySystemsMustNotOverride: true,
+  },
+
+  payout: {
+    /**
+     * Earner payout benchmark per token.
+     * Used for payout modeling and internal settlement benchmarks.
+     */
+    tokenPayoutUsd: 0.03,
+
+    /**
+     * Platform payout fee charged on Stripe USD payout amount.
+     * Canonical: Stripe USD only.
+     */
+    payoutFeePlatformPercent: 0.05,
+
+    /**
+     * Explicit kill-switches for non-canonical payout systems.
+     */
+    allowedPayoutRails: ["STRIPE_USD"] as const,
+    forbiddenPayoutRails: ["PAYPAL", "REVOLUT", "CRYPTO", "BANK_EUR"] as const,
+    displayFxRatesAreNonCanonical: true,
+  },
+
+  tokenPacks: [
+    {
+      id: "mini_100",
+      name: "Mini 100",
+      tokens: 100,
+      usdPrice: 9.99,
+    },
+    {
+      id: "basic_300",
+      name: "Basic 300",
+      tokens: 300,
+      usdPrice: 26.99,
+    },
+    {
+      id: "standard_500",
+      name: "Standard 500",
+      tokens: 500,
+      usdPrice: 42.99,
+    },
+    {
+      id: "premium_1000",
+      name: "Premium 1000",
+      tokens: 1000,
+      usdPrice: 76.99,
+    },
+    {
+      id: "pro_2000",
+      name: "Pro 2000",
+      tokens: 2000,
+      usdPrice: 147.99,
+    },
+    {
+      id: "elite_5000",
+      name: "Elite 5000",
+      tokens: 5000,
+      usdPrice: 353.99,
+    },
+    {
+      id: "royal_10000",
+      name: "Royal 10000",
+      tokens: 10000,
+      usdPrice: 674.99,
+    },
+  ] satisfies readonly TokenPack[],
+
+  splits: {
+    /**
+     * Paid chat / real-time chat billing.
+     */
+    chat: {
+      earner: 0.65,
+      platform: 0.35,
+    } satisfies Split,
+
+    /**
+     * Real-time calls, if they are NOT calendar-booked slots.
+     */
+    callVoice: {
+      earner: 0.65,
+      platform: 0.35,
+    } satisfies Split,
+
+    callVideo: {
+      earner: 0.65,
+      platform: 0.35,
+    } satisfies Split,
+
+    /**
+     * Tips in creator/live interaction economy.
+     */
+    tips: {
+      earner: 0.65,
+      platform: 0.35,
+    } satisfies Split,
+
+    /**
+     * Calendar meetings / events / reserved slots.
+     */
+    calendarMeeting: {
+      earner: 0.8,
+      platform: 0.2,
+    } satisfies Split,
+
+    eventTicket: {
+      earner: 0.8,
+      platform: 0.2,
+    } satisfies Split,
+
+    /**
+     * Creator subscriptions.
+     */
+    subscription: {
+      earner: 0.7,
+      platform: 0.3,
+    } satisfies Split,
+
+    /**
+     * Platform-native monetization lanes.
+     */
+    platform100: {
+      earner: 0,
+      platform: 1,
+    } satisfies Split,
+  },
+
+  chat: {
+    /**
+     * Paid chat is WORD-BASED, not MESSAGE-BASED.
+     */
+    billingModel: "WORD_BASED_EARNER_ONLY" as const,
+
+    /**
+     * First paid-session deposit.
+     */
+    minChatChargeTokens: 100,
+    defaultDepositTokens: 100,
+
+    /**
+     * Deposit split.
+     * Platform fee is non-refundable after paid session starts.
+     * Escrow unused portion may be refunded on valid chat close/expiry.
+     */
+    depositPlatformFeePct: 0.35,
+    depositEscrowPct: 0.65,
+
+    /**
+     * Tier logic.
+     */
+    tiers: {
+      STANDARD: {
+        wordsPerToken: 11,
+        freeMessagesPerUser: 9,
+      },
+      ROYAL: {
+        wordsPerToken: 7,
+        freeMessagesPerUser: 5,
+      },
+    } as const satisfies Record<ChatTier, { wordsPerToken: number; freeMessagesPerUser: number }>,
+
+    /**
+     * Allowed multiplier values only.
+     * 1x is NOT canonical.
+     */
+    allowedBurnMultipliers: [2, 3, 4, 5, 7, 10, 12, 15, 20] as const satisfies readonly BurnMultiplier[],
+
+    /**
+     * Multiplier affects burn rate, not entry fee of active session.
+     */
+    multiplierAffects: "BURN_RATE_ONLY" as const,
+    multiplierCanChangeMidSession: false,
+
+    /**
+     * Session expiry.
+     */
+    chatExpiryInactivityHours: 48,
+
+    /**
+     * Refund philosophy for paid chat.
+     */
+    refundPolicy: {
+      platformFeeRefundableAfterPaidStart: false,
+      refundUnusedEscrowOnly: true,
+    },
+
+    /**
+     * Payer / earner relationship rules.
+     */
+    payerRules: {
+      onePayerPerSession: true,
+      earnOnCanStillEarnIfTheyInitiate: true,
+      earnOnVsEarnOnFirstDepositorBecomesPayer: true,
+      roleFlipRequiresNewSession: true,
+    },
+
+    /**
+     * Legacy systems to kill.
+     */
+    forbiddenLegacyRules: {
+      messageCostBasedBilling: true,
+      freeMessagesCount3: true,
+      fixedMessageCost10: true,
+    },
+  },
+
+  reservations: {
+    /**
+     * Calendar / events / booked voice/video slots
+     * use reservation logic, separate from chat logic.
+     */
+    bookingModel: "FULL_PAYMENT_ESCROW" as const,
+    fullPaymentGoesToEscrow: true,
+    chatDepositModelMustNotApply: true,
+
+    cancellationPolicy: {
+      gt48h: {
+        payerRefundPct: 1.0,
+        earnerPayoutPct: 0.0,
+      },
+      h24to48h: {
+        payerRefundPct: 0.5,
+        earnerPayoutPct: 0.5,
+      },
+      lt24h: {
+        payerRefundPct: 0.0,
+        earnerPayoutPct: 1.0,
+      },
+    } satisfies ReservationWindowPolicy,
+
+    /**
+     * Time window basis:
+     * startAt - cancelledAt
+     */
+    cancellationWindowComputation: "START_AT_MINUS_CANCELLED_AT" as const,
+
+    /**
+     * QR / check-in logic.
+     */
+    qr: {
+      oneValidScanIsEnough: true,
+      doubleScanRequired: false,
+      singleValidScanTransitionsToInProgress: true,
+    },
+
+    /**
+     * GPS logic.
+     */
+    gps: {
+      isContinuousTrackingForbidden: true,
+      isEvidenceLayerOnly: true,
+      canActAsFallbackForNoShow: true,
+      canSupportEarlyExitReview: true,
+      endToleranceMinutes: 15,
+    },
+
+    /**
+     * Presence proof.
+     */
+    presenceProof: {
+      acceptedMethods: ["QR", "GPS", "MANUAL_REVIEW"] as const satisfies readonly PresenceProofMethod[],
+      qrPreferredOverGps: true,
+      noPresenceProofNoAutoPayout: true,
+      noPresenceProofNoAutoRefund: true,
+    },
+
+    /**
+     * No-show rules.
+     */
+    noShow: {
+      ifEarnerPresentAndPayerAbsent: {
+        payerRefundPct: 0.0,
+        earnerPayoutPct: 1.0,
+      },
+      ifPayerPresentAndEarnerAbsent: {
+        payerRefundPct: 1.0,
+        earnerPayoutPct: 0.0,
+      },
+      ifBothPresentButNoQrAndGpsConfirms: {
+        treatAs: "IN_PROGRESS_GPS_CONFIRMED",
+      },
+      ifNoHardProofEitherSide: {
+        treatAs: "DISPUTED_MANUAL_REVIEW",
+      },
+    },
+
+    /**
+     * Early termination.
+     */
+    earlyTermination: {
+      autoRefundForbidden: true,
+      earnSideMustBeNotifiedImmediately: true,
+      useGpsEvidenceReviewFlow: true,
+      ifDevicesRemainTogether: {
+        assumeMeetingContinues: true,
+      },
+      ifDevicesSeparateAndMoreThan15MinutesRemain: {
+        partialRefundMayBeGranted: true,
+      },
+      if15MinutesOrLessRemain: {
+        treatAsCompletedWithoutPartialRefund: true,
+      },
+      platformFeeRefundable: false,
+    },
+
+    /**
+     * Mismatch policy.
+     */
+    mismatch: {
+      reportWindow: "IMMEDIATE_OR_FEW_MINUTES_ONLY",
+      laterClaimsAutoRejected: true,
+      requiresPresenceProof: true,
+      materialOnlyNotCosmetic: true,
+      ifConfirmed: {
+        payerRefundPct: 1.0,
+        earnerPayoutPct: 0.0,
+        flagAccount: true,
+        reverificationRequired: true,
+      },
+      ifRejected: {
+        payerRefundPct: 0.0,
+        earnerPayoutPct: 1.0,
+      },
+    } satisfies MismatchPolicy,
+
+    /**
+     * Panic / safety.
+     */
+    panic: {
+      alwaysFree: true,
+      premiumFeature: false,
+    },
+  },
+
+  subscriptions: {
+    /**
+     * VIP / Royal do NOT reduce unit token price.
+     */
+    tokenUnitDiscountAllowed: false,
+    affects: [
+      "ACCESS",
+      "ROUTING",
+      "PRIORITY",
+      "LIMITS",
+      "ALLOWANCES",
+    ] as const,
+  },
+
+  ai: {
+    /**
+     * Official platform AI lanes remain 100% platform,
+     * unless explicitly overridden elsewhere by a newer canonical file.
+     */
+    officialAiDefaultSplit: {
+      earner: 0,
+      platform: 1,
+    } satisfies Split,
+  },
+
+  ads: {
+    /**
+     * Platform-owned ad inventory.
+     */
+    defaultSplit: {
+      earner: 0,
+      platform: 1,
+    } satisfies Split,
+  },
+
+  legacyKillList: {
+    tokenPacks: ["Starter", "Popular", "Value"] as const,
+    payoutCurrencies: ["EUR", "PLN", "GBP"] as const,
+    payoutRails: ["PayPal", "Revolut", "Crypto"] as const,
+    chatBillingModels: ["PER_MESSAGE"] as const,
+    freeMessageRules: ["FIRST_3_MESSAGES_FREE"] as const,
+    invalidSplits: [
+      "CHAT_80_20",
+      "CALL_80_20",
+      "TIPS_85_15",
+      "CALENDAR_75_25",
+    ] as const,
+  },
+} as const;
+
+/**
+ * Helpers
+ */
+export function getCanonicalTokenPackById(id: TokenPack["id"]) {
+  return CANONICAL_ECONOMY.tokenPacks.find((p) => p.id === id) ?? null;
+}
+
+export function getCanonicalTokenPackByTokens(tokens: number) {
+  return CANONICAL_ECONOMY.tokenPacks.find((p) => p.tokens === tokens) ?? null;
+}
+
+export function getChatTierConfig(tier: ChatTier) {
+  return CANONICAL_ECONOMY.chat.tiers[tier];
+}
+
+export function isAllowedBurnMultiplier(value: number): value is BurnMultiplier {
+  return (CANONICAL_ECONOMY.chat.allowedBurnMultipliers as readonly number[]).includes(value);
+}
+
+export function getReservationCancellationPolicy(hoursBeforeStart: number): ReservationCancellationPolicy {
+  if (hoursBeforeStart > 48) {
+    return CANONICAL_ECONOMY.reservations.cancellationPolicy.gt48h;
+  }
+
+  if (hoursBeforeStart >= 24) {
+    return CANONICAL_ECONOMY.reservations.cancellationPolicy.h24to48h;
+  }
+
+  return CANONICAL_ECONOMY.reservations.cancellationPolicy.lt24h;
+}
+
+export function assertSplitValid(split: Split, label: string): void {
+  const sum = split.earner + split.platform;
+  if (Math.abs(sum - 1) > 0.0001) {
+    throw new Error(`Invalid split for ${label}: ${split.earner} + ${split.platform} != 1`);
+  }
+}
+
+export function validateCanonicalEconomy(): void {
+  assertSplitValid(CANONICAL_ECONOMY.splits.chat, "chat");
+  assertSplitValid(CANONICAL_ECONOMY.splits.callVoice, "callVoice");
+  assertSplitValid(CANONICAL_ECONOMY.splits.callVideo, "callVideo");
+  assertSplitValid(CANONICAL_ECONOMY.splits.tips, "tips");
+  assertSplitValid(CANONICAL_ECONOMY.splits.calendarMeeting, "calendarMeeting");
+  assertSplitValid(CANONICAL_ECONOMY.splits.eventTicket, "eventTicket");
+  assertSplitValid(CANONICAL_ECONOMY.splits.subscription, "subscription");
+  assertSplitValid(CANONICAL_ECONOMY.splits.platform100, "platform100");
+
+  for (const pack of CANONICAL_ECONOMY.tokenPacks) {
+    if (pack.tokens <= 0) {
+      throw new Error(`Invalid token pack tokens: ${pack.name}`);
+    }
+    if (pack.usdPrice <= 0) {
+      throw new Error(`Invalid token pack price: ${pack.name}`);
+    }
+  }
+}
+
+validateCanonicalEconomy();

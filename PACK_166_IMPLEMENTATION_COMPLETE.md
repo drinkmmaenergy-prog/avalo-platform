@@ -1,4 +1,4 @@
-# PACK 166: Avalo Digital Product Scalability Engine - Implementation Complete
+﻿# PACK 166: Avalo Digital Product Scalability Engine - Implementation Complete
 
 ## 🎯 Overview
 
@@ -27,7 +27,7 @@ PACK 166 delivers a comprehensive digital product scalability engine that empowe
 - ✅ [`app-mobile/app/creator/scalability/bundles.tsx`](app-mobile/app/creator/scalability/bundles.tsx:1) - Bundle creation
 - ✅ [`app-mobile/app/creator/scalability/upsells.tsx`](app-mobile/app/creator/scalability/upsells.tsx:1) - Upsell rules
 - ✅ [`app-mobile/app/creator/scalability/automations.tsx`](app-mobile/app/creator/scalability/automations.tsx:1) - Automation setup
-- ✅ [`app-mobile/app/creator/scalability/discounts.tsx`](app-mobile/app/creator/scalability/discounts.tsx:1) - Discount management
+- ✅ [`app-mobile/app/creator/scalability/pricing.tsx`](app-mobile/app/creator/scalability/pricing.tsx:1) - Discount management
 - ✅ [`app-mobile/app/creator/scalability/analytics.tsx`](app-mobile/app/creator/scalability/analytics.tsx:1) - Performance analytics
 
 ---
@@ -446,7 +446,7 @@ router.push('/creator/scalability');
 '/creator/scalability/bundles'        // Bundle creation
 '/creator/scalability/upsells'        // Upsell rule setup
 '/creator/scalability/automations'    // Automation workflows
-'/creator/scalability/discounts'      // Discount campaigns
+'/creator/scalability/pricing'      // Discount campaigns
 '/creator/scalability/analytics'      // Performance tracking
 ```
 

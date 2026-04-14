@@ -6,7 +6,7 @@ import { MONETIZATION_SPLITS } from '';
  * Allows creators to publish premium playlists made from multiple media types
  * and sell them for tokens. AsyncStorage only, no backend.
  * 
- * Revenue split: 65% creator / 35% Avalo
+ * Reference split display: up to 65% creator reference rate / platform reference portion
  * VIP discount: 10% discount, minimum 1 token, NEVER free
  */
 
@@ -609,4 +609,5 @@ export default {
   VIP_DISCOUNT,
   MAX_COLLECTIONS_PER_CREATOR,
 };
+
 

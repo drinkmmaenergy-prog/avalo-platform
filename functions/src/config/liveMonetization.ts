@@ -181,8 +181,8 @@ export const LIVE_GIFTS: LiveGift[] = [
  * Applies to ALL live monetization (gifts + queue)
  */
 export const LIVE_REVENUE: LiveRevenueConfig = {
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.earner,  // 70% to earner
-  AVALO_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.platform,    // 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.earner,  // 65% to earner
+  AVALO_SPLIT: MONETIZATION_SPLITS.CHAT.platform,    // 35% to Avalo
   REQUIRES_DEPOSIT: false,
   GIFTS_REFUNDABLE: false,
 };
@@ -323,6 +323,8 @@ export function canAffordGift(userBalance: number, giftId: string): boolean {
 export function canAffordQueue(userBalance: number): boolean {
   return userBalance >= QUEUE_CONFIG.QUEUE_ENTRY_COST_TOKENS;
 }
+
+
 
 
 

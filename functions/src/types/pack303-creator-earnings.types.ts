@@ -247,7 +247,7 @@ export const REVENUE_SPLITS = {
 import { TOKEN_PAYOUT_USD } from '../config/economyConfig';
 
 /**
- * Payout rate derived from TOKEN_PAYOUT_USD (0.03 USD) via economyConfig.ts
+ * Payout rate derived from TOKEN_PAYOUT_USD (0.04 USD) via economyConfig.ts
  */
 export const TOKEN_TOKEN_PAYOUT_USD = TOKEN_PAYOUT_USD;
 
@@ -329,6 +329,9 @@ export function isValidYearMonth(year: number, month: number): boolean {
   const targetDate = new Date(year, month - 1, 1);
   return targetDate <= now;
 }
+
+
+
 
 
 

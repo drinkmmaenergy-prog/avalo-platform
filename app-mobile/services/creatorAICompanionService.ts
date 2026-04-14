@@ -20,7 +20,7 @@ export const RESPONSE_PRICING = {
 
 export type ResponseType = keyof typeof RESPONSE_PRICING;
 
-// Revenue split: 65% to creator, 35% to Avalo
+// Reference split display: up to 65% creator reference rate / platform reference portion
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 
@@ -267,7 +267,7 @@ export async function chargeForMessage(
     // Deduct tokens from user
     await deductTokens(userId, finalCost);
 
-    // Calculate revenue split
+    // Calculate reference split display
     const creatorEarned = Math.floor(finalCost * CREATOR_SHARE);
     const avaloEarned = finalCost - creatorEarned;
 
@@ -383,4 +383,5 @@ export default {
   calculatePrice,
   RESPONSE_PRICING,
 };
+
 

@@ -371,11 +371,12 @@ export const validateSupportAmount = (amount: number): string | null => {
 };
 
 /**
- * Calculate revenue split for display
+ * Calculate reference split display for display
  */
 export const calculateRevenueSplit = (amount: number): { creator: number; avalo: number } => {
   const creator = Math.floor(amount * MONETIZATION_SPLITS.SUBSCRIPTION.creator);
   const avalo = amount - creator;
   return { creator, avalo };
 };
+
 

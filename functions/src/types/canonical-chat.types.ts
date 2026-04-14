@@ -18,7 +18,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * - 65/35 revenue split (earner/Avalo) unchanged
  * - Word buckets: Standard = 11 words/token, Royal = 7 words/token
  * - Base burn = 1 token per bucket * burnMultiplier
- * - Payout per token = 0.03 USD (from economyConfig)
+ * - Payout per token = 0.04 USD (from economyConfig)
  * - Token pack pricing unchanged
  * - Historical ledger never recalculated
  * - No Math.round anywhere — deterministic floor only
@@ -420,6 +420,9 @@ export type LegacySourceType =
 
 
 export const MIN_DEPOSIT_TOKENS = 100;
+
+
+
 
 
 

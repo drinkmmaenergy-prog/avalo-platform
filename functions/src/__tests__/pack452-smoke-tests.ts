@@ -11,7 +11,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * 5. Offer expired → tokens returned
  * 6. Chat ends early → reserved unused returned
  * 7. Refund logic unchanged
- * 8. Payout unchanged (0.03)
+ * 8. Payout updated (0.04)
  * 9. Historical data intact
  *
  * @module pack452-smoke-tests
@@ -164,9 +164,9 @@ describe('PACK 452 — Smoke Tests', () => {
   });
 
   // ---- Test 8: Payout unchanged ----
-  describe('8. Payout unchanged (0.03 USD)', () => {
-    test('TOKEN_PAYOUT_USD is 0.03', () => {
-      expect(TOKEN_PAYOUT_USD).toBe(0.03);
+  describe('8. Payout updated (0.04 USD)', () => {
+    test('TOKEN_PAYOUT_USD is 0.04', () => {
+      expect(TOKEN_PAYOUT_USD).toBe(0.04);
     });
 
     test('premium burn ledger stores correct payout rate', () => {
@@ -468,6 +468,9 @@ describe('PACK 452 — Smoke Tests', () => {
     });
   });
 });
+
+
+
 
 
 

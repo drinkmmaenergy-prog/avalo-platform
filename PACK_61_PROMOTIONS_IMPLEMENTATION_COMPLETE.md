@@ -1,4 +1,4 @@
-# PACK 61 — In-App Promotions & Sponsored Placement Engine
+﻿# PACK 61 — In-App Promotions & Sponsored Placement Engine
 ## Implementation Complete ✅
 
 **Date:** 2025-11-24  
@@ -59,12 +59,12 @@ PACK 61 introduces a comprehensive in-app promotion and sponsored placement engi
   - `addCampaignBudget()` - Add budget
 
 - [x] **Creator Screens**
-  - `PromotionsOverviewScreen.tsx` - List all campaigns with stats
-  - `PromotionCreateScreen.tsx` - Create new campaigns
+  - `OffersOverviewScreen.tsx` - List all campaigns with stats
+  - `OfferCreateScreen.tsx` - Create new campaigns
   - Both screens fully functional with validation
 
 - [x] **Promotion Display Component**
-  - `PromotionCard.tsx` - Reusable promotion card
+  - `OfferCard.tsx` - Reusable promotion card
   - Auto-logs impression on mount
   - Handles click tracking and deep linking
   - Visually distinct "Sponsored" badge
@@ -333,9 +333,9 @@ Create document: `promotion_config/global`
 
 ### Mobile
 - `app-mobile/services/promotionService.ts` (NEW)
-- `app-mobile/screens/creator/PromotionsOverviewScreen.tsx` (NEW)
-- `app-mobile/screens/creator/PromotionCreateScreen.tsx` (NEW)
-- `app-mobile/components/PromotionCard.tsx` (NEW)
+- `app-mobile/screens/creator/OffersOverviewScreen.tsx` (NEW)
+- `app-mobile/screens/creator/OfferCreateScreen.tsx` (NEW)
+- `app-mobile/components/OfferCard.tsx` (NEW)
 
 ### Configuration
 - `firestore-promotions.rules` (NEW)
@@ -355,7 +355,7 @@ The In-App Promotions & Sponsored Placement Engine is fully implemented and read
 1. Deploy backend functions to Firebase
 2. Update Firestore rules
 3. Initialize promotion config document
-4. Integrate PromotionCard component into Discovery/Marketplace/Home screens
+4. Integrate OfferCard component into Discovery/Marketplace/Home screens
 5. Add navigation routes for creator promotion screens
 6. Test end-to-end: campaign creation → impression → click tracking
 

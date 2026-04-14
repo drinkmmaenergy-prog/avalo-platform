@@ -139,7 +139,7 @@ export default function CreatePremiumStoryScreen({
       <View style={styles.priceContainer}>
         <Text style={styles.sectionTitle}>Set Price (Tokens)</Text>
         <Text style={styles.sectionSubtitle}>
-          You earn 65% · Avalo takes 35%
+          You can earn estimated at reference rate
         </Text>
         
         <TextInput
@@ -177,7 +177,7 @@ export default function CreatePremiumStoryScreen({
         {price && !isNaN(parseInt(price, 10)) && (
           <View style={styles.earningsInfo}>
             <Text style={styles.earningsText}>
-              You will earn: {Math.floor(parseInt(price, 10) * MONETIZATION_SPLITS.CHAT.creator)} tokens per unlock
+              Estimated creator earnings shown at reference rate; final payout depends on fees, taxes and deductions
             </Text>
           </View>
         )}
@@ -223,7 +223,7 @@ export default function CreatePremiumStoryScreen({
           • Users must pay tokens to unlock{'\n'}
           • Access lasts 24 hours{'\n'}
           • Anti-screenshot protection enabled{'\n'}
-          • You earn 65% of each unlock
+          • Estimated earnings per unlock are shown at reference rate
         </Text>
       </View>
     </ScrollView>
@@ -437,4 +437,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+
+
 

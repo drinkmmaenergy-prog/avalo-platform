@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Onboarding Monetization Optimization
  * 
  * After initial signup, before Swipe:
@@ -141,7 +141,7 @@ export default function EarnToChatSetupScreen() {
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>Get Paid</Text>
               <Text style={styles.stepDescription}>
-                Earn 80% of tokens, withdraw anytime (Avalo keeps 20%)
+                You may earn up to may reach 80% of tokens before applicable deductions. Withdrawals remain subject to eligibility, compliance, fees, taxes, and platform rules.
               </Text>
             </View>
           </View>
@@ -443,3 +443,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+

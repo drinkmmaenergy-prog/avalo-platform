@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Wallet Screen
  * Shows token balance, purchase options, and free token earning (ads)
  * Phase 31B: Region-based pricing display
@@ -24,8 +24,8 @@ import { mockCompletePurchase } from "@/services/stripeService";
 import { TOKEN_PACKS, getTotalTokensForPack, PLN_PRICING_TABLE } from "@/config/monetization";
 import { ADS_AND_SPONSORSHIP_CONFIG } from "@/config/monetization";
 import AnimatedTokenBalance from "@/components/AnimatedTokenBalance";
-import BottomSheetPromo from "@/components/BottomSheetPromo";
-import { DiscountOffer } from "@/shared/types/discounts";
+import BottomSheetOffer from "@/components/BottomSheetOffer";
+import { DiscountOffer } from "@/shared/types/pricing";
 import { retrieveActiveDiscount, applyDiscountToPrice } from "@/shared/utils/discountEngine";
 
 export default function WalletScreen() {
@@ -38,7 +38,7 @@ export default function WalletScreen() {
   
   // Phase 31C: Discount states
   const [activeDiscount, setActiveDiscount] = useState<DiscountOffer | null>(null);
-  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
 
   useEffect(() => {
     if (user?.uid) {
@@ -157,7 +157,7 @@ export default function WalletScreen() {
       if (result.success) {
         Alert.alert(
           'Tokens Earned! 🎉',
-          `You earned ${result.tokensEarned} tokens for watching an ad!`
+          `You received ${result.tokensEarned} tokens for watching an ad.`
         );
       } else {
         Alert.alert('Error', 'Failed to process ad reward. Please try again.');
@@ -228,18 +228,18 @@ export default function WalletScreen() {
           </Text>
         </View>
 
-        {/* Active Discount Banner */}
+        {/* Active pricing banner */}
         {activeDiscount && (
           <TouchableOpacity
-            style={styles.discountBanner}
-            onPress={() => setShowPromoModal(true)}
+            style={styles.pricingBanner}
+            onPress={() => setShowOfferModal(true)}
           >
-            <Text style={styles.discountBannerIcon}>🎉</Text>
-            <View style={styles.discountBannerContent}>
-              <Text style={styles.discountBannerTitle}>
-                {activeDiscount.discountPercent}% OFF - Limited Time!
+            <Text style={styles.pricingBannerIcon}>🎉</Text>
+            <View style={styles.pricingBannerContent}>
+              <Text style={styles.pricingBannerTitle}>
+                {activeDiscount.discountPercent}% pricing adjustment - Pricing adjustment
               </Text>
-              <Text style={styles.discountBannerSubtitle}>
+              <Text style={styles.pricingBannerSubtitle}>
                 Tap to view offer
               </Text>
             </View>
@@ -252,7 +252,7 @@ export default function WalletScreen() {
           {TOKEN_PACKS.map((pack) => {
             const totalTokens = getTotalTokensForPack(pack);
             
-            // Phase 31C: Apply discount to display price (UI-ONLY)
+            // Phase 31C: Apply member pricing to display price (UI-only)
             const priceWithDiscount = applyDiscountToPrice(pack.price, activeDiscount);
             const hasDiscount = priceWithDiscount.hasDiscount;
             
@@ -282,9 +282,9 @@ export default function WalletScreen() {
                   </View>
                 )}
                 {hasDiscount && (
-                  <View style={styles.discountPackBadge}>
-                    <Text style={styles.discountPackBadgeText}>
-                      -{activeDiscount?.discountPercent}% OFF
+                  <View style={styles.pricingPackBadge}>
+                    <Text style={styles.pricingPackBadgeText}>
+                      -{activeDiscount?.discountPercent}% pricing adjustment
                     </Text>
                   </View>
                 )}
@@ -338,13 +338,13 @@ export default function WalletScreen() {
         </View>
       </ScrollView>
 
-      {/* Phase 31C: Promo Bottom Sheet */}
-      <BottomSheetPromo
-        visible={showPromoModal}
+      {/* Phase 31C: Offer Bottom Sheet */}
+      <BottomSheetOffer
+        visible={showOfferModal}
         offer={activeDiscount}
-        onClose={() => setShowPromoModal(false)}
+        onClose={() => setShowOfferModal(false)}
         onActivate={() => {
-          setShowPromoModal(false);
+          setShowOfferModal(false);
           // User is already on wallet screen, so just close modal
         }}
         locale={locale}
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  discountBanner: {
+  pricingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1A1A1A',
@@ -579,25 +579,25 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  discountBannerIcon: {
+  pricingBannerIcon: {
     fontSize: 28,
     marginRight: 12,
   },
-  discountBannerContent: {
+  pricingBannerContent: {
     flex: 1,
   },
-  discountBannerTitle: {
+  pricingBannerTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
-  discountBannerSubtitle: {
+  pricingBannerSubtitle: {
     fontSize: 13,
     fontWeight: '600',
     color: '#D4AF37',
   },
-  discountPackBadge: {
+  pricingPackBadge: {
     position: 'absolute',
     top: -8,
     left: 16,
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  discountPackBadgeText: {
+  pricingPackBadgeText: {
     color: '#000',
     fontSize: 11,
     fontWeight: '900',
@@ -622,4 +622,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
   },
 });
+
+
+
+
 

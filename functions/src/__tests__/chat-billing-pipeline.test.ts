@@ -399,8 +399,8 @@ describe('T7: Double-entry ledger invariants', () => {
 // ============================================================================
 
 describe('Economy Config Invariants', () => {
-  it('TOKEN_PAYOUT_USD should be 0.03', () => {
-    expect(TOKEN_PAYOUT_USD).toBe(0.03);
+  it('TOKEN_PAYOUT_USD should be 0.04', () => {
+    expect(TOKEN_PAYOUT_USD).toBe(0.04);
   });
 
   it('PAYOUT_FEE_PLATFORM_PERCENT should be 0.05 (5%)', () => {
@@ -471,6 +471,9 @@ describe('Word counting — earner-only billing', () => {
     expect(platform).toBe(4);
   });
 });
+
+
+
 
 
 

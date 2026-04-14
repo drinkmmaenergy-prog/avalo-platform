@@ -124,7 +124,7 @@ export function getLedgerEventDisplay(type: string): {
 }
 
 /**
- * Calculate revenue split (same as backend)
+ * Calculate Reference split display follows canonical backend model
  */
 export function calculateRevenueSplit(tokenAmount: number): {
   creatorAmount: number;
@@ -202,4 +202,5 @@ export function validateTokenAmount(
 
   return { valid: true };
 }
+
 

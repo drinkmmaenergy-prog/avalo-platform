@@ -518,7 +518,7 @@ export default function CreatorDashboardScreen() {
           Last updated: {new Date(dashboard.lastUpdated).toLocaleString()}
         </Text>
         <Text style={styles.footerNote}>
-          Analytics update daily. Earnings shown are creator share (after platform fee).
+          Analytics update daily. Earnings shown are a reference payout preview after applicable platform fees and deductions.
         </Text>
       </View>
     </ScrollView>
@@ -1043,3 +1043,4 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+

@@ -1,4 +1,4 @@
-# PACK 128 — Implementation Verification Report
+﻿# PACK 128 — Implementation Verification Report
 
 ## ✅ Implementation Complete & Verified
 
@@ -610,7 +610,7 @@ While implementation is complete, these tests should be added:
 **Economic Rules:**
 - ✅ Fixed token price (€0.20)
 - ✅ Immutable 65/35 split
-- ✅ Zero bonuses/discounts/cashback
+- ✅ Zero bonuses/pricing/cashback
 - ✅ Zero payout incentives
 - ✅ No reversals of legitimate transactions
 

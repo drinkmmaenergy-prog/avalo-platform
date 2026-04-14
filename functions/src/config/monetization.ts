@@ -1,81 +1,41 @@
-import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
+import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
+import { MONETIZATION_SPLITS } from "../config/monetizationSplits";
 
 /**
- * Monetization Configuration for Firebase Functions
- * Shared constants for server-side validation
+ * FUNCTIONS MONETIZATION CONFIG
+ * Hard-canonical bridge for legacy consumers.
  */
 
 export const PAID_CONTENT_CONFIG = {
-  /** Creator earning percentage from paid content (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.earner, // 70% to earner, 30% to Avalo
-  
-  /** Avalo platform fee on paid content (as decimal) */
-  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.platform,
+  CREATOR_SPLIT: MONETIZATION_SPLITS.UNLOCK_MEDIA.earner,
+  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.UNLOCK_MEDIA.platform,
 } as const;
 
 export const EARN_TO_CHAT_CONFIG = {
-  /** Creator earnings percentage from escrow (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.earner, // 80% to earner
-  
-  /** Avalo cut from escrow (as decimal) */
-  AVALO_CUT: MONETIZATION_SPLITS.EVENT_TICKET.platform, // 20% to Avalo
-  
-  /** Average words per token for escrow billing */
-  WORDS_PER_TOKEN: 11,
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.earner,
+  AVALO_CUT: MONETIZATION_SPLITS.CHAT.platform,
+  WORDS_PER_TOKEN: CANONICAL_ECONOMY.chat.tiers.STANDARD.wordsPerToken,
+  INITIAL_DEPOSIT: CANONICAL_ECONOMY.chat.defaultDepositTokens,
+  INSTANT_FEE:
+    CANONICAL_ECONOMY.chat.defaultDepositTokens *
+    CANONICAL_ECONOMY.chat.depositPlatformFeePct,
+  MIN_ESCROW_BALANCE: 10,
 } as const;
 
 export const CALL_CONFIG = {
   VOICE: {
-    /** Avalo platform fee percentage */
-    AVALO_CUT_PERCENT: 20,
-    /** Earner revenue percentage */
-    EARNER_CUT_PERCENT: 80,
+    AVALO_CUT_PERCENT: MONETIZATION_SPLITS.CALL.platform,
+    EARNER_CUT_PERCENT: MONETIZATION_SPLITS.CALL.earner,
   },
   VIDEO: {
-    /** Avalo platform fee percentage */
-    AVALO_CUT_PERCENT: 20,
-    /** Earner revenue percentage */
-    EARNER_CUT_PERCENT: 80,
+    AVALO_CUT_PERCENT: MONETIZATION_SPLITS.VIDEO_CALL.platform,
+    EARNER_CUT_PERCENT: MONETIZATION_SPLITS.VIDEO_CALL.earner,
   },
 } as const;
 
 export const TIPS_CONFIG = {
-  /** Creator earning percentage from tips (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.earner, // 80% to earner, 20% to Avalo
-  
-  /** Avalo platform fee on tips (as decimal) */
-  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.platform,
+  CREATOR_SPLIT: MONETIZATION_SPLITS.TIPS.earner,
+  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.TIPS.platform,
 } as const;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

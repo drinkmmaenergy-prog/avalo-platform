@@ -1,7 +1,11 @@
-import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 128 - Treasury Service (Mobile)
- * Client-side service for treasury operations
+ * Client-side service for treasury operations.
+ *
+ * IMPORTANT:
+ * - Payout values are reference values only.
+ * - Canonical payout benchmark comes from app-mobile/config/payout.ts
+ * - Stripe payout fee of 5% is deducted from the withdrawing user.
  */
 
 import { httpsCallable } from 'firebase/functions';
@@ -11,6 +15,14 @@ import {
   LedgerEntryDisplay,
   PayoutSafetyCheck,
 } from '../types/treasury';
+import {
+  TOKEN_PAYOUT_RATE_USD,
+  PAYOUT_FEE_PERCENT,
+  PAYOUT_LEGAL_NOTICE_EN,
+  PAYOUT_LEGAL_NOTICE_PL,
+  calculateNetPayout,
+  validateWithdrawal,
+} from '../config/payout';
 
 // ============================================================================
 // BALANCE OPERATIONS
@@ -56,8 +68,7 @@ export async function getUserLedger(
   limit: number = 50
 ): Promise<LedgerEntryDisplay[]> {
   try {
-    // This would be a Firestore query or callable function
-    // For now, returning empty array - implement based on your needs
+    // Placeholder: wire to Firestore query or callable function when ledger UI is finalized
     return [];
   } catch (error) {
     console.error('Failed to get user ledger:', error);
@@ -103,6 +114,7 @@ export async function requestPayout(
   payoutRequestId?: string;
   safetyCheck: PayoutSafetyCheck;
   message: string;
+  referenceOnly?: boolean;
 }> {
   try {
     const requestPayoutFn = httpsCallable(functions, 'treasury_requestPayout');
@@ -111,7 +123,11 @@ export async function requestPayout(
       methodId,
       tokenAmount,
     });
-    return result.data as any;
+
+    return {
+      ...(result.data as any),
+      referenceOnly: true,
+    };
   } catch (error) {
     console.error('Failed to request payout:', error);
     throw error;
@@ -163,27 +179,39 @@ export function formatTokens(amount: number): string {
 }
 
 /**
- * Convert tokens to fiat (simplified - use actual rate from config)
+ * Convert tokens to USD reference value for display
  */
-export function tokensToFiat(tokens: number, rate: number = MONETIZATION_SPLITS.EVENT_TICKET.avalo): string {
+export function tokensToFiat(tokens: number, rate: number = TOKEN_PAYOUT_RATE_USD): string {
   const fiatAmount = tokens * rate;
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'EUR',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(fiatAmount);
 }
 
 /**
- * Validate payout amount
+ * Get reference payout preview
+ */
+export function getPayoutPreview(tokenAmount: number) {
+  return calculateNetPayout(tokenAmount, 'stripe');
+}
+
+/**
+ * Validate payout amount using canonical payout config
  */
 export function validatePayoutAmount(
   amount: number,
   availableBalance: number,
-  minPayout: number = 5000
+  minPayout: number = 100
 ): { valid: boolean; error?: string } {
   if (amount <= 0) {
     return { valid: false, error: 'Amount must be greater than 0' };
+  }
+
+  const validation = validateWithdrawal(amount, 'stripe', availableBalance);
+  if (!validation.valid) {
+    return { valid: false, error: validation.error };
   }
 
   if (amount < minPayout) {
@@ -198,6 +226,27 @@ export function validatePayoutAmount(
   }
 
   return { valid: true };
+}
+
+/**
+ * User-facing payout legal notice
+ */
+export function getPayoutLegalNotice(locale: string = 'en'): string {
+  return locale.toLowerCase().startsWith('pl')
+    ? PAYOUT_LEGAL_NOTICE_PL
+    : PAYOUT_LEGAL_NOTICE_EN;
+}
+
+/**
+ * Canonical payout meta for UI helpers
+ */
+export function getPayoutMeta() {
+  return {
+    tokenPayoutRateUsd: TOKEN_PAYOUT_RATE_USD,
+    payoutFeePercent: PAYOUT_FEE_PERCENT,
+    referenceOnly: true,
+    benchmarkPack: 'royal_10000',
+  };
 }
 
 /**
@@ -226,4 +275,3 @@ export function getTreasuryErrorMessage(error: any): string {
 
   return 'An unexpected error occurred';
 }
-

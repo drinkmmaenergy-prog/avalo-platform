@@ -1,4 +1,19 @@
-import { MONETIZATION_SPLITS } from '';
+import { TOKEN_PACKS as CANONICAL_TOKEN_PACKS, CHAT_CANONICAL_CONFIG, SPLITS } from "./canonicalMonetizationAdapter";
+
+const MONETIZATION_SPLITS = {
+  CHAT: {
+    creator: SPLITS.CHAT.earner,
+    avalo: SPLITS.CHAT.platform,
+  },
+  SUBSCRIPTION: {
+    creator: SPLITS.SUBSCRIPTION.earner,
+    avalo: SPLITS.SUBSCRIPTION.platform,
+  },
+  EVENT_TICKET: {
+    creator: SPLITS.EVENTS.earner,
+    avalo: SPLITS.EVENTS.platform,
+  },
+} as const;
 /**
  * Monetization Configuration
  * Single source of truth for all monetization-related values in the Avalo app.
@@ -20,58 +35,14 @@ export interface TokenPack {
   bonus?: number; // Bonus tokens (e.g., "Buy 100, get 120")
 }
 
-export const TOKEN_PACKS: TokenPack[] = [
-  {
-    packId: 'mini',
-    tokens: 100,
-    price: 7.99,
-    displayName: 'Mini',
-    bonus: 0,
-  },
-  {
-    packId: 'basic',
-    tokens: 300,
-    price: 21.49,
-    displayName: 'Basic',
-    bonus: 0,
-  },
-  {
-    packId: 'standard',
-    tokens: 500,
-    price: 33.74,
-    displayName: 'Standard',
-    popular: true,
-    bonus: 0,
-  },
-  {
-    packId: 'premium',
-    tokens: 1000,
-    price: 61.24,
-    displayName: 'Premium',
-    bonus: 0,
-  },
-  {
-    packId: 'pro',
-    tokens: 2000,
-    price: 117.49,
-    displayName: 'Pro',
-    bonus: 0,
-  },
-  {
-    packId: 'elite',
-    tokens: 5000,
-    price: 281.49,
-    displayName: 'Elite',
-    bonus: 0,
-  },
-  {
-    packId: 'royal',
-    tokens: 10000,
-    price: 537.49,
-    displayName: 'Royal',
-    bonus: 0,
-  },
-];
+export const TOKEN_PACKS: TokenPack[] = CANONICAL_TOKEN_PACKS.map((p) => ({
+  packId: p.id,
+  tokens: p.tokens,
+  price: p.price,
+  displayName: p.name,
+  popular: p.id === "standard_500",
+  bonus: 0,
+}));
 
 /**
  * PLN Pricing Table (Phase 31B)
@@ -94,13 +65,13 @@ export const PLN_PRICING_TABLE: Record<string, number> = {
 
 export const MESSAGING_CONFIG = {
   /** Number of free messages per conversation */
-  FREE_MESSAGES_COUNT: 3,
+  FREE_MESSAGES_COUNT: CHAT_CANONICAL_CONFIG.FREE_MESSAGES_STANDARD,
   
   /** Cost per message after free messages (in tokens) */
-  MESSAGE_COST: 10,
+  MESSAGE_COST: 0,
   
-  /** Avalo platform fee on message payments (as decimal, e.g., MONETIZATION_SPLITS.SUBSCRIPTION.avalo = 30%) */
-  MESSAGE_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  /** Avalo platform fee on message payments (canonical chat fee = 35%) */
+  MESSAGE_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
 } as const;
 
 // ============================================================================
@@ -115,13 +86,13 @@ export const EARN_TO_CHAT_CONFIG = {
   INSTANT_FEE: 35,
   
   /** Average words per token for escrow billing */
-  WORDS_PER_TOKEN: 11,
+  WORDS_PER_TOKEN: CHAT_CANONICAL_CONFIG.WORDS_PER_TOKEN_STANDARD,
   
   /** Creator earnings percentage from escrow (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to creator
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // reference-rate creator amount
   
   /** Avalo cut from escrow (as decimal) */
-  AVALO_CUT: MONETIZATION_SPLITS.EVENT_TICKET.avalo, // 20% to Avalo
+  AVALO_CUT: MONETIZATION_SPLITS.CHAT.avalo, // reference platform portion
   
   /** Minimum escrow balance before requiring new deposit (tokens) */
   MIN_ESCROW_BALANCE: 10,
@@ -197,7 +168,7 @@ export const CONTENT_CONFIG = {
   ICEBREAKER_COST: 15,
   
   /** Creator earning percentage from content unlocks (as decimal) */
-  CONTENT_CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CONTENT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
 } as const;
 
 // ============================================================================
@@ -209,7 +180,7 @@ export const CHAT_ROOM_CONFIG = {
   ENTRY_COST: 50,
   
   /** Host earning percentage from entry fees (as decimal) */
-  HOST_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to host, 30% to Avalo
+  HOST_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // reference-rate host lane
 } as const;
 
 // ============================================================================
@@ -224,10 +195,10 @@ export const TIPS_CONFIG = {
   MAX_TIP_AMOUNT: 10000,
   
   /** Creator earning percentage from tips (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to creator, 20% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee on tips (as decimal) */
-  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
 } as const;
 
 // ============================================================================
@@ -248,10 +219,10 @@ export const PAID_CONTENT_CONFIG = {
   MAX_VIDEO_PRICE: 1000,
   
   /** Creator earning percentage from paid content (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee on paid content (as decimal) */
-  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
 } as const;
 
 // ============================================================================
@@ -265,14 +236,14 @@ export const CALENDAR_CONFIG = {
   /** Maximum booking price (in tokens) */
   MAX_BOOKING_PRICE: 100000,
   
-  /** Cancellation fee if cancelled within 24h (in tokens) */
-  CANCELLATION_FEE: 50,
+    /** Legacy fixed cancellation fee disabled. Canonical booking refunds use time windows. */
+  CANCELLATION_FEE: 0,
   
   /** Host earning percentage from bookings (as decimal) */
-  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to host, 20% to Avalo
+  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
   
-  /** Avalo platform fee on bookings (as decimal) - applied instantly, non-refundable */
-  AVALO_FEE_PERCENT: 20,
+    /** Avalo platform fee on bookings (decimal, canonical 20%) */
+  AVALO_FEE_PERCENT: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   BOOKING_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
   
   /** Earner escrow percentage */
@@ -282,10 +253,14 @@ export const CALENDAR_CONFIG = {
   BOOKING_REQUIRES_VIP_OR_ROYAL: true,
   
   /** Refund percentage if host cancels (as decimal) */
-  HOST_CANCELLATION_REFUND: 1.00, // 100% refund (Avalo keeps its 20%)
+  HOST_CANCELLATION_REFUND: 1.00, // 100% refund to payer
   
-  /** Refund percentage if guest cancels >24h before (as decimal) */
-  GUEST_CANCELLATION_REFUND: 0.50, // 50% refund
+    /** Legacy single guest cancellation refund disabled. Canonical policy uses windows:
+   * >48h = 100% refund
+   * 24-48h = 50% refund / 50% payout
+   * <24h = 0% refund / 100% payout
+   */
+  GUEST_CANCELLATION_REFUND: 0.00,
 } as const;
 
 // ============================================================================
@@ -301,9 +276,9 @@ export const CALL_CONFIG = {
     /** Tokens per minute for standard (non-VIP/Royal) users */
     BASE_COST_STANDARD: 10,
     /** Avalo platform fee percentage */
-    AVALO_CUT_PERCENT: 20,
+    AVALO_CUT_PERCENT: 35,
     /** Earner revenue percentage */
-    EARNER_CUT_PERCENT: 80,
+    EARNER_CUT_PERCENT: 65,
   },
   VIDEO: {
     /** Tokens per minute for VIP members */
@@ -313,9 +288,9 @@ export const CALL_CONFIG = {
     /** Tokens per minute for standard (non-VIP/Royal) users */
     BASE_COST_STANDARD: 15,
     /** Avalo platform fee percentage */
-    AVALO_CUT_PERCENT: 20,
+    AVALO_CUT_PERCENT: 35,
     /** Earner revenue percentage */
-    EARNER_CUT_PERCENT: 80,
+    EARNER_CUT_PERCENT: 65,
   },
   /** Auto-disconnect call if no activity for this many minutes */
   AUTO_DISCONNECT_IDLE_MINUTES: 6,
@@ -339,16 +314,16 @@ export const LIVESTREAM_CONFIG = {
   MAX_LIVESTREAM_TIP: 5000,
   
   /** Streamer earning percentage from entry fees (as decimal) */
-  STREAMER_ENTRY_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to streamer, 30% to Avalo
+  STREAMER_ENTRY_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // reference-rate streamer lane
   
   /** Streamer earning percentage from tips (as decimal) */
-  STREAMER_TIP_SPLIT: 0.85, // 85% to streamer, 15% to Avalo
+  STREAMER_TIP_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // reference-rate streamer lane
   
   /** Avalo platform fee on livestream entry (as decimal) */
-  ENTRY_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  ENTRY_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
   
   /** Avalo platform fee on livestream tips (as decimal) */
-  TIP_FEE_PERCENTAGE: 0.15,
+  TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
 } as const;
 
 // ============================================================================
@@ -371,10 +346,10 @@ export const LIVE_ROOM_CONFIG = {
   MAX_GIFT_AMOUNT: 1000,
   
   /** Creator earning percentage from gifts (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to creator, 20% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee on gifts (as decimal) */
-  GIFT_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
+  GIFT_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
   
   /** Room sponsorship revenue (100% Avalo for now) */
   SPONSORSHIP_REVENUE_SHARE: 1.0,
@@ -403,10 +378,10 @@ export const CREATOR_SUBSCRIPTIONS = {
   MAX_PRICE_USD: 100,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
-  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
   
   /** Payment processor (web only) */
   PAYMENT_METHOD: 'stripe', // Web-based Stripe
@@ -420,10 +395,10 @@ export const CREATOR_PPV = {
   MAX_PRICE_USD: 200,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
-  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
   
   /** Payment processor (web only) */
   PAYMENT_METHOD: 'stripe',
@@ -437,10 +412,10 @@ export const CREATOR_CUSTOM_REQUESTS = {
   MAX_PRICE_USD: 500,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
-  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.SUBSCRIPTION.avalo,
+  AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
   
   /** Payment processor (web only) */
   PAYMENT_METHOD: 'stripe',
@@ -617,7 +592,7 @@ export const ROYAL_BENEFITS = {
  * Default Avalo platform fee applied to most transactions
  * Individual features may override this with specific fees
  */
-export const AVALO_PLATFORM_FEE = MONETIZATION_SPLITS.SUBSCRIPTION.avalo; // 30%
+export const AVALO_PLATFORM_FEE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
 
 // ============================================================================
 // CREATOR ECONOMY
@@ -625,7 +600,7 @@ export const AVALO_PLATFORM_FEE = MONETIZATION_SPLITS.SUBSCRIPTION.avalo; // 30%
 
 export const CREATOR_CONFIG = {
   /** Default creator earning percentage (as decimal) */
-  DEFAULT_CREATOR_SPLIT: MONETIZATION_SPLITS.SUBSCRIPTION.creator, // 70% to creator, 30% to Avalo
+  DEFAULT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
   
   /** Minimum tokens required to become a creator */
   MIN_TOKENS_TO_WITHDRAW: 100,
@@ -646,7 +621,7 @@ export const MEET_CONFIG = {
     MAX_PRICE: 25000,
     
     /** Host earning percentage (as decimal) */
-    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to host, 20% to Avalo
+    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
     
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
@@ -660,7 +635,7 @@ export const MEET_CONFIG = {
     MAX_PRICE: 8000,
     
     /** Host earning percentage (as decimal) */
-    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // 80% to host, 20% to Avalo
+    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
     
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
@@ -697,10 +672,10 @@ export const PREMIUM_STORIES_CONFIG = {
   UNLOCK_DURATION_HOURS: 24,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // 65% to creator
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // reference-rate creator amount
   
   /** Avalo commission (as decimal) */
-  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo, // 35% to Avalo
+  AVALO_COMMISSION: MONETIZATION_SPLITS.CHAT.avalo, // reference platform portion
   
   /** Maximum video duration in seconds */
   MAX_VIDEO_DURATION_SECONDS: 30,
@@ -865,4 +840,6 @@ export default {
   calculateInitialEscrowDeposit,
   splitEscrowTokens,
 };
+
+
 

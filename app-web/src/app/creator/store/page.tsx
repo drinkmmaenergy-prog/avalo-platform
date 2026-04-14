@@ -397,7 +397,7 @@ export default function CreatorStoreManagementPage() {
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">
-                  You earn {Math.floor(formPrice * 0.65)} tokens per sale (65%)
+                  Reference payout preview only: up to {Math.floor(formPrice * 0.65)} tokens per sale before applicable deductions (up to 65%).
                 </p>
               </div>
 
@@ -532,3 +532,6 @@ export default function CreatorStoreManagementPage() {
     </div>
   );
 }
+
+
+

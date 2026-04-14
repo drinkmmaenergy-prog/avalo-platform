@@ -1,4 +1,4 @@
-# PHASE 31C – Adaptive Smart Discounts Implementation Summary
+﻿# PHASE 31C – Adaptive Smart Discounts Implementation Summary
 
 ## Overview
 Successfully implemented the Adaptive Smart Discounts Engine across both mobile (Expo) and web (Next.js) applications. This is a **UI-ONLY** feature that displays promotional discounts without modifying backend billing or pricing logic.
@@ -7,7 +7,7 @@ Successfully implemented the Adaptive Smart Discounts Engine across both mobile 
 
 ### Core System Components
 
-#### 1. TypeScript Types (`shared/types/discounts.ts`)
+#### 1. TypeScript Types (`shared/types/pricing.ts`)
 - ✅ `DiscountTrigger` type (7 trigger conditions)
 - ✅ `DiscountTarget` type (6 target types)
 - ✅ `DiscountOffer` interface with full metadata
@@ -41,7 +41,7 @@ Successfully implemented the Adaptive Smart Discounts Engine across both mobile 
 
 ### Mobile App (Expo/React Native)
 
-#### 3. BottomSheetPromo Component (`app-mobile/components/BottomSheetPromo.tsx`)
+#### 3. BottomSheetOffer Component (`app-mobile/components/BottomSheetOffer.tsx`)
 - ✅ Animated slide-up modal
 - ✅ Real-time countdown timer (updates every second)
 - ✅ Original vs. discounted price display
@@ -208,11 +208,11 @@ Successfully implemented the Adaptive Smart Discounts Engine across both mobile 
 ## File Changes Summary
 
 ### New Files Created (10)
-1. `shared/types/discounts.ts` (48 lines)
+1. `shared/types/pricing.ts` (48 lines)
 2. `shared/utils/discountEngine.ts` (264 lines)
 3. `locales/en/promo.json` (19 lines)
 4. `locales/pl/promo.json` (19 lines)
-5. `app-mobile/components/BottomSheetPromo.tsx` (357 lines)
+5. `app-mobile/components/BottomSheetOffer.tsx` (357 lines)
 6. `app-web/components/PromoCard.tsx` (154 lines)
 7. `app-web/components/TokenPrice.tsx` (64 lines)
 8. `PHASE_31C_ADAPTIVE_DISCOUNTS_IMPLEMENTATION.md` (this file)

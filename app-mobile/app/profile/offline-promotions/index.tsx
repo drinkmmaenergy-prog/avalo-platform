@@ -1,5 +1,5 @@
-/**
- * PACK 135: Offline Promotions Main Screen
+﻿/**
+ * PACK 135: Offline Offers Main Screen
  * Hub for QR codes, posters, and print materials
  */
 
@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'expo-router';
 import { getQRProfile, getMyAssets, type OfflineAsset, type QRProfileData } from "@/lib/offline-presence";
 
-export default function OfflinePromotionsScreen() {
+export default function OfflineOffersScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [qrProfile, setQrProfile] = useState<QRProfileData | null>(null);
@@ -37,7 +37,7 @@ export default function OfflinePromotionsScreen() {
       setQrProfile(profileData);
       setAssets(assetsData);
     } catch (error) {
-      console.error('Error loading offline promotions:', error);
+      console.error('Error loading offline offers:', error);
       Alert.alert('Error', 'Failed to load data. Please try again.');
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ export default function OfflinePromotionsScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6C5CE7" />
-        <Text style={styles.loadingText}>Loading your promotion tools...</Text>
+        <Text style={styles.loadingText}>Loading your offertion tools...</Text>
       </View>
     );
   }
@@ -56,7 +56,7 @@ export default function OfflinePromotionsScreen() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Offline Promotions</Text>
+        <Text style={styles.title}>Offline Offers</Text>
         <Text style={styles.subtitle}>
           Share your Avalo profile in the real world
         </Text>
@@ -70,7 +70,7 @@ export default function OfflinePromotionsScreen() {
         
         <TouchableOpacity
           style={styles.qrCard}
-          onPress={() => router.push('/profile/offline-promotions/qr-code')}
+          onPress={() => router.push('/profile/offline-offers/qr-code')}
         >
           {qrProfile && (
             <Image
@@ -98,7 +98,7 @@ export default function OfflinePromotionsScreen() {
         <View style={styles.posterGrid}>
           <TouchableOpacity
             style={styles.posterOption}
-            onPress={() => router.push('/profile/offline-promotions/create-poster?format=square')}
+            onPress={() => router.push('/profile/offline-offers/create-poster?format=square')}
           >
             <View style={[styles.posterIcon, { aspectRatio: 1 }]}>
               <Text style={styles.posterIconText}>□</Text>
@@ -108,7 +108,7 @@ export default function OfflinePromotionsScreen() {
 
           <TouchableOpacity
             style={styles.posterOption}
-            onPress={() => router.push('/profile/offline-promotions/create-poster?format=vertical')}
+            onPress={() => router.push('/profile/offline-offers/create-poster?format=vertical')}
           >
             <View style={[styles.posterIcon, { aspectRatio: 9/16 }]}>
               <Text style={styles.posterIconText}>▯</Text>
@@ -118,7 +118,7 @@ export default function OfflinePromotionsScreen() {
 
           <TouchableOpacity
             style={styles.posterOption}
-            onPress={() => router.push('/profile/offline-promotions/create-poster?format=business-card')}
+            onPress={() => router.push('/profile/offline-offers/create-poster?format=business-card')}
           >
             <View style={[styles.posterIcon, { aspectRatio: 16/9 }]}>
               <Text style={styles.posterIconText}>▬</Text>
@@ -128,7 +128,7 @@ export default function OfflinePromotionsScreen() {
 
           <TouchableOpacity
             style={styles.posterOption}
-            onPress={() => router.push('/profile/offline-promotions/create-poster?format=sticker')}
+            onPress={() => router.push('/profile/offline-offers/create-poster?format=sticker')}
           >
             <View style={[styles.posterIcon, { aspectRatio: 1 }]}>
               <Text style={styles.posterIconText}>●</Text>
@@ -161,7 +161,7 @@ export default function OfflinePromotionsScreen() {
               <TouchableOpacity
                 key={asset.id}
                 style={styles.assetItem}
-                onPress={() => router.push(`/profile/offline-promotions/asset/${asset.id}`)}
+                onPress={() => router.push(`/profile/offline-offers/asset/${asset.id}`)}
               >
                 <View style={styles.assetInfo}>
                   <Text style={styles.assetType}>
@@ -181,7 +181,7 @@ export default function OfflinePromotionsScreen() {
       <View style={styles.section}>
         <TouchableOpacity
           style={styles.analyticsCard}
-          onPress={() => router.push('/profile/offline-promotions/analytics')}
+          onPress={() => router.push('/profile/offline-offers/analytics')}
         >
           <Text style={styles.analyticsTitle}>📊 Scan Analytics</Text>
           <Text style={styles.analyticsSubtitle}>
@@ -412,3 +412,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

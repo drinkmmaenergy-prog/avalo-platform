@@ -160,7 +160,7 @@ export default function CreateLiveScreen() {
             <Text style={styles.infoIcon}>💎</Text>
             <Text style={styles.infoTitle}>VIP Discount</Text>
             <Text style={styles.infoText}>
-              VIP subscribers get 20% off, but entry is never completely free
+              VIP subscribers get , but entry is never completely free
             </Text>
           </View>
 

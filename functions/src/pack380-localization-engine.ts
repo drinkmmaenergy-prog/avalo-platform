@@ -741,3 +741,5 @@ function calculateReadinessScore(region: RegionConfig): number {
 
 
 
+
+

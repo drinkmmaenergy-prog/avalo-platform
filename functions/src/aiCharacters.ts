@@ -1060,3 +1060,5 @@ function generateCurrentLifeSituation(character: AICharacterProfile): string {
 
 
 
+
+

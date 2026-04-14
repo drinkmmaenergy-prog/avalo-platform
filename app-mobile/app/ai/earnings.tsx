@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 279E — AI Creator Earnings Dashboard
  * Mobile screen for AI creators to track earnings from chat/voice/video
  * Read-only analytics displaying real earnings from PACK 277
@@ -434,7 +434,7 @@ export default function AIEarningsDashboardScreen() {
           💰 Payout Rate: 1 Token = {TOKEN_TO_PLN.toFixed(2)} PLN
         </Text>
         <Text style={styles.footerText}>
-          📊 Revenue shown is creator share ({CREATOR_SHARE * 100}%) after platform fee
+          📊 Revenue shown is up to creator portion ({CREATOR_SHARE * 100}%) after platform fee
         </Text>
         <Text style={styles.footerText}>
           🔒 Minimum payout: 1000 tokens = 200 PLN
@@ -724,4 +724,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+
 

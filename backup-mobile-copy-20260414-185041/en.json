@@ -1,0 +1,288 @@
+{
+  "security": {
+    "title": "Security & login",
+    "errorLoading": "Failed to load security settings",
+    "errorUpdating": "Failed to update security settings",
+    "twoFactor": {
+      "title": "Two-factor authentication",
+      "enabled": "2FA is enabled",
+      "disabled": "2FA is disabled",
+      "enable": "Enable 2FA",
+      "disable": "Disable 2FA",
+      "disableConfirm": "Are you sure you want to disable 2FA? This will make your account less secure.",
+      "chooseMethod": "Choose verification method:",
+      "method": {
+        "sms": "SMS code",
+        "email": "Email code"
+      },
+      "enterCode": "Enter the code we sent you"
+    },
+    "alerts": {
+      "title": "Security alerts",
+      "newDevice": "Alert me on new device logins",
+      "newLocation": "Alert me on logins from new locations",
+      "securityChanges": "Alert me when security settings change"
+    },
+    "risk": {
+      "title": "Sensitive actions",
+      "require2faPayout": "Require 2FA for payouts",
+      "require2faSettings": "Require 2FA for critical settings changes"
+    },
+    "devices": {
+      "title": "Devices & sessions",
+      "trusted": "Trusted device",
+      "trustDevice": "Trust device",
+      "untrustDevice": "Untrust device",
+      "revokeSession": "Sign out from this device",
+      "revokeConfirm": "Are you sure you want to sign out from this device?",
+      "revokeSuccess": "Session revoked successfully",
+      "revokeAll": "Sign out from all other devices",
+      "revokeAllConfirm": "Are you sure you want to sign out from all other devices?",
+      "revokeAllSuccess": "All other sessions have been revoked",
+      "noDevices": "No devices found",
+      "lastSeen": "Last seen",
+      "location": "Location"
+    },
+    "sessions": {
+      "title": "Active sessions",
+      "created": "Created",
+      "lastActive": "Last active",
+      "noSessions": "No active sessions"
+    }
+  },
+  "common": {
+    "language": "en",
+    "error": "Error",
+    "success": "Success",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "yes": "Yes",
+    "no": "No",
+    "tokens": "tokens"
+  },
+  "payout": {
+    "title": "Payouts",
+    "setupTitle": "Payout setup",
+    "setup": {
+      "description": "Configure your payout account to withdraw earnings",
+      "required": "Payout account required",
+      "requiredDescription": "Set up your payout account before requesting withdrawals",
+      "goToSetup": "Set up payout account",
+      "success": "Payout account configured successfully",
+      "update": "Update payout account",
+      "create": "Create payout account"
+    },
+    "rail": {
+      "label": "Payment method",
+      "select": "Select payment method",
+      "stripe": "Stripe Connect",
+      "wise": "Wise transfer",
+      "auto": "Automatic (recommended)",
+      "autoDescription": "Automatically selects the best payment method for your country",
+      "stripeDescription": "Global payment processing (fastest for US/CA/AU)",
+      "wiseDescription": "International bank transfers (best for EU/UK)"
+    },
+    "eligibility": {
+      "notEligible": "You are currently not eligible for payouts.",
+      "reasons": "Reasons:"
+    },
+    "earnings": {
+      "title": "Your Earnings",
+      "withdrawable": "Withdrawable tokens",
+      "totalEarned": "Total earned"
+    },
+    "request": {
+      "title": "Request payout",
+      "amountLabel": "Tokens to withdraw",
+      "amountPlaceholder": "Enter amount",
+      "submit": "Request payout",
+      "estimated": "Estimated amount",
+      "successMessage": "Payout requested: {{amount}}"
+    },
+    "history": {
+      "title": "Payout history",
+      "view": "View payout history",
+      "rail": "Payment method",
+      "tokens": "Tokens",
+      "requested": "Requested",
+      "processed": "Processed",
+      "empty": "No payouts yet",
+      "emptyDescription": "Your payout requests will appear here"
+    },
+    "status": {
+      "label": "Status",
+      "PENDING": "Pending",
+      "PROCESSING": "Processing",
+      "PAID": "Paid",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled"
+    },
+    "account": {
+      "title": "Payout Account",
+      "current": "Current account",
+      "manage": "Manage account"
+    },
+    "country": {
+      "label": "Country"
+    },
+    "currency": {
+      "label": "Currency"
+    },
+    "kyc": {
+      "title": "Identity Verification",
+      "required": "KYC required",
+      "verified": "KYC verified",
+      "level": "Verification level"
+    },
+    "onboarding": {
+      "openManually": "Please complete onboarding in your browser"
+    },
+    "error": {
+      "loadFailed": "Failed to load payout information",
+      "setupFailed": "Failed to set up payout account",
+      "requestFailed": "Failed to request payout",
+      "invalidAmount": "Please enter a valid amount",
+      "insufficientTokens": "You do not have enough withdrawable tokens.",
+      "kycRequired": "Identity verification is required before you can withdraw."
+    },
+    "summary": {
+      "description": "Manage your earnings and request payouts"
+    }
+  },
+  "referrals": {
+    "sectionTitle": "Referrals",
+    "yourCode": "Your referral code",
+    "copyCode": "Copy code",
+    "shareLink": "Share referral link",
+    "stats": {
+      "signups": "Sign-ups from your link",
+      "activeUsers": "Active users (30 days)",
+      "payers": "Paying users",
+      "tokensFromReferrals": "Tokens purchased by your referrals"
+    },
+    "noProfile": "No referral code yet",
+    "createCode": "Create referral code",
+    "howItWorks": "How it works",
+    "trackingOnly": "Track your referral performance - analytics only, no bonuses",
+    "copied": "Referral code copied!",
+    "error": {
+      "loadFailed": "Failed to load referral data",
+      "createFailed": "Failed to create referral code",
+      "notEligible": "Must be 18+ and verified to create referral code"
+    }
+  },
+  "landing": {
+    "invitedBy": "You were invited by {name}",
+    "downloadApp": "Download the app",
+    "openApp": "Open Avalo",
+    "learnMore": "Learn more about Avalo",
+    "appStoreButton": "Download on App Store",
+    "playStoreButton": "Get it on Google Play"
+  },
+  "safety": {
+    "relationship": {
+      "low": "Remember to take things at your own pace.",
+      "medium": "Be careful if someone pressures you to move too fast or share personal details.",
+      "high": "Some patterns in this chat may be manipulative. Trust your intuition."
+    },
+    "action": {
+      "tips": "Safety tips",
+      "block": "Block user",
+      "report": "Report",
+      "support": "Contact support"
+    },
+    "rating": {
+      "followup": "If anything made you feel unsafe, you can block, report or contact support anytime."
+    }
+  },
+  "geoshare": {
+    "title": "Location Sharing",
+    "shareLocation": "Share Location",
+    "stopSharing": "Stop Sharing",
+    "viewLocation": "View Location",
+    "active": "Location sharing active",
+    "expired": "Location sharing expired",
+    "notActive": "No active location sharing",
+    "description": "Share your real-time location temporarily",
+    "permissions": {
+      "title": "Location Permissions Required",
+      "message": "Avalo needs access to your location to share it with other users. This is required for location sharing to work.",
+      "foreground": "Location permission (when using app)",
+      "background": "Background location permission",
+      "grant": "Grant Permissions",
+      "denied": "Location permissions denied",
+      "deniedMessage": "Please enable location permissions in your device settings to use location sharing."
+    },
+    "duration": {
+      "title": "Choose Duration",
+      "select": "Select how long to share your location",
+      "15min": "15 minutes",
+      "30min": "30 minutes",
+      "60min": "1 hour",
+      "remaining": "Time remaining",
+      "expired": "Session expired"
+    },
+    "pricing": {
+      "title": "Location Sharing",
+      "pricePerMinute": "{{price}} tokens/minute",
+      "totalCost": "Total cost: {{tokens}} tokens",
+      "duration": "Duration: {{duration}}",
+      "avaloFee": "Platform fee (35%): {{fee}} tokens",
+      "confirm": "Start Sharing",
+      "insufficientTokens": "Insufficient tokens",
+      "insufficientMessage": "You need {{required}} tokens to start location sharing. You have {{current}} tokens.",
+      "buyTokens": "Buy Tokens"
+    },
+    "map": {
+      "title": "Location Map",
+      "yourLocation": "Your Location",
+      "partnerLocation": "{{name}}'s Location",
+      "loading": "Loading location...",
+      "noLocation": "Location not available",
+      "accuracy": "Accuracy: ±{{meters}}m",
+      "lastUpdate": "Last updated {{time}}",
+      "refreshing": "Updating location..."
+    },
+    "session": {
+      "starting": "Starting location sharing...",
+      "active": "Sharing location with {{name}}",
+      "stopping": "Stopping location sharing...",
+      "stopped": "Location sharing stopped",
+      "expired": "Location sharing session has expired",
+      "error": "Failed to share location"
+    },
+    "errors": {
+      "permissionDenied": "Location permission denied",
+      "sessionNotFound": "Location sharing session not found",
+      "alreadyActive": "You already have an active location sharing session",
+      "insufficientBalance": "Insufficient token balance",
+      "startFailed": "Failed to start location sharing",
+      "stopFailed": "Failed to stop location sharing",
+      "updateFailed": "Failed to update location",
+      "generic": "An error occurred with location sharing"
+    },
+    "warnings": {
+      "batteryDrain": "Location sharing may drain your battery faster",
+      "dataUsage": "Location sharing uses data in the background",
+      "privacy": "Only share your location with people you trust",
+      "nonRefundable": "Location sharing payments are non-refundable"
+    },
+    "info": {
+      "howItWorks": "How it works",
+      "step1": "1. Choose duration and pay tokens",
+      "step2": "2. Your location updates every 10 seconds",
+      "step3": "3. Partner can see your location on map",
+      "step4": "4. Session ends automatically after paid time",
+      "noHistory": "No location history is stored",
+      "tempOnly": "Locations are temporary and deleted after session ends"
+    },
+    "buttons": {
+      "start": "Start Location Sharing",
+      "stop": "Stop Sharing",
+      "extend": "Extend Session",
+      "viewMap": "View on Map",
+      "goToChat": "Go to Chat"
+    }
+  }
+}

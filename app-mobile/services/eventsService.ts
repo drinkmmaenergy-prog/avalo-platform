@@ -4,7 +4,7 @@
  * 
  * CRITICAL SAFETY RULES:
  * - SAFE events only (no NSFW, no escort/sexual services)
- * - Token-only payments (65% creator / 35% Avalo)
+ * - Token-only payments (up to 65% reference rate / platform reference portion)
  * - Background risk screening
  * - Location privacy until confirmed
  */

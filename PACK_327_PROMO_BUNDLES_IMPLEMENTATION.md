@@ -1,4 +1,4 @@
-# ✅ PACK 327 — Creator Promo Bundles Implementation
+﻿# ✅ PACK 327 — Creator Promo Bundles Implementation
 
 **Status**: ✅ **COMPLETE**  
 **Version**: 1.0.0  
@@ -339,7 +339,7 @@ match /promoBundlePurchases/{purchaseId} {
 
 ### Store UI (To Implement)
 ```typescript
-// app-mobile/app/store/promo-bundles.tsx
+// app-mobile/app/store/offer-bundles.tsx
 - Display bundle cards with visual appeal
 - Highlight savings vs buying separately
 - Show what's included in each bundle

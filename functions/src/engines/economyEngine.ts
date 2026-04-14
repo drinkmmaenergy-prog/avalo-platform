@@ -144,24 +144,24 @@ function calculatePlatformFee(txData: any): number {
     return Math.floor(amount * MONETIZATION_SPLITS.CHAT.platform);
   }
 
-  // Tips: 20% platform fee
+  // Tips: 35% platform fee
   if (type?.includes("tip")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
+    return Math.floor(amount * MONETIZATION_SPLITS.TIPS.platform);
   }
 
   // Calendar: 20% platform fee
   if (type?.includes("calendar") || type?.includes("booking")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
+    return Math.floor(amount * MONETIZATION_SPLITS.CALENDAR_MEETING.platform);
   }
 
-  // Live 1:1: 30% platform fee
+  // Live 1:1: 35% platform fee
   if (type?.includes("live_1on1")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.SUBSCRIPTION.platform);
+    return Math.floor(amount * MONETIZATION_SPLITS.CHAT.platform);
   }
 
-  // Live tip: 20% platform fee
+  // Live tip: 35% platform fee
   if (type?.includes("live_tip")) {
-    return Math.floor(amount * MONETIZATION_SPLITS.EVENT_TICKET.platform);
+    return Math.floor(amount * MONETIZATION_SPLITS.TIPS.platform);
   }
 
   return 0;
@@ -457,6 +457,8 @@ async function logEngineEvent(
     timestamp: FieldValue.serverTimestamp(),
   });
 }
+
+
 
 
 

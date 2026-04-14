@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 114 — Agency Management Screen (Creator View)
  * Allows creators to manage their agency relationship
  * 
@@ -320,7 +320,7 @@ export default function AgencySettingsScreen() {
             <View style={styles.infoBox}>
               <Ionicons name="information-circle" size={20} color="#6366f1" />
               <Text style={styles.infoText}>
-                Your agency receives {agencyLink.agencyPercentage}% of your 65% creator share.
+                Your agency receives {agencyLink.agencyPercentage}% of your 65% up to creator portion before applicable deductions.
                 Avalo always keeps 35%. You can remove your agency at any time.
               </Text>
             </View>
@@ -660,3 +660,5 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
+
+

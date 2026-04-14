@@ -6,3 +6,5 @@ export async function getCreatorFanbase(){return []}
 export async function getMessageTemplates(){return []}
 export async function saveMessageTemplate(){return true}
 export async function getPricingRecommendations(){return {}}
+
+

@@ -28,7 +28,7 @@ export interface AffiliateProfile {
   phone?: string;
   
   // Payout info
-  payoutMethod: 'bank_transfer' | 'paypal' | 'stripe';
+  payoutMethod: 'stripe';
   payoutDetails: Record<string, any>; // Encrypted
   
   // Analytics permissions
@@ -213,7 +213,7 @@ export interface CreateAffiliateProfileRequest {
   businessName?: string;
   taxId?: string;
   taxCountry?: string;
-  payoutMethod: 'bank_transfer' | 'paypal' | 'stripe';
+  payoutMethod: 'stripe';
   payoutDetails: Record<string, any>;
 }
 
@@ -315,6 +315,8 @@ export const PAYOUT_CONFIG = {
   payoutProcessingDays: 30, // Days after referral verification
   batchPayoutSchedule: 'weekly', // When payouts are processed
 };
+
+
 
 
 

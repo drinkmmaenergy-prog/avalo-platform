@@ -39,7 +39,7 @@ export const GENERAL_ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 'paid-interactions',
     title: 'Paid Interactions & Tokens',
-    body: 'Some actions use tokens: unlocking content, gifts, or premium messages. Avalo keeps 35%, creators receive 65% of eligible earnings.',
+    body: 'Some actions use tokens. Creator earnings are shown using reference rates; final payout depends on fees, taxes and deductions.',
     illustrationKey: 'onboarding_tokens',
   },
   {
@@ -69,8 +69,8 @@ export const CREATOR_ONBOARDING_STEPS: OnboardingStep[] = [
   },
   {
     id: 'creator-split',
-    title: '65/35 Revenue Split',
-    body: 'Avalo keeps 35% platform fee. You receive 65% of eligible earnings. This split is permanent and never changes.',
+    title: 'Reference Earnings Model',
+    body: 'Eligible earnings are shown using a reference rate model. Final payout depends on fees, taxes and other deductions.',
     illustrationKey: 'creator_split',
   },
   {
@@ -102,7 +102,7 @@ export const CONTEXTUAL_TIPS: ContextualTip[] = [
     id: 'wallet_earnings_explainer',
     screen: 'WalletScreen',
     title: 'How Earnings Work',
-    body: 'This wallet shows tokens you\'ve earned from other users. Avalo keeps 35% fee from paid interactions; you receive 65%.',
+    body: 'This wallet shows tokens you\'ve earned from other users. Paid interactions use reference split displays. Final payout may be lower after fees, taxes and deductions.',
     once: true,
   },
   {
@@ -191,3 +191,6 @@ export const CONTEXTUAL_TIPS: ContextualTip[] = [
     once: true,
   },
 ];
+
+
+
