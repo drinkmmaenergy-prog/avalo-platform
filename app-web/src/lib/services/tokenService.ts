@@ -7,7 +7,7 @@
 
 import { requireFunctions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
-import { TOKEN_PACKS, TokenPack } from '../monetization';
+import { TOKEN_PACKS, type TokenPack } from '../monetization';
 
 // ============================================================================
 // STRIPE INTEGRATION
@@ -207,3 +207,6 @@ export async function getTokenBalance(userId: string): Promise<number> {
     return 0;
   }
 }
+
+
+

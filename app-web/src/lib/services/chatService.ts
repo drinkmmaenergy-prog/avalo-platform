@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { Chat, ChatMessage } from '../types';
-import { CHAT_CONFIG } from '../monetization';
+import { CHAT_PRICING } from '../monetization';
 
 // ============================================================================
 // CHAT INITIALIZATION
@@ -216,9 +216,9 @@ export function getDepositAmount(): {
   escrow: number;
 } {
   return {
-    total: CHAT_CONFIG.CHAT_DEPOSIT_TOKENS,
-    platformFee: Math.ceil(CHAT_CONFIG.CHAT_DEPOSIT_TOKENS * (CHAT_CONFIG.PLATFORM_FEE_PERCENT / 100)),
-    escrow: Math.floor(CHAT_CONFIG.CHAT_DEPOSIT_TOKENS * (CHAT_CONFIG.ESCROW_PERCENT / 100)),
+    total: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
+    platformFee: Math.ceil(CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS * CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT),
+    escrow: Math.floor(CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS * CHAT_PRICING.DEPOSIT_ESCROW_PCT),
   };
 }
 
@@ -321,4 +321,5 @@ export function formatLastActivity(timestamp: Timestamp): string {
   
   return timestamp.toDate().toLocaleDateString();
 }
+
 

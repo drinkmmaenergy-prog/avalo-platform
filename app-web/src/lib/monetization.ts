@@ -9,16 +9,8 @@ export type TokenPack = {
   bonus?: number;
 };
 
-export type TokenPackView = {
-  packId: string;
-  tokens: number;
-  price: number;
-  displayName: string;
-  popular?: boolean;
-  bonus?: number;
-};
 
-export const TOKEN_PACKS: TokenPackView[] = [
+export const TOKEN_PACKS: TokenPack[] = [
   { packId: "mini_100", tokens: 100, price: 9.99, displayName: "Mini 100", popular: false, bonus: 0 },
   { packId: "basic_300", tokens: 300, price: 26.99, displayName: "Basic 300", popular: false, bonus: 0 },
   { packId: "standard_500", tokens: 500, price: 42.99, displayName: "Standard 500", popular: true, bonus: 0 },
@@ -32,16 +24,16 @@ export const CALL_CONFIG = {
   VOICE: {
     AVALO_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVoice.platform,
     EARNER_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVoice.earner,
-    BASE_COST_STANDARD: 1,
-    BASE_COST_VIP: 1,
-    BASE_COST_ROYAL: 1,
+    LEGACY_BASE_COST_STANDARD: 1,
+    LEGACY_BASE_COST_VIP: 1,
+    LEGACY_BASE_COST_ROYAL: 1,
   },
   VIDEO: {
     AVALO_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVideo.platform,
     EARNER_CUT_PERCENT: CANONICAL_ECONOMY.splits.callVideo.earner,
-    BASE_COST_STANDARD: 1,
-    BASE_COST_VIP: 1,
-    BASE_COST_ROYAL: 1,
+    LEGACY_BASE_COST_STANDARD: 1,
+    LEGACY_BASE_COST_VIP: 1,
+    LEGACY_BASE_COST_ROYAL: 1,
   },
 } as const;
 
@@ -67,7 +59,7 @@ export const CHAT_PRICING = {
   BURN_MULTIPLIERS: CANONICAL_ECONOMY.chat.allowedBurnMultipliers,
 } as const;
 
-export function getTokenPackById(packId: string): TokenPackView | null {
+export function getTokenPackById(packId: string): TokenPack | null {
   return TOKEN_PACKS.find((p) => p.packId === packId) ?? null;
 }
 
@@ -79,18 +71,21 @@ export function isValidBurnMultiplier(value: number): boolean {
   return CANONICAL_ECONOMY.chat.allowedBurnMultipliers.includes(value as never);
 }
 
-export const CHAT_CONFIG = {
+export const CHAT_CONFIG_COMPAT = {
   STANDARD: CHAT_PRICING.STANDARD,
   ROYAL: CHAT_PRICING.ROYAL,
   DEFAULT_DEPOSIT_TOKENS: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
-  CHAT_DEPOSIT_TOKENS: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
-  PLATFORM_FEE_PERCENT: CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT * 100,
-  ESCROW_PERCENT: CHAT_PRICING.DEPOSIT_ESCROW_PCT * 100,
+  LEGACY_CHAT_DEPOSIT_TOKENS: CHAT_PRICING.DEFAULT_DEPOSIT_TOKENS,
+  LEGACY_PLATFORM_FEE_PERCENT: CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT * 100,
+  LEGACY_ESCROW_PERCENT: CHAT_PRICING.DEPOSIT_ESCROW_PCT * 100,
   DEPOSIT_PLATFORM_FEE_PCT: CHAT_PRICING.DEPOSIT_PLATFORM_FEE_PCT,
   DEPOSIT_ESCROW_PCT: CHAT_PRICING.DEPOSIT_ESCROW_PCT,
   CHAT_EXPIRY_HOURS: CHAT_PRICING.CHAT_EXPIRY_HOURS,
   BURN_MULTIPLIERS: CHAT_PRICING.BURN_MULTIPLIERS,
 } as const;
+
+
+
 
 
 

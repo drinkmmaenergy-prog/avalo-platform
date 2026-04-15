@@ -340,13 +340,13 @@ export function getCallPricingInfo(callType: CallType, userStatus: 'STANDARD' | 
   let pricePerMinute: number;
   switch (userStatus) {
     case 'ROYAL':
-      pricePerMinute = config.BASE_COST_ROYAL;
+      pricePerMinute = 1;
       break;
     case 'VIP':
-      pricePerMinute = config.BASE_COST_VIP;
+      pricePerMinute = 1;
       break;
     default:
-      pricePerMinute = config.BASE_COST_STANDARD;
+      pricePerMinute = config.LEGACY_BASE_COST_STANDARD;
   }
 
   return {
@@ -523,4 +523,6 @@ export async function completeCallWithMetrics(params: {
     throw error;
   }
 }
+
+
 
