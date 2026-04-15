@@ -236,7 +236,7 @@ export default function BuyTokensScreen() {
           🔄 Token value is the same in all currencies (FX parity)
         </Text>
         <Text style={styles.infoBannerText}>
-          ✅ No discounts, bonuses, or promotional pricing
+          ✅ No discounts, bonuses, or variable pricing
         </Text>
         {storefront.taxIncluded && (
           <Text style={styles.infoBannerText}>
@@ -480,3 +480,4 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
+

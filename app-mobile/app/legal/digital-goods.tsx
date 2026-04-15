@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 3.4 — Digital Goods Explanation Screen
  * Store compliance: Token nature disclosure
  * 
@@ -169,7 +169,7 @@ export default function DigitalGoodsScreen() {
           {
             icon: 'star-outline',
             title: 'Profile Boosts',
-            description: 'In-app profile promotion for increased visibility.',
+            description: 'In-app sponsored profile placement for increased visibility.',
           },
           {
             icon: 'calendar-outline',
@@ -184,7 +184,7 @@ export default function DigitalGoodsScreen() {
           'Tokens are digital goods and have no monetary value outside the app.',
           'Token purchases are processed through Apple App Store or Google Play Store.',
           'Refund policy is subject to app store regulations.',
-          'Token prices are uniform and not subject to promotions or discounts.',
+          'Token prices are uniform and not subject to variable pricing or discounts.',
           'Unused tokens remain on your account indefinitely.',
           'Accounts with improperly obtained tokens may be suspended.',
         ],
@@ -556,3 +556,5 @@ const styles = StyleSheet.create({
     color: '#007AFF',
   },
 });
+
+
