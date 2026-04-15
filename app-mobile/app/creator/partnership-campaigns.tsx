@@ -1,9 +1,9 @@
 /**
  * PACK 109 — Partnership Campaigns Screen
- * 
+ *
  * Shows campaigns, smart links, and basic metrics for talents who are
  * also Avalo creators.
- * 
+ *
  * CRITICAL: This is read-only analytics. No bonuses, no special advantages.
  */
 
@@ -68,7 +68,7 @@ interface CreatorCampaignSummary {
 export default function PartnershipCampaignsScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  
+
   const [campaigns, setCampaigns] = useState<CreatorCampaignSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -230,7 +230,7 @@ export default function PartnershipCampaignsScreen() {
           <Ionicons name="information-circle" size={20} color="#3b82f6" />
           <Text style={styles.infoBannerText}>
             Track your campaign performance and share your smart links to grow your audience.
-            All earnings follow standard 65/35 split.
+            All earnings follow standard reference earnings benchmark.
           </Text>
         </View>
 

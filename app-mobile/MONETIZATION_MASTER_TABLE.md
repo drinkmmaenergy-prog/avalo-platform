@@ -56,7 +56,7 @@ This table represents the **single source of truth** for all monetization in the
 | **Unlock Photo** | 20 tokens | Viewer | Creator | 30% (6 tokens) | [`CONTENT_CONFIG.FEED_PHOTO_UNLOCK_COST`](./config/monetization.ts:82) |
 | **Unlock Video** | 50 tokens | Viewer | Creator | 30% (15 tokens) | [`CONTENT_CONFIG.FEED_VIDEO_UNLOCK_COST`](./config/monetization.ts:85) |
 
-**Split:** 70% to Creator / 30% to Avalo ([`CONTENT_CONFIG.CONTENT_CREATOR_SPLIT`](./config/monetization.ts:92))
+**Split:** up to the displayed reference creator portion / 30% to Avalo ([`CONTENT_CONFIG.CONTENT_CREATOR_SPLIT`](./config/monetization.ts:92))
 
 ---
 
@@ -64,11 +64,11 @@ This table represents the **single source of truth** for all monetization in the
 
 | Content Type | Min Price | Max Price | Creator Split | Avalo Fee | Config Reference |
 |--------------|-----------|-----------|---------------|-----------|------------------|
-| **Paid Photo** | 20 tokens | 500 tokens | 70% | 30% | [`PAID_CONTENT_CONFIG`](./config/monetization.ts:117-125) |
-| **Paid Video** | 50 tokens | 1000 tokens | 70% | 30% | [`PAID_CONTENT_CONFIG`](./config/monetization.ts:127-135) |
+| **Paid Photo** | 20 tokens | 500 tokens | up to reference rate | 30% | [`PAID_CONTENT_CONFIG`](./config/monetization.ts:117-125) |
+| **Paid Video** | 50 tokens | 1000 tokens | up to reference rate | 30% | [`PAID_CONTENT_CONFIG`](./config/monetization.ts:127-135) |
 
 **Example:** Creator sells a photo for 100 tokens
-- Creator receives: 70 tokens
+- creator reference payout: 70 tokens
 - Avalo receives: 30 tokens
 
 ---
@@ -80,7 +80,7 @@ This table represents the **single source of truth** for all monetization in the
 | **Tip/Donation** | 10-10,000 tokens | Tipper | Creator | 85% | 15% | [`TIPS_CONFIG`](./config/monetization.ts:103-115) |
 
 **Example:** Fan tips 100 tokens
-- Creator receives: 85 tokens
+- creator reference payout: 85 tokens
 - Avalo receives: 15 tokens
 
 ---
@@ -89,11 +89,11 @@ This table represents the **single source of truth** for all monetization in the
 
 | Action | Cost | Who Pays | Who Earns | Host Split | Avalo Fee | Config Reference |
 |--------|------|----------|-----------|------------|-----------|------------------|
-| **Enter Chat Room** | 50 tokens | Participant | Host | 70% | 30% | [`CHAT_ROOM_CONFIG`](./config/monetization.ts:97-101) |
+| **Enter Chat Room** | 50 tokens | Participant | Host | up to reference rate | 30% | [`CHAT_ROOM_CONFIG`](./config/monetization.ts:97-101) |
 
 **Example:** 10 users join a chat room at 50 tokens each
 - Total: 500 tokens
-- Host receives: 350 tokens (70%)
+- Host receives: 350 tokens (reference only)
 - Avalo receives: 150 tokens (30%)
 
 ---
@@ -116,7 +116,7 @@ This table represents the **single source of truth** for all monetization in the
 
 | Action | Cost | Who Pays | Who Earns | Streamer Split | Avalo Fee | Config Reference |
 |--------|------|----------|-----------|----------------|-----------|------------------|
-| **Entry Fee (Paid Stream)** | 50 tokens | Viewer | Streamer | 70% | 30% | [`LIVESTREAM_CONFIG.ENTRY_FEE`](./config/monetization.ts:165) |
+| **Entry Fee (Paid Stream)** | 50 tokens | Viewer | Streamer | up to reference rate | 30% | [`LIVESTREAM_CONFIG.ENTRY_FEE`](./config/monetization.ts:165) |
 | **Livestream Tip** | 10-5,000 tokens | Viewer | Streamer | 85% | 15% | [`LIVESTREAM_CONFIG`](./config/monetization.ts:171-174) |
 
 **Example:** 100 viewers join paid livestream + tips
@@ -207,15 +207,15 @@ This table represents the **single source of truth** for all monetization in the
 
 | Feature | Avalo Cut | Creator/User Cut | Notes |
 |---------|-----------|------------------|-------|
-| **Messaging** | 30% | 70% | After free messages |
+| **Messaging** | 30% | up to reference rate | After free messages |
 | **SuperLike** | 100% | 0% | Premium feature |
 | **Boost** | 100% | 0% | Premium feature |
-| **Content Unlocks** | 30% | 70% | Photos/videos in feed |
-| **Paid Content** | 30% | 70% | Premium user content |
+| **Content Unlocks** | 30% | up to reference rate | Photos/videos in feed |
+| **Paid Content** | 30% | up to reference rate | Premium user content |
 | **Tips** | 15% | 85% | Lowest Avalo cut |
-| **Chat Rooms** | 30% | 70% | Per entry fee |
+| **Chat Rooms** | 30% | up to reference rate | Per entry fee |
 | **Bookings** | 25% | 75% | Calendar/meetup |
-| **Livestream Entry** | 30% | 70% | Paid stream access |
+| **Livestream Entry** | 30% | up to reference rate | Paid stream access |
 | **Livestream Tips** | 15% | 85% | During streams |
 | **VIP Subscriptions** | 100% | 0% | Direct revenue |
 | **Token Purchases** | 100% | 0% | Direct revenue |
@@ -232,15 +232,15 @@ Most features use this default, with tips/donations having a lower 15% fee to in
 ### Requirements
 - **Minimum Withdrawal:** 100 tokens ([`CREATOR_CONFIG.MIN_TOKENS_TO_WITHDRAW`](./config/monetization.ts:268))
 - **Verification Required:** Yes ([`CREATOR_CONFIG.REQUIRES_VERIFICATION`](./config/monetization.ts:271))
-- **Default Split:** 70% to creator ([`CREATOR_CONFIG.DEFAULT_CREATOR_SPLIT`](./config/monetization.ts:265))
+- **Default Split:** up to the displayed reference creator portion ([`CREATOR_CONFIG.DEFAULT_CREATOR_SPLIT`](./config/monetization.ts:265))
 
 ### Creator Earnings Potential
 
 **Example: Active Female Creator (Monthly)**
-- Messages received: 500 × 10 tokens × 70% = 3,500 tokens
-- Content unlocks: 100 × 30 tokens × 70% = 2,100 tokens
+- Messages received: 500 × 10 tokens × up to reference rate = 3,500 tokens
+- Content unlocks: 100 × 30 tokens × up to reference rate = 2,100 tokens
 - Tips received: 1,000 tokens × 85% = 850 tokens
-- Livestream: 50 viewers × 50 tokens × 70% + 2,000 tip tokens × 85% = 1,750 + 1,700 = 3,450 tokens
+- Livestream: 50 viewers × 50 tokens × up to reference rate + 2,000 tip tokens × 85% = 1,750 + 1,700 = 3,450 tokens
 - **Total Monthly: 9,900 tokens = €495**
 
 **Withdrawal:**

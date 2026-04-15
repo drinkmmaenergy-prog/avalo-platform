@@ -128,7 +128,7 @@ export default function CalendarPolicyPage() {
           <h2>6. Financial Terms</h2>
           <ul>
             <li><strong>Meeting Rate:</strong> Hosts set their own meeting rates in tokens. The rate is displayed to guests before booking.</li>
-            <li><strong>Revenue Split:</strong> Calendar meetings use an 80% Host / 20% Avalo revenue split.</li>
+            <li><strong>Revenue Split:</strong> Calendar meetings use an up to reference rate Host / 20% Avalo revenue split.</li>
             <li><strong>Payment:</strong> Guests pay the full meeting rate at the time of booking. Tokens are held in escrow until the meeting is completed.</li>
             <li><strong>Host Payout:</strong> The host&apos;s share is released after the meeting is completed and the QR check-in is confirmed (or after 24 hours if no check-in dispute is filed).</li>
           </ul>

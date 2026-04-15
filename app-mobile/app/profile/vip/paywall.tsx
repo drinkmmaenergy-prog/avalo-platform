@@ -1,9 +1,9 @@
 /**
  * VIP Paywall Screen 2.0
- * 
+ *
  * Premium subscription offering with UX and comfort benefits only
  * Zero monetization, ranking, or NSFW advantages
- * 
+ *
  * Features:
  * - Luxury presentation with ethical messaging
  * - Clear "zero pay-to-win" communication
@@ -170,7 +170,7 @@ export default function VIPPaywallScreen() {
       //   successUrl: 'avalo://vip/success',
       //   cancelUrl: 'avalo://vip/paywall',
       // });
-      
+
       // Open Stripe checkout
       // Linking.openURL(result.sessionUrl);
 
@@ -187,8 +187,8 @@ export default function VIPPaywallScreen() {
   };
 
   const selectedTierData = MEMBERSHIP_TIERS.find(t => t.id === selectedTier)!;
-  const price = selectedCycle === 'MONTHLY' 
-    ? selectedTierData.monthlyPrice 
+  const price = selectedCycle === 'MONTHLY'
+    ? selectedTierData.monthlyPrice
     : selectedTierData.annualPrice;
 
   return (
@@ -197,10 +197,10 @@ export default function VIPPaywallScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
-        
+
         <Text style={styles.title}>VIP Access 2.0</Text>
         <Text style={styles.subtitle}>Premium Comfort · Zero Pay-to-Win</Text>
-        
+
         <View style={styles.ethicsBadge}>
           <Text style={styles.ethicsBadgeText}>
             ✓ No Monetization Advantages  ✓ Fair for Everyone
@@ -211,7 +211,7 @@ export default function VIPPaywallScreen() {
       {/* Tier Selection */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Choose Your Tier</Text>
-        
+
         <View style={styles.tiersRow}>
           {MEMBERSHIP_TIERS.map((tier) => (
             <TouchableOpacity
@@ -240,7 +240,7 @@ export default function VIPPaywallScreen() {
       {/* Billing Cycle */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Billing Cycle</Text>
-        
+
         <View style={styles.cycleRow}>
           <TouchableOpacity
             style={[
@@ -256,7 +256,7 @@ export default function VIPPaywallScreen() {
               Monthly
             </Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[
               styles.cycleButton,
@@ -277,7 +277,7 @@ export default function VIPPaywallScreen() {
       {/* Features */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>What You Get</Text>
-        
+
         {VIP_FEATURES.map((feature, index) => (
           <View key={index} style={styles.featureRow}>
             <Text style={styles.featureIcon}>{feature.icon}</Text>
@@ -295,7 +295,7 @@ export default function VIPPaywallScreen() {
         <Text style={styles.ethicsDescription}>
           VIP is about comfort and experience, not competitive advantages:
         </Text>
-        
+
         {NOT_INCLUDED.map((item, index) => (
           <View key={index} style={styles.notIncludedRow}>
             <Text style={styles.notIncludedText}>{item}</Text>
@@ -307,7 +307,7 @@ export default function VIPPaywallScreen() {
       <View style={styles.ethicsCard}>
         <Text style={styles.ethicsTitle}>Our Promise</Text>
         <Text style={styles.ethicsText}>
-          VIP membership provides premium comfort and UX improvements only. 
+          VIP membership provides premium comfort and UX improvements only.
           It does NOT give you any advantage in:
         </Text>
         <Text style={styles.ethicsText}>
@@ -317,7 +317,7 @@ export default function VIPPaywallScreen() {
           • Creator attention
         </Text>
         <Text style={styles.ethicsText}>
-          Everyone pays the same token price. Everyone gets the same 65/35 split. 
+          Everyone pays the same token price. Everyone gets the same reference earnings benchmark.
           VIP just makes the app more comfortable to use.
         </Text>
       </View>
@@ -346,7 +346,7 @@ export default function VIPPaywallScreen() {
             </>
           )}
         </TouchableOpacity>
-        
+
         <Text style={styles.subscribeNote}>
           Cancel anytime · No refunds on subscriptions
         </Text>

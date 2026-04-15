@@ -55,7 +55,7 @@ export interface Event {
 
 export interface TicketPayment {
   totalTokensPaid: number;
-  organizerShareTokens: number;  // 80%
+  organizerShareTokens: number;  // up to reference rate
   avaloShareTokens: number;       // 20%
   refundedUserTokens: number;
   refundedAvaloTokens: number;
@@ -119,7 +119,7 @@ export interface EventCompletionAnalysis {
   totalTickets: number;
   successfulCheckIns: number;
   checkInRate: number;
-  passedThreshold: boolean; // >= 70%
+  passedThreshold: boolean; // >= up to reference rate
   payoutReady: boolean;
   flaggedForReview: boolean;
 }

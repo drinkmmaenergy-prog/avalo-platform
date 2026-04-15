@@ -118,7 +118,7 @@ app-web/
 ## 🔐 Security Features
 
 ### Zero Tokenomics Changes
-- ✅ Token price identical to mobile (65/35 split maintained)
+- ✅ Token price identical to mobile (reference earnings model maintained)
 - ✅ No web-exclusive discounts or bonuses
 - ✅ No platform advantages in discovery/ranking
 

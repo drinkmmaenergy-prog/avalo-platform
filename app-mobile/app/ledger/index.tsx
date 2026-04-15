@@ -46,7 +46,7 @@ interface PayoutSummary {
 export default function LedgerOverviewScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<LedgerStats | null>(null);
@@ -59,9 +59,9 @@ export default function LedgerOverviewScreen() {
       setError(null);
       const getLedgerOverview = httpsCallable(functions, 'getLedgerOverviewEndpoint');
       const result = await getLedgerOverview({});
-      
+
       const data = result.data as any;
-      
+
       if (data.success) {
         // Map stats
         const statsData = data.stats?.asCreator || data.stats?.asUser || {};
@@ -71,7 +71,7 @@ export default function LedgerOverviewScreen() {
           transactionCount: statsData.totalTransactions || 0,
           verifiedCount: Math.floor((statsData.verificationRate || 0) / 100 * (statsData.totalTransactions || 0)),
         });
-        
+
         setRecentTransactions(data.recentTransactions || []);
         setPayoutSummary(data.payoutSummary || null);
       }
@@ -169,7 +169,7 @@ export default function LedgerOverviewScreen() {
           <Text style={styles.statValue}>{stats?.totalReceived.toFixed(0)} 🪙</Text>
           <Text style={styles.statSubtext}>Tokens received</Text>
         </View>
-        
+
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Total Spent</Text>
           <Text style={styles.statValue}>{stats?.totalSent.toFixed(0)} 🪙</Text>
@@ -183,7 +183,7 @@ export default function LedgerOverviewScreen() {
           <Text style={styles.statValue}>{stats?.transactionCount || 0}</Text>
           <Text style={styles.statSubtext}>Total recorded</Text>
         </View>
-        
+
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Verified</Text>
           <Text style={styles.statValue}>
@@ -199,7 +199,7 @@ export default function LedgerOverviewScreen() {
           <Text style={styles.sectionTitle}>Payout Summary</Text>
           <View style={styles.payoutCard}>
             <View style={styles.payoutRow}>
-              <Text style={styles.payoutLabel}>Total Earned (65%):</Text>
+              <Text style={styles.payoutLabel}>Total Earned (reference only):</Text>
               <Text style={styles.payoutValue}>
                 {payoutSummary.totalEarned.toFixed(0)} 🪙
               </Text>
@@ -262,7 +262,7 @@ export default function LedgerOverviewScreen() {
                     </Text>
                   </View>
                 </View>
-                
+
                 <View style={styles.transactionBody}>
                   <View style={styles.transactionRow}>
                     <Text style={styles.transactionLabel}>Amount:</Text>
@@ -270,7 +270,7 @@ export default function LedgerOverviewScreen() {
                       {tx.tokenAmount} 🪙
                     </Text>
                   </View>
-                  
+
                   <View style={styles.transactionRow}>
                     <Text style={styles.transactionLabel}>Blockchain:</Text>
                     <View style={styles.verificationContainer}>
@@ -284,7 +284,7 @@ export default function LedgerOverviewScreen() {
                       )}
                     </View>
                   </View>
-                  
+
                   <Text style={styles.transactionDate}>
                     {new Date(tx.timestamp).toLocaleString()}
                   </Text>
@@ -303,14 +303,14 @@ export default function LedgerOverviewScreen() {
         >
           <Text style={styles.actionButtonText}>📊 View All Transactions</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => router.push('/ledger/export')}
         >
           <Text style={styles.actionButtonText}>📥 Export Reports</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           style={styles.actionButton}
           onPress={() => router.push('/ledger/verify')}
@@ -325,7 +325,7 @@ export default function LedgerOverviewScreen() {
           🔒 All transactions are recorded on Avalo's immutable blockchain ledger
         </Text>
         <Text style={styles.footerSubtext}>
-          Tokens are internal currency only • No crypto speculation • 65/35 revenue split
+          Tokens are internal currency only • No crypto speculation • reference benchmark reference earnings model
         </Text>
       </View>
     </ScrollView>

@@ -5,7 +5,7 @@
  * Handles voice/video calls with per-minute token billing
  * - Voice: 10 tokens/min (VIP/Standard), 6 tokens/min (Royal)
  * - Video: 15 tokens/min (VIP/Standard), 10 tokens/min (Royal)
- * - 80/20 split (earner/Avalo)
+ * - reference earnings benchmark (earner/Avalo)
  * - Auto-disconnect after 6 minutes idle
  *
  * PACK 124.4 Enhancements:
@@ -81,7 +81,7 @@ export async function checkCallBalance(params: {
       requiredTokens: number;
       pricePerMinute: number;
     }>(requireFunctions(), 'checkCallBalance');
-    
+
     const result = await check(params);
     return result.data;
   } catch (error) {
@@ -99,7 +99,7 @@ export async function startCall(params: CallInitParams): Promise<CallInfo> {
     const start = httpsCallable<CallInitParams, CallInfo>(requireFunctions(),
       'startCall'
     );
-    
+
     const result = await start(params);
     return result.data;
   } catch (error) {
@@ -110,7 +110,7 @@ export async function startCall(params: CallInitParams): Promise<CallInfo> {
 
 /**
  * End call and process billing
- * Calculates duration (ceiling), applies per-minute cost, splits 80/20
+ * Calculates duration (ceiling), applies per-minute cost, splits reference benchmark
  */
 export async function endCall(params: {
   callId: string;
@@ -128,7 +128,7 @@ export async function endCall(params: {
       earnerReceived: number;
       avaloReceived: number;
     }>(requireFunctions(), 'endCall');
-    
+
     const result = await end(params);
     return result.data;
   } catch (error) {
@@ -160,13 +160,13 @@ export function subscribeToCall(
   callback: (call: CallSession | null) => void
 ): Unsubscribe {
   const callRef = doc(requireDb(), 'calls', callId);
-  
+
   return onSnapshot(callRef, (snapshot) => {
     if (!snapshot.exists()) {
       callback(null);
       return;
     }
-    
+
     callback({
       callId: snapshot.id,
       ...snapshot.data(),
@@ -204,7 +204,7 @@ export async function createPeer(params: {
   reconnectHandler: CallReconnectHandler;
 }> {
   const config = await getWebRTCConfig();
-  
+
   const peer = new SimplePeer({
     initiator: params.initiator,
     trickle: true,
@@ -312,10 +312,10 @@ export function subscribeToSignaling(
   callback: (data: SignalingData) => void
 ): Unsubscribe {
   const signalingRef = doc(requireDb(), 'calls', callId, 'signaling', userId);
-  
+
   return onSnapshot(signalingRef, (snapshot) => {
     if (!snapshot.exists()) return;
-    
+
     const data = snapshot.data();
     if (data) {
       callback(data as SignalingData);
@@ -336,7 +336,7 @@ export function getCallPricingInfo(callType: CallType, userStatus: 'STANDARD' | 
   estimatedCost15Min: number;
 } {
   const config = callType === 'VOICE' ? CALL_CONFIG.VOICE : CALL_CONFIG.VIDEO;
-  
+
   let pricePerMinute: number;
   switch (userStatus) {
     case 'ROYAL':
@@ -402,9 +402,9 @@ export async function updateCallQualityMetrics(params: {
 }): Promise<void> {
   try {
     if (false /* requireDb handles null */) throw new Error('Firestore not initialized');
-    
+
     const callRef = doc(requireDb(), 'calls', params.callId);
-    
+
     // Determine quality rating
     let qualityRating: 'Excellent' | 'Good' | 'Fair' | 'Poor';
     if (params.avgJitterMs <= 20 && params.avgPacketLoss <= 0.5 && params.avgRttMs <= 100) {
@@ -416,7 +416,7 @@ export async function updateCallQualityMetrics(params: {
     } else {
       qualityRating = 'Poor';
     }
-    
+
     await updateDoc(callRef, {
       avgJitterMs: params.avgJitterMs,
       avgPacketLoss: params.avgPacketLoss,
@@ -523,6 +523,4 @@ export async function completeCallWithMetrics(params: {
     throw error;
   }
 }
-
-
 

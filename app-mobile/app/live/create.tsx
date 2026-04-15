@@ -140,7 +140,7 @@ export default function CreateLiveScreen() {
               <Text style={styles.revenueValue}>{selectedFee} tokens</Text>
             </View>
             <View style={styles.revenueRow}>
-              <Text style={styles.revenueLabel}>Your share (65%):</Text>
+              <Text style={styles.revenueLabel}>Your share (reference only):</Text>
               <Text style={styles.revenueValueGold}>
                 {Math.round(selectedFee * MONETIZATION_SPLITS.CHAT.creator)} tokens
               </Text>
@@ -176,7 +176,7 @@ export default function CreateLiveScreen() {
             <Text style={styles.infoIcon}>💰</Text>
             <Text style={styles.infoTitle}>Instant Earnings</Text>
             <Text style={styles.infoText}>
-              You receive 65% of each entry fee immediately in your wallet
+              You receive up to reference rate of each entry fee immediately in your wallet
             </Text>
           </View>
         </View>

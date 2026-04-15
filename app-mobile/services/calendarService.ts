@@ -39,7 +39,7 @@ export interface CalendarBooking {
   bookingDate: Date | Timestamp;
   duration: number; // minutes
   tokensCost: number;
-  escrowAmount: number; // 80% for host
+  escrowAmount: number; // up to reference rate for host
   avaloFee: number; // 20% for Avalo
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   createdAt: Timestamp;
@@ -86,7 +86,7 @@ export const createBooking = async (
       };
     }
 
-    // Calculate escrow split (20% Avalo instant, 80% escrowed for host)
+    // Calculate escrow split (20% Avalo instant, up to reference rate escrowed for host)
     const avaloFee = Math.floor(tokensCost * CALENDAR_CONFIG.BOOKING_FEE_PERCENTAGE);
     const escrowAmount = tokensCost - avaloFee;
 
@@ -169,7 +169,7 @@ export const completeBooking = async (
 
     const batch = writeBatch(db);
 
-    // Release escrow to host (80%)
+    // Release escrow to host (reference only)
     const hostWalletRef = doc(db, 'balances', booking.hostUid, 'wallet');
     const hostWalletSnap = await getDoc(hostWalletRef);
 

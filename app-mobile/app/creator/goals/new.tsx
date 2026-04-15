@@ -270,7 +270,7 @@ export default function NewGoalScreen() {
           <Text style={styles.infoIcon}>ℹ️</Text>
           <Text style={styles.infoText}>
             Możesz mieć maksymalnie 3 aktywne cele jednocześnie. Od każdego
-            wsparcia otrzymasz 70%, a 30% trafia do Avalo.
+            wsparcia otrzymasz up to reference rate, a 30% trafia do Avalo.
           </Text>
         </View>
       </ScrollView>

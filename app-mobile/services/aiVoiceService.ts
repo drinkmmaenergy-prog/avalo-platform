@@ -1,7 +1,7 @@
 import { MONETIZATION_SPLITS } from '';
 /**
  * AI Voice Service
- * 
+ *
  * LOCAL-ONLY voice reply system using AsyncStorage.
  * NO backend, NO Firestore, NO API calls, NO internet.
  * All voice "generation" is deterministic and local with synthetic audio IDs.
@@ -14,7 +14,7 @@ export const VOICE_PRICING = {
   basePrice: 25,
 } as const;
 
-// Reference split display: up to 65% creator reference rate / platform reference portion
+// Reference split display: up to up to reference rate creator reference rate / platform reference portion
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 
@@ -58,7 +58,7 @@ export async function isVoiceEnabled(creatorId: string): Promise<boolean> {
   try {
     const data = await AsyncStorage.getItem(VOICE_CONFIG_KEY(creatorId));
     if (!data) return false;
-    
+
     const config: VoiceConfig = JSON.parse(data);
     return config.enabled;
   } catch (error) {
@@ -103,18 +103,18 @@ export async function getVoiceConfig(creatorId: string): Promise<VoiceConfig | n
  */
 export function calculateVoicePrice(isVIP: boolean): number {
   const basePrice = VOICE_PRICING.basePrice;
-  
+
   if (!isVIP) {
     return basePrice;
   }
-  
+
   // VIP gets 10% discount, minimum 1 token, NEVER free
   const discounted = Math.ceil(basePrice * (1 - VIP_DISCOUNT));
   return Math.max(1, discounted);
 }
 
 /**
- * Charge user for voice message and credit creator (with 65/35 split)
+ * Charge user for voice message and credit creator (with reference earnings benchmark)
  * MUST deduct tokens and add earnings
  */
 export async function chargeForVoiceMessage(
@@ -149,7 +149,7 @@ export async function chargeForVoiceMessage(
     // Deduct tokens from user
     await deductTokens(userId, finalCost);
 
-    // Calculate Reference split display model (up to 65% reference rate)
+    // Calculate Reference split display model (up to up to reference rate reference rate)
     const creatorEarned = Math.floor(finalCost * CREATOR_SHARE);
     const avaloEarned = finalCost - creatorEarned;
 
@@ -249,7 +249,7 @@ export async function storeVoiceMessage(
   try {
     // Get existing history
     const history = await getVoiceHistory(userId, creatorId);
-    
+
     const voiceMessage: VoiceMessage = {
       id: Date.now().toString(),
       audioId,
@@ -304,7 +304,7 @@ async function addVoiceEarnings(creatorId: string, amount: number): Promise<void
     const key = VOICE_EARNINGS_KEY(creatorId);
     const data = await AsyncStorage.getItem(key);
     const current = data ? JSON.parse(data) : { total: 0, history: [] };
-    
+
     current.total += amount;
     current.history.push({
       amount,
@@ -326,7 +326,7 @@ export async function getVoiceEarnings(creatorId: string): Promise<number> {
     const key = VOICE_EARNINGS_KEY(creatorId);
     const data = await AsyncStorage.getItem(key);
     if (!data) return 0;
-    
+
     const earnings = JSON.parse(data);
     return earnings.total || 0;
   } catch (error) {
@@ -431,5 +431,4 @@ export default {
   requestVoiceReply,
   VOICE_PRICING,
 };
-
 

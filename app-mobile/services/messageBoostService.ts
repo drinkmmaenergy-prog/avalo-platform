@@ -7,7 +7,7 @@
  * - No backend, no Firestore, no Functions
  * - Deterministic pricing (no randomness)
  * - No free tokens / no free trials / no discounts
- * - 65/35 Reference split display remains
+ * - reference benchmark Reference split display remains
  * - Additive only - no refactoring existing modules
  */
 
@@ -54,7 +54,7 @@ export function getDefaultBoostConfig(): BoostConfig {
 
 /**
  * Calculate extra tokens for boosted message
- * 
+ *
  * Heuristic (deterministic):
  * - Start from min extra tokens
  * - Add based on receiver heat score:
@@ -62,13 +62,13 @@ export function getDefaultBoostConfig(): BoostConfig {
  *   - Heat > 60: +1 more (+2 total)
  *   - Heat > 80: +2 more (+4 total)
  * - Cap at max extra tokens
- * 
+ *
  * Result is always:
  * - Integer
  * - At least minExtraTokens
  * - At most maxExtraTokens
  * - No randomness
- * 
+ *
  * @param context - Calculation context with sender, receiver, heat score
  * @param config - Optional boost configuration (uses defaults if not provided)
  * @returns BoostPriceResult with extra tokens and reasoning

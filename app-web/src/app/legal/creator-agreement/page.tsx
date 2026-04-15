@@ -67,17 +67,17 @@ export default function CreatorAgreementPage() {
               <tbody>
                 <tr>
                   <td>Chat / Tips / Calls / Media / Live</td>
-                  <td><strong>65%</strong></td>
+                  <td><strong>up to reference rate</strong></td>
                   <td>35%</td>
                 </tr>
                 <tr>
                   <td>Subscriptions</td>
-                  <td><strong>70%</strong></td>
+                  <td><strong>up to reference rate</strong></td>
                   <td>30%</td>
                 </tr>
                 <tr>
                   <td>Calendar / Events</td>
-                  <td><strong>80%</strong></td>
+                  <td><strong>up to reference rate</strong></td>
                   <td>20%</td>
                 </tr>
               </tbody>
@@ -164,7 +164,7 @@ export default function CreatorAgreementPage() {
           </p>
           <ul>
             <li>Calendar meetings are for friendship, networking, mentoring, social activities, language exchange, hobby meetups, and other lawful social purposes.</li>
-            <li>Creators set their own meeting rates in tokens. The revenue split for Calendar is 80% Creator / 20% Avalo.</li>
+            <li>Creators set their own meeting rates in tokens. The revenue split for Calendar is up to reference rate Creator / 20% Avalo.</li>
             <li>Creators must accurately represent what guests can expect from a meeting.</li>
             <li>Creators must appear as represented in their profile photos. Failure to match profile photos may result in a &quot;mismatch&quot; report and refund.</li>
             <li>Creators must not solicit, offer, or arrange sexual services, escort services, or any form of commercial sexual activity through the Calendar feature.</li>

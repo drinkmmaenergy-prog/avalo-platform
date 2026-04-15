@@ -141,7 +141,7 @@ export default function EarnToChatSetupScreen() {
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>Get Paid</Text>
               <Text style={styles.stepDescription}>
-                You may earn up to may reach 80% of tokens before applicable deductions. Withdrawals remain subject to eligibility, compliance, fees, taxes, and platform rules.
+                You may earn up to may reach up to reference rate of tokens before applicable deductions. Withdrawals remain subject to eligibility, compliance, fees, taxes, and platform rules.
               </Text>
             </View>
           </View>

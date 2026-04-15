@@ -610,7 +610,7 @@ async function initiateCall(recipientId: string, callType: 'VOICE' | 'VIDEO') {
 All existing rules remain intact:
 - ✅ Voice: 10 tokens/min (VIP/Standard), 6 tokens/min (Royal)
 - ✅ Video: 15 tokens/min (VIP/Standard), 10 tokens/min (Royal)
-- ✅ 80/20 split (earner/Avalo)
+- ✅ reference earnings model (earner/Avalo)
 - ✅ Per-second accrual with ceiling billing
 - ✅ 6-minute idle auto-disconnect
 - ✅ Same balance validation

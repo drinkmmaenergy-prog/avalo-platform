@@ -168,7 +168,7 @@ export const CONTENT_CONFIG = {
   ICEBREAKER_COST: 15,
   
   /** Creator earning percentage from content unlocks (as decimal) */
-  CONTENT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CONTENT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
 } as const;
 
 // ============================================================================
@@ -195,7 +195,7 @@ export const TIPS_CONFIG = {
   MAX_TIP_AMOUNT: 10000,
   
   /** Creator earning percentage from tips (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee on tips (as decimal) */
   TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -219,7 +219,7 @@ export const PAID_CONTENT_CONFIG = {
   MAX_VIDEO_PRICE: 1000,
   
   /** Creator earning percentage from paid content (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee on paid content (as decimal) */
   CONTENT_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -240,7 +240,7 @@ export const CALENDAR_CONFIG = {
   CANCELLATION_FEE: 0,
   
   /** Host earning percentage from bookings (as decimal) */
-  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
+  HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to up to reference rate reference rate / platform reference portion
   
     /** Avalo platform fee on bookings (decimal, canonical 20%) */
   AVALO_FEE_PERCENT: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
@@ -346,7 +346,7 @@ export const LIVE_ROOM_CONFIG = {
   MAX_GIFT_AMOUNT: 1000,
   
   /** Creator earning percentage from gifts (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee on gifts (as decimal) */
   GIFT_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -378,7 +378,7 @@ export const CREATOR_SUBSCRIPTIONS = {
   MAX_PRICE_USD: 100,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
   AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -395,7 +395,7 @@ export const CREATOR_PPV = {
   MAX_PRICE_USD: 200,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
   AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -412,7 +412,7 @@ export const CREATOR_CUSTOM_REQUESTS = {
   MAX_PRICE_USD: 500,
   
   /** Creator earning percentage (as decimal) */
-  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Avalo platform fee (as decimal) */
   AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.CHAT.avalo,
@@ -600,7 +600,7 @@ export const AVALO_PLATFORM_FEE = MONETIZATION_SPLITS.CHAT.avalo; // 35%
 
 export const CREATOR_CONFIG = {
   /** Default creator earning percentage (as decimal) */
-  DEFAULT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to 65% reference rate / platform reference portion
+  DEFAULT_CREATOR_SPLIT: MONETIZATION_SPLITS.CHAT.creator, // up to up to reference rate reference rate / platform reference portion
   
   /** Minimum tokens required to become a creator */
   MIN_TOKENS_TO_WITHDRAW: 100,
@@ -621,7 +621,7 @@ export const MEET_CONFIG = {
     MAX_PRICE: 25000,
     
     /** Host earning percentage (as decimal) */
-    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
+    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to up to reference rate reference rate / platform reference portion
     
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,
@@ -635,7 +635,7 @@ export const MEET_CONFIG = {
     MAX_PRICE: 8000,
     
     /** Host earning percentage (as decimal) */
-    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to 80% reference rate / platform reference portion
+    HOST_SPLIT: MONETIZATION_SPLITS.EVENT_TICKET.creator, // up to up to reference rate reference rate / platform reference portion
     
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: MONETIZATION_SPLITS.EVENT_TICKET.avalo,

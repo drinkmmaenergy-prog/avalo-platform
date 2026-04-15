@@ -21,7 +21,7 @@
  *
  * INVARIANTS:
  *   - All mutations go through httpsCallable — NEVER write directly.
- *   - 80/20 split (host / Avalo) is enforced server-side only.
+ *   - reference earnings benchmark (host / Avalo) is enforced server-side only.
  */
 
 import { requireDb, requireFunctions } from '../firebase';
@@ -246,7 +246,7 @@ export async function reportMismatch(bookingId: string): Promise<{ success: bool
 }
 
 /**
- * Host voluntarily refunds their 80% share after completion.
+ * Host voluntarily refunds their up to reference rate share after completion.
  */
 export async function goodwillRefund(bookingId: string): Promise<{ success: boolean; error?: string }> {
   try {

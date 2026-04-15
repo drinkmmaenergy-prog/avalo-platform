@@ -320,7 +320,7 @@ export default function AgencySettingsScreen() {
             <View style={styles.infoBox}>
               <Ionicons name="information-circle" size={20} color="#6366f1" />
               <Text style={styles.infoText}>
-                Your agency receives {agencyLink.agencyPercentage}% of your 65% up to creator portion before applicable deductions.
+                Your agency receives {agencyLink.agencyPercentage}% of your up to reference rate up to creator portion before applicable deductions.
                 Avalo always keeps 35%. You can remove your agency at any time.
               </Text>
             </View>
@@ -414,7 +414,7 @@ export default function AgencySettingsScreen() {
             <View style={styles.infoItem}>
               <Ionicons name="checkmark-circle" size={20} color="#10b981" />
               <Text style={styles.infoItemText}>
-                Agency share comes from your 65% creator portion
+                Agency share comes from your up to reference rate creator portion
               </Text>
             </View>
             <View style={styles.infoItem}>

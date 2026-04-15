@@ -25,7 +25,7 @@ import {
 export default function EarningsTaxesScreen() {
   const auth = getAuth();
   const user = auth.currentUser;
-  
+
   const {
     profile,
     profileExists,
@@ -289,8 +289,8 @@ export default function EarningsTaxesScreen() {
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>📋 Important Note</Text>
         <Text style={styles.noteText}>
-          Tax profiles are for compliance only. All creators receive the same 65/35
-          revenue split regardless of business entity type or tax status.
+          Tax profiles are for compliance only. creator earnings examples are reference only and may vary
+          reference earnings model regardless of business entity type or tax status.
         </Text>
         <Text style={[styles.noteText, { marginTop: 8 }]}>
           Taxes are automatically calculated based on your region's requirements.

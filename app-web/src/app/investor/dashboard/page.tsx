@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  Shield, 
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  Shield,
   Calendar,
   MessageCircle,
   Video,
@@ -80,14 +80,14 @@ export default function InvestorDashboard() {
 
       if (!userDoc.empty) {
         const userData = userDoc.docs[0].data();
-        
+
         // Check for investor role or admin role
         if (userData.role === 'investor' || userData.role === 'admin') {
           setAuthorized(true);
-          
+
           // Log access for audit
           await logAccess();
-          
+
           // Fetch metrics
           await fetchMetrics();
         } else {
@@ -224,23 +224,23 @@ export default function InvestorDashboard() {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { 
-                    label: 'Total Registered', 
+                  {
+                    label: 'Total Registered',
                     value: metrics.users.registeredTotal,
                     previous: previousMetrics?.users.registeredTotal || 0
                   },
-                  { 
-                    label: 'Verified Users', 
+                  {
+                    label: 'Verified Users',
                     value: metrics.users.verifiedTotal,
                     previous: previousMetrics?.users.verifiedTotal || 0
                   },
-                  { 
-                    label: 'Daily Active Users', 
+                  {
+                    label: 'Daily Active Users',
                     value: metrics.users.dau,
                     previous: previousMetrics?.users.dau || 0
                   },
-                  { 
-                    label: 'Monthly Active Users', 
+                  {
+                    label: 'Monthly Active Users',
                     value: metrics.users.mau,
                     previous: previousMetrics?.users.mau || 0
                   }
@@ -315,7 +315,7 @@ export default function InvestorDashboard() {
                         {formatNumber(metrics.monetization.platformShareTokens)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        (Based on revenue splits)
+                        (Based on reference earnings models)
                       </p>
                     </div>
                   </div>
@@ -371,8 +371,8 @@ export default function InvestorDashboard() {
             {/* Disclaimer */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Note:</strong> All metrics are aggregated and anonymized. No personally identifiable information (PII) is displayed. 
-                Platform revenue calculations are based on configured revenue split percentages (65/35 for chat/calls/AI, 80/20 for calendar/events).
+                <strong>Note:</strong> All metrics are aggregated and anonymized. No personally identifiable information (PII) is displayed.
+                Platform revenue calculations are based on configured reference earnings model percentages (reference benchmark for chat/calls/AI, reference benchmark for calendar/events).
               </p>
             </div>
           </div>

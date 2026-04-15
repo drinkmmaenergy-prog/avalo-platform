@@ -326,7 +326,7 @@ Earn-to-Chat is handled by backend:
 1. User enables Earn-to-Chat in onboarding
 2. Backend stores `modes.earnFromChat: true` in user profile
 3. When someone messages this user, backend checks the flag
-4. If enabled, sender's tokens are deducted, creator earns 80%
+4. If enabled, sender's tokens are deducted, creator earns up to reference rate
 5. App only reads and displays the state
 
 ```typescript

@@ -45,7 +45,7 @@ export default function ManageAIAvatars() {
 
   const toggleAvatarStatus = async (avatarId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
-    
+
     try {
       const updateAvatar = httpsCallable(functions, 'updateAIAvatar');
       await updateAvatar({
@@ -121,8 +121,8 @@ export default function ManageAIAvatars() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>🤖 AI Companions</Text>
           <Text style={styles.infoText}>
-            Create AI versions of yourself that can chat with users while you earn. 
-            Same 65/35 split as human chats. Maximum 3 avatars per account.
+            Create AI versions of yourself that can chat with users while you earn.
+            Same reference earnings benchmark as human chats. Maximum 3 avatars per account.
           </Text>
         </View>
 

@@ -56,7 +56,7 @@ export default function DigitalProductDetailsScreen() {
 
     Alert.alert(
       'Confirm Purchase',
-      `Purchase "${product.title}" for ${product.priceTokens} tokens?\n\nYou will receive: Download access\nCreator receives: ${calculateRevenueSplit(product.priceTokens).creatorEarnings} tokens (65%)\nPlatform fee: ${calculateRevenueSplit(product.priceTokens).platformFee} tokens (35%)`,
+      `Purchase "${product.title}" for ${product.priceTokens} tokens?\n\nYou will receive: Download access\ncreator reference payout: ${calculateRevenueSplit(product.priceTokens).creatorEarnings} tokens (reference only)\nPlatform fee: ${calculateRevenueSplit(product.priceTokens).platformFee} tokens (35%)`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -215,7 +215,7 @@ export default function DigitalProductDetailsScreen() {
               <Text style={styles.priceValue}>{product.priceTokens} tokens</Text>
             </View>
             <View style={styles.priceRow}>
-              <Text style={styles.priceLabelSmall}>Creator Earnings (65%)</Text>
+              <Text style={styles.priceLabelSmall}>Creator Earnings (reference only)</Text>
               <Text style={styles.priceValueSmall}>
                 {calculateRevenueSplit(product.priceTokens).creatorEarnings} tokens
               </Text>

@@ -1,22 +1,22 @@
 import { MONETIZATION_SPLITS } from '';
 /**
  * PACK 116: Digital Product Service
- * SAFE content only, token-based purchases with 65/35 split
+ * SAFE content only, token-based purchases with reference earnings benchmark
  */
 
 import { httpsCallable } from 'firebase/functions';
 import { functions, db } from '../lib/firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  getDocs, 
-  doc, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  doc,
   getDoc,
   onSnapshot,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 
 // ============================================================================
@@ -48,25 +48,25 @@ export interface DigitalProduct {
   creatorUserId: string;
   creatorName: string;
   creatorAvatar?: string;
-  
+
   title: string;
   description: string;
   priceTokens: number;
   type: DigitalProductType;
-  
+
   fileRef: string;
   previewImageRef: string;
   categories: string[];
-  
+
   isActive: boolean;
   nsfwLevel: "SAFE";
-  
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  
+
   purchaseCount: number;
   viewCount: number;
-  
+
   fileSize: number;
   fileMimeType: string;
 }
@@ -75,27 +75,27 @@ export interface DigitalProductPurchase {
   purchaseId: string;
   productId: string;
   productTitle: string;
-  
+
   buyerUserId: string;
   buyerName: string;
-  
+
   creatorUserId: string;
   creatorName: string;
-  
+
   tokensAmount: number;
   platformFee: number;
   creatorEarnings: number;
-  
+
   downloadUrl?: string;
   downloadUrlExpiry?: Timestamp;
   downloadCount: number;
   maxDownloads: number;
-  
+
   watermarkId: string;
-  
+
   purchasedAt: Timestamp;
   lastAccessedAt?: Timestamp;
-  
+
   transactionId: string;
   status: "active" | "revoked";
 }
@@ -233,10 +233,10 @@ export async function purchaseProduct(
 /**
  * Get buyer's purchased products
  */
-export async function getBuyerPurchases(): Promise<{ 
-  success: boolean; 
-  purchases: DigitalProductPurchase[]; 
-  count: number 
+export async function getBuyerPurchases(): Promise<{
+  success: boolean;
+  purchases: DigitalProductPurchase[];
+  count: number
 }> {
   try {
     const result = await getBuyerDigitalProducts({});
@@ -252,9 +252,9 @@ export async function getBuyerPurchases(): Promise<{
  */
 export async function getDownloadUrl(
   purchaseId: string
-): Promise<{ 
-  success: boolean; 
-  downloadUrl: string; 
+): Promise<{
+  success: boolean;
+  downloadUrl: string;
   expiresAt: Timestamp;
   remainingDownloads: number;
 }> {
@@ -281,11 +281,11 @@ export function subscribeToCreatorProducts(
     orderBy('createdAt', 'desc'),
     limit(50)
   );
-  
+
   if (onlyActive) {
     q = query(q, where('isActive', '==', true));
   }
-  
+
   const unsubscribe = onSnapshot(
     q,
     (snapshot) => {
@@ -296,7 +296,7 @@ export function subscribeToCreatorProducts(
       console.error('Error subscribing to products:', error);
     }
   );
-  
+
   return unsubscribe;
 }
 
@@ -314,7 +314,7 @@ export function subscribeToUserPurchases(
     orderBy('purchasedAt', 'desc'),
     limit(100)
   );
-  
+
   const unsubscribe = onSnapshot(
     q,
     (snapshot) => {
@@ -325,7 +325,7 @@ export function subscribeToUserPurchases(
       console.error('Error subscribing to purchases:', error);
     }
   );
-  
+
   return unsubscribe;
 }
 
@@ -336,7 +336,7 @@ export async function getProduct(productId: string): Promise<DigitalProduct | nu
   try {
     const docRef = doc(db, 'digital_products', productId);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       return docSnap.data() as DigitalProduct;
     }
@@ -354,7 +354,7 @@ export async function getPurchase(purchaseId: string): Promise<DigitalProductPur
   try {
     const docRef = doc(db, 'digital_product_purchases', purchaseId);
     const docSnap = await getDoc(docRef);
-    
+
     if (docSnap.exists()) {
       return docSnap.data() as DigitalProductPurchase;
     }
@@ -373,37 +373,37 @@ export function validateSafeContent(title: string, description: string): {
   errors: string[]
 } {
   const errors: string[] = [];
-  
+
   const nsfwKeywords = [
     'adult', 'explicit', 'nsfw', 'nude', 'naked', 'sexy', 'sex',
     'porn', 'xxx', 'erotic', 'sensual', 'intimate', 'bedroom',
     'lingerie', 'bikini', 'underwear', 'onlyfans', 'fansly'
   ];
-  
+
   const textToCheck = `${title} ${description}`.toLowerCase();
-  
+
   for (const keyword of nsfwKeywords) {
     if (textToCheck.includes(keyword)) {
       errors.push(`Content contains restricted keyword: "${keyword}"`);
     }
   }
-  
+
   if (title.length < 5) {
     errors.push('Title must be at least 5 characters');
   }
-  
+
   if (title.length > 100) {
     errors.push('Title must be at most 100 characters');
   }
-  
+
   if (description.length < 20) {
     errors.push('Description must be at least 20 characters');
   }
-  
+
   if (description.length > 1000) {
     errors.push('Description must be at most 1000 characters');
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors
@@ -411,7 +411,7 @@ export function validateSafeContent(title: string, description: string): {
 }
 
 /**
- * Calculate revenue split
+ * Calculate reference earnings model
  */
 export function calculateRevenueSplit(priceTokens: number): {
   platformFee: number;
@@ -427,11 +427,11 @@ export function calculateRevenueSplit(priceTokens: number): {
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
@@ -449,7 +449,7 @@ export function getProductTypeDisplay(type: DigitalProductType): string {
     [DigitalProductType.COURSE]: 'Course',
     [DigitalProductType.WORKBOOK]: 'Workbook',
   };
-  
+
   return displayNames[type] || type;
 }
 
@@ -465,7 +465,7 @@ export function getCategoryDisplay(category: ProductCategory): string {
     [ProductCategory.PRODUCTIVITY]: 'Productivity',
     [ProductCategory.EDUCATION]: 'Education',
   };
-  
+
   return displayNames[category] || category;
 }
 

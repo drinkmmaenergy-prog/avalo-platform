@@ -1,12 +1,12 @@
 /**
  * AI Companions Aggressive Monetization Configuration
  * Priority: Avalo MUST earn more than creators
- * 
+ *
  * Rules enforced in this config:
  * - reference instant platform fee on deposits
  * - reference platform share from consumed tokens
  * - Push users toward paid chat aggressively
- * - VIP/Royal discounts to drive subscriptions
+ * - Membership perks configured by active subscription settings
  */
 
 // PAYMENT: Stripe web only. Mobile redirects to avaloapp.com/wallet/buy
@@ -20,16 +20,16 @@
 export const AI_BOT_CONFIG = {
   /** Minimum price creator can set per message (tokens) */
   MIN_PRICE_PER_MESSAGE: 1,
-  
+
   /** Maximum price creator can set per message (tokens) */
   MAX_PRICE_PER_MESSAGE: 8,
-  
+
   /** Recommended price (shown in UI as optimal) */
   RECOMMENDED_PRICE: 5,
-  
+
   /** Free welcome messages before payment required */
   FREE_WELCOME_MESSAGES: 3,
-  
+
   /** Royal members get more free messages */
   FREE_WELCOME_MESSAGES_ROYAL: 5, // +2 bonus
 } as const;
@@ -41,17 +41,17 @@ export const AI_BOT_CONFIG = {
 export const AI_CHAT_DEPOSIT = {
   /** Required deposit to continue chat after free messages */
   REQUIRED_DEPOSIT: 100,
-  
+
   /** Instant platform fee (taken immediately, non-refundable) */
   INSTANT_PLATFORM_FEE_PERCENT: 35,
   INSTANT_PLATFORM_FEE: 35, // 35 tokens
-  
+
   /** Escrow amount available for chat */
   ESCROW_AMOUNT: 65, // 100 - 35 = 65 tokens
-  
+
   /** Low balance warning threshold */
   LOW_BALANCE_WARNING: 20,
-  
+
   /** Auto-show deposit reminder at this balance */
   AUTO_DEPOSIT_REMINDER: 15,
 } as const;
@@ -62,27 +62,27 @@ export const AI_CHAT_DEPOSIT = {
 
 export const AI_REVENUE_SPLIT = {
   /**
-   * Creator earnings are displayed using up to 65% reference rate.
-   * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
-   * Changed from 80/20 to align with canonical AI economy config.
+   * Creator earnings are displayed using up to up to reference rate reference rate.
+   * Reference only: creator earnings examples may vary by active pricing, VAT, fees, taxes and payout conditions.
+   * Canonical economy is the source of truth. User-facing percentages are reference only and not guaranteed.
    */
   CREATOR_PERCENT: 65,
-  
+
   /**
    * Platform portion is displayed as a reference value.
-   * Business rule: 65/35 split (owner/Avalo) for creator bot interactions.
+   * Reference only: creator earnings examples may vary by active pricing, VAT, fees, taxes and payout conditions.
    * Changed from 20 to 35 to align with canonical AI economy config.
    */
   AVALO_PERCENT: 35,
-  
+
   /**
    * Total Avalo earnings per 100-token deposit:
    *   Platform fee: 35 tokens (35% of 100, non-refundable)
    *   Revenue share from escrow: floor(65 * 0.35) = 22 tokens (35% of 65 escrow)
    *   Total: 35 + 22 = 57 tokens
    *
-   * Previously was 48 tokens with 80/20 split (35 fee + 13 share).
-   * New 65/35 split increases Avalo's total take from 48% to 57% per deposit.
+   * Previously was 48 tokens with reference earnings benchmark (35 fee + 13 share).
+   * Reference values may change based on pricing, taxes, VAT, fees and operational adjustments.
    */
   TOTAL_AVALO_PER_100_DEPOSIT: 57,
 } as const;
@@ -94,39 +94,39 @@ export const AI_REVENUE_SPLIT = {
 export const AI_WORD_BILLING = {
   /** Standard users: 11 words = 1 token */
   WORDS_PER_TOKEN_STANDARD: 11,
-  
-  /** Royal users: 7 words = 1 token (43% discount) */
+
+  /** Royal tier may receive configured usage perks under the active subscription model */
   WORDS_PER_TOKEN_ROYAL: 7,
-  
+
   /** VIP users: same as standard for AI chats */
   WORDS_PER_TOKEN_VIP: 11,
 } as const;
 
 // ============================================================================
-// MEMBERSHIP DISCOUNTS (drive VIP/Royal upgrades)
+// MEMBERSHIP PERKS
 // ============================================================================
 
 export const AI_MEMBERSHIP_BENEFITS = {
   VIP: {
-    /** VIP gets 50% discount on call pricing (not AI chat billing) */
+    /** VIP may receive configured call pricing perks under the active subscription model */
     CALL_DISCOUNT: 0.50,
-    
-    /** No discount on AI chat word billing */
+
+    /** AI chat billing follows the active canonical economy configuration */
     WORD_BILLING_BONUS: false,
-    
+
     /** Display message */
     DISPLAY: 'VIP: -50% on Voice/Video calls',
   },
   ROYAL: {
-    /** Royal gets 50% discount on calls */
+    /** Royal may receive configured call pricing perks under the active subscription model */
     CALL_DISCOUNT: 0.50,
-    
+
     /** Royal gets better word billing (7 vs 11) */
     WORD_BILLING_BONUS: true,
-    
+
     /** Royal gets 2 extra free welcome messages */
     EXTRA_FREE_MESSAGES: 2,
-    
+
     /** Display messages */
     DISPLAY_PRIMARY: 'Royal: -50% calls + Better billing',
     DISPLAY_SECONDARY: '+20% more free messages (5 instead of 3)',
@@ -140,19 +140,19 @@ export const AI_MEMBERSHIP_BENEFITS = {
 export const NSFW_CONFIG = {
   /** Age verification required */
   AGE_VERIFICATION_REQUIRED: true,
-  
+
   /** Minimum age */
   MIN_AGE: 18,
-  
+
   /** NSFW content requires tokens */
   REQUIRES_TOKENS: true,
-  
+
   /** Minimum deposit for NSFW chat */
   MIN_DEPOSIT_FOR_NSFW: 100,
-  
+
   /** Encourage creators to upload photo packs */
   PHOTO_PACK_ENCOURAGED: true,
-  
+
   /** Photo pack pricing range (tokens per photo) */
   PHOTO_PACK_MIN_PRICE: 10,
   PHOTO_PACK_MAX_PRICE: 50,
@@ -165,16 +165,16 @@ export const NSFW_CONFIG = {
 export const UI_TRIGGERS = {
   /** Show "add photos" modal if earnings below threshold */
   LOW_EARNINGS_THRESHOLD: 50, // tokens earned in last 7 days
-  
+
   /** Recommended pricing message */
   LOW_PRICE_MESSAGE: 'Recommended price: 5 tokens. Higher prices convert better.',
-  
+
   /** Show at this price point */
   LOW_PRICE_TRIGGER: 3,
-  
+
   /** NSFW photo pack CTA */
   NSFW_PHOTO_PACK_CTA: 'Upload photo pack (sold per token) to increase earnings',
-  
+
   /** Conversion optimization message */
   LOW_CONVERSION_MESSAGE: 'Add attractive photos and description to increase chat conversions',
 } as const;
@@ -211,10 +211,10 @@ export interface BotAnalytics {
 export const LEADERBOARD_CONFIG = {
   /** Top N creators get bonus */
   TOP_CREATORS_BONUS: 10,
-  
+
   /** Bonus reward for top 10 (tokens) */
   TOP_10_BONUS: 500,
-  
+
   /** Ranking points = tokens earned */
   POINTS_PER_TOKEN: 1,
 } as const;
@@ -283,20 +283,20 @@ export function calculateAIMessageCost(
   wordCount: number,
   isRoyal: boolean
 ): number {
-  const wordsPerToken = isRoyal 
-    ? AI_WORD_BILLING.WORDS_PER_TOKEN_ROYAL 
+  const wordsPerToken = isRoyal
+    ? AI_WORD_BILLING.WORDS_PER_TOKEN_ROYAL
     : AI_WORD_BILLING.WORDS_PER_TOKEN_STANDARD;
-  
+
   const wordBasedCost = Math.ceil(wordCount / wordsPerToken);
   const totalCost = basePricePerMessage + wordBasedCost;
-  
+
   return totalCost;
 }
 
 /**
  * Calculate creator earnings from consumed tokens.
  * Business rule: bot-owner earnings use reference-rate display and final payout depends on fees and deductions.
- * Updated from 80/20 to 65/35 to align with canonical AI economy config.
+ * Updated from reference benchmark to reference benchmark to align with canonical AI economy config.
  */
 export function calculateCreatorEarnings(consumedTokens: number): {
   creatorAmount: number;
@@ -304,7 +304,7 @@ export function calculateCreatorEarnings(consumedTokens: number): {
 } {
   const creatorAmount = Math.floor(consumedTokens * (AI_REVENUE_SPLIT.CREATOR_PERCENT / 100));
   const avaloAmount = consumedTokens - creatorAmount;
-  
+
   return { creatorAmount, avaloAmount };
 }
 
@@ -326,7 +326,7 @@ export function calculateAvaloTotalEarnings(
 } {
   const instantFee = Math.floor(depositAmount * (AI_CHAT_DEPOSIT.INSTANT_PLATFORM_FEE_PERCENT / 100));
   const revenueShare = Math.floor(tokensConsumed * (AI_REVENUE_SPLIT.AVALO_PERCENT / 100));
-  
+
   return {
     instantFee,
     revenueShare,
@@ -338,8 +338,8 @@ export function calculateAvaloTotalEarnings(
  * Get free message count based on membership
  */
 export function getFreeMessageCount(isRoyal: boolean): number {
-  return isRoyal 
-    ? AI_BOT_CONFIG.FREE_WELCOME_MESSAGES_ROYAL 
+  return isRoyal
+    ? AI_BOT_CONFIG.FREE_WELCOME_MESSAGES_ROYAL
     : AI_BOT_CONFIG.FREE_WELCOME_MESSAGES;
 }
 
@@ -390,7 +390,7 @@ export function calculateEarningsPreview(pricePerMessage: number, avgWordCount: 
   // Assume standard user
   const totalCost = calculateAIMessageCost(pricePerMessage, avgWordCount, false);
   const { creatorAmount, avaloAmount } = calculateCreatorEarnings(totalCost);
-  
+
   return {
     userPays: totalCost,
     creatorEarns: creatorAmount,
@@ -414,7 +414,7 @@ export default {
   LEADERBOARD_CONFIG,
   AI_SUBSCRIPTION_TIERS,
   PAYMENT_ARCHITECTURE,
-  
+
   // Helper functions
   calculateAIMessageCost,
   calculateCreatorEarnings,

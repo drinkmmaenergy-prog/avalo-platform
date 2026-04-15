@@ -54,7 +54,7 @@ export default function TicketViewScreen() {
       'Cancel Ticket',
       'Are you sure you want to cancel this ticket?\n\n' +
       '⚠️ NO REFUND will be issued.\n' +
-      'The organizer reference portion remains 80% before applicable deductions, with a 20% reference platform portion.',
+      'The organizer reference portion remains up to reference rate before applicable deductions, with a 20% reference platform portion.',
       [
         { text: 'Keep Ticket', style: 'cancel' },
         {
@@ -216,7 +216,7 @@ export default function TicketViewScreen() {
             <Text style={styles.breakdownValue}>{ticket.payment.totalTokensPaid} tokens</Text>
           </View>
           <View style={styles.breakdownRow}>
-            <Text style={styles.breakdownLabel}>Organizer Share (80%):</Text>
+            <Text style={styles.breakdownLabel}>Organizer Share (reference only):</Text>
             <Text style={styles.breakdownValue}>{ticket.payment.organizerShareTokens} tokens</Text>
           </View>
           <View style={styles.breakdownRow}>

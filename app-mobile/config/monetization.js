@@ -69,7 +69,7 @@ exports.EARN_TO_CHAT_CONFIG = {
     /** Average words per token for escrow billing */
     WORDS_PER_TOKEN: 11,
     /** Creator earnings percentage from escrow (as decimal) */
-    CREATOR_SPLIT: 0.80, // 80% to creator
+    CREATOR_SPLIT: 0.80, // up to the displayed reference creator portion
     /** Avalo cut from escrow (as decimal) */
     AVALO_CUT: 0.20, // 20% to Avalo
     /** Minimum escrow balance before requiring new deposit (tokens) */
@@ -118,7 +118,7 @@ exports.CONTENT_CONFIG = {
     /** Cost to send an icebreaker message (in tokens) */
     ICEBREAKER_COST: 15,
     /** Creator earning percentage from content unlocks (as decimal) */
-    CONTENT_CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    CONTENT_CREATOR_SPLIT: 0.70, // reference-only creator payout example
 };
 // ============================================================================
 // CHAT ROOMS
@@ -127,7 +127,7 @@ exports.CHAT_ROOM_CONFIG = {
     /** Cost to enter a premium chat room (in tokens) */
     ENTRY_COST: 50,
     /** Host earning percentage from entry fees (as decimal) */
-    HOST_SPLIT: 0.70, // 70% to host, 30% to Avalo
+    HOST_SPLIT: 0.70, // up to reference rate to host, 30% to Avalo
 };
 // ============================================================================
 // TIPS & DONATIONS
@@ -138,7 +138,7 @@ exports.TIPS_CONFIG = {
     /** Maximum tip amount (in tokens) */
     MAX_TIP_AMOUNT: 10000,
     /** Creator earning percentage from tips (as decimal) */
-    CREATOR_SPLIT: 0.80, // 80% to creator, 20% to Avalo
+    CREATOR_SPLIT: 0.80, // reference-only creator payout example
     /** Avalo platform fee on tips (as decimal) */
     TIP_FEE_PERCENTAGE: 0.20,
 };
@@ -155,7 +155,7 @@ exports.PAID_CONTENT_CONFIG = {
     /** Maximum price for paid video (in tokens) */
     MAX_VIDEO_PRICE: 1000,
     /** Creator earning percentage from paid content (as decimal) */
-    CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    CREATOR_SPLIT: 0.70, // reference-only creator payout example
     /** Avalo platform fee on paid content (as decimal) */
     CONTENT_FEE_PERCENTAGE: 0.30,
 };
@@ -170,7 +170,7 @@ exports.CALENDAR_CONFIG = {
     /** Cancellation fee if cancelled within 24h (in tokens) */
     CANCELLATION_FEE: 50,
     /** Host earning percentage from bookings (as decimal) */
-    HOST_SPLIT: 0.80, // 80% to host, 20% to Avalo
+    HOST_SPLIT: 0.80, // up to the displayed reference host portion, 20% to Avalo
     /** Avalo platform fee on bookings (as decimal) - applied instantly, non-refundable */
     AVALO_FEE_PERCENT: 20,
     BOOKING_FEE_PERCENTAGE: 0.20,
@@ -225,7 +225,7 @@ exports.LIVESTREAM_CONFIG = {
     /** Maximum tip during livestream (in tokens) */
     MAX_LIVESTREAM_TIP: 5000,
     /** Streamer earning percentage from entry fees (as decimal) */
-    STREAMER_ENTRY_SPLIT: 0.70, // 70% to streamer, 30% to Avalo
+    STREAMER_ENTRY_SPLIT: 0.70, // up to reference rate to streamer, 30% to Avalo
     /** Streamer earning percentage from tips (as decimal) */
     STREAMER_TIP_SPLIT: 0.85, // 85% to streamer, 15% to Avalo
     /** Avalo platform fee on livestream entry (as decimal) */
@@ -239,7 +239,7 @@ exports.LIVE_ROOM_CONFIG = {
     /** Maximum gift amount (in tokens) */
     MAX_GIFT_AMOUNT: 1000,
     /** Creator earning percentage from gifts (as decimal) */
-    CREATOR_SPLIT: 0.80, // 80% to creator, 20% to Avalo
+    CREATOR_SPLIT: 0.80, // reference-only creator payout example
     /** Avalo platform fee on gifts (as decimal) */
     GIFT_FEE_PERCENTAGE: 0.20,
     /** Room sponsorship revenue (100% Avalo for now) */
@@ -264,7 +264,7 @@ exports.CREATOR_SUBSCRIPTIONS = {
     /** Maximum subscription price (USD) */
     MAX_PRICE_USD: 100,
     /** Creator earning percentage (as decimal) */
-    CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    CREATOR_SPLIT: 0.70, // reference-only creator payout example
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: 0.30,
     /** Payment processor (web only) */
@@ -276,7 +276,7 @@ exports.CREATOR_PPV = {
     /** Maximum pay-per-view price (USD) */
     MAX_PRICE_USD: 200,
     /** Creator earning percentage (as decimal) */
-    CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    CREATOR_SPLIT: 0.70, // reference-only creator payout example
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: 0.30,
     /** Payment processor (web only) */
@@ -288,7 +288,7 @@ exports.CREATOR_CUSTOM_REQUESTS = {
     /** Maximum custom request price (USD) */
     MAX_PRICE_USD: 500,
     /** Creator earning percentage (as decimal) */
-    CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    CREATOR_SPLIT: 0.70, // reference-only creator payout example
     /** Avalo platform fee (as decimal) */
     AVALO_FEE_PERCENTAGE: 0.30,
     /** Payment processor (web only) */
@@ -422,7 +422,7 @@ exports.AVALO_PLATFORM_FEE = 0.30; // 30%
 // ============================================================================
 exports.CREATOR_CONFIG = {
     /** Default creator earning percentage (as decimal) */
-    DEFAULT_CREATOR_SPLIT: 0.70, // 70% to creator, 30% to Avalo
+    DEFAULT_CREATOR_SPLIT: 0.70, // reference-only creator payout example
     /** Minimum tokens required to become a creator */
     MIN_TOKENS_TO_WITHDRAW: 100,
     /** Verification required for creator features */

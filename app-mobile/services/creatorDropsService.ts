@@ -18,7 +18,7 @@ export const DURATION_PRESETS = [
   { hours: 72, label: '72h' },
 ] as const;
 
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // up to the displayed reference creator portion
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
 const VIP_DISCOUNT = 0.05; // 5% discount for VIP
 

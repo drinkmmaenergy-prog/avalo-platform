@@ -2,7 +2,7 @@
 
 /**
  * Chat Service with Token Engine
- * Implements 6/10 free messages (3 per participant), word-based billing, 65/35 split
+ * Implements 6/10 free messages (3 per participant), word-based billing, reference earnings benchmark
  */
 
 import { requireDb, requireFunctions } from '../firebase';
@@ -106,7 +106,7 @@ export async function getUserChats(userId: string): Promise<Chat[]> {
  * - Word counting (excluding URLs/emojis)
  * - Token billing for earner's words
  * - Escrow management
- * - Split application (65% escrow, 35% platform fee taken at deposit)
+ * - Split application (up to reference rate escrow, 35% platform fee taken at deposit)
  */
 export async function sendMessage(params: {
   chatId: string;
@@ -122,7 +122,7 @@ export async function sendMessage(params: {
       error?: string;
       tokensCost?: number;
     }>(requireFunctions(), 'sendChatMessage');
-    
+
     const result = await sendMsg(params);
     return result.data;
   } catch (error: any) {
@@ -164,13 +164,13 @@ export function subscribeToChat(
   callback: (chat: Chat | null) => void
 ): Unsubscribe {
   const chatRef = doc(requireDb(), 'chats', chatId);
-  
+
   return onSnapshot(chatRef, (snapshot) => {
     if (!snapshot.exists()) {
       callback(null);
       return;
     }
-    
+
     callback({
       id: snapshot.id,
       ...snapshot.data(),
@@ -183,7 +183,7 @@ export function subscribeToChat(
 // ============================================================================
 
 /**
- * Process chat deposit (100 tokens: 35% fee, 65% escrow)
+ * Process chat deposit (100 tokens: 35% fee, up to reference rate escrow)
  */
 export async function processChatDeposit(params: {
   chatId: string;
@@ -195,7 +195,7 @@ export async function processChatDeposit(params: {
       escrowAmount: number;
       platformFee: number;
     }>(requireFunctions(), 'processChatDeposit');
-    
+
     const result = await deposit(params);
     return result.data;
   } catch (error: any) {
@@ -239,7 +239,7 @@ export async function closeChat(params: {
       success: boolean;
       refunded: number;
     }>(requireFunctions(), 'closeChat');
-    
+
     const result = await close(params);
     return result.data;
   } catch (error: any) {
@@ -261,13 +261,13 @@ export async function closeChat(params: {
  */
 export function countWords(text: string): number {
   if (!text || text.trim().length === 0) return 0;
-  
+
   // Remove URLs
   let cleaned = text.replace(/https?:\/\/[^\s]+/gi, '');
-  
+
   // Remove emojis (basic ranges)
   cleaned = cleaned.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
-  
+
   // Split and count
   const words = cleaned.trim().split(/\s+/).filter(w => w.length > 0);
   return words.length;
@@ -309,17 +309,16 @@ export function formatLastActivity(timestamp: Timestamp): string {
   const now = Date.now();
   const then = timestamp.toMillis();
   const diffMs = now - then;
-  
+
   const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(diffMs / 3600000);
   const days = Math.floor(diffMs / 86400000);
-  
+
   if (minutes < 1) return 'Just now';
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  
+
   return timestamp.toDate().toLocaleDateString();
 }
-
 

@@ -229,7 +229,7 @@ export default function CreatorDashboard() {
           {formatNumber(dashboard.tokenEarnings[selectedPeriod])} Tokens
         </Text>
         <Text style={styles.earningsSubtext}>
-          ~${(dashboard.tokenEarnings[selectedPeriod] * 0.1).toFixed(2)} USD (65% split)
+          ~${(dashboard.tokenEarnings[selectedPeriod] * 0.1).toFixed(2)} USD (up to reference rate split)
         </Text>
       </View>
 

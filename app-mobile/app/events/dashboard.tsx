@@ -194,7 +194,7 @@ export default function OrganizerDashboardScreen() {
         {isPast && event.status === 'PUBLISHED' && checkInRate < 70 && (
           <View style={styles.warningBanner}>
             <Text style={styles.warningText}>
-              ⚠️ Check-in rate below 70% - payout under review
+              ⚠️ Check-in rate below up to reference rate - payout under review
             </Text>
           </View>
         )}

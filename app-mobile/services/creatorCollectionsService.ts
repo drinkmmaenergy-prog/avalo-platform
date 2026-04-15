@@ -6,7 +6,7 @@ import { MONETIZATION_SPLITS } from '';
  * Allows creators to publish premium playlists made from multiple media types
  * and sell them for tokens. AsyncStorage only, no backend.
  * 
- * Reference split display: up to 65% creator reference rate / platform reference portion
+ * Reference split display: up to up to reference rate creator reference rate / platform reference portion
  * VIP discount: 10% discount, minimum 1 token, NEVER free
  */
 
@@ -17,7 +17,7 @@ const PURCHASES_STORAGE_KEY = 'creatorCollections_v1_purchases';
 const EARNINGS_STORAGE_KEY = 'creatorCollections_v1_earnings';
 
 const AVALO_COMMISSION = MONETIZATION_SPLITS.CHAT.avalo; // 35% commission
-const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const CREATOR_EARNINGS = MONETIZATION_SPLITS.CHAT.creator; // up to the displayed reference creator portion
 const VIP_DISCOUNT = 0.10; // 10% discount for VIP subscribers
 
 // Price presets (tokens): Bronze → Royal

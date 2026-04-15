@@ -246,7 +246,7 @@ export default function CreatorOffersScreen() {
         {/* Description */}
         <View style={styles.descriptionCard}>
           <Text style={styles.descriptionText}>
-            {t('creatorOffers.subtitle') || 'Create limited-time bundles to boost your earnings. Fans pay tokens once, you earn 65%, Avalo takes 35%.'}
+            {t('creatorOffers.subtitle') || 'Create limited-time bundles to boost your earnings. Fans pay tokens once, you earn up to reference rate, Avalo takes 35%.'}
           </Text>
         </View>
 

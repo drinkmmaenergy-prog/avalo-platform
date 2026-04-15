@@ -174,7 +174,7 @@ export async function getActiveOffersForViewer(
 ): Promise<CreatorOffer[]> {
   const activeOffers = await getActiveOffersForCreator(creatorId);
   const userPurchases = await getUserPurchasesFromStorage(viewerId);
-  
+
   const purchasedOfferIds = new Set(
     userPurchases
       .filter(p => p.creatorId === creatorId)
@@ -197,7 +197,7 @@ export async function createOrUpdateOffer(
   }
 
   const allOffers = await getCreatorOffersFromStorage(creatorId);
-  
+
   // Check if updating existing offer
   if (payload.id) {
     const existingIndex = allOffers.findIndex(o => o.id === payload.id);
@@ -219,7 +219,7 @@ export async function createOrUpdateOffer(
   const durationHours = payload.expiresAt
     ? Math.round((payload.expiresAt - Date.now()) / (1000 * 60 * 60))
     : 24;
-  
+
   if (!DURATION_OPTIONS_HOURS.includes(durationHours)) {
     throw new Error(`Invalid duration: ${durationHours}h. Use 24, 48, or 72 hours.`);
   }
@@ -300,7 +300,7 @@ export async function purchaseOffer(
     throw new Error('You have already purchased this offer');
   }
 
-  // Calculate earnings split (65/35)
+  // Calculate earnings split (reference benchmark)
   const { creatorEarnings, avaloFee } = calculateEarnings(offer.tokenPrice);
 
   // Create purchase record
@@ -348,10 +348,10 @@ export async function getCreatorOfferStats(
     // In a real app, we'd query by creatorId. For AsyncStorage simulation,
     // we'll need to iterate through possible keys or maintain a global index.
     // For simplicity, we'll aggregate from the creator's offers.
-    
+
     const allOffers = await getCreatorOffersFromStorage(creatorId);
     const totalPurchases = allOffers.reduce((sum, offer) => sum + offer.purchasersCount, 0);
-    
+
     // Estimate total tokens and earnings based on offer stats
     // In real implementation, we'd query actual purchase records
     let totalTokens = 0;

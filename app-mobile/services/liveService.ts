@@ -53,7 +53,7 @@ const STORAGE_KEYS = {
 };
 
 // Constants
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // up to the displayed reference creator portion
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
 const VIP_DISCOUNT = 0; // canonical: no VIP discount for live entry
 
@@ -492,7 +492,7 @@ export async function getCreatorTotalEarnings(creatorId: string): Promise<number
  * Format earnings display text
  */
 export function formatEarnings(amount: number): string {
-  return `+${amount} tokens • up to 65% (reference rate)`;
+  return `+${amount} tokens • up to up to reference rate (reference rate)`;
 }
 
 /**

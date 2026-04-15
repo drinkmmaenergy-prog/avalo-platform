@@ -67,7 +67,7 @@ export default function LanguageAndRegionScreen() {
   const loadSettings = async () => {
     try {
       setLoading(true);
-      
+
       const user = auth.currentUser;
       if (!user) {
         Alert.alert('Error', 'You must be logged in to access settings');
@@ -78,15 +78,15 @@ export default function LanguageAndRegionScreen() {
       // Load user locale profile from Firestore
       const userLocaleRef = doc(db, 'userLocales', user.uid);
       const userLocaleDoc = await getDoc(userLocaleRef);
-      
+
       if (userLocaleDoc.exists()) {
         const profile = userLocaleDoc.data() as UserLocaleProfile;
         setCurrentLocale(profile.preferredLocale);
-        
+
         // Get region information
         const config = getRegionConfig(profile.regionCountry);
         const currency = getCurrencyForRegion(profile.regionCountry);
-        
+
         setRegionInfo({
           country: profile.regionCountry,
           countryName: getCountryName(profile.regionCountry),
@@ -98,7 +98,7 @@ export default function LanguageAndRegionScreen() {
         const detectedTimezone = detectTimezone();
         const detectedLocale: LocaleCode = 'en-US'; // Would use detection in production
         const detectedCountry = 'US';
-        
+
         const newProfile: UserLocaleProfile = {
           userId: user.uid,
           preferredLocale: detectedLocale,
@@ -108,10 +108,10 @@ export default function LanguageAndRegionScreen() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        
+
         await setDoc(userLocaleRef, newProfile);
         setCurrentLocale(detectedLocale);
-        
+
         const currency = getCurrencyForRegion(detectedCountry);
         setRegionInfo({
           country: detectedCountry,
@@ -130,7 +130,7 @@ export default function LanguageAndRegionScreen() {
 
   const handleLanguageChange = async (newLocale: LocaleCode) => {
     if (newLocale === currentLocale) return;
-    
+
     try {
       Alert.alert(
         'Change Language?',
@@ -141,20 +141,20 @@ export default function LanguageAndRegionScreen() {
             text: 'Change',
             onPress: async () => {
               setSaving(true);
-              
+
               const user = auth.currentUser;
               if (!user) return;
-              
+
               // Update Firestore
               const userLocaleRef = doc(db, 'userLocales', user.uid);
               await updateDoc(userLocaleRef, {
                 preferredLocale: newLocale,
                 updatedAt: new Date().toISOString(),
               });
-              
+
               setCurrentLocale(newLocale);
               setSaving(false);
-              
+
               Alert.alert('Success', 'Language changed successfully. Please restart the app to see changes.');
             },
           },
@@ -199,15 +199,15 @@ export default function LanguageAndRegionScreen() {
 
   const getContentRestrictions = () => {
     if (!regionInfo) return [];
-    
+
     const config = getRegionConfig(regionInfo.country);
     const restrictions = [];
-    
+
     if (!config.allowBikini) restrictions.push('Bikini content restricted');
     if (!config.allowLingerie) restrictions.push('Lingerie content restricted');
     if (!config.allowSoftEroticPhoto) restrictions.push('Soft erotic content restricted');
     if (!config.allowAdultWebContent) restrictions.push('Adult web content restricted');
-    
+
     return restrictions;
   };
 
@@ -275,7 +275,7 @@ export default function LanguageAndRegionScreen() {
                 color={restrictions.length === 0 ? '#34C759' : '#FF9500'}
               />
               <Text style={styles.complianceText}>
-                {restrictions.length === 0 
+                {restrictions.length === 0
                   ? 'All content types available in your region'
                   : `${restrictions.length} content restriction(s) apply`
                 }
@@ -317,7 +317,7 @@ export default function LanguageAndRegionScreen() {
       <View style={styles.notice}>
         <Ionicons name="information-circle-outline" size={20} color="#666" />
         <Text style={styles.noticeText}>
-          Token prices remain MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token regardless of region or language. Currency display is for convenience only. The 65/35 and 80/20 splits apply globally.
+          Token prices remain MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN per token regardless of region or language. Currency display is for convenience only. The reference benchmark and reference benchmark splits apply globally.
         </Text>
       </View>
 

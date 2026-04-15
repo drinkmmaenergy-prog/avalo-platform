@@ -150,7 +150,7 @@ export default function CreateDropScreen() {
           />
           <Text style={styles.hint}>
             Recommended: 20-5000 tokens
-            {'\n'}You'll receive 70%, Avalo keeps 30%
+            {'\n'}You'll receive up to reference rate, Avalo keeps 30%
           </Text>
         </View>
 

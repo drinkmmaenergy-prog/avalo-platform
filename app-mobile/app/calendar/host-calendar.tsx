@@ -311,7 +311,7 @@ export default function HostCalendarScreen() {
               <View style={styles.bookingDetails}>
                 <Text style={styles.detailLabel}>Your Earnings:</Text>
                 <Text style={styles.detailValue}>
-                  {booking.payment.userShareTokens} tokens (80%)
+                  {booking.payment.userShareTokens} tokens (reference only)
                 </Text>
               </View>
 
@@ -329,7 +329,7 @@ export default function HostCalendarScreen() {
         {/* Revenue Info */}
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>💰 Revenue Split</Text>
-          <Text style={styles.infoText}>• You receive: 80% of booking price</Text>
+          <Text style={styles.infoText}>• You receive: up to reference rate of booking price</Text>
           <Text style={styles.infoText}>• Avalo service fee: 20%</Text>
           <Text style={styles.infoText}>
             • Example: 1000 tokens → You earn 800 tokens

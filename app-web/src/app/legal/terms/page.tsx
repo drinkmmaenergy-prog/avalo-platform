@@ -112,9 +112,9 @@ export default function TermsPage() {
           <ul>
             <li><strong>Revenue Splits:</strong>
               <ul>
-                <li>Chat, Tips, Calls, Media, Live Streams: 65% Creator / 35% Avalo</li>
-                <li>Subscriptions: 70% Creator / 30% Avalo</li>
-                <li>Calendar/Events: 80% Creator / 20% Avalo</li>
+                <li>Chat, Tips, Calls, Media, Live Streams: up to reference rate Creator / 35% Avalo</li>
+                <li>Subscriptions: up to reference rate Creator / 30% Avalo</li>
+                <li>Calendar/Events: up to reference rate Creator / 20% Avalo</li>
               </ul>
             </li>
             <li><strong>Payout Rate:</strong> $0.03 USD per token earned.</li>

@@ -7,7 +7,7 @@ Production-ready web monetization surface and wallet UX for the Avalo platform, 
 ## Non-Negotiable Invariants
 
 - **1 chat = 100 tokens**
-- **Split: 65% creator / 35% platform** (fixed)
+- **Split: reference-only creator payout example / platform reference portion** (fixed)
 - **PAYOUT_PER_TOKEN_USD = 0.03** (from backend)
 - Burn logic, pack prices, VAT/Stripe/treasury rules are NOT modified
 
@@ -101,8 +101,8 @@ import PayoutPreview from '@/components/wallet/PayoutPreview';
 
 **Example calculation:**
 - Input: 500 tokens
-- Rate: 500 × $0.03 = **$15.00 USD** (creator receives)
-- Platform keeps: $15.00 × (35/65) = **$8.08 USD**
+- Rate: 500 × $0.03 = **$15.00 USD** (creator reference payout)
+- platform reference portion: $15.00 × (35/65) = **$8.08 USD**
 - If EUR selected: $15.00 × 0.92 = **€13.80 EUR** (internal FX rate)
 
 ## i18n Scaffold
@@ -165,3 +165,4 @@ import PayoutPreview from '@/components/wallet/PayoutPreview';
 - ✅ Webhook is idempotent (no double-crediting)
 - ✅ Client never sends amounts
 - ✅ Legal pages include 18+ age restriction notices
+

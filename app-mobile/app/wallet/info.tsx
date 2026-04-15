@@ -62,7 +62,7 @@ export default function WalletInfoScreen() {
         <InfoSection
           icon="📊"
           title="Revenue Splits"
-          content={`Chat, Calls, AI, Media: 65% creator / 35% Avalo\nCalendar & Events: 80% creator / 20% Avalo\nTips: 90% creator / 10% Avalo\n\nVIP/Royal members get discounts on call rates, but the revenue split stays the same.`}
+          content={`Chat, Calls, AI, Media: up to reference rate creator / 35% Avalo\nCalendar & Events: up to reference rate creator / 20% Avalo\nTips: 90% creator / 10% Avalo\n\nVIP/Royal members get discounts on call rates, but the revenue split stays the same.`}
         />
 
         <InfoSection

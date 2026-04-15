@@ -309,7 +309,7 @@ export default function CreateEventPage() {
         </div>
 
         <p className="text-xs text-gray-400">
-          80% of ticket revenue goes to you. 20% Avalo platform fee. Automatic refund if you
+          up to reference rate of ticket revenue goes to you. 20% Avalo platform fee. Automatic refund if you
           cancel the event.
         </p>
 

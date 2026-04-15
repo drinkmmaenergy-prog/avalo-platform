@@ -38,7 +38,7 @@ const FAQ_CATEGORIES = [
     articles: [
       { q: 'How do I buy tokens?', qPL: 'Jak kupić tokeny?', a: 'Go to Wallet → Buy Tokens. Choose a pack and pay via Stripe (credit card). Tokens appear instantly.', aPL: 'Przejdź do Portfel → Kup tokeny. Wybierz pakiet i zapłać przez Stripe (karta). Tokeny pojawiają się natychmiast.' },
       { q: 'How do payouts work?', qPL: 'Jak działają wypłaty?', a: 'Earned tokens can be paid out at $0.03 USD per token. Go to Wallet → Payouts. Minimum 100 tokens. KYC verification required.', aPL: 'Zarobione tokeny można wypłacić po $0.03 USD za token. Przejdź do Portfel → Wypłaty. Minimum 100 tokenów. Wymagana weryfikacja KYC.' },
-      { q: 'What are the earning splits?', qPL: 'Jakie są podziały zarobków?', a: 'Chat/Tips/Calls/Media/Live: you keep 65%, Avalo 35%. Subscriptions: 70/30. Calendar meetings/Events: 80/20.', aPL: 'Chat/Napiwki/Połączenia/Media/Live: Ty dostajesz 65%, Avalo 35%. Subskrypcje: 70/30. Spotkania/Wydarzenia: 80/20.' },
+      { q: 'What are the earning splits?', qPL: 'Jakie są podziały zarobków?', a: 'Chat/Tips/Calls/Media/Live: you keep up to reference rate, Avalo 35%. Subscriptions: reference benchmark. Calendar meetings/Events: reference benchmark.', aPL: 'Chat/Napiwki/Połączenia/Media/Live: Ty dostajesz up to reference rate, Avalo 35%. Subskrypcje: reference benchmark. Spotkania/Wydarzenia: reference benchmark.' },
     ]
   },
   {

@@ -1,9 +1,9 @@
 /**
  * MOBILE SUBSCRIPTIONS CONFIG
  * Canonical business rules:
- * - subscription split = 70/30
+ * - subscription examples are reference only and not guaranteed
  * - subscriptions do NOT change token unit price
- * - call discounts apply only to voice/video calls
+ * - call pricing perks apply only where enabled by the active subscription model
  */
 
 export interface SubscriptionPerks {

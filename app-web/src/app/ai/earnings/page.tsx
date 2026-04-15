@@ -24,7 +24,7 @@ import { requireDb } from '@/lib/firebase';
 import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 
 const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner; // 65% to earner/creator (UNCHANGED)
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner; // up to the displayed reference earner portion/creator (UNCHANGED)
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.platform; // 35% to platform/Avalo (UNCHANGED)
 
 interface EarningTransaction {
@@ -304,21 +304,21 @@ export default function AIEarningsWebPage() {
               <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                 <span className="font-medium text-gray-900 dark:text-white">AI Chat</span>
                 <div className="flex gap-3">
-                  <span className="text-green-600 font-semibold">65% Creator</span>
+                  <span className="text-green-600 font-semibold">up to reference rate Creator</span>
                   <span className="text-gray-500">35% Avalo</span>
                 </div>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                 <span className="font-medium text-gray-900 dark:text-white">AI Voice</span>
                 <div className="flex gap-3">
-                  <span className="text-green-600 font-semibold">65% Creator</span>
+                  <span className="text-green-600 font-semibold">up to reference rate Creator</span>
                   <span className="text-gray-500">35% Avalo</span>
                 </div>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-gray-200 dark:border-gray-700">
                 <span className="font-medium text-gray-900 dark:text-white">AI Video</span>
                 <div className="flex gap-3">
-                  <span className="text-green-600 font-semibold">65% Creator</span>
+                  <span className="text-green-600 font-semibold">up to reference rate Creator</span>
                   <span className="text-gray-500">35% Avalo</span>
                 </div>
               </div>

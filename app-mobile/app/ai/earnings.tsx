@@ -56,7 +56,7 @@ interface EarningsData {
 }
 
 const TOKEN_TO_PLN = MONETIZATION_SPLITS.EVENT_TICKET.avalo; // 1 Token = MONETIZATION_SPLITS.EVENT_TICKET.avalo PLN
-const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // 65% to creator
+const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator; // up to the displayed reference creator portion
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo; // 35% to Avalo
 
 export default function AIEarningsDashboardScreen() {
@@ -333,21 +333,21 @@ export default function AIEarningsDashboardScreen() {
           <View style={styles.splitRow}>
             <Text style={styles.splitLabel}>AI Chat</Text>
             <View style={styles.splitValues}>
-              <Text style={styles.splitCreator}>65% Creator</Text>
+              <Text style={styles.splitCreator}>up to reference rate Creator</Text>
               <Text style={styles.splitAvalo}>35% Avalo</Text>
             </View>
           </View>
           <View style={styles.splitRow}>
             <Text style={styles.splitLabel}>AI Voice</Text>
             <View style={styles.splitValues}>
-              <Text style={styles.splitCreator}>65% Creator</Text>
+              <Text style={styles.splitCreator}>up to reference rate Creator</Text>
               <Text style={styles.splitAvalo}>35% Avalo</Text>
             </View>
           </View>
           <View style={styles.splitRow}>
             <Text style={styles.splitLabel}>AI Video</Text>
             <View style={styles.splitValues}>
-              <Text style={styles.splitCreator}>65% Creator</Text>
+              <Text style={styles.splitCreator}>up to reference rate Creator</Text>
               <Text style={styles.splitAvalo}>35% Avalo</Text>
             </View>
           </View>

@@ -17,7 +17,7 @@
  *   - Uses requireDb() canonical guard for Firestore access.
  *   - Uses requireStorage() for file uploads.
  *   - Uses useAuth() from AuthProvider for user context.
- *   - Revenue split: 65% creator / 35% Avalo (UNLOCK_MEDIA).
+ *   - Revenue split: up to reference rate creator / 35% Avalo (UNLOCK_MEDIA).
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -128,7 +128,7 @@ export default function CreatorStoreManagementPage() {
             const itemId = data.itemId;
             if (!salesMap[itemId]) salesMap[itemId] = { count: 0, revenue: 0 };
             salesMap[itemId].count += 1;
-            salesMap[itemId].revenue += (data.creatorAmount || data.price * 0.65 || 0);
+            salesMap[itemId].revenue += (data.creatorAmount || 0);
           });
 
           if (active) {
@@ -296,7 +296,7 @@ export default function CreatorStoreManagementPage() {
         <div>
           <h1 className="text-2xl font-bold">🛍️ My Store</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Sell digital products — you keep 65% of each sale
+            Sell digital products — you keep up to reference rate of each sale
           </p>
         </div>
         <button
@@ -397,7 +397,7 @@ export default function CreatorStoreManagementPage() {
                   className="w-full px-3 py-2 border rounded-lg text-sm"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">
-                  Reference payout preview only: up to {Math.floor(formPrice * 0.65)} tokens per sale before applicable deductions (up to 65%).
+                  Reference payout preview only: estimated creator payout per sale before applicable deductions. Final payout may be lower.
                 </p>
               </div>
 
@@ -532,6 +532,8 @@ export default function CreatorStoreManagementPage() {
     </div>
   );
 }
+
+
 
 
 

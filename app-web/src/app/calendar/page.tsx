@@ -237,7 +237,7 @@ export default function CalendarPage() {
         <div className="p-4 border rounded-xl mb-6">
           <h3 className="font-semibold mb-1">Meeting Fee</h3>
           <p className="text-xs text-gray-500 mb-3">
-            Protect your time from no-shows. Tokens held in escrow (80% to you, 20% Avalo fee).
+            Protect your time from no-shows. Tokens held in escrow (up to the displayed reference portion before applicable deductions).
             Released only after meeting completion.
           </p>
           <div className="flex items-center gap-3">
@@ -492,7 +492,7 @@ export default function CalendarPage() {
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
                   &gt;72h
                 </span>
-                <span>100% refund of the host reference portion (up to 80%). Reference platform portion: up to 20% fee.</span>
+                <span>100% refund of the host reference portion (up to reference only). Reference platform portion: up to 20% fee.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
@@ -506,7 +506,7 @@ export default function CalendarPage() {
                 <span className="font-mono text-xs bg-blue-100 px-1.5 py-0.5 rounded mt-0.5">
                   &lt;24h
                 </span>
-                <span>No refund. You may earn up to 80% before applicable deductions. Reference platform portion: up to 20%. Not guaranteed.</span>
+                <span>No refund. You may earn up to up to reference rate before applicable deductions. Reference platform portion: up to 20%. Not guaranteed.</span>
               </li>
             </ul>
           </div>
@@ -525,7 +525,7 @@ export default function CalendarPage() {
             <h3 className="font-semibold text-amber-800 mb-2">No-Show Policy</h3>
             <ul className="text-sm text-amber-700 space-y-1">
               <li>
-                • <strong>Guest no-show:</strong> You may earn up to 80% before applicable deductions. No refund. Reference platform portion: up to 20%. Not guaranteed.
+                • <strong>Guest no-show:</strong> You may earn up to up to reference rate before applicable deductions. No refund. Reference platform portion: up to 20%. Not guaranteed.
               </li>
               <li>
                 • <strong>Host no-show:</strong> Full refund to guest including Avalo fee.
@@ -537,7 +537,7 @@ export default function CalendarPage() {
           <div className="p-4 bg-purple-50 rounded-xl">
             <h3 className="font-semibold text-purple-800 mb-2">Escrow System</h3>
             <p className="text-sm text-purple-700">
-              When booking: tokens are deducted from guest and held in escrow. Split: 80% host
+              When booking: tokens are deducted from guest and held in escrow. Split: up to reference rate host
               share + 20% Avalo fee. Tokens released to host ONLY after meeting is completed. If
               cancelled or disputed — refund rules above apply.
             </p>
@@ -560,7 +560,7 @@ export default function CalendarPage() {
                 • <strong>Panic Button:</strong> Emergency alert with optional location sharing.
               </li>
               <li>
-                • <strong>Goodwill Refund:</strong> Host can voluntarily refund their 80% after
+                • <strong>Goodwill Refund:</strong> Host can voluntarily refund their up to reference rate after
                 completion.
               </li>
             </ul>

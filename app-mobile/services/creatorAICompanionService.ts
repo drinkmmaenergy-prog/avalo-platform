@@ -20,7 +20,7 @@ export const RESPONSE_PRICING = {
 
 export type ResponseType = keyof typeof RESPONSE_PRICING;
 
-// Reference split display: up to 65% creator reference rate / platform reference portion
+// Reference split display: up to up to reference rate creator reference rate / platform reference portion
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.creator;
 const AVALO_SHARE = MONETIZATION_SPLITS.CHAT.avalo;
 

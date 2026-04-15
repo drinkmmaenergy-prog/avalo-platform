@@ -280,7 +280,7 @@ export default function CreateEventScreen() {
             placeholder="500"
             keyboardType="number-pad"
           />
-          <Text style={styles.helpText}>You'll receive 80%, Avalo gets 20%</Text>
+          <Text style={styles.helpText}>You may receive up to the displayed reference amount before applicable deductions</Text>
         </View>
 
         <View style={styles.section}>

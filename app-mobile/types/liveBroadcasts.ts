@@ -509,7 +509,7 @@ export function getGiftsByType(type: GiftType): GiftCatalogItem[] {
 }
 
 /**
- * Calculate Reference split display model (up to 65% reference rate)
+ * Calculate Reference split display model (up to up to reference rate reference rate)
  */
 export function calculateRevenueSplit(totalAmount: number): {
   creatorAmount: number;

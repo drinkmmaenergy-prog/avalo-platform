@@ -11,7 +11,7 @@
  * INVARIANTS:
  * - TOKEN_PAYOUT_USD benchmark from canonical economy
  * - creator_receives_usd = tokens * 0.03
- * - Split: 65% creator / 35% platform (display only)
+ * - Split: reference-only creator payout example / platform reference portion (display only)
  * - Currency conversion uses a fixed benchmark, not market rates
  *
  * Example: 500 tokens → $15.00 USD (500 * 0.03)
@@ -119,7 +119,7 @@ export default function PayoutPreview({
         {/* Results */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-4">
           <div className="text-sm text-green-700 font-medium mb-1">
-            Creator receives (65%)
+            Creator reference payout (not guaranteed)
           </div>
           <div className="text-3xl font-bold text-green-800">
             {formatAmount(calculations.creatorReceivesLocal, currency)}
@@ -134,7 +134,7 @@ export default function PayoutPreview({
         {showPlatformShare && (
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
             <div className="text-sm text-gray-600 font-medium mb-1">
-              Platform keeps (35%)
+              Platform reference portion
             </div>
             <div className="text-lg font-semibold text-gray-700">
               {formatAmount(calculations.platformKeepsLocal, currency)}

@@ -1247,8 +1247,8 @@ export default function EarnWithAvaloPage() {
           <div>
             <h3 className="font-medium text-blue-900">Revenue Split</h3>
             <p className="text-sm text-blue-700 mt-1">
-              Your earnings split depends on the surface: Chat/Calls/Tips 65%, Subscriptions 70%,
-              Meetings/Events 80%. Minimum payout: 1,000 tokens.
+              Your earnings split depends on the surface: Chat/Calls/Tips up to reference rate, Subscriptions up to reference rate,
+              Meetings/Events up to reference rate. Minimum payout: 1,000 tokens.
             </p>
           </div>
         </div>

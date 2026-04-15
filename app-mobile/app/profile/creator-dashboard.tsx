@@ -24,7 +24,7 @@ const weeklyTokens = [
 
 const revenueSplit = [
   { x: 'Avalo 35%', y: 35 },
-  { x: 'Creator 65%', y: 65 },
+  { x: 'Creator up to reference rate', y: 65 },
 ];
 
 export default function CreatorDashboardScreen() {

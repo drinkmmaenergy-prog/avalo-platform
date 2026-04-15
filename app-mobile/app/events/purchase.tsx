@@ -45,7 +45,7 @@ export default function PurchaseTicketScreen() {
       'Confirm Purchase',
       `Purchase ticket for ${event.priceTokens} tokens?\n\n` +
       `You'll pay: ${event.priceTokens} tokens\n` +
-      `Organizer gets: ${Math.floor(event.priceTokens * 0.8)} tokens (80%)\n` +
+      `Organizer gets: ${Math.floor(event.priceTokens * 0.8)} tokens (reference only)\n` +
       `Platform fee: ${Math.floor(event.priceTokens * 0.2)} tokens (20%)\n\n` +
       'No refund if you cancel.',
       [
@@ -137,7 +137,7 @@ export default function PurchaseTicketScreen() {
           
           <View style={styles.breakdownRow}>
             <Text style={styles.breakdownLabel}>Organizer receives:</Text>
-            <Text style={styles.breakdownValue}>{organizerShare} tokens (80%)</Text>
+            <Text style={styles.breakdownValue}>{organizerShare} tokens (reference only)</Text>
           </View>
           
           <View style={styles.breakdownRow}>

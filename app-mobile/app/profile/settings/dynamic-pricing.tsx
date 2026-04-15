@@ -166,7 +166,7 @@ export default function DynamicPricingScreen() {
           <Text style={styles.currentPriceLabel}>Your Current Chat Price</Text>
           <Text style={styles.currentPriceValue}>{currentPrice} tokens</Text>
           <Text style={styles.currentPriceSubtext}>
-            Earners receive 65% ({Math.floor(currentPrice * MONETIZATION_SPLITS.CHAT.creator)} tokens)
+            Earners receive up to reference rate ({Math.floor(currentPrice * MONETIZATION_SPLITS.CHAT.creator)} tokens)
           </Text>
         </View>
 
@@ -207,7 +207,7 @@ export default function DynamicPricingScreen() {
             <RequirementRow
               label="Reply Rate"
               value={`${eligibility.requirements.replyRate.toFixed(1)}%`}
-              required="≥ 70%"
+              required="≥ up to reference rate"
               met={eligibility.requirements.replyRate >= 70}
             />
             

@@ -18,7 +18,7 @@ PACK 43 implements a **100% local, AsyncStorage-only** streak tracking system fo
 ✅ **No Free Benefits** - Zero tokens, zero discounts, zero free messages  
 ✅ **100% Local** - AsyncStorage only, NO backend, NO Firestore  
 ✅ **Additive Only** - Does not modify existing PACK 38-42 code  
-✅ **Economic Model Unchanged** - 65/35 split remains intact  
+✅ **Economic Model Unchanged** - reference earnings model remains aligned with current policy  
 
 ---
 
@@ -279,7 +279,7 @@ function ChatInput({ currentUserId, partnerId }) {
 ❌ **No free unlocks** - Media costs unchanged  
 ❌ **No backend sync** - Purely local AsyncStorage  
 ❌ **No cross-device sync** - Each device has own streaks  
-❌ **No economic impact** - 65/35 split unchanged  
+❌ **No economic impact** - reference earnings model unchanged  
 
 ---
 
@@ -382,7 +382,7 @@ All requirements from PACK 43 specification met:
 ✅ UI strings in EN/PL added  
 ✅ Badge displays at streakDays >= 2  
 ✅ Optional motivational text works  
-✅ No changes to economics (65/35 intact)  
+✅ No changes to the reference earnings model  
 ✅ No backend/Firestore/HTTP calls  
 ✅ TypeScript compiles without errors  
 
@@ -455,3 +455,4 @@ The system is production-ready and fully compliant with all PACK 43 specificatio
 **Implementation Date:** 2025-11-23  
 **Status:** ✅ COMPLETE  
 **Next Steps:** Integrate UI components in chat screens
+

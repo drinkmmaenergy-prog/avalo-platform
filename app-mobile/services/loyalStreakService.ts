@@ -6,7 +6,7 @@
  * - Total messages and tokens spent in the relationship
  * - 100% local, AsyncStorage-only, NO backend, NO free benefits
  *
- * Economic model (65/35, zero free trials) remains unchanged.
+ * Economic model (reference benchmark, zero free trials) remains unchanged.
  * Streaks are purely motivational UI/telemetry.
  */
 
@@ -151,7 +151,7 @@ export async function getAllStreaks(userId: string): Promise<ChatStreak[]> {
 
 /**
  * Register message activity and update streak accordingly
- * 
+ *
  * Streak logic:
  * - No existing streak: start new (streakDays = 1)
  * - lastActiveDate === today: update counters only (no increment)
@@ -171,9 +171,9 @@ export async function registerMessageActivity(
   try {
     const streaksMap = await loadStreaksMap(userId);
     const today = getLocalDateString(options.messageCreatedAt);
-    
+
     let streak = streaksMap[partnerId];
-    
+
     if (!streak) {
       // No existing streak - create new
       streak = {
@@ -191,7 +191,7 @@ export async function registerMessageActivity(
     } else {
       // Existing streak - apply logic
       const lastDate = streak.lastActiveDate;
-      
+
       if (isSameDay(lastDate, today)) {
         // Same day activity - just update counters, don't increment streakDays
         streak.totalMessagesSent += options.isSender ? 1 : 0;
@@ -218,11 +218,11 @@ export async function registerMessageActivity(
         streak.lastUpdatedAt = Date.now();
       }
     }
-    
+
     // Save updated streaks map
     streaksMap[partnerId] = streak;
     await saveStreaksMap(userId, streaksMap);
-    
+
     // PACK 44: Backend sync - streak activity (AFTER local success)
     try {
       await syncStreakActivity(userId, partnerId, streak.streakDays);
@@ -230,7 +230,7 @@ export async function registerMessageActivity(
       console.error('[PACK 44] Error syncing streak activity to backend:', error);
       // Don't throw - backend sync failure shouldn't break streak tracking
     }
-    
+
     return streak;
   } catch (error) {
     console.error('[loyalStreakService] Error registering message activity:', error);
@@ -245,16 +245,16 @@ export function getStreakSummary(streak: ChatStreak | null): ChatStreakSummary |
   if (!streak) {
     return null;
   }
-  
+
   const today = getLocalDateString();
   const isActiveToday = isSameDay(streak.lastActiveDate, today);
-  
+
   // Simple logic: lostToday would require more complex date tracking
   // For now, we can determine if streak was lost by checking if yesterday
   // was active but today is not (with streakDays > 0)
   const yesterday = getLocalDateString(Date.now() - 24 * 60 * 60 * 1000);
   const lostToday = isSameDay(streak.lastActiveDate, yesterday) && streak.streakDays > 0 && !isActiveToday;
-  
+
   return {
     streakDays: streak.streakDays,
     isActiveToday,

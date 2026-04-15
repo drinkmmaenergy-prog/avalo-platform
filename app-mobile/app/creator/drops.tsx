@@ -245,7 +245,7 @@ export default function CreatorDropsScreen() {
           <View style={styles.earningsGrid}>
             <View style={styles.earningsItem}>
               <Text style={styles.earningsLabel}>
-                {t('creatorDrops.yourShare') || 'Your Share (65%)'}
+                {t('creatorDrops.yourShare') || 'Your share (reference only)'}
               </Text>
               <Text style={styles.earningsValue}>
                 {earnings.creatorEarns} 💎
@@ -287,7 +287,7 @@ export default function CreatorDropsScreen() {
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{stats.totalEarnings} 💎</Text>
             <Text style={styles.statLabel}>
-              {t('creatorDrops.earned') || 'Earned (65%)'}
+              {t('creatorDrops.earned') || 'Earned (reference only)'}
             </Text>
           </View>
 
@@ -462,7 +462,7 @@ export default function CreatorDropsScreen() {
                 </Text>
                 <View style={styles.earningsPreviewRow}>
                   <Text style={styles.earningsPreviewLabel}>
-                    {t('creatorDrops.yourShare') || 'Your Share (65%)'}
+                    {t('creatorDrops.yourShare') || 'Your share (reference only)'}
                   </Text>
                   <Text style={styles.earningsPreviewValue}>
                     {earnings.creatorEarns} 💎
@@ -561,7 +561,7 @@ export default function CreatorDropsScreen() {
             • {t('creatorDrops.info3') || 'VIP subscribers get 5% off'}
           </Text>
           <Text style={styles.infoText}>
-            • {t('creatorDrops.info4') || 'You may earn up to 65% of sales before applicable deductions.'}
+            • {t('creatorDrops.info4') || 'You may earn up to up to reference rate of sales before applicable deductions.'}
           </Text>
           <Text style={styles.infoText}>
             • {t('creatorDrops.info5') || 'Max 1 active drop per creator'}

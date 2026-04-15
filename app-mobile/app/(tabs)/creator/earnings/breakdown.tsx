@@ -204,7 +204,7 @@ export default function IncomeBreakdownScreen() {
         <View style={styles.totalCard}>
           <Text style={styles.totalLabel}>Total Earnings</Text>
           <Text style={styles.totalAmount}>{totalEarnings.toLocaleString()}</Text>
-          <Text style={styles.totalSubtext}>tokens (up to 65% creator portion)</Text>
+          <Text style={styles.totalSubtext}>tokens (up to up to reference rate creator portion)</Text>
         </View>
 
         {/* Source Summaries */}
@@ -285,7 +285,7 @@ export default function IncomeBreakdownScreen() {
                   </View>
                   <View style={styles.divider} />
                   <View style={styles.amountRow}>
-                    <Text style={styles.amountLabelBold}>Net Earnings (65%):</Text>
+                    <Text style={styles.amountLabelBold}>Net Earnings (reference only):</Text>
                     <Text style={[styles.amountValue, styles.netValue]}>
                       +{transaction.netTokens} tokens
                     </Text>
@@ -311,7 +311,7 @@ export default function IncomeBreakdownScreen() {
           <Text style={styles.infoText}>
             • All earnings show gross tokens received{'\n'}
             • Avalo retains 35% platform commission{'\n'}
-            • You receive 65% as net creator earnings{'\n'}
+            • Displayed creator earnings are reference only and not guaranteed{'\n'}
             • Commission is locked and never reduced by refunds
           </Text>
         </View>

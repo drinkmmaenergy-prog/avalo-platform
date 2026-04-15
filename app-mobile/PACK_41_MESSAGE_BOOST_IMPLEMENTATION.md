@@ -16,7 +16,7 @@ PACK 41 adds an optional "Boost this message" feature for chat messages. Users c
 - **Local-Only Logic**: All calculations use AsyncStorage, no backend required
 - **Deterministic Pricing**: No randomness; boost cost based on receiver heat score
 - **Visual Priority**: Boosted messages are highlighted in chat and conversation lists
-- **Revenue Neutral**: Maintains 65/35 split; no new revenue paths introduced
+- **Revenue Neutral**: Maintains the reference earnings model; no new revenue paths introduced
 
 ---
 
@@ -306,7 +306,7 @@ const showBoostedChip = lastMessage?.isBoosted &&
 ### No Free Tokens
 - No discounts applied to boost
 - No free trials
-- 65/35 split maintained
+- reference earnings model maintained
 - Boost is always paid addition
 
 ---
@@ -317,7 +317,7 @@ const showBoostedChip = lastMessage?.isBoosted &&
 - [x] Local data only (AsyncStorage)
 - [x] No backend, Firestore, or Functions
 - [x] Deterministic pricing (no randomness)
-- [x] 65/35 revenue split maintained
+- [x] reference earnings model maintained
 - [x] No free tokens / trials / discounts
 - [x] Additive only (no refactoring of PACK 38-40)
 
@@ -436,3 +436,4 @@ if (message.isBoosted) {
 
 **Implementation completed successfully!** ✅  
 All service layer code is production-ready. UI implementation can proceed independently.
+

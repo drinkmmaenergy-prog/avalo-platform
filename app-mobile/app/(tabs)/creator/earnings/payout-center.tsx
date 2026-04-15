@@ -334,7 +334,7 @@ export default function PayoutCenterScreen() {
           <Ionicons name="information-circle" size={20} color="#6366F1" />
           <Text style={styles.infoText}>
             Payouts are processed within 1-5 business days. Avalo retains 35% commission; you
-            receive 65% of gross earnings.
+            receive up to the displayed reference payout before applicable deductions.
           </Text>
         </View>
       </View>
