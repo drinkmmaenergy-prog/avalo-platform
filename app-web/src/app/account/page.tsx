@@ -1,7 +1,7 @@
 'use client';
 
 import { MONETIZATION_SPLITS } from "@constants/monetization";
-import { TOKEN_PAYOUT_USD, INTERNAL_FX_RATES } from '@/lib/economyConfig';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 /**
@@ -1085,7 +1085,7 @@ export default function AccountPage() {
 
   // FIX 22: Use canonical TOKEN_PAYOUT_USD from economyConfig (0.03 USD/token)
   const getFiatEquivalent = (tokens: number) => {
-    return (tokens * TOKEN_PAYOUT_USD * INTERNAL_FX_RATES.PLN).toFixed(2);
+    return (tokens * TOKEN_PAYOUT_USD).toFixed(2);
   };
 
   // ---------------------------------------------------------------------------
@@ -2013,3 +2013,4 @@ export default function AccountPage() {
     </AccountLayout>
   );
 }
+

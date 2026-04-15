@@ -22,7 +22,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { requireDb, requireFunctions } from '@/lib/firebase';
-import { TOKEN_PAYOUT_USD, INTERNAL_FX_RATES } from '@/lib/economyConfig';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 import {
   doc,
   onSnapshot,
@@ -342,7 +342,7 @@ export default function WalletPayoutsPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">
-                      ≈ {(availableBalance * TOKEN_PAYOUT_USD * INTERNAL_FX_RATES.PLN).toFixed(2)} PLN
+                      ≈ {(availableBalance * TOKEN_PAYOUT_USD).toFixed(2)} USD
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       Szacunkowa wartość · Estimated value only. Final amount depends on exchange rates and bank fees.
@@ -489,3 +489,4 @@ export default function WalletPayoutsPage() {
     </div>
   );
 }
+

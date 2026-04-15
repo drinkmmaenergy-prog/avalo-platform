@@ -23,16 +23,8 @@ export const CHAT_PRICING = {
 export const TOKEN_PACKS = CANONICAL_ECONOMY.tokenPacks;
 export const CANONICAL_ECONOMY_VERSION = CANONICAL_ECONOMY.meta.version;
 
-export const INTERNAL_FX_RATES = {
-  USD: 1,
-  PLN: 1,
-} as const;
 
 
 
-export const CREATOR_REVENUE_SHARE = CANONICAL_ECONOMY.splits.chat.earner;
 
-export const PAYOUT_PER_TOKEN_USD = TOKEN_PAYOUT_USD;
-export const CREATOR_SHARE = CANONICAL_ECONOMY.splits.chat.earner;
-export const PLATFORM_SHARE = CANONICAL_ECONOMY.splits.chat.platform;
 
