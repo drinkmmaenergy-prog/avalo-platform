@@ -2,5 +2,5 @@ import React from "react";
 import LegalDocumentScreen from "@/components/legal/LegalDocumentScreen";
 
 export default function Screen() {
-  return <LegalDocumentScreen docKey="privacy" />;
+  return <LegalDocumentScreen docKey="cookies" />;
 }
