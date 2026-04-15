@@ -22,9 +22,9 @@ import { PayoutMethod } from "@/types/payout";
 const BRAND_COLOR = '#FF6B6B';
 
 interface PayoutDetailsForm {
-  paypalEmail: string;
+  stripeEmail: string;
   bankIBAN: string;
-  revolutUsername: string;
+  stripeReference: string;
   cryptoWallet: string;
 }
 
@@ -33,9 +33,9 @@ function PayoutDetailsScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
   const [details, setDetails] = useState<PayoutDetailsForm>({
-    paypalEmail: '',
+    stripeEmail: '',
     bankIBAN: '',
-    revolutUsername: '',
+    stripeReference: '',
     cryptoWallet: '',
   });
 
@@ -58,9 +58,9 @@ function PayoutDetailsScreen() {
         const userData = userSnap.data();
         if (userData.payoutDetails) {
           setDetails({
-            paypalEmail: userData.payoutDetails.paypalEmail || '',
+            stripeEmail: userData.payoutDetails.stripeEmail || '',
             bankIBAN: userData.payoutDetails.bankIBAN || '',
-            revolutUsername: userData.payoutDetails.revolutUsername || '',
+            stripeReference: userData.payoutDetails.stripeReference || '',
             cryptoWallet: userData.payoutDetails.cryptoWallet || '',
           });
         }
@@ -80,9 +80,9 @@ function PayoutDetailsScreen() {
 
     // Validate at least one method is filled
     const hasAtLeastOne = 
-      details.paypalEmail.trim() !== '' ||
+      details.stripeEmail.trim() !== '' ||
       details.bankIBAN.trim() !== '' ||
-      details.revolutUsername.trim() !== '' ||
+      details.stripeReference.trim() !== '' ||
       details.cryptoWallet.trim() !== '';
 
     if (!hasAtLeastOne) {
@@ -99,9 +99,9 @@ function PayoutDetailsScreen() {
       const userRef = doc(db, 'users', user.uid);
 
       const payoutDetails: Record<string, string> = {};
-      if (details.paypalEmail.trim()) payoutDetails.paypalEmail = details.paypalEmail.trim();
+      if (details.stripeEmail.trim()) payoutDetails.stripeEmail = details.stripeEmail.trim();
       if (details.bankIBAN.trim()) payoutDetails.bankIBAN = details.bankIBAN.trim();
-      if (details.revolutUsername.trim()) payoutDetails.revolutUsername = details.revolutUsername.trim();
+      if (details.stripeReference.trim()) payoutDetails.stripeReference = details.stripeReference.trim();
       if (details.cryptoWallet.trim()) payoutDetails.cryptoWallet = details.cryptoWallet.trim();
 
       await updateDoc(userRef, {
@@ -134,15 +134,15 @@ function PayoutDetailsScreen() {
           Add your payment information to receive withdrawals
         </Text>
 
-        {/* PayPal */}
+        {/* Stripe */}
         <View style={styles.section}>
-          <Text style={styles.label}>PayPal Email</Text>
-          <Text style={styles.hint}>For PayPal withdrawals (7% fee)</Text>
+          <Text style={styles.label}>Stripe payout email</Text>
+          <Text style={styles.hint}>For Stripe payout account verification</Text>
           <TextInput
             style={styles.input}
-            value={details.paypalEmail}
+            value={details.stripeEmail}
             onChangeText={(text) =>
-              setDetails({ ...details, paypalEmail: text })
+              setDetails({ ...details, stripeEmail: text })
             }
             placeholder="email@example.com"
             placeholderTextColor="#999"
@@ -165,15 +165,15 @@ function PayoutDetailsScreen() {
           />
         </View>
 
-        {/* Revolut */}
+        {/* Stripe reference */}
         <View style={styles.section}>
-          <Text style={styles.label}>Revolut Username</Text>
-          <Text style={styles.hint}>For Revolut transfers (5% fee)</Text>
+          <Text style={styles.label}>Stripe account reference</Text>
+          <Text style={styles.hint}>For Stripe payout support reference</Text>
           <TextInput
             style={styles.input}
-            value={details.revolutUsername}
+            value={details.stripeReference}
             onChangeText={(text) =>
-              setDetails({ ...details, revolutUsername: text })
+              setDetails({ ...details, stripeReference: text })
             }
             placeholder="@username"
             placeholderTextColor="#999"
@@ -311,3 +311,4 @@ const styles = StyleSheet.create({
 });
 
 export default PayoutDetailsScreen;
+

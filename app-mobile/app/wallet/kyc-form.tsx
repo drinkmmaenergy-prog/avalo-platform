@@ -43,10 +43,10 @@ interface KYCFormData {
     country: string;
   };
   payoutMethod: {
-    type: 'WISE' | 'BANK_TRANSFER';
+    type: 'STRIPE';
     currency: string;
     iban?: string;
-    wiseRecipientId?: string;
+    stripeAccountId?: string;
   };
 }
 
@@ -70,7 +70,7 @@ const ID_TYPES = [
 
 const PAYOUT_METHODS = [
   { value: 'BANK_TRANSFER', label: 'Bank Transfer (IBAN)' },
-  { value: 'WISE', label: 'Wise (TransferWise)' },
+  { value: 'STRIPE', label: 'Stripe' },
 ];
 
 export default function KYCFormScreen() {
@@ -160,8 +160,8 @@ export default function KYCFormScreen() {
       Alert.alert('Error', 'Please enter your IBAN');
       return false;
     }
-    if (formData.payoutMethod.type === 'WISE' && !formData.payoutMethod.wiseRecipientId) {
-      Alert.alert('Error', 'Please enter your Wise recipient ID');
+    if (formData.payoutMethod.type === 'STRIPE' && !formData.payoutMethod.stripeAccountId) {
+      Alert.alert('Error', 'Please enter your Stripe account ID');
       return false;
     }
     return true;
@@ -477,18 +477,18 @@ export default function KYCFormScreen() {
         </>
       )}
 
-      {formData.payoutMethod.type === 'WISE' && (
+      {formData.payoutMethod.type === 'STRIPE' && (
         <>
-          <Text style={styles.label}>Wise Recipient ID</Text>
+          <Text style={styles.label}>Stripe Account ID</Text>
           <TextInput
             style={styles.input}
-            value={formData.payoutMethod.wiseRecipientId}
-            onChangeText={(value) => updateNestedData('payoutMethod', 'wiseRecipientId', value)}
+            value={formData.payoutMethod.stripeAccountId}
+            onChangeText={(value) => updateNestedData('payoutMethod', 'stripeAccountId', value)}
             placeholder="12345678"
             keyboardType="numeric"
           />
           <Text style={styles.helperText}>
-            Find this in your Wise account under Recipients
+            Find this in your Stripe payout account
           </Text>
         </>
       )}
@@ -730,3 +730,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

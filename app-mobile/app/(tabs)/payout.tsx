@@ -23,8 +23,8 @@ const TOKEN_TO_EUR_RATE = 0.05; // 1 token = €0.05
 
 const PAYOUT_METHODS = [
   {
-    id: 'paypal',
-    name: 'PayPal',
+    id: 'stripe',
+    name: 'Stripe',
     icon: '💳',
     feeType: 'percentage',
     feePercent: 7,
@@ -45,8 +45,8 @@ const PAYOUT_METHODS = [
     processingDays: '3-5',
   },
   {
-    id: 'revolut',
-    name: 'Revolut',
+    id: 'stripe_connect',
+    name: 'Stripe Connect',
     icon: '💸',
     feeType: 'percentage',
     feePercent: 5,
@@ -531,3 +531,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

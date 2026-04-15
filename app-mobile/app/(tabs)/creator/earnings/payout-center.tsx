@@ -19,7 +19,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 
 interface PayoutMethod {
   id: string;
-  type: 'wise' | 'paypal' | 'sepa' | 'swift';
+  type: 'stripe';
   details: any;
   verified: boolean;
 }
@@ -377,8 +377,8 @@ export default function PayoutCenterScreen() {
 
 function getMethodIcon(type: string): any {
   const icons: Record<string, any> = {
-    wise: 'globe',
-    paypal: 'logo-paypal',
+    stripe: 'card',
+    
     sepa: 'business',
     swift: 'swap-horizontal',
   };
@@ -387,10 +387,10 @@ function getMethodIcon(type: string): any {
 
 function getMethodLabel(type: string, details: any): string {
   switch (type) {
-    case 'paypal':
-      return details.email || 'PayPal Account';
-    case 'wise':
-      return details.accountHolderName || 'Wise Account';
+    case 'stripe':
+      return details.email || 'Stripe Account';
+    case 'stripe':
+      return details.accountHolderName || 'Stripe Account';
     case 'sepa':
       return `IBAN: ***${(details.iban || '').slice(-4)}`;
     case 'swift':
@@ -752,3 +752,4 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
 });
+

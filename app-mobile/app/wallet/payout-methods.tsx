@@ -20,7 +20,7 @@ import type {
   PayoutMethod,
   PayoutMethodType,
   BankTransferDetails,
-  WiseDetails,
+  StripeDetails,
   StripeConnectDetails,
 } from "@/types/payouts";
 import {

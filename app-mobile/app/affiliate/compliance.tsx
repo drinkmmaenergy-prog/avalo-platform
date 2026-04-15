@@ -231,7 +231,7 @@ export default function AffiliateComplianceCenter() {
             )}
           </View>
           <Text style={styles.requirementDescription}>
-            Configure bank transfer, PayPal, or Stripe
+            Configure your Stripe payout account
           </Text>
         </View>
       </View>
@@ -599,3 +599,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

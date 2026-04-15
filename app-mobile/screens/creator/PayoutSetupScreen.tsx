@@ -1,7 +1,7 @@
 /**
  * PACK 56 — Payout Setup Screen
  * 
- * Allows creators to configure their payout account (Stripe Connect or Wise).
+ * Allows creators to configure their payout account (Stripe Connect or Stripe).
  */
 
 import React, { useState, useEffect } from "react";
@@ -176,7 +176,7 @@ export default function PayoutSetupScreen({ navigation }: any) {
               <Text style={styles.statusValue}>
                 {account.effectiveRail === "STRIPE"
                   ? t("payout.rail.stripe")
-                  : t("payout.rail.wise")}
+                  : t("payout.rail.stripe")}
               </Text>
             </View>
             <View style={styles.statusRow}>
@@ -271,17 +271,17 @@ export default function PayoutSetupScreen({ navigation }: any) {
             <TouchableOpacity
               style={[
                 styles.railOption,
-                selectedRail === "WISE" && styles.railOptionSelected,
+                selectedRail === "STRIPE" && styles.railOptionSelected,
               ]}
-              onPress={() => setSelectedRail("WISE")}
+              onPress={() => setSelectedRail("STRIPE")}
             >
               <View style={styles.railRadio}>
-                {selectedRail === "WISE" && <View style={styles.railRadioInner} />}
+                {selectedRail === "STRIPE" && <View style={styles.railRadioInner} />}
               </View>
               <View style={styles.railContent}>
-                <Text style={styles.railLabel}>{t("payout.rail.wise")}</Text>
+                <Text style={styles.railLabel}>{t("payout.rail.stripe")}</Text>
                 <Text style={styles.railDescription}>
-                  {t("payout.rail.wiseDescription")}
+                  {t("payout.rail.stripeDescription")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -510,3 +510,4 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
+

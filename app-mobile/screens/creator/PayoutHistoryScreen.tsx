@@ -112,7 +112,7 @@ export default function PayoutHistoryScreen() {
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>{t("payout.history.rail")}:</Text>
           <Text style={styles.detailValue}>
-            {item.rail === "STRIPE" ? t("payout.rail.stripe") : t("payout.rail.wise")}
+            {item.rail === "STRIPE" ? t("payout.rail.stripe") : t("payout.rail.stripe")}
           </Text>
         </View>
         <View style={styles.detailRow}>
@@ -252,3 +252,4 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 });
+

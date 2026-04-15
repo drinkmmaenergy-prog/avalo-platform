@@ -190,7 +190,7 @@ export default function PayoutSummaryScreen({ navigation }: any) {
               <Text style={styles.accountValue}>
                 {account.effectiveRail === "STRIPE"
                   ? t("payout.rail.stripe")
-                  : t("payout.rail.wise")}
+                  : t("payout.rail.stripe")}
               </Text>
             </View>
             <View style={styles.accountRow}>
@@ -484,3 +484,4 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 });
+
