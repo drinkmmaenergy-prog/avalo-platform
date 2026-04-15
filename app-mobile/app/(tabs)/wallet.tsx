@@ -2,7 +2,6 @@
  * Wallet Screen
  * Shows token balance, purchase options, and free token earning (ads)
  * Phase 31B: Region-based pricing display
- * Phase 31C: Adaptive Smart Discounts integration
  */
 
 import React, { useState, useEffect } from 'react';
@@ -24,9 +23,6 @@ import { mockCompletePurchase } from "@/services/stripeService";
 import { TOKEN_PACKS, getTotalTokensForPack, PLN_PRICING_TABLE } from "@/config/monetization";
 import { ADS_AND_SPONSORSHIP_CONFIG } from "@/config/monetization";
 import AnimatedTokenBalance from "@/components/AnimatedTokenBalance";
-import BottomSheetOffer from "@/components/BottomSheetOffer";
-import { DiscountOffer } from "@/shared/types/pricing";
-import { retrieveActiveDiscount, applyDiscountToPrice } from "@/shared/utils/discountEngine";
 
 export default function WalletScreen() {
   const router = useRouter();
@@ -35,10 +31,6 @@ export default function WalletScreen() {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [watchingAd, setWatchingAd] = useState(false);
-  
-  // Phase 31C: Discount states
-  const [activeDiscount, setActiveDiscount] = useState<DiscountOffer | null>(null);
-  const [showOfferModal, setShowOfferModal] = useState(false);
 
   useEffect(() => {
     if (user?.uid) {
@@ -52,19 +44,13 @@ export default function WalletScreen() {
         (error) => {
           console.error('Balance subscription error:', error);
           setLoading(false);
-        }
+}
       );
 
       return () => unsubscribe();
     } else {
       setLoading(false);
-    }
-
-    // Phase 31C: Check for active discounts
-    const discount = retrieveActiveDiscount();
-    if (discount) {
-      setActiveDiscount(discount);
-    }
+}
   }, [user?.uid]);
 
   const handlePurchaseTokens = async (packId: string) => {
@@ -72,13 +58,13 @@ export default function WalletScreen() {
       const errorMsg = locale === 'pl' ? 'Zaloguj się, aby kupić tokeny' : 'Sign in to purchase tokens';
       Alert.alert(locale === 'pl' ? 'Błąd' : 'Error', errorMsg);
       return;
-    }
+}
 
     const pack = TOKEN_PACKS.find(p => p.packId === packId);
     if (!pack) {
       Alert.alert('Error', 'Invalid token pack');
       return;
-    }
+}
 
     const totalTokens = getTotalTokensForPack(pack);
     
@@ -119,7 +105,7 @@ export default function WalletScreen() {
               } else {
                 const failMsg = locale === 'pl' ? 'Spróbuj ponownie później.' : 'Please try again later.';
                 Alert.alert(locale === 'pl' ? 'Zakup nie powiódł się' : 'Purchase Failed', failMsg);
-              }
+}
             } catch (error) {
               console.error('Error purchasing tokens:', error);
               const errorMsg = locale === 'pl'
@@ -128,7 +114,7 @@ export default function WalletScreen() {
               Alert.alert(locale === 'pl' ? 'Błąd' : 'Error', errorMsg);
             } finally {
               setLoading(false);
-            }
+}
           },
         },
       ]
@@ -139,12 +125,12 @@ export default function WalletScreen() {
     if (!user?.uid) {
       Alert.alert('Error', 'Please sign in to watch ads');
       return;
-    }
+}
 
     if (!canWatchRewardedAd()) {
       Alert.alert('Daily Limit Reached', 'You\'ve watched the maximum number of ads today. Try again tomorrow!');
       return;
-    }
+}
 
     setWatchingAd(true);
 
@@ -161,7 +147,7 @@ export default function WalletScreen() {
         );
       } else {
         Alert.alert('Error', 'Failed to process ad reward. Please try again.');
-      }
+}
     }, 2000); // Simulate 2-second ad
   };
 
@@ -173,7 +159,7 @@ export default function WalletScreen() {
         </View>
       </View>
     );
-  }
+}
 
   return (
     <View style={styles.container}>
@@ -229,23 +215,6 @@ export default function WalletScreen() {
         </View>
 
         {/* Active pricing banner */}
-        {activeDiscount && (
-          <TouchableOpacity
-            style={styles.pricingBanner}
-            onPress={() => setShowOfferModal(true)}
-          >
-            <Text style={styles.pricingBannerIcon}>🎉</Text>
-            <View style={styles.pricingBannerContent}>
-              <Text style={styles.pricingBannerTitle}>
-                {activeDiscount.discountPercent}% pricing adjustment - Pricing adjustment
-              </Text>
-              <Text style={styles.pricingBannerSubtitle}>
-                Tap to view offer
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
         {/* Token Packs */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>💰 {locale === 'pl' ? 'Kup tokeny' : 'Buy Tokens'}</Text>
@@ -253,12 +222,11 @@ export default function WalletScreen() {
             const totalTokens = getTotalTokensForPack(pack);
             
             // Phase 31C: Apply member pricing to display price (UI-only)
-            const priceWithDiscount = applyDiscountToPrice(pack.price, activeDiscount);
-            const hasDiscount = priceWithDiscount.hasDiscount;
-            
+            const false = false;
+
             // Get PLN price if region is PL, otherwise use USD
             const plnPrice = region === 'PL' ? PLN_PRICING_TABLE[pack.packId] : undefined;
-            const basePrice = hasDiscount ? priceWithDiscount.displayPrice : pack.price;
+            const basePrice = pack.price;
             const displayPrice = plnPrice
               ? `${plnPrice.toFixed(2)} PLN`
               : formatPrice(basePrice);
@@ -280,15 +248,7 @@ export default function WalletScreen() {
                   <View style={styles.popularBadge}>
                     <Text style={styles.popularBadgeText}>⭐ {locale === 'pl' ? 'POPULARNE' : 'POPULAR'}</Text>
                   </View>
-                )}
-                {hasDiscount && (
-                  <View style={styles.pricingPackBadge}>
-                    <Text style={styles.pricingPackBadgeText}>
-                      -{activeDiscount?.discountPercent}% pricing adjustment
-                    </Text>
-                  </View>
-                )}
-                <View style={styles.packInfo}>
+                )}                <View style={styles.packInfo}>
                   <Text style={styles.packName}>
                     {pack.displayName}
                   </Text>
@@ -305,13 +265,7 @@ export default function WalletScreen() {
                     {valuePerToken.toFixed(3)} {currency}/{locale === 'pl' ? 'token' : 'token'}
                   </Text>
                 </View>
-                <View style={styles.packPricing}>
-                  {hasDiscount && (
-                    <Text style={styles.originalPackPrice}>
-                      ${priceWithDiscount.originalPrice.toFixed(2)}
-                    </Text>
-                  )}
-                  <Text style={[styles.packPrice, hasDiscount && styles.discountedPackPrice]}>
+                <View style={styles.packPricing}>                  <Text style={styles.packPrice}>
                     {displayPrice}
                   </Text>
                   <View style={styles.totalBadge}>
@@ -336,20 +290,7 @@ export default function WalletScreen() {
               : (locale === 'pl' ? 'Bezpieczne płatności przez Stripe' : 'Secure payments via Stripe')}
           </Text>
         </View>
-      </ScrollView>
-
-      {/* Phase 31C: Offer Bottom Sheet */}
-      <BottomSheetOffer
-        visible={showOfferModal}
-        offer={activeDiscount}
-        onClose={() => setShowOfferModal(false)}
-        onActivate={() => {
-          setShowOfferModal(false);
-          // User is already on wallet screen, so just close modal
-        }}
-        locale={locale}
-      />
-    </View>
+      </ScrollView>    </View>
   );
 }
 
@@ -563,7 +504,6 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  pricingBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1A1A1A',
@@ -579,25 +519,20 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  pricingBannerIcon: {
     fontSize: 28,
     marginRight: 12,
   },
-  pricingBannerContent: {
     flex: 1,
   },
-  pricingBannerTitle: {
     fontSize: 15,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
-  pricingBannerSubtitle: {
     fontSize: 13,
     fontWeight: '600',
     color: '#D4AF37',
   },
-  pricingPackBadge: {
     position: 'absolute',
     top: -8,
     left: 16,
@@ -606,7 +541,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  pricingPackBadgeText: {
     color: '#000',
     fontSize: 11,
     fontWeight: '900',
@@ -617,11 +551,14 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     marginBottom: 4,
   },
-  discountedPackPrice: {
     color: '#D4AF37',
     fontSize: 28,
   },
 });
+
+
+
+
 
 
 

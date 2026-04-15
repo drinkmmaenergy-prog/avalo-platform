@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Create LIVE Screen
  * PACK 33-5: VIP Live Streaming with Token Entry Fees
  * 
@@ -158,7 +158,7 @@ export default function CreateLiveScreen() {
         <View style={styles.infoSection}>
           <View style={styles.infoCard}>
             <Text style={styles.infoIcon}>💎</Text>
-            <Text style={styles.infoTitle}>VIP Discount</Text>
+            <Text style={styles.infoTitle}>VIP Member Pricing</Text>
             <Text style={styles.infoText}>
               VIP subscribers get , but entry is never completely free
             </Text>
@@ -436,4 +436,5 @@ const styles = StyleSheet.create({
     color: '#0F0F0F',
   },
 });
+
 

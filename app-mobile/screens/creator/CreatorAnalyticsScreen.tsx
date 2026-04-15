@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 62 — Creator Analytics Screen
  * 
  * Display-only screen showing creator earnings analytics:
@@ -272,9 +272,9 @@ export default function CreatorAnalyticsScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionButton}
-          onPress={() => router.push('/promotions' as any)}
+          onPress={() => router.push('/offers' as any)}
         >
-          <Text style={styles.actionButtonText}>View Promotions</Text>
+          <Text style={styles.actionButtonText}>View Sponsored Placements</Text>
         </TouchableOpacity>
       </View>
 
@@ -526,3 +526,4 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
 });
+

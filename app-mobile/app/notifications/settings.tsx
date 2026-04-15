@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 92 — Notification Settings Screen
  * Manage user notification preferences
  */
@@ -168,7 +168,7 @@ export default function NotificationSettingsScreen() {
               <View style={styles.settingText}>
                 <Text style={styles.settingTitle}>Marketing</Text>
                 <Text style={styles.settingDescription}>
-                  Tips, features, and promotional content
+                  Tips, features, and marketing content
                 </Text>
               </View>
             </View>
@@ -327,3 +327,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

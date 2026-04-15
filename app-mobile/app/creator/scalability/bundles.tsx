@@ -19,7 +19,7 @@ export default function BundlesScreen() {
   const createNewBundle = () => {
     Alert.alert(
       'Create Bundle',
-      'Bundle 2-5 products together with a discount (max 40% off)',
+      'Bundle 2-5 products together with a pricing structure',
       [{ text: 'OK' }]
     );
   };
@@ -41,7 +41,7 @@ export default function BundlesScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Bundle Rules</Text>
           <Text style={styles.infoItem}>✓ 2-5 products per bundle</Text>
-          <Text style={styles.infoItem}>✓ Maximum 40% discount</Text>
+          <Text style={styles.infoItem}>✓ Structured bundle pricing</Text>
           <Text style={styles.infoItem}>✓ Educational/functional value only</Text>
           <Text style={styles.infoWarning}>✗ No "girlfriend/boyfriend" bundles</Text>
           <Text style={styles.infoWarning}>✗ No NSFW content collections</Text>
@@ -63,3 +63,5 @@ const styles = StyleSheet.create({
   infoItem: { fontSize: 14, color: '#666', marginBottom: 8 },
   infoWarning: { fontSize: 14, color: '#FF3B30', marginTop: 4 },
 });
+
+

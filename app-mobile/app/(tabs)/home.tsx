@@ -2,7 +2,6 @@
  * Home Screen - Main Discovery Interface
  * Includes: Wallet summary, Discovery grid, Swipe deck, and Feed list
  * Phase 27: Optimized with skeleton loaders and performance improvements
- * Phase 31C: Adaptive Smart Discounts integration
  * Phase 32-4: FTUX Missions & First-Week Checklist
  * Phase 36: Smart Suggestions CTA Integration
  */
@@ -54,13 +53,6 @@ import {
   type UserTier,
   type UserProfile as AdUserProfile,
 } from "@/services/sponsoredAdsService";
-import BottomSheetOffer from "@/components/BottomSheetOffer";
-import { DiscountOffer } from "@/shared/types/pricing";
-import {
-  evaluateDiscountEligibility,
-  retrieveActiveDiscount,
-  storeActiveDiscount,
-} from "@/shared/utils/discountEngine";
 import { useFtuxMissions } from "@/hooks/useFtuxMissions";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FtuxMissionsBanner } from "@/components/FtuxMissionsBanner";
@@ -103,9 +95,6 @@ export default function HomeScreen() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showIcebreakerModal, setShowIcebreakerModal] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<ProfileData | null>(null);
-  
-  // Phase 31C: Discount states
-  const [activeDiscount, setActiveDiscount] = useState<DiscountOffer | null>(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
   
   // Phase 32-4: FTUX Missions
@@ -246,9 +235,6 @@ export default function HomeScreen() {
         loadFeedAds(profile, tier, feed.length),
         loadSwipeAds(profile, tier, swipe.length),
       ]);
-
-      // Phase 31C: Evaluate discount eligibility
-      checkForDiscounts(profile);
       
       // Phase 32-7: Analyze social momentum
       await checkMomentumInsight(profile, discovery, swiped);
@@ -504,23 +490,6 @@ export default function HomeScreen() {
     }
   }, []);
 
-  // Phase 31C: Check for available discounts
-  const checkForDiscounts = (profile: ProfileData) => {
-    // Check if there's already an active discount stored
-    const stored = retrieveActiveDiscount();
-    if (stored) {
-      setActiveDiscount(stored);
-      setShowOfferModal(true);
-      return;
-    }
-
-    // Map ProfileData gender to DiscountConditions gender
-    const mapGender = (gender: string): 'male' | 'female' | 'other' => {
-      if (gender === 'male') return 'male';
-      if (gender === 'female') return 'female';
-      return 'other';
-    };
-
     // Evaluate eligibility based on user conditions
     const createdAtTime = typeof profile.createdAt === 'number' ? profile.createdAt : 0;
     const isNewUser = createdAtTime > 0 && (Date.now() - createdAtTime) < 30 * 24 * 60 * 60 * 1000;
@@ -535,10 +504,9 @@ export default function HomeScreen() {
       isBirthday: checkIfBirthday(profile.age),
     };
 
-    const offer = evaluateDiscountEligibility(conditions);
+    const offer = null;
     if (offer) {
-      storeActiveDiscount(offer);
-      setActiveDiscount(offer);
+      ;
       // Show offer after a short delay (2 seconds) to not be intrusive
       setTimeout(() => setShowOfferModal(true), 2000);
     }
@@ -553,22 +521,6 @@ export default function HomeScreen() {
 
   // Handle offer activation
   const handleOfferActivate = () => {
-    // Navigate to the relevant purchase screen based on discount target
-    if (activeDiscount) {
-      switch (activeDiscount.target) {
-        case 'vip':
-        case 'royal':
-        case 'any_subscription':
-          router.push('/(tabs)/wallet' as any);
-          break;
-        case 'boosts':
-        case 'live':
-          router.push('/boost-hub' as any);
-          break;
-        case 'social_meet':
-          router.push('/meet' as any);
-          break;
-      }
     }
   };
   
@@ -854,17 +806,7 @@ export default function HomeScreen() {
           onSelectTemplate={handleSelectIcebreakerTemplate}
           recipientName={selectedProfile.name}
         />
-      )}
-
-      {/* Phase 31C: Offer Bottom Sheet */}
-      <BottomSheetOffer
-        visible={showOfferModal}
-        offer={activeDiscount}
-        onClose={() => setShowOfferModal(false)}
-        onActivate={handleOfferActivate}
-        locale="en"
-      />
-      
+      )}      
       {/* Phase 32-5: Reward Store Prompt */}
       <RewardStorePrompt
         visible={showRewardPrompt}
@@ -1087,6 +1029,10 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
 });
+
+
+
+
 
 
 

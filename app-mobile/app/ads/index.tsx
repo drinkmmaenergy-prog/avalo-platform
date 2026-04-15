@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 145 - Ad Manager Dashboard
  * Main entry point for advertisers to manage campaigns
  */
@@ -190,7 +190,7 @@ export default function AdManagerDashboard() {
               <Ionicons name="megaphone-outline" size={64} color="#cbd5e1" />
               <Text style={styles.emptyTitle}>No campaigns yet</Text>
               <Text style={styles.emptySubtitle}>
-                Create your first ad campaign to promote your products, services, or events
+                Create your first ad campaign to sponsor your products, services, or events
               </Text>
               <TouchableOpacity
                 style={styles.emptyButton}
@@ -494,3 +494,4 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 });
+

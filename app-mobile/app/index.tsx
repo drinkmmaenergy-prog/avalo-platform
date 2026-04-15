@@ -40,10 +40,10 @@ interface ScalabilityMetrics {
     automationConversions: number;
     automationRevenue: number;
   };
-  discountMetrics: {
-    activeDiscounts: number;
-    discountRedemptions: number;
-    discountRevenueLoss: number;
+  pricingMetrics: {
+    activePricingRules: number;
+    pricingRuleUses: number;
+    pricingAdjustmentValue: number;
   };
 }
 
@@ -209,15 +209,15 @@ export default function ScalabilityDashboard() {
           <View style={styles.toolHeader}>
             <Text style={styles.toolIcon}>🏷️</Text>
             <View style={styles.toolContent}>
-              <Text style={styles.toolTitle}>Discounts</Text>
+              <Text style={styles.toolTitle}>Pricing Rules</Text>
               <Text style={styles.toolDescription}>
-                Create ethical, fair-use discounts
+                Create structured pricing rules
               </Text>
             </View>
           </View>
           <View style={styles.toolStats}>
             <Text style={styles.toolStat}>
-              {metrics?.discountMetrics.activeDiscounts || 0} active
+              {metrics?.pricingMetrics.activePricingRules || 0} active
             </Text>
           </View>
         </TouchableOpacity>
@@ -388,4 +388,5 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
 

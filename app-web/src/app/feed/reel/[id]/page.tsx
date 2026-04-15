@@ -1,10 +1,23 @@
-export default function AutoRecoveredPage() {
+type PageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default async function FeedReelDetailPage({ params }: PageProps) {
+  const { id } = await params;
   return (
-    <main className="p-6">
-      <h1 className="text-xl font-semibold">[id]</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        This page is temporarily unavailable.
-      </p>
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="rounded-2xl border bg-card p-6 shadow-sm">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Avalo</p>
+          <h1 className="text-2xl font-semibold">Reel details</h1>
+          <p className="text-sm text-muted-foreground">Reel ID: <span className="font-mono">{id}</span></p>
+        </div>
+      </div>
     </main>
   );
 }
+
+
+

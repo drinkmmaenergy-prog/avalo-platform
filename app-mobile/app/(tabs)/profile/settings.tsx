@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Settings Screen - Phase 17 Integration + Phase 29 Multilang
  * App settings including ads preferences for VIP/Royal users and language selection
  */
@@ -340,7 +340,7 @@ export default function SettingsScreen() {
           <View style={styles.settingInfo}>
             <Text style={styles.settingTitle}>Email Updates</Text>
             <Text style={styles.settingDescription}>
-              Receive weekly summaries and promotional emails
+              Receive weekly summaries and marketing emails
             </Text>
           </View>
           <Switch
@@ -641,3 +641,4 @@ const styles = StyleSheet.create({
     height: 32,
   },
 });
+

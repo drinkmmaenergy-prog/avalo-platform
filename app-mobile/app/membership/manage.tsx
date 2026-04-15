@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 107 — Membership Management Screen
  * 
  * Allows users to view and manage their active membership
@@ -301,7 +301,7 @@ export default function MembershipManageScreen() {
           <Text style={styles.sectionTitle}>Your Benefits</Text>
           <Text style={styles.benefitsNote}>
             Remember: Your membership provides cosmetic benefits and status only.
-            It does not include free tokens, discounts, or any monetization advantages.
+            It does not include free tokens, pricing adjustments, or any monetization advantages.
           </Text>
         </View>
 
@@ -461,3 +461,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 325 — Boost History Screen
  * View user's boost history with metrics
  */
@@ -183,7 +183,7 @@ export default function BoostHistoryScreen() {
             <Text style={styles.emptyIcon}>📣</Text>
             <Text style={styles.emptyTitle}>No Boosts Yet</Text>
             <Text style={styles.emptyText}>
-              Promote your posts and reels to reach more people
+              Boost your posts and reels to reach more people
             </Text>
           </View>
         }
@@ -312,3 +312,4 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 });
+

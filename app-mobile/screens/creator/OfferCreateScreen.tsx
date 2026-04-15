@@ -1,6 +1,6 @@
 ﻿/**
- * PACK 61: Promotion Create Screen
- * Create a new promotion campaign
+ * PACK 61: Sponsored Placement Create Screen
+ * Create a new sponsored placement campaign
  */
 
 import React, { useState } from 'react';
@@ -394,4 +394,5 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   }
 });
+
 

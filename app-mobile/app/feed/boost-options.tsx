@@ -1,6 +1,6 @@
-/**
+﻿/**
  * PACK 325 — Feed Boost Options Screen
- * Allows users to select boost tier and promote their posts/reels
+ * Allows users to select boost tier and increase visibility for posts/reels
  */
 
 import React, { useState, useEffect } from 'react';
@@ -134,7 +134,7 @@ export default function BoostOptionsScreen() {
       if (result.success) {
         Alert.alert(
           'Boost Active! 🚀',
-          `Your ${contentType.toLowerCase()} is now being promoted for ${BOOST_TIERS.find(t => t.size === selectedTier)?.duration}.`,
+          `Your ${contentType.toLowerCase()} now has boosted visibility for ${BOOST_TIERS.find(t => t.size === selectedTier)?.duration}.`,
           [
             {
               text: 'OK',
@@ -442,3 +442,4 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
+

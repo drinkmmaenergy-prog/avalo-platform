@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 171 - Consent History Viewer
  * Full transparency of all user consents with revoke capability
  */
@@ -49,7 +49,7 @@ const CONSENT_PURPOSES = {
   marketing: {
     title: 'Marketing',
     icon: '📢',
-    description: 'Send promotional emails and offers',
+    description: 'Send marketing emails and offers',
   },
   third_party_sharing: {
     title: 'Third-Party Sharing',
@@ -541,3 +541,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+

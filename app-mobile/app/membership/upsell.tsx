@@ -40,7 +40,7 @@ const MEMBERSHIP_TIERS = {
     ],
     notIncluded: [
       'No free tokens',
-      'No token discounts',
+      'No token pricing adjustments',
       'No visibility boost',
       'No ranking advantage',
     ],
@@ -63,7 +63,7 @@ const MEMBERSHIP_TIERS = {
     ],
     notIncluded: [
       'No free tokens',
-      'No token discounts',
+      'No token pricing adjustments',
       'No visibility boost',
       'No ranking advantage',
     ],
@@ -235,7 +235,7 @@ export default function MembershipUpsellScreen() {
           <Ionicons name="information-circle" size={24} color="#4A90E2" />
           <Text style={styles.noticeText}>
             Memberships are for status & personal branding only. They provide ZERO
-            economic advantages—no free tokens, discounts, or visibility boosts.
+            economic advantages—no free tokens, pricing adjustments, or visibility boosts.
           </Text>
         </View>
 
@@ -496,3 +496,5 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
+
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 155: Privacy Center
  * GDPR/CCPA/LGPD/PDPA Compliance Dashboard
  */
@@ -227,7 +227,7 @@ export default function PrivacyCenterScreen() {
               
               <ConsentToggle
                 label="Email Marketing"
-                description="Receive promotional emails and updates"
+                description="Receive marketing emails and updates"
                 value={consentSettings.emailMarketing}
                 onToggle={() => toggleConsent('emailMarketing')}
               />
@@ -514,3 +514,4 @@ const styles = StyleSheet.create({
     lineHeight: 20
   }
 });
+

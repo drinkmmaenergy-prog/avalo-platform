@@ -101,7 +101,7 @@ export default function PricingTestsScreen() {
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Allowed Test Types</Text>
           <Text style={styles.infoItem}>✓ Base price variations</Text>
-          <Text style={styles.infoItem}>✓ Discount duration tests</Text>
+          <Text style={styles.infoItem}>✓ Pricing rule duration tests</Text>
           <Text style={styles.infoItem}>✓ Bundle price optimization</Text>
           <Text style={styles.infoItem}>✓ Subscription add-on pricing</Text>
           <Text style={styles.infoWarning}>
@@ -217,3 +217,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+

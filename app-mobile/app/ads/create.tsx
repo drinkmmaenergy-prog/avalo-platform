@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PACK 145 - Campaign Creation Screen
  * Ethical ad creation with safety guardrails
  */
@@ -300,7 +300,7 @@ export default function CreateCampaign() {
               style={styles.input}
               value={targetContentId}
               onChangeText={setTargetContentId}
-              placeholder="ID of product/event/club to promote"
+              placeholder="ID of product/event/club for sponsored placement"
             />
           </View>
 
@@ -660,3 +660,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
