@@ -9,20 +9,15 @@
  * Output: estimated creator payout in selected currency
  *
  * INVARIANTS:
- * - PAYOUT_PER_TOKEN_USD = 0.03 (from backend)
+ * - TOKEN_PAYOUT_USD benchmark from canonical economy
  * - creator_receives_usd = tokens * 0.03
  * - Split: 65% creator / 35% platform (display only)
- * - Currency conversion uses INTERNAL_FX_RATES (not market rates)
+ * - Currency conversion uses a fixed benchmark, not market rates
  *
  * Example: 500 tokens → $15.00 USD (500 * 0.03)
  */
 import React, { useState, useMemo } from 'react';
-import {
-  PAYOUT_PER_TOKEN_USD,
-  CREATOR_SHARE,
-  PLATFORM_SHARE,
-  INTERNAL_FX_RATES,
-} from '@/lib/economyConfig';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 
 type PayoutCurrency = 'USD' | 'EUR' | 'GBP' | 'PLN';
 
@@ -51,9 +46,9 @@ export default function PayoutPreview({
   const [currency, setCurrency] = useState<PayoutCurrency>('USD');
 
   const calculations = useMemo(() => {
-    const creatorReceivesUsd = tokens * PAYOUT_PER_TOKEN_USD;
-    const platformKeepsUsd = creatorReceivesUsd * (PLATFORM_SHARE / CREATOR_SHARE);
-    const fxRate = INTERNAL_FX_RATES[currency] ?? 1;
+    const creatorReceivesUsd = tokens * TOKEN_PAYOUT_USD;
+    const platformKeepsUsd = 0;
+    const fxRate = 1;
 
     // For non-USD: multiply USD amount by the FX rate
     // e.g., $15 * 4.05 = 60.75 PLN
@@ -150,11 +145,11 @@ export default function PayoutPreview({
         {/* Calculation Breakdown */}
         <div className="text-xs text-gray-400 space-y-1 mt-4 border-t border-gray-100 pt-4">
           <div>
-            Rate: {tokens.toLocaleString()} tokens × ${PAYOUT_PER_TOKEN_USD}/token = ${calculations.creatorReceivesUsd.toFixed(2)} USD
+            Rate: {tokens.toLocaleString()} tokens × ${TOKEN_PAYOUT_USD}/token = ${calculations.creatorReceivesUsd.toFixed(2)} USD
           </div>
           {currency !== 'USD' && (
             <div>
-              FX: ${calculations.creatorReceivesUsd.toFixed(2)} × {INTERNAL_FX_RATES[currency]} = {formatAmount(calculations.creatorReceivesLocal, currency)}
+              FX benchmark: ${calculations.creatorReceivesUsd.toFixed(2)} = {formatAmount(calculations.creatorReceivesLocal, currency)}
             </div>
           )}
           <div className="italic">
@@ -165,5 +160,7 @@ export default function PayoutPreview({
     </div>
   );
 }
+
+
 
 

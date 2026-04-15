@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { requireDb } from '@/lib/firebase';
-import { TOKEN_PAYOUT_USD, CREATOR_REVENUE_SHARE } from '@/lib/economyConfig';
+import { TOKEN_PAYOUT_USD } from '@/lib/economyConfig';
 
 const TOKEN_TO_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
 const CREATOR_SHARE = MONETIZATION_SPLITS.CHAT.earner; // 65% to earner/creator (UNCHANGED)
@@ -422,6 +422,7 @@ export default function AIEarningsWebPage() {
     </div>
   );
 }
+
 
 
 
