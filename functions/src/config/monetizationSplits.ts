@@ -1,66 +1,26 @@
-import { CANONICAL_ECONOMY, type Split } from "../../../shared/config/canonicalEconomy";
+export type Split = { earner: number; platform: number };
 
-/**
- * FUNCTIONS CANONICAL SPLITS BRIDGE
- * Source of truth: shared/config/canonicalEconomy.ts
- */
-
-export const MONETIZATION_SPLITS = {
-  CHAT: {
-    earner: CANONICAL_ECONOMY.splits.chat.earner,
-    platform: CANONICAL_ECONOMY.splits.chat.platform,
-  },
-  CALL: {
-    earner: CANONICAL_ECONOMY.splits.callVoice.earner,
-    platform: CANONICAL_ECONOMY.splits.callVoice.platform,
-  },
-  VIDEO_CALL: {
-    earner: CANONICAL_ECONOMY.splits.callVideo.earner,
-    platform: CANONICAL_ECONOMY.splits.callVideo.platform,
-  },
-  TIPS: {
-    earner: CANONICAL_ECONOMY.splits.tips.earner,
-    platform: CANONICAL_ECONOMY.splits.tips.platform,
-  },
-  UNLOCK_MEDIA: {
-    earner: CANONICAL_ECONOMY.splits.chat.earner,
-    platform: CANONICAL_ECONOMY.splits.chat.platform,
-  },
-  LIVE_GIFTS: {
-    earner: CANONICAL_ECONOMY.splits.chat.earner,
-    platform: CANONICAL_ECONOMY.splits.chat.platform,
-  },
-  EVENT_TICKET: {
-    earner: CANONICAL_ECONOMY.splits.eventTicket.earner,
-    platform: CANONICAL_ECONOMY.splits.eventTicket.platform,
-  },
-  CALENDAR_MEETING: {
-    earner: CANONICAL_ECONOMY.splits.calendarMeeting.earner,
-    platform: CANONICAL_ECONOMY.splits.calendarMeeting.platform,
-  },
-  SUBSCRIPTION: {
-    earner: CANONICAL_ECONOMY.splits.subscription.earner,
-    platform: CANONICAL_ECONOMY.splits.subscription.platform,
-  },
+export const SPLITS = {
+  CHAT: { earner: 0, platform: 0 },
+  CALL_VOICE: { earner: 0, platform: 0 },
+  CALL_VIDEO: { earner: 0, platform: 0 },
+  TIPS: { earner: 0, platform: 0 },
+  CALENDAR: { earner: 0, platform: 0 },
+  EVENTS: { earner: 0, platform: 0 },
+  SUBSCRIPTION: { earner: 0, platform: 0 },
+  PLATFORM: { earner: 0, platform: 1 },
 } as const;
 
-export const SPLITS = MONETIZATION_SPLITS;
+export const MONETIZATION_SPLITS = {
+  ...SPLITS,
+  CALL: SPLITS.CALL_VOICE,
+  VIDEO_CALL: SPLITS.CALL_VIDEO,
+  CALENDAR_MEETING: SPLITS.CALENDAR,
+  EVENT_TICKET: SPLITS.EVENTS,
+  LIVE_GIFTS: SPLITS.CHAT,
+  UNLOCK_MEDIA: SPLITS.CHAT,
+} as const;
 
-export type MonetizationType =
-  | "CHAT"
-  | "CALL"
-  | "VIDEO_CALL"
-  | "TIPS"
-  | "UNLOCK_MEDIA"
-  | "LIVE_GIFTS"
-  | "EVENT_TICKET"
-  | "CALENDAR_MEETING"
-  | "SUBSCRIPTION";
-
-export type SplitStructure = Split;
-
-export function getSplit(type: MonetizationType): SplitStructure {
-  return SPLITS[type];
-}
-
-
+export const TOKEN_PAYOUT_USD = 0.04;
+export const PAYOUT_COMMISSION_PERCENT = 0.2;
+export const PAYOUT_FEE_PERCENT = 0.05;

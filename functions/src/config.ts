@@ -124,6 +124,36 @@ export enum ChatStatus {
   ACTIVE = "active",
   ENDED = "ended",
   EXPIRED = "expired",
+  CLOSED = "closed",
 }
 
+// Booking Status
+export enum BookingStatus {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+  NO_SHOW = "NO_SHOW",
+}
+
+// Transaction Type
+export enum TransactionType {
+  MESSAGE = "MESSAGE",
+  CALENDAR = "CALENDAR",
+  REFUND = "REFUND",
+  CALL = "CALL",
+  TIP = "TIP",
+  SUBSCRIPTION = "SUBSCRIPTION",
+  TOKEN_PURCHASE = "TOKEN_PURCHASE",
+  PAYOUT = "PAYOUT",
+}
+
+// Verification Status
+export enum VerificationStatus {
+  UNVERIFIED = "UNVERIFIED",
+  PENDING = "PENDING",
+  VERIFIED = "VERIFIED",
+  FAILED = "FAILED",
+  BANNED = "BANNED",
+}
 

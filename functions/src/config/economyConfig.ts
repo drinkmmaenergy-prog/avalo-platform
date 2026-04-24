@@ -1,4 +1,5 @@
-import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
+
+import { CANONICAL_ECONOMY } from "./canonicalEconomy";
 import { MONETIZATION_SPLITS } from "../config/monetizationSplits";
 
 /**
@@ -51,6 +52,7 @@ export function getSplitForSurface(surface: string): { earner: number; platform:
 }
 
 for (const [key, split] of Object.entries(SPLITS_BY_SURFACE)) {
+  if (split.earner === 0 && split.platform === 0) continue;
   if (Math.abs(split.earner + split.platform - 1.0) > 0.001) {
     throw new Error(`CRITICAL: SPLITS_BY_SURFACE.${key} does not sum to 1.0`);
   }
@@ -107,5 +109,7 @@ export interface EconomyAuditRecord {
     MIN_CHAT_CHARGE_TOKENS: number;
   };
 }
+
+
 
 

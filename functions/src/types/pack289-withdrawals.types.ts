@@ -86,10 +86,10 @@ export type PayoutMethodType =
   | 'STRIPE_CONNECT';
 
 export interface PayoutMethod {
-  type: PayoutMethodType;
+  type: PayoutMethodType | WithdrawalProvider;
   currency: string;  // USD, USD, USD, etc.
   iban?: string;
-  
+  wiseRecipientId?: string;
 }
 
 export interface KYCProfile {
@@ -131,14 +131,16 @@ export type WithdrawalStatus =
   | 'REJECTED'          // Admin rejected
   | 'CANCELLED';        // User cancelled
 
-export type WithdrawalProvider = 
-  | 'STRIPE_CONNECT' 
+export type WithdrawalProvider =
+  | 'STRIPE_CONNECT'
+  | 'WISE'
+  | 'BANK_TRANSFER'
   | 'MANUAL';
 
 export interface KYCSnapshot {
   kycStatus: KYCStatus;
   country: string;
-  payoutMethod?: PayoutMethodType;
+  payoutMethod?: PayoutMethodType | WithdrawalProvider;
 }
 
 export interface WithdrawalRequest {

@@ -22,6 +22,8 @@
  * INVARIANTS:
  *   - NEVER remove requireDb / requireFunctions — they are canonical guards.
  *   - NEVER hardcode secrets here — config comes from env vars.
+ *   - NEVER call getAuth() at module scope — Firebase Auth throws
+ *     auth/invalid-api-key during init when apiKey is absent (build-time SSR).
  */
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
@@ -47,17 +49,63 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-/** Firebase App — singleton. */
-const app: FirebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+// Guard: Firebase Auth throws auth/invalid-api-key at init time when apiKey is
+// absent. Do not call initializeApp or getAuth without a valid key.
+const _hasConfig = !!(process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
 
-/** Firebase Auth — stable web singleton. */
-export const auth: Auth = getAuth(app);
+let _rawApp: FirebaseApp | null = null;
+
+function _getApp(): FirebaseApp | null {
+  if (!_hasConfig) return null;
+  if (!_rawApp) {
+    _rawApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  }
+  return _rawApp;
+}
+
+// Initialize eagerly when config is present so all other singletons can use it.
+_rawApp = _getApp();
+
+/** Firebase App — singleton. May be null at build time when env vars are absent. */
+const app: FirebaseApp = _rawApp as FirebaseApp;
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+// getAuth() MUST NOT be called at module scope when apiKey is absent.
+// Firebase Auth SDK validates the key on init and throws auth/invalid-api-key.
+// Use a lazy Proxy so import of this module never triggers that error.
+
+let _authInstance: Auth | null = null;
+
+function _getAuthInstance(): Auth | null {
+  const a = _getApp();
+  if (!a) return null;
+  if (!_authInstance) _authInstance = getAuth(a);
+  return _authInstance;
+}
+
+/** Firebase Auth — lazy singleton. Proxy is safe to import at module scope. */
+export const auth: Auth = new Proxy({} as Auth, {
+  get(_target, prop) {
+    const a = _getAuthInstance();
+    if (!a) {
+      // Build-time / SSR with no config: return safe values so consumers
+      // (e.g. auth.currentUser) don't throw and can handle null gracefully.
+      if (prop === 'currentUser') return null;
+      if (prop === 'onAuthStateChanged') return (_cb: (u: null) => void) => { _cb(null); return () => {}; };
+      return undefined;
+    }
+    const val = (a as any)[prop];
+    return typeof val === 'function' ? val.bind(a) : val;
+  },
+});
 
 if (typeof window !== 'undefined') {
   void setPersistence(auth, browserLocalPersistence).catch((error) => {
     console.warn('[Firebase] Failed to enable browserLocalPersistence:', error);
   });
 }
+
+// ── Firestore ─────────────────────────────────────────────────────────────────
 
 /** Firestore — lazy singleton. */
 let _db: Firestore | null = null;
@@ -67,9 +115,9 @@ let _db: Firestore | null = null;
  * This is a canonical guard — do NOT remove or bypass.
  */
 export function requireDb(): Firestore {
-  if (!_db) {
-    _db = getFirestore(app);
-  }
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] requireDb(): Firebase not configured. NEXT_PUBLIC_FIREBASE_API_KEY is missing.');
+  if (!_db) _db = getFirestore(a);
   return _db;
 }
 
@@ -88,10 +136,16 @@ export function requireDb(): Firestore {
  */
 export const db: Firestore = new Proxy({} as Firestore, {
   get(_target, prop) {
-    if (!_db) _db = getFirestore(app);
+    const a = _getApp();
+    if (!_db) {
+      if (!a) return undefined;
+      _db = getFirestore(a);
+    }
     return (_db as any)[prop];
   },
 });
+
+// ── Cloud Functions ───────────────────────────────────────────────────────────
 
 /** Cloud Functions (europe-west1) — lazy singleton. */
 let _functions: Functions | null = null;
@@ -101,9 +155,9 @@ let _functions: Functions | null = null;
  * This is a canonical guard — do NOT remove or bypass.
  */
 export function requireFunctions(): Functions {
-  if (!_functions) {
-    _functions = getFunctions(app, FUNCTIONS_REGION_EU);
-  }
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] requireFunctions(): Firebase not configured.');
+  if (!_functions) _functions = getFunctions(a, FUNCTIONS_REGION_EU);
   return _functions;
 }
 
@@ -122,11 +176,13 @@ let _functionsUS: Functions | null = null;
  *          markAllNotificationsRead
  */
 export function requireFunctionsUS(): Functions {
-  if (!_functionsUS) {
-    _functionsUS = getFunctions(app, FUNCTIONS_REGION_US);
-  }
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] requireFunctionsUS(): Firebase not configured.');
+  if (!_functionsUS) _functionsUS = getFunctions(a, FUNCTIONS_REGION_US);
   return _functionsUS;
 }
+
+// ── Storage ───────────────────────────────────────────────────────────────────
 
 /** Firebase Storage — lazy singleton. */
 let _storage: FirebaseStorage | null = null;
@@ -136,11 +192,13 @@ let _storage: FirebaseStorage | null = null;
  * This is a canonical guard — do NOT remove or bypass.
  */
 export function requireStorage(): FirebaseStorage {
-  if (!_storage) {
-    _storage = getStorage(app);
-  }
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] requireStorage(): Firebase not configured.');
+  if (!_storage) _storage = getStorage(a);
   return _storage;
 }
+
+// ── Realtime Database ─────────────────────────────────────────────────────────
 
 /** Firebase Realtime Database — lazy singleton (FIX 102: Presence + Typing). */
 let _rtdb: Database | null = null;
@@ -152,18 +210,24 @@ let _rtdb: Database | null = null;
  * This is a canonical guard — do NOT remove or bypass.
  */
 export function requireRtdb(): Database {
-  if (!_rtdb) {
-    _rtdb = getDatabase(app);
-  }
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] requireRtdb(): Firebase not configured.');
+  if (!_rtdb) _rtdb = getDatabase(a);
   return _rtdb;
 }
+
+// ── App getter ────────────────────────────────────────────────────────────────
 
 /**
  * Returns the Firebase App singleton.
  */
 export function getFirebaseApp(): FirebaseApp {
-  return app;
+  const a = _getApp();
+  if (!a) throw new Error('[Firebase] getFirebaseApp(): Firebase not configured.');
+  return a;
 }
+
+// ── Functions proxies ─────────────────────────────────────────────────────────
 
 /**
  * Cloud Functions (europe-west1) — lazy proxy.
@@ -173,7 +237,11 @@ export function getFirebaseApp(): FirebaseApp {
  */
 export const functions: Functions = new Proxy({} as Functions, {
   get(_target, prop) {
-    if (!_functions) _functions = getFunctions(getFirebaseApp(), FUNCTIONS_REGION_EU);
+    const a = _getApp();
+    if (!_functions) {
+      if (!a) return undefined;
+      _functions = getFunctions(a, FUNCTIONS_REGION_EU);
+    }
     return (_functions as any)[prop];
   },
 });
@@ -188,7 +256,11 @@ export const functionsEU: Functions = functions;
  */
 export const functionsUS: Functions = new Proxy({} as Functions, {
   get(_target, prop) {
-    if (!_functionsUS) _functionsUS = getFunctions(getFirebaseApp(), FUNCTIONS_REGION_US);
+    const a = _getApp();
+    if (!_functionsUS) {
+      if (!a) return undefined;
+      _functionsUS = getFunctions(a, FUNCTIONS_REGION_US);
+    }
     return (_functionsUS as any)[prop];
   },
 });

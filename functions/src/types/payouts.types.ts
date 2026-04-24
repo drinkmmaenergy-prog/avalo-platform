@@ -135,10 +135,6 @@ export function validatePayoutMethodDetails(
   details: any
 ): details is PayoutMethodDetails {
   switch (type) {
-    case 'BANK_TRANSFER':
-      return REMOVED(details);
-    case 'WISE':
-      return REMOVED(details);
     case 'STRIPE_CONNECT':
       return isStripeConnectDetails(details);
     default:

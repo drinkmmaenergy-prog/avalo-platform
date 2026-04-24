@@ -69,7 +69,7 @@ export const processPendingPayouts = onSchedule(
  */
 async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   console.log(`Processing payout ${payout.requestId} for user ${payout.userId}`);
@@ -152,7 +152,7 @@ async function processPayoutRequest(payout: PayoutRequest): Promise<void> {
  */
 async function executeStripeTransfer(payout: PayoutRequest) {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   // Get payout account
@@ -206,7 +206,7 @@ async function markPayoutForReview(
   reason: string
 ): Promise<void> {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   await db.collection("payout_requests").doc(payout.requestId).update({
@@ -247,7 +247,7 @@ async function markPayoutForReview(
  */
 async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   try {
@@ -267,7 +267,7 @@ async function refundFailedPayout(payout: PayoutRequest): Promise<void> {
  */
 async function updateAMLProfileForPayout(payout: PayoutRequest): Promise<void> {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   try {
@@ -351,7 +351,7 @@ export const checkPayoutStatus = onSchedule(
  */
 async function checkPayoutTransferStatus(payout: PayoutRequest): Promise<void> {
   // 🚫 CANONICAL ECONOMY GUARD (AUTO-INJECTED)
-  if (payout.rail !== "STRIPE" -and payout.rail !== "STRIPE_USD") {
+  if (payout.rail !== "STRIPE") {
     throw new Error("Non-canonical payout rail blocked. Only STRIPE_USD is allowed.");
   }
   try {
@@ -393,6 +393,7 @@ async function checkPayoutTransferStatus(payout: PayoutRequest): Promise<void> {
     console.error(`Error checking payout status for ${payout.requestId}:`, error);
   }
 }
+
 
 
 

@@ -1,4 +1,5 @@
-import { CANONICAL_ECONOMY } from "../../../shared/config/canonicalEconomy";
+
+import { CANONICAL_ECONOMY } from "./canonicalEconomy";
 import { MONETIZATION_SPLITS } from "../config/monetizationSplits";
 
 /**
@@ -37,5 +38,7 @@ export const TIPS_CONFIG = {
   CREATOR_SPLIT: MONETIZATION_SPLITS.TIPS.earner,
   TIP_FEE_PERCENTAGE: MONETIZATION_SPLITS.TIPS.platform,
 } as const;
+
+
 
 
