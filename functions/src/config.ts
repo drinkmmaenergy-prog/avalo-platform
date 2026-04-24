@@ -15,13 +15,20 @@ import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 export const SETTLEMENT_RATE_USD = TOKEN_PAYOUT_USD;
 
 // Chat Configuration
+/** @deprecated V9 — escrow/deposit model removed. Value kept for legacy chats.ts only. */
 export const CHAT_INITIAL_DEPOSIT_TOKENS = 100;
-export const CHAT_FREE_MESSAGES_PER_USER = 3;
-export const CHAT_PLATFORM_FEE_PCT = 35; // reference platform lane
-export const CHAT_ESCROW_PCT = 65; // reference earner lane
+export const CHAT_FREE_MESSAGES_PER_USER = 4;
+/** V9 canonical: flat base price per creator send action. */
+export const CHAT_BASE_MESSAGE_PRICE_TOKENS = 3;
+/** @deprecated V9 — lane-specific splits removed. Reference value only; do not use in new billing. */
+export const CHAT_PLATFORM_FEE_PCT = 35;
+/** @deprecated V9 — escrow model removed. Reference value only; do not use in new billing. */
+export const CHAT_ESCROW_PCT = 65;
 
 // Word to Token Conversion
+/** @deprecated V9 — word-based billing removed. Reference value only; do not use in new billing. */
 export const WORDS_PER_TOKEN_STANDARD = 11;
+/** @deprecated V9 — word-based billing removed. Reference value only; do not use in new billing. */
 export const WORDS_PER_TOKEN_ROYAL_EARNER = 7;
 
 // Call Rates (tokens per minute)
@@ -32,12 +39,15 @@ export const CALL_BILLING_INTERVAL_SEC = 10;
 
 // Calendar Configuration
 export const CALENDAR_MIN_BOOKING_TOKENS = 100;
-export const CALENDAR_PLATFORM_FEE_PCT = 20; // reference platform lane
-export const CALENDAR_ESCROW_PCT = 80; // reference earner lane
+/** @deprecated V9 — lane-specific splits removed. Reference value only; do not use in new billing. */
+export const CALENDAR_PLATFORM_FEE_PCT = 20;
+/** @deprecated V9 — escrow model removed. Reference value only; do not use in new billing. */
+export const CALENDAR_ESCROW_PCT = 80;
 
 // Tips and Subscriptions
 export const TIP_PLATFORM_FEE_PCT = 20;
 export const TIP_CREATOR_PCT = 80;
+/** @deprecated V9 — lane-specific splits removed. Reference value only; do not use in new billing. */
 export const SUBSCRIPTION_PLATFORM_FEE_PCT = 30;
 export const SUBSCRIPTION_CREATOR_PCT = 70;
 
@@ -91,16 +101,17 @@ export const getStripeConfig = () => ({
   publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
 });
 
-// Canonical token packages are owned by shared/config/canonicalEconomy.ts.
-// Do not redefine price authority in this file.
+// @deprecated — Price authority lives in shared/config/canonicalEconomy.ts (tokenPacks).
+// This map is retained for legacy code that imports TOKEN_PACKAGES from config.ts.
+// Do not add new features against this map; use CANONICAL_ECONOMY.tokenPacks instead.
 export const TOKEN_PACKAGES = {
-  MINI_100: { tokens: 100, priceUSD: 12.69 },
-  BASIC_300: { tokens: 300, priceUSD: 34.28 },
-  STANDARD_500: { tokens: 500, priceUSD: 54.60 },
-  PREMIUM_1000: { tokens: 1000, priceUSD: 97.78 },
-  PRO_2000: { tokens: 2000, priceUSD: 187.95 },
-  ELITE_5000: { tokens: 5000, priceUSD: 449.57 },
-  ROYAL_10000: { tokens: 10000, priceUSD: 857.24 },
+  MINI_100:      { tokens: 100,   priceUSD: 12.99 },
+  BASIC_300:     { tokens: 300,   priceUSD: 34.99 },
+  STANDARD_500:  { tokens: 500,   priceUSD: 56.99 },
+  PREMIUM_1000:  { tokens: 1000,  priceUSD: 99.99 },
+  PRO_2000:      { tokens: 2000,  priceUSD: 189.99 },
+  ELITE_5000:    { tokens: 5000,  priceUSD: 449.99 },
+  ROYAL_10000:   { tokens: 10000, priceUSD: 849.99 },
 } as const;
 
 // Legacy token packages retained only for backward compatibility checks.

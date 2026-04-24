@@ -112,3 +112,7 @@ audit-out/
 pnpm-lock.yaml
 
 service-account.json
+
+# allow canonical economy source of truth
+!/shared/config/
+!/shared/config/canonicalEconomy.ts
