@@ -29,7 +29,6 @@ import {
   processMessage,
   endChat,
   expireInactiveChats,
-  countBillableWords,
   isCanonicalChat,
 } from './canonical-chat-engine';
 import { CANONICAL_LOGIC_VERSION } from './types/canonical-chat.types';

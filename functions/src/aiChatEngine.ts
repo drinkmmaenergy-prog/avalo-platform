@@ -42,6 +42,7 @@ const AVALO_SHARE_PERCENT = 0;           // V9: no per-message platform cut
 
 // @deprecated V9 — kept for variable reference below, do not add new uses
 const CHAT_DEPOSIT_TOKENS = 0;           // V9: no deposit
+const PLATFORM_FEE_PERCENT = 0;          // V9: no per-message platform fee (platform earns on payout)
 
 // ============================================================================
 // HELPER FUNCTIONS

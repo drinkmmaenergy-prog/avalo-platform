@@ -67,7 +67,8 @@ export interface PayoutRequest {
   rail: "STRIPE" | "WISE";
   currency: string;
   tokensRequested: number;
-  tokensFeePlatform: number;
+  tokensCommissionPlatform: number; // P0-A: 20% commission deducted first
+  tokensFeePlatform: number;        // P0-B: 5% fee applied after commission
   tokensNetToUser: number;
   fxRate: number;
   amountFiatGross: number;
@@ -101,7 +102,8 @@ export interface PayoutConfig {
   USD: number;
 };
   minimumPayoutTokens: number;
-  payoutFeePlatformPercent: number;
+  payoutCommissionPercent: number; // Platform commission on gross tokens before fee (e.g. 0.20 = 20%)
+  payoutFeePlatformPercent: number; // Platform fee applied after commission (e.g. 0.05 = 5%)
 }
 
 /**
@@ -145,7 +147,8 @@ async function getPayoutConfig(): Promise<PayoutConfig> {
   USD: 0.04, // P0-5: $0.04/token matches canonicalEconomy.ts tokenPayoutUsd
 },
     minimumPayoutTokens: 1000, // Minimum 1000 tokens ($10 USD equivalent)
-    payoutFeePlatformPercent: 0.02, // 2% platform fee on payouts
+    payoutCommissionPercent: 0.20, // P0-A: 20% platform commission on gross tokens (matches canonicalEconomy.ts)
+    payoutFeePlatformPercent: 0.05, // P0-B: 5% platform fee after commission (matches canonicalEconomy.ts)
   };
 
   await db.collection("payout_config").doc("global").set(defaultConfig);
@@ -529,8 +532,12 @@ export async function requestPayout(params: {
   }
 
   // Calculate amounts
-  const tokensFeePlatform = Math.floor(tokensRequested * config.payoutFeePlatformPercent);
-  const tokensNetToUser = tokensRequested - tokensFeePlatform;
+  // P0-A: Apply 20% commission first, then 5% fee on the remainder
+  // Flow: grossTokens → -commission(20%) → -fee(5%) → creatorReceives
+  const tokensCommissionPlatform = Math.floor(tokensRequested * config.payoutCommissionPercent);
+  const tokensAfterCommission = tokensRequested - tokensCommissionPlatform;
+  const tokensFeePlatform = Math.floor(tokensAfterCommission * config.payoutFeePlatformPercent);
+  const tokensNetToUser = tokensAfterCommission - tokensFeePlatform;
 
   const currency = account.currency || "USD";
   const fxRate = config.tokenToFiatRate[currency as keyof typeof config.tokenToFiatRate] || 0.01;
@@ -550,6 +557,7 @@ export async function requestPayout(params: {
     rail: account.effectiveRail,
     currency,
     tokensRequested,
+    tokensCommissionPlatform,
     tokensFeePlatform,
     tokensNetToUser,
     fxRate,

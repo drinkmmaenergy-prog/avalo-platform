@@ -35,7 +35,6 @@ import type {
 import {
   CANONICAL_LOGIC_VERSION,
   FREE_MESSAGES_STANDARD,
-  WORDS_PER_TOKEN_STANDARD,
 } from '../types/canonical-chat.types';
 
 // ============================================================================
@@ -231,14 +230,13 @@ function extractPaidSession(data: any): CanonicalPaidSession | null {
   const escrowRemaining = billing.escrowBalance || billing.remainingTokens ||
     (deposit.escrow || (depositTokens - platformFee));
 
+  // V9 CanonicalBillingState — word-based fields do not exist in V9 schema.
+  // Legacy word counts (billing.wordsSent, usedWords) are preserved in _legacyBackup only.
   const billingState: CanonicalBillingState = {
-    accumulatedEarnerWords: billing.wordsSent || billing.usedWords || 0,
-    escrowRemainingTokens: Math.max(0, escrowRemaining),
-    platformFeeChargedTokens: platformFee,
-    totalBucketsConsumed: Math.floor((billing.wordsSent || billing.usedWords || 0) / (billing.wordsPerToken || WORDS_PER_TOKEN_STANDARD)),
+    totalMessagesCharged: 0, // Cannot determine from legacy word data — set to 0
     totalTokensConsumed: billing.totalConsumed || billing.tokensSent || 0,
-    totalEarnerCredited: 0, // Cannot determine from legacy data — set to 0
-    totalAvaloCredited: 0,  // Cannot determine from legacy data — set to 0
+    totalEarnerCredited: 0,  // Cannot determine from legacy data — set to 0
+    totalAvaloCredited: 0,   // Cannot determine from legacy data — set to 0
   };
 
   return {
@@ -246,8 +244,7 @@ function extractPaidSession(data: any): CanonicalPaidSession | null {
     sessionVersion: 1,
     configSnapshot: {
       depositTokens,
-      wordsPerToken: billing.wordsPerToken || WORDS_PER_TOKEN_STANDARD,
-      burnMultiplier: 1, // Legacy did not have multipliers
+      burnMultiplier: 1 as import('../types/canonical-chat.types').BurnMultiplier, // Legacy had no multiplier; 1 = default
     },
     startedAt: data.paidStartedAt || data.deposit?.paidAt || Timestamp.now(),
     billingState,

@@ -1,5 +1,3 @@
-import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
-
 /**
  * PACK 75 - Call Billing Engine
  * 
@@ -28,11 +26,13 @@ interface CallSession {
 }
 
 /**
- * Revenue split constants (65/35)
- * Matches existing platform split for PPM/chat
+ * Revenue split constants for calls (80/20)
+ * P0-C/D: Hardcoded to bypass monetizationSplits.ts V9 placeholder (all zeros).
+ * Source of truth: canonicalEconomy.ts + callMonetization.ts (VOICE/VIDEO both 80/20).
+ * Do NOT read from MONETIZATION_SPLITS until that file is fully migrated from V9.
  */
-const EARNER_SPLIT = MONETIZATION_SPLITS.CHAT.earner;  // 65% to callee (earner/earner)
-const AVALO_SPLIT = MONETIZATION_SPLITS.CHAT.platform;   // 35% to Avalo
+const EARNER_SPLIT = 0.80; // 80% to callee (creator)
+const AVALO_SPLIT  = 0.20; // 20% to Avalo
 
 /**
  * Bill a completed call session
