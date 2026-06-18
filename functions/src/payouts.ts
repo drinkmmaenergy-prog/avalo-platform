@@ -142,7 +142,7 @@ async function getPayoutConfig(): Promise<PayoutConfig> {
  WISE: ["USD"]
 },
  tokenToFiatRate: {
-  USD: 0.03,
+  USD: 0.04, // P0-5: $0.04/token matches canonicalEconomy.ts tokenPayoutUsd
 },
     minimumPayoutTokens: 1000, // Minimum 1000 tokens ($10 USD equivalent)
     payoutFeePlatformPercent: 0.02, // 2% platform fee on payouts
@@ -210,9 +210,10 @@ function getCurrencyForCountry(country: string): string {
  * Fetch eligibility context for a user.
  */
 async function fetchEligibilityContext(userId: string): Promise<PayoutEligibilityContext> {
-  // Fetch age verification status
-  const ageGateDoc = await db.collection("age_gates").doc(userId).get();
-  const ageVerified = ageGateDoc.exists && ageGateDoc.data()?.verified === true;
+  // P0-3: Fetch age verification from canonical source (users.ageVerified).
+  // Old code read from age_gates collection which was never written to.
+  const userDoc = await db.collection("users").doc(userId).get();
+  const ageVerified = userDoc.exists && userDoc.data()?.ageVerified === true;
 
   // Fetch enforcement status
   const enforcementDoc = await db.collection("enforcement_profiles").doc(userId).get();

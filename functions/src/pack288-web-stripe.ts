@@ -101,6 +101,8 @@ export const tokens_createCheckoutSession = https.onCall(
       // Create checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
+        billing_address_collection: 'required',  // P0-4: geo detection for Stripe Tax
+        automatic_tax: { enabled: true },          // P0-4: Stripe Tax — auto-calculates VAT/GST/etc.
         line_items: [
           {
             price_data: {
@@ -111,6 +113,7 @@ export const tokens_createCheckoutSession = https.onCall(
                 images: ['https://avalo.app/images/token-icon.png'],
               },
               unit_amount: amount,
+              tax_behavior: 'inclusive',           // P0-4: tax extracted from price, not added on top
             },
             quantity: 1,
           },

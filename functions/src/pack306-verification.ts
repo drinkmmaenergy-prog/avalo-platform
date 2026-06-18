@@ -324,7 +324,28 @@ async function detectAIGenerated(
 export const onUserCreate = functions.auth.user().onCreate(async (user) => {
   try {
     await initializeVerificationStatus(user.uid);
-    console.log(`Verification initialized for user ${user.uid}`);
+
+    // P0-2: Create AML profile with kycRequired:true — fixes the KYC bypass where
+    // payouts.ts fetchEligibilityContext() defaulted kycRequired:false when no profile existed.
+    await db.collection('aml_profiles').doc(user.uid).set({
+      kycRequired: true,
+      kycVerified: false,
+      kycLevel: 'NONE',
+      riskScore: 0,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // P0-3: Initialize canonical age fields on users/{uid} — single source of truth.
+    await db.collection('users').doc(user.uid).set({
+      ageVerified: false,
+      ageVerification: {
+        status: 'UNVERIFIED',
+        attemptCount: 0,
+      },
+    }, { merge: true });
+
+    console.log(`Verification + AML profile initialized for user ${user.uid}`);
   } catch (error) {
     console.error('Error initializing verification:', error);
   }

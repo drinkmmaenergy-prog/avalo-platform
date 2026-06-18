@@ -16,6 +16,11 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { HttpsError, Timestamp, auth, onCall } from './runtime';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16',
+});
 
 const db = admin.firestore();
 
@@ -167,71 +172,54 @@ export const pack388_verifyAgeStrict = functions.https.onCall(async (request) =>
 
     await attemptRef.set(attempt);
 
-    // Process based on method
-    let verificationResult: any;
-
-    if (method === VerificationMethod.AI_SELFIE) {
-      verificationResult = await processAISelfieVerification(userId, selfieData);
-    } else if ([VerificationMethod.ID_DOCUMENT, VerificationMethod.PASSPORT, 
-                 VerificationMethod.DRIVERS_LICENSE, VerificationMethod.NATIONAL_ID].includes(method)) {
-      verificationResult = await processDocumentVerification(userId, method, documentData);
-    } else {
+    // All verification methods route through Stripe Identity.
+    // This is an async two-step flow:
+    //   Step 1 (this function): create Stripe Identity session, return clientSecret to client.
+    //   Step 2 (pack388_stripeIdentityWebhook): receive Stripe callback, finalize user state.
+    if (![
+      VerificationMethod.AI_SELFIE,
+      VerificationMethod.ID_DOCUMENT,
+      VerificationMethod.PASSPORT,
+      VerificationMethod.DRIVERS_LICENSE,
+      VerificationMethod.NATIONAL_ID,
+    ].includes(method)) {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid verification method');
     }
 
-    // Update attempt with results
-    await attemptRef.update({
-      processedAt: admin.firestore.Timestamp.now(),
-      estimatedAge: verificationResult.estimatedAge,
-      confidence: verificationResult.confidence,
-      fraudSignals: verificationResult.fraudSignals,
-      status: verificationResult.status
+    const identitySession = await stripe.identity.verificationSessions.create({
+      type: 'document',
+      options: {
+        document: {
+          allowed_types: ['id_card', 'passport', 'driving_license'],
+          require_id_number: false,
+          require_live_capture: true,
+          require_matching_selfie: true,
+        },
+      },
+      metadata: {
+        userId,
+        attemptId: attemptRef.id,
+        method,
+        countryCode: countryCode || '',
+      },
     });
 
-    // Check if age meets requirements
-    const minimumAge = getMinimumAge(countryCode);
-    const isMinor = verificationResult.estimatedAge < minimumAge;
+    // Update attempt record with the pending session reference
+    await attemptRef.update({
+      status: AgeVerificationStatus.PENDING,
+      stripeIdentitySessionId: identitySession.id,
+    });
 
-    if (isMinor || verificationResult.status === AgeVerificationStatus.FLAGGED) {
-      // MINOR DETECTED - Execute lockdown
-      await pack388_minorDetectionLock({
-        userId,
-        detectedAge: verificationResult.estimatedAge,
-        method,
-        confidence: verificationResult.confidence
-      });
-
-      throw new functions.https.HttpsError(
-        'permission-denied',
-        'Age verification failed. Account has been locked for safety review.'
-      );
-    }
-
-    if (verificationResult.status === AgeVerificationStatus.VERIFIED) {
-      // Update user document
-      await db.collection('users').doc(userId).update({
-        ageVerified: true,
-        ageVerificationStatus: AgeVerificationStatus.VERIFIED,
-        ageVerificationMethod: method,
-        ageVerifiedAt: admin.firestore.Timestamp.now(),
-        estimatedAge: verificationResult.estimatedAge
-      });
-
-      return {
-        success: true,
-        verified: true,
-        attemptId: attemptRef.id,
-        message: 'Age verification successful!'
-      };
-    }
-
-    // Verification rejected but not suspicious
+    // Return the clientSecret so the mobile/web client can complete verification
+    // via the Stripe Identity SDK (stripe.verifyIdentity(clientSecret))
     return {
-      success: false,
+      success: true,
       verified: false,
+      pending: true,
+      verificationSessionId: identitySession.id,
+      clientSecret: identitySession.client_secret,
       attemptId: attemptRef.id,
-      attemptsRemaining: 3 - attemptNumber,
-      message: verificationResult.rejectionReason || 'Verification could not be completed. Please try again.'
+      message: 'Identity verification session created. Please complete verification.',
     };
 
   } catch (error) {
@@ -240,75 +228,9 @@ export const pack388_verifyAgeStrict = functions.https.onCall(async (request) =>
   }
 });
 
-/**
- * Process AI selfie verification
- */
-async function processAISelfieVerification(userId: string, selfieData: any): Promise<any> {
-  // In production, this would call an AI service like AWS Rekognition, Google Cloud Vision, or specialized age verification API
-  
-  // Simulate AI processing
-  const result = {
-    estimatedAge: selfieData.mockAge || 25,
-    confidence: selfieData.mockConfidence || 85,
-    fraudSignals: {
-      fakeSelfie: false,
-      alteredDocument: false,
-      stolenIdentity: false,
-      ageManipulation: false,
-      multipleAccounts: false
-    },
-    status: AgeVerificationStatus.VERIFIED,
-    rejectionReason: null
-  };
-
-  // Check for fraud signals
-  if (result.confidence < 60) {
-    result.status = AgeVerificationStatus.REJECTED;
-    result.rejectionReason = 'Low confidence in age estimation. Please use document verification.';
-  }
-
-  // Check for minor indicators
-  if (result.estimatedAge < 16) {
-    result.status = AgeVerificationStatus.FLAGGED;
-    result.fraudSignals.ageManipulation = true;
-  }
-
-  return result;
-}
-
-/**
- * Process document verification
- */
-async function processDocumentVerification(userId: string, method: VerificationMethod, documentData: any): Promise<any> {
-  // In production, this would call a document verification service like Jumio, Onfido, or Persona
-  
-  // Simulate document processing
-  const result = {
-    estimatedAge: documentData.mockAge || 25,
-    confidence: documentData.mockConfidence || 95,
-    fraudSignals: {
-      fakeSelfie: false,
-      alteredDocument: false,
-      stolenIdentity: false,
-      ageManipulation: false,
-      multipleAccounts: false
-    },
-    status: AgeVerificationStatus.VERIFIED,
-    rejectionReason: null
-  };
-
-  // Document verification typically has higher confidence
-  if (result.confidence >= 90 && result.estimatedAge >= 18) {
-    result.status = AgeVerificationStatus.VERIFIED;
-  } else if (result.estimatedAge < 18) {
-    result.status = AgeVerificationStatus.FLAGGED;
-  } else {
-    result.status = AgeVerificationStatus.REJECTED;
-    result.rejectionReason = 'Document could not be verified. Please ensure document is clear and valid.';
-  }
-
-  return result;
-}
+// processAISelfieVerification and processDocumentVerification are removed.
+// Verification is now handled by Stripe Identity (pack388_stripeIdentityWebhook).
+// The session creation above replaces both stub functions.
 
 /**
  * Minor detection lockdown

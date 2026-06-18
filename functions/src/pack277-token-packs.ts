@@ -16,14 +16,18 @@ import { db, generateId, serverTimestamp } from "./init";
 import { FieldValue } from "firebase-admin/firestore";
 import { TokenPack, PurchaseResponse } from "./types/pack277-wallet.types";
 
+// P0-5: Prices synced to canonicalEconomy.ts (was pack277 live ~25% below intended).
+// These are the ONLY source of truth for Stripe checkout pricing.
+// When updating prices here, also update the corresponding Stripe Product/Price objects
+// in the Stripe Dashboard (or via Stripe API) and re-seed config/tokenPacks in Firestore.
 export const DEFAULT_TOKEN_PACKS: Omit<TokenPack, "createdAt" | "updatedAt">[] = [
-  { id: "mini",     name: "Mini",     tokens: 100,   priceUSD: 9.99,   active: true, order: 1 },
-  { id: "basic",    name: "Basic",    tokens: 300,   priceUSD: 26.99,  active: true, order: 2 },
-  { id: "standard", name: "Standard", tokens: 500,   priceUSD: 42.99,  active: true, order: 3, popularBadge: true },
-  { id: "premium",  name: "Premium",  tokens: 1000,  priceUSD: 76.99,  active: true, order: 4 },
-  { id: "pro",      name: "Pro",      tokens: 2000,  priceUSD: 147.99, active: true, order: 5 },
-  { id: "elite",    name: "Elite",    tokens: 5000,  priceUSD: 353.99, active: true, order: 6 },
-  { id: "royal",    name: "Royal",    tokens: 10000, priceUSD: 674.99, active: true, order: 7 },
+  { id: "mini",     name: "Mini",     tokens: 100,   priceUSD: 12.99,  active: true, order: 1 },
+  { id: "basic",    name: "Basic",    tokens: 300,   priceUSD: 34.99,  active: true, order: 2 },
+  { id: "standard", name: "Standard", tokens: 500,   priceUSD: 56.99,  active: true, order: 3, popularBadge: true },
+  { id: "premium",  name: "Premium",  tokens: 1000,  priceUSD: 99.99,  active: true, order: 4 },
+  { id: "pro",      name: "Pro",      tokens: 2000,  priceUSD: 189.99, active: true, order: 5 },
+  { id: "elite",    name: "Elite",    tokens: 5000,  priceUSD: 449.99, active: true, order: 6 },
+  { id: "royal",    name: "Royal",    tokens: 10000, priceUSD: 849.99, active: true, order: 7 },
 ];
 
 export type CanonicalTokenPack = Omit<TokenPack, "createdAt" | "updatedAt">;

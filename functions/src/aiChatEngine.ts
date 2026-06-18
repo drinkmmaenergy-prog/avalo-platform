@@ -70,14 +70,21 @@ function countBillableWords(text: string): number {
 async function isUserMinor(userId: string): Promise<boolean> {
   const userSnap = await db.collection('users').doc(userId).get();
   if (!userSnap.exists) return true; // Safe default
-  
+
   const userData = userSnap.data();
   const birthDate = userData?.birthDate;
-  
-  if (!birthDate) return true; // Safe default if no birth date
-  
-  const age = Math.floor((Date.now() - birthDate.toDate().getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-  return age < 18;
+
+  // P0-3: Primary check — verified DOB from Stripe Identity webhook
+  if (birthDate) {
+    const age = Math.floor((Date.now() - birthDate.toDate().getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    return age < 18;
+  }
+
+  // P0-3: Fallback — ageVerified flag for existing users who verified before Stripe Identity
+  // (register.tsx stored ageVerified:true but never stored birthDate)
+  if (userData?.ageVerified === true) return false;
+
+  return true; // Safe default — treat as minor if no verification data
 }
 
 /**

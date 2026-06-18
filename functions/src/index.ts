@@ -177,6 +177,9 @@ export {
   pack390_escalateFinancialRisk,
 } from './pack390-aml';
 
+// PACK 388: STRIPE IDENTITY WEBHOOK (P0-1)
+export { pack388_stripeIdentityWebhook } from './pack388-stripe-identity';
+
 export {
   pack390_requestBankPayout,
   pack390_executeBankPayout,
