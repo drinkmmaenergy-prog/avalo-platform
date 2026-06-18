@@ -34,13 +34,14 @@ class HttpsError extends Error {
 // CONSTANTS
 // ============================================================================
 
-const FREE_WELCOME_MESSAGES = 3;
-const WORDS_PER_TOKEN_ROYAL = 7;
-const WORDS_PER_TOKEN_STANDARD = 11;
-const CHAT_DEPOSIT_TOKENS = 100;
-const PLATFORM_FEE_PERCENT = 35; // Same as human chats
-const CREATOR_SHARE_PERCENT = 80;
-const AVALO_SHARE_PERCENT = 20;
+// V9 billing constants
+const FREE_WELCOME_MESSAGES = 4;         // V9: 4 free messages (was 3)
+const BASE_MESSAGE_PRICE_TOKENS = 3;     // V9: flat 3 tokens per AI message
+const CREATOR_SHARE_PERCENT = 100;       // V9: earner receives 100% per message (platform earns on payout)
+const AVALO_SHARE_PERCENT = 0;           // V9: no per-message platform cut
+
+// @deprecated V9 — kept for variable reference below, do not add new uses
+const CHAT_DEPOSIT_TOKENS = 0;           // V9: no deposit
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -124,11 +125,7 @@ export async function startAiChat(
     };
   }
   
-  // Get user context
-  const isRoyal = await isRoyalMember(userId);
-  const wordsPerToken = isRoyal ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD;
-  
-  // Create new chat
+  // Create new chat — V9: no Royal check needed (flat billing)
   const chatId = generateId();
   const chatData: AIChat = {
     chatId,
@@ -137,13 +134,13 @@ export async function startAiChat(
     earnerId: bot.earnerId,
     state: 'FREE_ACTIVE',
     billing: {
-      wordsPerToken,
+      wordsPerToken: 0,          // V9: unused, kept for schema compat
       freeMessagesRemaining: FREE_WELCOME_MESSAGES,
-      escrowBalance: 0,
+      escrowBalance: 0,          // V9: no escrow
       totalConsumed: 0,
       messageCount: 0,
     },
-    pricePerMessage: bot.pricing.perMessage,
+    pricePerMessage: BASE_MESSAGE_PRICE_TOKENS, // V9: always 3
     contextWindow: {
       lastMessages: [],
     },
@@ -263,25 +260,27 @@ export async function processAiMessage(
     isMinor,
   });
   
-  // Calculate billing for AI response
-  const wordCount = countBillableWords(aiResponse);
-  
-  // Token cost = base price + word-based billing
-  const wordBasedTokens = hasFreeMessages ? 0 : Math.ceil(wordCount / chat.billing.wordsPerToken);
-  const tokensCost = hasFreeMessages ? 0 : (wordBasedTokens + chat.pricePerMessage);
-  
-  // If paid and insufficient escrow, return error
-  if (!hasFreeMessages && tokensCost > chat.billing.escrowBalance) {
-    return {
-      success: false,
-      tokensCost,
-      wasFree: false,
-      error: 'INSUFFICIENT_BALANCE',
-      message: 'Insufficient escrow balance',
-      required: tokensCost,
-    };
+  // V9: flat 3 tokens per AI message (BASE_MESSAGE_PRICE_TOKENS)
+  const tokensCost = hasFreeMessages ? 0 : BASE_MESSAGE_PRICE_TOKENS;
+
+  // V9: check payer wallet balance (no escrow — direct wallet debit)
+  if (!hasFreeMessages) {
+    const payerWalletSnap = await db.collection('user_wallets').doc(userId).get();
+    const payerBalance = payerWalletSnap.data()?.balance ?? 0;
+    if (payerBalance < tokensCost) {
+      // Transition AI chat to LOCKED
+      await chatRef.update({ state: 'LOCKED', updatedAt: serverTimestamp() });
+      return {
+        success: false,
+        tokensCost,
+        wasFree: false,
+        error: 'INSUFFICIENT_BALANCE',
+        message: 'Insufficient token balance',
+        required: tokensCost,
+      };
+    }
   }
-  
+
   // Process billing and save messages in transaction
   await db.runTransaction(async (transaction) => {
     // Save user message
@@ -291,12 +290,11 @@ export async function processAiMessage(
       chatId: request.chatId,
       role: 'user',
       content: request.message,
-      wordCount: countBillableWords(request.message),
-      tokensCost: 0, // User doesn't pay for their own messages
+      tokensCost: 0,
       wasFree: false,
       timestamp: serverTimestamp(),
     });
-    
+
     // Save AI response
     const botMsgRef = db.collection('aiChats').doc(request.chatId).collection('messages').doc();
     transaction.set(botMsgRef, {
@@ -304,78 +302,68 @@ export async function processAiMessage(
       chatId: request.chatId,
       role: 'bot',
       content: aiResponse,
-      wordCount,
       tokensCost,
       wasFree: hasFreeMessages,
       timestamp: serverTimestamp(),
     });
-    
+
     // Update chat state
     const chatUpdates: any = {
       'billing.messageCount': increment(2),
       lastMessageAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
-    
+
     // Update context window
     const newContext = [
-      ...chat.contextWindow.lastMessages.slice(-14), // Keep last 14
+      ...chat.contextWindow.lastMessages.slice(-14),
       `User: ${request.message}`,
       `Bot: ${aiResponse}`,
     ];
     chatUpdates['contextWindow.lastMessages'] = newContext;
-    
+
     if (hasFreeMessages) {
-      // Deduct free message
       chatUpdates['billing.freeMessagesRemaining'] = increment(-1);
     } else {
-      // Process paid message
-      chatUpdates['billing.escrowBalance'] = increment(-tokensCost);
+      // V9: deduct from payer wallet directly (no escrow)
       chatUpdates['billing.totalConsumed'] = increment(tokensCost);
-      
-      // Calculate revenue split (80% earner, 20% Avalo)
-      const earner = Math.floor(tokensCost * (CREATOR_SHARE_PERCENT / 100));
-      const platform = tokensCost - earner;
-      
-      // Credit earner wallet
-      const earnerWalletRef = db.collection('users').doc(chat.earnerId).collection('wallet').doc('current');
-      transaction.update(earnerWalletRef, {
-        balance: increment(earner),
-        earned: increment(earner),
-      });
-      
-      // Deduct from user's pending
-      const userWalletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-      transaction.update(userWalletRef, {
-        pending: increment(-tokensCost),
-      });
-      
+
+      const payerWalletRef = db.collection('user_wallets').doc(userId);
+      transaction.set(payerWalletRef, {
+        balance: increment(-tokensCost),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+      // V9: earner receives 100% of message cost
+      const earnerCredit = tokensCost;
+      if (chat.earnerId) {
+        const earnerWalletRef = db.collection('user_wallets').doc(chat.earnerId);
+        transaction.set(earnerWalletRef, {
+          balance: increment(earnerCredit),
+          earned: increment(earnerCredit),
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      }
+
       // Record earnings
       const earningsRef = db.collection('aiBotEarnings').doc(chat.botId).collection('records').doc();
-      const period = new Date().toISOString().substring(0, 7); // YYYY-MM
-      
+      const period = new Date().toISOString().substring(0, 7);
       transaction.set(earningsRef, {
         recordId: earningsRef.id,
         botId: chat.botId,
         earnerId: chat.earnerId,
         chatId: request.chatId,
         userId,
-        tokensEarned: tokensCost,
-        earner,
-        platform,
+        tokensEarned: earnerCredit,
         messageCount: 1,
-        wordCount,
         timestamp: serverTimestamp(),
         period,
       });
-      
-      // Update bot stats (will execute after transaction)
-      // Note: updateBotStats is atomic and separate from this transaction
     }
-    
+
     transaction.update(chatRef, chatUpdates);
   });
-  
+
   // Update bot stats outside transaction (async)
   if (!hasFreeMessages) {
     await updateBotStats(chat.botId, {
@@ -383,13 +371,11 @@ export async function processAiMessage(
       earningsIncrement: tokensCost,
     });
   }
-  
+
   // Record ranking event (async, non-blocking)
   if (!hasFreeMessages && tokensCost > 0) {
     try {
-      // Import ranking function dynamically to avoid circular dependencies
       const { recordRankingAction } = await import('./rankingEngine');
-      
       await recordRankingAction({
         type: 'paid_chat',
         earnerId: chat.earnerId,
@@ -397,11 +383,11 @@ export async function processAiMessage(
         points: tokensCost,
         timestamp: new Date(),
       });
-    } catch (error) {
-      // Non-blocking - don't fail if ranking fails
+    } catch (_err) {
+      // Non-blocking
     }
   }
-  
+
   return {
     success: true,
     response: aiResponse,

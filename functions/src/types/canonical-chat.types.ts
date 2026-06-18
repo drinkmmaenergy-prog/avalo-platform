@@ -14,12 +14,12 @@ import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
  * - pack452 premium offer engine (mid-chat multiplier — NEXT SESSION ONLY)
  * - pack285FreeWindowFunnel.ts (separate free funnel — MERGED)
  *
- * INVARIANTS:
- * - 65/35 revenue split (earner/Avalo) unchanged
- * - Word buckets: Standard = 11 words/token, Royal = 7 words/token
- * - Base burn = 1 token per bucket * burnMultiplier
+ * INVARIANTS (V9):
+ * - Splits are 0/0 — no earner/platform percentage split on chat (flat token model)
+ * - Word-based billing DEPRECATED — Phase 2 chat engine rewrite will replace with flat 3T/msg
+ * - Free messages: 4 per user per chat (flat, both tiers)
  * - Payout per token = 0.04 USD (from economyConfig)
- * - Token pack pricing unchanged
+ * - Token pack pricing: V9 prices in pack277-token-packs.ts and canonicalEconomy.ts
  * - Historical ledger never recalculated
  * - No Math.round anywhere — deterministic floor only
  *
@@ -44,8 +44,9 @@ export type CanonicalChatState =
   | 'MATCHED'                // Match created, chat document exists but no acceptance yet
   | 'AWAITING_EARNER_ACCEPT' // Earner must accept or decline
   | 'FREE_ACTIVE'            // Free messages phase (counters ticking)
-  | 'AWAITING_DEPOSIT'       // Free exhausted, payer must deposit to continue
-  | 'PAID_ACTIVE'            // Paid session active, escrow funded
+  | 'AWAITING_DEPOSIT'       // @deprecated V9 — use LOCKED. Kept for migration compat.
+  | 'PAID_ACTIVE'            // Paid session active, flat per-message billing
+  | 'LOCKED'                 // V9: payer balance insufficient for next message
   | 'CLOSED'                 // Ended by user or system
   | 'EXPIRED';               // Auto-expired after 48h inactivity
 
@@ -77,20 +78,50 @@ export type BurnMultiplier = typeof BURN_MULTIPLIER_ENUM[number];
 // FREE MESSAGE CONSTANTS
 // ============================================================================
 
-/** Standard free messages per user per chat */
-export const FREE_MESSAGES_STANDARD = 9;
+/**
+ * V9: Flat free message allowance — 4 per user per chat regardless of earner tier.
+ * Previous values: 9 (standard), 5 (royal). Both replaced by 4.
+ */
+export const FREE_MESSAGES_STANDARD = 4;
 
-/** Free messages per user when earner has Royal status */
-export const FREE_MESSAGES_ROYAL_EARNER = 5;
+/**
+ * @deprecated V9 — both tiers use FREE_MESSAGES_STANDARD = 4.
+ * Kept for compile compatibility only. Do not add new references.
+ */
+export const FREE_MESSAGES_ROYAL_EARNER = 4;
 
 // ============================================================================
 // BILLING CONSTANTS
 // ============================================================================
 
-/** Words per token for standard earners */
+/**
+ * V9: Flat token cost per creator (earner) message.
+ * Payer is debited 3 tokens each time the earner sends a message after free allowance.
+ * Earner receives 3 tokens per message (platform earns via payout commission only).
+ */
+export const BASE_MESSAGE_PRICE_TOKENS = 3;
+
+/**
+ * V9: Cost for payer to reopen a LOCKED chat.
+ * Payer must have this many tokens to unlock and continue.
+ */
+export const REOPEN_COST_TOKENS = 25;
+
+/**
+ * V9: Free messages granted to payer when they reopen a LOCKED chat.
+ */
+export const REOPEN_FREE_MESSAGES = 2;
+
+/**
+ * @deprecated V9 — word-based billing removed.
+ * Kept for compile compatibility. Do NOT add new references.
+ */
 export const WORDS_PER_TOKEN_STANDARD = 11;
 
-/** Words per token when earner has Royal status */
+/**
+ * @deprecated V9 — word-based billing removed.
+ * Kept for compile compatibility. Do NOT add new references.
+ */
 export const WORDS_PER_TOKEN_ROYAL = 7;
 
 /** Platform fee percentage (non-refundable, taken at deposit time) */
@@ -234,15 +265,12 @@ export interface CanonicalPaidSession {
 }
 
 /**
- * Configuration snapshot frozen at deposit time.
- * These values do NOT change mid-session.
+ * Configuration snapshot frozen at session start time.
+ * V9: No deposit, no wordsPerToken. Flat 3T/msg.
  */
 export interface CanonicalSessionConfig {
-  /** Tokens deposited by payer */
+  /** @deprecated V9 — kept for Firestore migration compat. Always 0 in new sessions. */
   depositTokens: number;
-
-  /** Words per token bucket: 7 if earner is Royal, 11 otherwise */
-  wordsPerToken: number;
 
   /** Burn multiplier: 1 default, or from earner's configured enum value */
   burnMultiplier: BurnMultiplier;
@@ -251,39 +279,25 @@ export interface CanonicalSessionConfig {
 /**
  * Live billing state, updated on each earner message.
  *
- * BILLING DIRECTION: Only earner messages are billed.
- * Payer messages are ALWAYS free.
- *
- * Bucket rule:
- *   newBuckets = floor((accumulatedEarnerWords + newWords) / wordsPerToken) - priorBuckets
- *   tokenCost = newBuckets * 1 * burnMultiplier
- *   Consume from escrow; credit split:
- *     If earnerId != null: 65% to earner, 35% to Avalo
- *     If earnerId == null: 100% to Avalo
- *
- * CRITICAL: No Math.round. Use deterministic floor for buckets.
- * Partial bucket words remain stored in accumulatedEarnerWords remainder.
+ * V9 BILLING MODEL:
+ *   - Only earner messages are billed. Payer messages are ALWAYS free.
+ *   - Each earner message costs BASE_MESSAGE_PRICE_TOKENS (3) taken from payer wallet.
+ *   - 3 tokens credited directly to earner wallet per message.
+ *   - No escrow. No deposit. No word counting.
+ *   - If payer balance < 3 tokens → chat transitions to LOCKED.
+ *   - burnMultiplier applied: actual cost = BASE_MESSAGE_PRICE_TOKENS * burnMultiplier.
  */
 export interface CanonicalBillingState {
-  /** Total earner words accumulated this session (including partial bucket) */
-  accumulatedEarnerWords: number;
+  /** Total earner messages charged in this session */
+  totalMessagesCharged: number;
 
-  /** Remaining escrow tokens (starts at 65% of deposit) */
-  escrowRemainingTokens: number;
-
-  /** Platform fee already charged (35% of deposit, non-refundable) */
-  platformFeeChargedTokens: number;
-
-  /** Total buckets consumed so far in this session */
-  totalBucketsConsumed: number;
-
-  /** Total tokens consumed from escrow so far */
+  /** Total tokens consumed from payer wallet this session */
   totalTokensConsumed: number;
 
-  /** Total tokens credited to earner so far */
+  /** Total tokens credited to earner this session */
   totalEarnerCredited: number;
 
-  /** Total tokens credited to Avalo from escrow consumption so far */
+  /** Total tokens credited to Avalo this session (0 in V9 — platform earns on payout) */
   totalAvaloCredited: number;
 }
 
@@ -325,25 +339,23 @@ export interface ChatParticipantContext {
 
 /**
  * Result of processing billing for a single earner message.
+ * V9: flat 3T/msg from payer wallet → earner wallet.
  */
 export interface BillingResult {
-  /** Whether any tokens were consumed */
+  /** Whether any tokens were consumed (false = free message or payer message) */
   billed: boolean;
 
-  /** Number of new buckets consumed by this message */
-  newBuckets: number;
-
-  /** Tokens consumed from escrow */
+  /** Tokens consumed from payer wallet */
   tokensConsumed: number;
 
   /** Tokens credited to earner */
   earnerCredit: number;
 
-  /** Tokens credited to Avalo */
+  /** Tokens credited to Avalo (0 in V9) */
   platformCredit: number;
 
-  /** Whether escrow is now exhausted */
-  escrowExhausted: boolean;
+  /** V9: true when payer balance was insufficient — chat transitions to LOCKED */
+  locked: boolean;
 
   /** Updated billing state after this message */
   updatedBillingState: CanonicalBillingState;
@@ -354,22 +366,16 @@ export interface BillingResult {
 // ============================================================================
 
 /**
- * Result of processing a deposit.
+ * @deprecated V9 — no deposit model. Kept for compile compat.
+ * V9: chats transition to PAID_ACTIVE when free messages exhausted, no deposit required.
  */
 export interface DepositResult {
-  /** Whether the deposit was successful */
   success: boolean;
-
-  /** The new paid session created */
   session: CanonicalPaidSession;
-
-  /** Platform fee charged (non-refundable) */
+  /** @deprecated V9 — always 0 */
   platformFee: number;
-
-  /** Escrow allocated (refundable unused) */
+  /** @deprecated V9 — always 0 */
   escrow: number;
-
-  /** Total deposit amount */
   depositTokens: number;
 }
 
@@ -378,16 +384,15 @@ export interface DepositResult {
 // ============================================================================
 
 /**
- * Result of closing a chat and refunding unused escrow.
+ * Result of closing a chat.
+ * V9: No escrow to refund. Fields kept for compat.
  */
 export interface RefundResult {
-  /** Amount refunded to payer */
+  /** V9: always 0 (no escrow) */
   refundedTokens: number;
-
-  /** Platform fee NOT refunded */
+  /** V9: always 0 (no platform fee on deposit) */
   platformFeeRetained: number;
-
-  /** Any earner credits already paid out */
+  /** Earner credits already sent */
   earnerCreditsRetained: number;
 }
 
@@ -397,49 +402,12 @@ export interface RefundResult {
 
 /**
  * State of a legacy chat document before migration.
- * Used by the migration script to detect and convert old formats.
  */
 export type LegacySourceType =
-  | 'chats_ts'             // From chats.ts (ChatStatus.ACTIVE etc.)
-  | 'chatMonetization'     // From chatMonetization.ts (FREE_A/FREE_B/PAID)
-  | 'pack273'              // From pack273ChatEngine.ts (pack273_chats collection)
-  | 'pack328b'             // From pack328b (with timeout fields)
-  | 'unknown';             // Unrecognized format
-
-
-
-
-
-
-
-
-
-
-
-
-
+  | 'chats_ts'
+  | 'chatMonetization'
+  | 'pack273'
+  | 'pack328b'
+  | 'unknown';
 
 export const MIN_DEPOSIT_TOKENS = 100;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -18,7 +18,7 @@ import {
   generateRekindleSuggestions,
   saveRekindleSuggestions,
 } from './pack-225-match-comeback';
-import { shimProcessMessageBilling } from './chatMonetization';
+import { shimProcessMessageBilling } from './canonical-chat-legacy-shim'; // V9: redirected to canonical engine
 
 // ============================================================================
 // MESSAGE SENDING
@@ -431,29 +431,5 @@ export async function sendRekindleMessageNotification(
     console.error('Failed to send rekindle message notification:', error);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

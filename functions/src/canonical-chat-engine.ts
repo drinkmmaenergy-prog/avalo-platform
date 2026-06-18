@@ -41,14 +41,11 @@ import {
   CANONICAL_LOGIC_VERSION,
   FREE_MESSAGES_STANDARD,
   FREE_MESSAGES_ROYAL_EARNER,
-  WORDS_PER_TOKEN_STANDARD,
-  WORDS_PER_TOKEN_ROYAL,
-  PLATFORM_FEE_PCT,
-  ESCROW_PCT,
+  BASE_MESSAGE_PRICE_TOKENS,
+  REOPEN_COST_TOKENS,
+  REOPEN_FREE_MESSAGES,
   MIN_DEPOSIT_TOKENS,
   DEFAULT_DEPOSIT_TOKENS,
-  EARNER_REVENUE_SPLIT,
-  AVALO_REVENUE_SPLIT,
   INACTIVITY_EXPIRY_MS,
   BURN_MULTIPLIER_ENUM,
 } from './types/canonical-chat.types';
@@ -284,63 +281,85 @@ export async function declineChat(
 // ============================================================================
 
 /**
- * Decrement free message counter for the sender.
- * If both users have exhausted their free counters → AWAITING_DEPOSIT.
+ * V9: Decrement free message counter for the sender.
  *
- * Call this BEFORE processing the message. If it returns 'blocked',
- * the message must not be sent.
+ * - FREE_ACTIVE: decrement sender's counter; if earner's counter hits 0 → PAID_ACTIVE
+ * - PAID_ACTIVE: free counter not relevant, return 'paid'
+ * - LOCKED: payer balance insufficient, return 'locked'
+ *
+ * Only the EARNER's free counter gates transition to PAID_ACTIVE.
+ * Payer messages are always allowed (free). Earner messages are billed once earner's free = 0.
  *
  * @param chatId - The chat ID
  * @param senderId - The user sending a message
- * @returns 'allowed' if the message can proceed, 'blocked' if deposit required,
- *          'transition' if this message triggered the transition to AWAITING_DEPOSIT
+ * @param chatDoc - Optional pre-fetched chat document (avoids extra read)
+ * @returns 'allowed' (free), 'paid' (charge 3T), 'locked' (payer insufficient), 'blocked' (bad state)
  */
 export async function decrementFreeCounter(
   chatId: string,
-  senderId: string
-): Promise<'allowed' | 'blocked' | 'transition'> {
+  senderId: string,
+  chatDoc?: CanonicalChatDocument
+): Promise<'allowed' | 'paid' | 'locked' | 'blocked'> {
   const chatRef = db.collection('chats').doc(chatId);
 
   return db.runTransaction(async (transaction) => {
-    const chatSnap = await transaction.get(chatRef);
-    if (!chatSnap.exists) {
-      throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
+    let chat: CanonicalChatDocument;
+    if (chatDoc) {
+      chat = chatDoc;
+    } else {
+      const chatSnap = await transaction.get(chatRef);
+      if (!chatSnap.exists) {
+        throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
+      }
+      chat = chatSnap.data() as CanonicalChatDocument;
     }
 
-    const chat = chatSnap.data() as CanonicalChatDocument;
-
+    if (chat.state === 'LOCKED') {
+      return 'locked';
+    }
+    if (chat.state === 'PAID_ACTIVE') {
+      return 'paid';
+    }
     if (chat.state !== 'FREE_ACTIVE') {
-      if (chat.state === 'AWAITING_DEPOSIT') {
-        return 'blocked';
-      }
-      // If PAID_ACTIVE, free counter not relevant
-      if (chat.state === 'PAID_ACTIVE') {
-        return 'allowed';
-      }
-      throw new ChatEngineError('failed-precondition', `Chat ${chatId} state ${chat.state} does not allow messaging`);
+      throw new ChatEngineError('failed-precondition', `Chat ${chatId} state '${chat.state}' does not allow messaging`);
     }
 
-    const remaining = chat.free.freeRemainingByUser[senderId];
-    if (remaining === undefined) {
-      throw new ChatEngineError('failed-precondition', `Sender ${senderId} not found in free counters for chat ${chatId}`);
-    }
+    const remaining = chat.free.freeRemainingByUser[senderId] ?? 0;
 
     if (remaining <= 0) {
-      // This sender already exhausted. Check if the chat should transition.
-      const allExhausted = Object.values(chat.free.freeRemainingByUser)
-        .every(count => count <= 0);
-
-      if (allExhausted) {
-        transaction.update(chatRef, {
-          state: 'AWAITING_DEPOSIT' as CanonicalChatState,
-          updatedAt: serverTimestamp(),
-        });
-        return 'blocked';
+      // Sender's free exhausted — if this is the earner, billing applies
+      const isEarner = senderId === chat.roles.earnerId;
+      if (isEarner) {
+        // Earner's free is gone → this message will be billed. Transition to PAID_ACTIVE if needed.
+        if (chat.state === 'FREE_ACTIVE') {
+          transaction.update(chatRef, {
+            state: 'PAID_ACTIVE' as CanonicalChatState,
+            paidSession: {
+              sessionId: generateId(),
+              sessionVersion: 1,
+              configSnapshot: { depositTokens: 0, burnMultiplier: 1 },
+              startedAt: Timestamp.now(),
+              billingState: {
+                totalMessagesCharged: 0,
+                totalTokensConsumed: 0,
+                totalEarnerCredited: 0,
+                totalAvaloCredited: 0,
+              },
+            },
+            updatedAt: serverTimestamp(),
+          });
+        }
+        return 'paid';
       }
-      return 'blocked';
+      // Payer free exhausted — payer messages are always free regardless
+      transaction.update(chatRef, {
+        lastMessageAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return 'allowed';
     }
 
-    // Decrement sender's counter
+    // Sender has free messages remaining — decrement
     const newRemaining = remaining - 1;
     transaction.update(chatRef, {
       [`free.freeRemainingByUser.${senderId}`]: newRemaining,
@@ -348,16 +367,26 @@ export async function decrementFreeCounter(
       updatedAt: serverTimestamp(),
     });
 
-    // After this decrement, check if ALL users are now exhausted
-    const updatedCounters = { ...chat.free.freeRemainingByUser };
-    updatedCounters[senderId] = newRemaining;
-    const allExhausted = Object.values(updatedCounters).every(count => count <= 0);
-
-    if (allExhausted) {
+    // Check if earner just exhausted their free messages after this decrement
+    const isEarner = senderId === chat.roles.earnerId;
+    if (isEarner && newRemaining <= 0 && chat.state === 'FREE_ACTIVE') {
+      // Earner used last free message — next earner message will be billed
+      // Transition to PAID_ACTIVE now so subsequent messages bill correctly
       transaction.update(chatRef, {
-        state: 'AWAITING_DEPOSIT' as CanonicalChatState,
+        state: 'PAID_ACTIVE' as CanonicalChatState,
+        paidSession: {
+          sessionId: generateId(),
+          sessionVersion: 1,
+          configSnapshot: { depositTokens: 0, burnMultiplier: 1 },
+          startedAt: Timestamp.now(),
+          billingState: {
+            totalMessagesCharged: 0,
+            totalTokensConsumed: 0,
+            totalEarnerCredited: 0,
+            totalAvaloCredited: 0,
+          },
+        },
       });
-      return 'transition';
     }
 
     return 'allowed';
@@ -365,23 +394,13 @@ export async function decrementFreeCounter(
 }
 
 // ============================================================================
-// D) DEPOSIT + ESCROW
+// D) V9 PAID PHASE ACTIVATION (replaces deposit model)
 // ============================================================================
 
 /**
- * Process a deposit from the payer to start a paid session.
- *
- * Deposit = max(100, earnerConfiguredDepositTokensForNextSession)
- * Platform fee = 35% (non-refundable, charged immediately)
- * Escrow = 65% (refundable unused portion)
- *
- * Transition: AWAITING_DEPOSIT → PAID_ACTIVE
- *
- * @param chatId - The chat ID
- * @param payerId - The user making the deposit (must be the payer)
- * @param earnerConfig - The earner's deposit/multiplier config
- * @param earnerIsRoyal - Whether the earner has Royal status
- * @returns DepositResult with session details
+ * @deprecated V9 — deposit model removed. No-op stub kept for call-site compat.
+ * V9: chat auto-transitions to PAID_ACTIVE when earner exhausts free messages.
+ * Call reopenChat() to unlock a LOCKED chat.
  */
 export async function processDeposit(
   chatId: string,
@@ -389,268 +408,152 @@ export async function processDeposit(
   earnerConfig: EarnerChatConfig | null,
   earnerIsRoyal: boolean
 ): Promise<DepositResult> {
+  // V9: No deposit model. Chat auto-activates when earner free messages exhausted.
+  // This stub exists only for call-site compatibility during migration.
+  logger.warn(`processDeposit called for chat=${chatId} — V9 has no deposit model. Use reopenChat() for LOCKED chats.`);
+  const stubSession: CanonicalPaidSession = {
+    sessionId: generateId(),
+    sessionVersion: 1,
+    configSnapshot: { depositTokens: 0, burnMultiplier: 1 },
+    startedAt: Timestamp.now(),
+    billingState: {
+      totalMessagesCharged: 0,
+      totalTokensConsumed: 0,
+      totalEarnerCredited: 0,
+      totalAvaloCredited: 0,
+    },
+  };
+  return { success: false, session: stubSession, platformFee: 0, escrow: 0, depositTokens: 0 };
+}
+
+/**
+ * V9: Reopen a LOCKED chat.
+ * Payer must have >= REOPEN_COST_TOKENS in their wallet.
+ * Grants REOPEN_FREE_MESSAGES extra free sends to payer.
+ * Transition: LOCKED → PAID_ACTIVE
+ *
+ * @param chatId - The chat ID
+ * @param payerId - Must be the payer
+ */
+export async function reopenChat(
+  chatId: string,
+  payerId: string
+): Promise<void> {
   const chatRef = db.collection('chats').doc(chatId);
 
-  // Calculate deposit amount: max(100, earner configured)
-  const earnerConfigDeposit = earnerConfig?.depositTokensForNextSession ?? DEFAULT_DEPOSIT_TOKENS;
-  const depositTokens = Math.max(MIN_DEPOSIT_TOKENS, earnerConfigDeposit);
-
-  // Calculate splits using floor for determinism
-  const platformFee = Math.floor(depositTokens * PLATFORM_FEE_PCT / 100);
-  const escrow = depositTokens - platformFee; // Remainder goes to escrow
-
-  // Validate and clamp multiplier
-  let burnMultiplier: BurnMultiplier = 1;
-  if (earnerConfig?.burnMultiplierForNextSession) {
-    const requestedMultiplier = earnerConfig.burnMultiplierForNextSession;
-    if (BURN_MULTIPLIER_ENUM.includes(requestedMultiplier as any)) {
-      burnMultiplier = requestedMultiplier;
-    }
-    // Invalid multiplier silently defaults to 1
-  }
-
-  // Determine words per token
-  const wordsPerToken = earnerIsRoyal ? WORDS_PER_TOKEN_ROYAL : WORDS_PER_TOKEN_STANDARD;
-
-  const sessionId = generateId();
-
-  return db.runTransaction(async (transaction) => {
+  await db.runTransaction(async (transaction) => {
     const chatSnap = await transaction.get(chatRef);
     if (!chatSnap.exists) {
       throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
     }
-
     const chat = chatSnap.data() as CanonicalChatDocument;
 
-    if (chat.state !== 'AWAITING_DEPOSIT') {
-      throw new ChatEngineError('failed-precondition', `Chat ${chatId} is not in AWAITING_DEPOSIT state (current: ${chat.state})`);
+    if (chat.state !== 'LOCKED') {
+      throw new ChatEngineError('failed-precondition', `Chat ${chatId} is not LOCKED (current: ${chat.state})`);
     }
-
     if (chat.roles.payerId !== payerId) {
-      throw new ChatEngineError('permission-denied', `User ${payerId} is not the payer of chat ${chatId}`);
+      throw new ChatEngineError('permission-denied', `User ${payerId} is not the payer`);
     }
 
-    // Charge payer wallet
     const payerWalletRef = db.collection('user_wallets').doc(payerId);
-    const payerWalletSnap = await transaction.get(payerWalletRef);
-    if (!payerWalletSnap.exists) {
-      throw new ChatEngineError('failed-precondition', `Payer wallet not found for ${payerId}`);
+    const payerSnap = await transaction.get(payerWalletRef);
+    const payerBalance = payerSnap.data()?.balance || 0;
+
+    if (payerBalance < REOPEN_COST_TOKENS) {
+      throw new ChatEngineError('failed-precondition', `Payer balance ${payerBalance} < reopen cost ${REOPEN_COST_TOKENS}`);
     }
 
-    const payerWallet = payerWalletSnap.data()!;
-    const payerBalance = payerWallet.balance || 0;
-    if (payerBalance < depositTokens) {
-      throw new ChatEngineError('failed-precondition', `Insufficient balance: ${payerBalance} < ${depositTokens}`);
-    }
-
-    // Deduct from payer wallet
-    transaction.update(payerWalletRef, {
-      balance: increment(-depositTokens),
-    });
-
-    // Credit platform fee to Avalo
-    const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
-    transaction.set(platformWalletRef, {
-      balance: increment(platformFee),
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-
-    // Determine session version
-    const sessionVersion = chat.paidSession
-      ? (chat.paidSession.sessionVersion || 0) + 1
-      : 1;
-
-    // Create paid session
-    const session: CanonicalPaidSession = {
-      sessionId,
-      sessionVersion,
-      configSnapshot: {
-        depositTokens,
-        wordsPerToken,
-        burnMultiplier,
-      },
-      startedAt: Timestamp.now(),
-      billingState: {
-        accumulatedEarnerWords: 0,
-        escrowRemainingTokens: escrow,
-        platformFeeChargedTokens: platformFee,
-        totalBucketsConsumed: 0,
-        totalTokensConsumed: 0,
-        totalEarnerCredited: 0,
-        totalAvaloCredited: 0,
-      },
+    // Grant extra free messages to payer on reopen
+    const updatedFree = {
+      ...chat.free.freeRemainingByUser,
+      [payerId]: (chat.free.freeRemainingByUser[payerId] || 0) + REOPEN_FREE_MESSAGES,
     };
 
-    // Update chat document
     transaction.update(chatRef, {
       state: 'PAID_ACTIVE' as CanonicalChatState,
-      paidSession: session,
+      'free.freeRemainingByUser': updatedFree,
       updatedAt: serverTimestamp(),
     });
 
-    // Record transaction
-    const txId = generateId();
-    const txRef = db.collection('transactions').doc(txId);
-    transaction.set(txRef, {
-      txId,
-      uid: payerId,
-      type: 'CHAT_DEPOSIT',
-      amountTokens: -depositTokens,
-      split: {
-        platformTokens: platformFee,
-        escrowTokens: escrow,
-      },
-      status: 'completed',
-      metadata: {
-        chatId,
-        sessionId,
-        sessionVersion,
-        logicVersion: CANONICAL_LOGIC_VERSION,
-      },
-      createdAt: serverTimestamp(),
-      completedAt: serverTimestamp(),
-    });
-
-    logger.info(`Deposit processed: chat=${chatId}, deposit=${depositTokens}, fee=${platformFee}, escrow=${escrow}, multiplier=${burnMultiplier}`);
-
-    return {
-      success: true,
-      session,
-      platformFee,
-      escrow,
-      depositTokens,
-    };
+    logger.info(`Chat reopened: chat=${chatId}, payer=${payerId}`);
   });
 }
 
 // ============================================================================
-// E) BILLING DIRECTION (HARD)
+// E) V9 FLAT BILLING ENGINE
 // ============================================================================
 
 /**
- * Count billable words in text, excluding URLs and emojis.
+ * V9: Calculate flat billing for a single earner message.
  *
- * @param text - The message text
- * @returns Number of billable words
- */
-export function countBillableWords(text: string): number {
-  if (!text || typeof text !== 'string') return 0;
-
-  // Remove URLs
-  let cleaned = text.replace(/https?:\/\/[^\s]+/g, '');
-  // Remove emoji ranges
-  cleaned = cleaned.replace(
-    /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2702}-\u{27B0}]/gu,
-    ''
-  );
-  // Split by whitespace and filter empty
-  const words = cleaned.trim().split(/\s+/).filter(Boolean);
-  return words.length;
-}
-
-/**
- * Calculate billing for an earner message.
- *
- * CRITICAL RULES:
- * - Only earner messages are billed
- * - Payer messages are ALWAYS free
- * - Uses deterministic floor for bucket calculation (NO Math.round)
- * - Partial bucket words remain in accumulatedEarnerWords
- *
- * Bucket rule:
- *   totalWords = accumulatedEarnerWords + newWords
- *   totalBuckets = floor(totalWords / wordsPerToken)
- *   newBuckets = totalBuckets - priorBuckets
- *   tokenCost = newBuckets * 1 * burnMultiplier
+ * RULES:
+ * - Cost = BASE_MESSAGE_PRICE_TOKENS (3) × burnMultiplier
+ * - 100% of cost credited to earner wallet
+ * - Platform earns via payout commission (20%), not per-message
+ * - No word counting. No escrow. No splits.
  *
  * @param currentState - Current billing state
- * @param config - Session config snapshot
- * @param newWords - Number of new words in this message
- * @param earnerId - The earner's user ID (null = Avalo earns)
+ * @param config - Session config (burnMultiplier only)
+ * @param earnerId - Earner user ID (null = Avalo earns; tokens go to platform wallet)
+ * @param payerBalance - Current payer wallet balance
  * @returns BillingResult
  */
 export function calculateBilling(
   currentState: CanonicalBillingState,
   config: CanonicalSessionConfig,
-  newWords: number,
-  earnerId: string | null
+  earnerId: string | null,
+  payerBalance: number
 ): BillingResult {
-  const totalWords = currentState.accumulatedEarnerWords + newWords;
-  const totalBuckets = Math.floor(totalWords / config.wordsPerToken);
-  const newBuckets = totalBuckets - currentState.totalBucketsConsumed;
+  const tokenCost = BASE_MESSAGE_PRICE_TOKENS * config.burnMultiplier;
 
-  if (newBuckets <= 0) {
-    // No new bucket consumed; words accumulate
+  if (payerBalance < tokenCost) {
+    // Payer cannot afford this message → LOCKED
     return {
       billed: false,
-      newBuckets: 0,
       tokensConsumed: 0,
       earnerCredit: 0,
       platformCredit: 0,
-      escrowExhausted: false,
-      updatedBillingState: {
-        ...currentState,
-        accumulatedEarnerWords: totalWords,
-      },
+      locked: true,
+      updatedBillingState: currentState,
     };
   }
 
-  // Token cost per bucket = 1 * burnMultiplier
-  const tokenCostPerBucket = 1 * config.burnMultiplier;
-  let tokensToConsume = newBuckets * tokenCostPerBucket;
-
-  // Cap at remaining escrow
-  if (tokensToConsume > currentState.escrowRemainingTokens) {
-    tokensToConsume = currentState.escrowRemainingTokens;
-  }
-
-  // Credit split
-  let earnerCredit: number;
-  let platformCredit: number;
-
-  if (earnerId !== null) {
-    // 65% to earner, 35% to Avalo (from consumed escrow)
-    earnerCredit = Math.floor(tokensToConsume * EARNER_REVENUE_SPLIT);
-    platformCredit = tokensToConsume - earnerCredit; // Remainder to Avalo
-  } else {
-    // No earner — 100% to Avalo
-    earnerCredit = 0;
-    platformCredit = tokensToConsume;
-  }
-
-  const escrowExhausted = (currentState.escrowRemainingTokens - tokensToConsume) <= 0;
+  // Earner gets 100% of message cost; platform earns on payout
+  const earnerCredit = earnerId !== null ? tokenCost : 0;
+  const platformCredit = earnerId !== null ? 0 : tokenCost;
 
   const updatedBillingState: CanonicalBillingState = {
-    accumulatedEarnerWords: totalWords,
-    escrowRemainingTokens: currentState.escrowRemainingTokens - tokensToConsume,
-    platformFeeChargedTokens: currentState.platformFeeChargedTokens,
-    totalBucketsConsumed: totalBuckets,
-    totalTokensConsumed: currentState.totalTokensConsumed + tokensToConsume,
+    totalMessagesCharged: currentState.totalMessagesCharged + 1,
+    totalTokensConsumed: currentState.totalTokensConsumed + tokenCost,
     totalEarnerCredited: currentState.totalEarnerCredited + earnerCredit,
     totalAvaloCredited: currentState.totalAvaloCredited + platformCredit,
   };
 
   return {
     billed: true,
-    newBuckets,
-    tokensConsumed: tokensToConsume,
+    tokensConsumed: tokenCost,
     earnerCredit,
     platformCredit,
-    escrowExhausted,
+    locked: false,
     updatedBillingState,
   };
 }
 
 /**
- * Process a message in a PAID_ACTIVE chat.
+ * V9: Process a message in a chat.
  *
- * - If sender is the PAYER → always free, no billing
- * - If sender is the EARNER → bill based on word count
+ * Handles both FREE_ACTIVE and PAID_ACTIVE states in a single call.
+ *
+ * - FREE_ACTIVE + earner has free remaining → free, decrement counter
+ * - FREE_ACTIVE + earner free exhausted → transition to PAID_ACTIVE, bill 3T
+ * - PAID_ACTIVE + sender is payer → always free
+ * - PAID_ACTIVE + sender is earner → bill 3T from payer wallet
+ * - LOCKED → return locked=true, do not allow message
  *
  * @param chatId - The chat ID
  * @param senderId - The message sender
- * @param messageText - The message text
- * @returns BillingResult (billed=false if payer message)
+ * @param messageText - The message text (unused for billing in V9, kept for compat)
+ * @returns BillingResult
  */
 export async function processMessage(
   chatId: string,
@@ -664,120 +567,186 @@ export async function processMessage(
     if (!chatSnap.exists) {
       throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
     }
-
     const chat = chatSnap.data() as CanonicalChatDocument;
 
-    if (chat.state !== 'PAID_ACTIVE') {
-      throw new ChatEngineError('failed-precondition', `Chat ${chatId} is not in PAID_ACTIVE state (current: ${chat.state})`);
+    // LOCKED — payer must reopen
+    if (chat.state === 'LOCKED') {
+      return {
+        billed: false,
+        tokensConsumed: 0,
+        earnerCredit: 0,
+        platformCredit: 0,
+        locked: true,
+        updatedBillingState: chat.paidSession?.billingState ?? {
+          totalMessagesCharged: 0, totalTokensConsumed: 0,
+          totalEarnerCredited: 0, totalAvaloCredited: 0,
+        },
+      };
     }
 
+    // Payer messages are ALWAYS free (in any active state)
+    if (senderId === chat.roles.payerId) {
+      transaction.update(chatRef, {
+        lastMessageAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      const emptyState: CanonicalBillingState = chat.paidSession?.billingState ?? {
+        totalMessagesCharged: 0, totalTokensConsumed: 0,
+        totalEarnerCredited: 0, totalAvaloCredited: 0,
+      };
+      return { billed: false, tokensConsumed: 0, earnerCredit: 0, platformCredit: 0, locked: false, updatedBillingState: emptyState };
+    }
+
+    // Earner message in FREE_ACTIVE — check free counter
+    if (chat.state === 'FREE_ACTIVE') {
+      const earnerFree = chat.free.freeRemainingByUser[senderId] ?? 0;
+      if (earnerFree > 0) {
+        // Still free
+        transaction.update(chatRef, {
+          [`free.freeRemainingByUser.${senderId}`]: earnerFree - 1,
+          lastMessageAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        const emptyState: CanonicalBillingState = {
+          totalMessagesCharged: 0, totalTokensConsumed: 0,
+          totalEarnerCredited: 0, totalAvaloCredited: 0,
+        };
+        return { billed: false, tokensConsumed: 0, earnerCredit: 0, platformCredit: 0, locked: false, updatedBillingState: emptyState };
+      }
+
+      // Earner free exhausted — transition to PAID_ACTIVE and bill
+      const newSession: CanonicalPaidSession = {
+        sessionId: generateId(),
+        sessionVersion: chat.paidSession ? (chat.paidSession.sessionVersion + 1) : 1,
+        configSnapshot: { depositTokens: 0, burnMultiplier: 1 },
+        startedAt: Timestamp.now(),
+        billingState: {
+          totalMessagesCharged: 0,
+          totalTokensConsumed: 0,
+          totalEarnerCredited: 0,
+          totalAvaloCredited: 0,
+        },
+      };
+      transaction.update(chatRef, {
+        state: 'PAID_ACTIVE' as CanonicalChatState,
+        paidSession: newSession,
+        updatedAt: serverTimestamp(),
+      });
+      // Fall through to billing below using newSession
+      const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
+      const payerSnap = await transaction.get(payerWalletRef);
+      const payerBalance = payerSnap.data()?.balance ?? 0;
+      const result = calculateBilling(newSession.billingState, newSession.configSnapshot, chat.roles.earnerId, payerBalance);
+
+      if (result.locked) {
+        transaction.update(chatRef, { state: 'LOCKED' as CanonicalChatState });
+        logger.info(`Chat LOCKED on transition: chat=${chatId}, payer balance=${payerBalance}`);
+        return result;
+      }
+
+      return await _applyBillingResult(transaction, chat, chatRef, senderId, result, newSession.sessionId);
+    }
+
+    // PAID_ACTIVE — earner message billing
+    if (chat.state !== 'PAID_ACTIVE') {
+      throw new ChatEngineError('failed-precondition', `Chat ${chatId} state '${chat.state}' does not allow messaging`);
+    }
     if (!chat.paidSession) {
       throw new ChatEngineError('internal', `Chat ${chatId} in PAID_ACTIVE but no paidSession`);
     }
 
-    // Update last message timestamp
-    transaction.update(chatRef, {
-      lastMessageAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
-
-    // PAYER messages are ALWAYS free
-    if (senderId === chat.roles.payerId) {
-      return {
-        billed: false,
-        newBuckets: 0,
-        tokensConsumed: 0,
-        earnerCredit: 0,
-        platformCredit: 0,
-        escrowExhausted: false,
-        updatedBillingState: chat.paidSession.billingState,
-      };
-    }
-
-    // EARNER message — bill it
-    const wordCount = countBillableWords(messageText);
-    if (wordCount === 0) {
-      return {
-        billed: false,
-        newBuckets: 0,
-        tokensConsumed: 0,
-        earnerCredit: 0,
-        platformCredit: 0,
-        escrowExhausted: false,
-        updatedBillingState: chat.paidSession.billingState,
-      };
-    }
+    const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
+    const payerSnap = await transaction.get(payerWalletRef);
+    const payerBalance = payerSnap.data()?.balance ?? 0;
 
     const result = calculateBilling(
       chat.paidSession.billingState,
       chat.paidSession.configSnapshot,
-      wordCount,
-      chat.roles.earnerId
+      chat.roles.earnerId,
+      payerBalance
     );
 
-    // Write updated billing state
-    transaction.update(chatRef, {
-      'paidSession.billingState': result.updatedBillingState,
-    });
-
-    // If tokens were consumed, credit wallets
-    if (result.tokensConsumed > 0) {
-      // Credit earner wallet
-      if (result.earnerCredit > 0 && chat.roles.earnerId) {
-        const earnerWalletRef = db.collection('user_wallets').doc(chat.roles.earnerId);
-        transaction.set(earnerWalletRef, {
-          balance: increment(result.earnerCredit),
-          earned: increment(result.earnerCredit),
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-      }
-
-      // Credit Avalo from escrow consumption
-      if (result.platformCredit > 0) {
-        const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
-        transaction.set(platformWalletRef, {
-          balance: increment(result.platformCredit),
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-      }
-
-      // Record billing transaction
-      const txId = generateId();
-      const txRef = db.collection('transactions').doc(txId);
-      transaction.set(txRef, {
-        txId,
-        uid: chat.roles.earnerId || 'platform_platform',
-        type: 'CHAT_BILLING',
-        amountTokens: result.tokensConsumed,
-        split: {
-          earnerTokens: result.earnerCredit,
-          platformTokens: result.platformCredit,
-        },
-        status: 'completed',
-        metadata: {
-          chatId,
-          sessionId: chat.paidSession.sessionId,
-          senderId,
-          wordCount,
-          newBuckets: result.newBuckets,
-          burnMultiplier: chat.paidSession.configSnapshot.burnMultiplier,
-          logicVersion: CANONICAL_LOGIC_VERSION,
-        },
-        createdAt: serverTimestamp(),
-        completedAt: serverTimestamp(),
-      });
-    }
-
-    // If escrow exhausted, transition to AWAITING_DEPOSIT (ready for re-deposit)
-    if (result.escrowExhausted) {
+    if (result.locked) {
       transaction.update(chatRef, {
-        state: 'AWAITING_DEPOSIT' as CanonicalChatState,
+        state: 'LOCKED' as CanonicalChatState,
+        updatedAt: serverTimestamp(),
       });
-      logger.info(`Escrow exhausted: chat=${chatId}, transitioning to AWAITING_DEPOSIT`);
+      logger.info(`Chat LOCKED: chat=${chatId}, payer balance=${payerBalance}`);
+      return result;
     }
 
-    return result;
+    return await _applyBillingResult(transaction, chat, chatRef, senderId, result, chat.paidSession.sessionId);
   });
+}
+
+/**
+ * Apply a billing result: update wallet, write transaction, update billing state.
+ * Internal helper — not exported.
+ */
+async function _applyBillingResult(
+  transaction: FirebaseFirestore.Transaction,
+  chat: CanonicalChatDocument,
+  chatRef: FirebaseFirestore.DocumentReference,
+  senderId: string,
+  result: BillingResult,
+  sessionId: string
+): Promise<BillingResult> {
+  // Deduct from payer wallet
+  const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
+  transaction.set(payerWalletRef, {
+    balance: increment(-result.tokensConsumed),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+
+  // Credit earner wallet
+  if (result.earnerCredit > 0 && chat.roles.earnerId) {
+    const earnerWalletRef = db.collection('user_wallets').doc(chat.roles.earnerId);
+    transaction.set(earnerWalletRef, {
+      balance: increment(result.earnerCredit),
+      earned: increment(result.earnerCredit),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+
+  // Credit platform (Avalo earns) if no earner
+  if (result.platformCredit > 0) {
+    const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
+    transaction.set(platformWalletRef, {
+      balance: increment(result.platformCredit),
+      updatedAt: serverTimestamp(),
+    }, { merge: true });
+  }
+
+  // Update billing state + timestamps
+  transaction.update(chatRef, {
+    'paidSession.billingState': result.updatedBillingState,
+    lastMessageAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  // Record billing transaction
+  const txId = generateId();
+  transaction.set(db.collection('transactions').doc(txId), {
+    txId,
+    uid: chat.roles.earnerId || 'platform_platform',
+    type: 'CHAT_BILLING',
+    amountTokens: result.tokensConsumed,
+    split: {
+      earnerTokens: result.earnerCredit,
+      platformTokens: result.platformCredit,
+    },
+    status: 'completed',
+    metadata: {
+      chatId: chat.chatId,
+      sessionId,
+      senderId,
+      logicVersion: CANONICAL_LOGIC_VERSION,
+    },
+    createdAt: serverTimestamp(),
+    completedAt: serverTimestamp(),
+  });
+
+  return result;
 }
 
 // ============================================================================
@@ -846,14 +815,12 @@ export async function setDepositForNextSession(
 
 /**
  * End a chat manually (by either party).
- * Refunds unused escrow to payer.
- * Platform fee is NEVER refunded.
- *
+ * V9: No escrow refund (no deposit model). Simply closes the chat.
  * Transition: any active state → CLOSED
  *
  * @param chatId - The chat to end
  * @param userId - The user requesting end
- * @returns RefundResult
+ * @returns RefundResult (all zeros in V9 — no escrow)
  */
 export async function endChat(
   chatId: string,
@@ -869,64 +836,18 @@ export async function endChat(
 
     const chat = chatSnap.data() as CanonicalChatDocument;
 
-    // Validate user is a participant
     if (!chat.participants.includes(userId)) {
       throw new ChatEngineError('permission-denied', `User ${userId} is not a participant of chat ${chatId}`);
     }
 
-    // Already closed/expired
     if (chat.state === 'CLOSED' || chat.state === 'EXPIRED') {
       return {
         refundedTokens: 0,
-        platformFeeRetained: chat.paidSession?.billingState.platformFeeChargedTokens || 0,
+        platformFeeRetained: 0,
         earnerCreditsRetained: chat.paidSession?.billingState.totalEarnerCredited || 0,
       };
     }
 
-    let refundedTokens = 0;
-    let platformFeeRetained = 0;
-    let earnerCreditsRetained = 0;
-
-    // If there's an active paid session, refund remaining escrow
-    if (chat.paidSession && chat.paidSession.billingState.escrowRemainingTokens > 0) {
-      refundedTokens = chat.paidSession.billingState.escrowRemainingTokens;
-      platformFeeRetained = chat.paidSession.billingState.platformFeeChargedTokens;
-      earnerCreditsRetained = chat.paidSession.billingState.totalEarnerCredited;
-
-      // Refund to payer wallet
-      const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
-      transaction.set(payerWalletRef, {
-        balance: increment(refundedTokens),
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
-
-      // Record refund transaction
-      const txId = generateId();
-      const txRef = db.collection('transactions').doc(txId);
-      transaction.set(txRef, {
-        txId,
-        uid: chat.roles.payerId,
-        type: 'CHAT_REFUND',
-        amountTokens: refundedTokens,
-        status: 'completed',
-        metadata: {
-          chatId,
-          sessionId: chat.paidSession.sessionId,
-          reason: 'chat_ended',
-          closedBy: userId,
-          logicVersion: CANONICAL_LOGIC_VERSION,
-        },
-        createdAt: serverTimestamp(),
-        completedAt: serverTimestamp(),
-      });
-
-      // Zero out escrow in billing state
-      transaction.update(chatRef, {
-        'paidSession.billingState.escrowRemainingTokens': 0,
-      });
-    }
-
-    // Close the chat
     transaction.update(chatRef, {
       state: 'CLOSED' as CanonicalChatState,
       closedReason: 'user_ended',
@@ -934,12 +855,12 @@ export async function endChat(
       updatedAt: serverTimestamp(),
     });
 
-    logger.info(`Chat ended: ${chatId} by ${userId}, refunded=${refundedTokens}`);
+    logger.info(`Chat ended: ${chatId} by ${userId} (V9: no escrow refund)`);
 
     return {
-      refundedTokens,
-      platformFeeRetained,
-      earnerCreditsRetained,
+      refundedTokens: 0,
+      platformFeeRetained: 0,
+      earnerCreditsRetained: chat.paidSession?.billingState.totalEarnerCredited || 0,
     };
   });
 }
@@ -949,7 +870,7 @@ export async function endChat(
  * Called by scheduled function.
  *
  * Finds all chats in active states that haven't had a message in 48+ hours
- * and expires them with escrow refund.
+ * and expires them. V9: no escrow refund on expiry.
  *
  * @returns Number of chats expired
  */
@@ -957,60 +878,26 @@ export async function expireInactiveChats(): Promise<number> {
   const cutoff = Timestamp.fromMillis(Date.now() - INACTIVITY_EXPIRY_MS);
   let expiredCount = 0;
 
-  // Expire active chats (FREE_ACTIVE, AWAITING_DEPOSIT, PAID_ACTIVE)
-  const activeStates: CanonicalChatState[] = ['FREE_ACTIVE', 'AWAITING_DEPOSIT', 'PAID_ACTIVE'];
+  // V9: expire all active states including LOCKED
+  const activeStates: CanonicalChatState[] = ['FREE_ACTIVE', 'PAID_ACTIVE', 'LOCKED'];
 
   for (const state of activeStates) {
     const staleChatsSnap = await db.collection('chats')
       .where('logicVersion', '==', CANONICAL_LOGIC_VERSION)
       .where('state', '==', state)
       .where('lastMessageAt', '<', cutoff)
-      .limit(500) // Process in batches
+      .limit(500)
       .get();
 
     for (const chatDoc of staleChatsSnap.docs) {
       try {
-        const chat = chatDoc.data() as CanonicalChatDocument;
-
         await db.runTransaction(async (transaction) => {
           const freshSnap = await transaction.get(chatDoc.ref);
           const freshChat = freshSnap.data() as CanonicalChatDocument;
 
-          // Double-check state hasn't changed
           if (freshChat.state !== state) return;
 
-          // Refund remaining escrow if any
-          if (freshChat.paidSession && freshChat.paidSession.billingState.escrowRemainingTokens > 0) {
-            const refund = freshChat.paidSession.billingState.escrowRemainingTokens;
-            const payerWalletRef = db.collection('user_wallets').doc(freshChat.roles.payerId);
-            transaction.set(payerWalletRef, {
-              balance: increment(refund),
-              updatedAt: serverTimestamp(),
-            }, { merge: true });
-
-            // Record refund
-            const txId = generateId();
-            transaction.set(db.collection('transactions').doc(txId), {
-              txId,
-              uid: freshChat.roles.payerId,
-              type: 'CHAT_REFUND',
-              amountTokens: refund,
-              status: 'completed',
-              metadata: {
-                chatId: chatDoc.id,
-                sessionId: freshChat.paidSession.sessionId,
-                reason: 'inactivity_expiry',
-                logicVersion: CANONICAL_LOGIC_VERSION,
-              },
-              createdAt: serverTimestamp(),
-              completedAt: serverTimestamp(),
-            });
-
-            transaction.update(chatDoc.ref, {
-              'paidSession.billingState.escrowRemainingTokens': 0,
-            });
-          }
-
+          // V9: no escrow refund — just expire
           transaction.update(chatDoc.ref, {
             state: 'EXPIRED' as CanonicalChatState,
             closedReason: 'system_expired',

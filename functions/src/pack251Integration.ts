@@ -10,7 +10,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, serverTimestamp, increment } from './init';
-import { shimProcessMessageBilling } from './chatMonetization';
+import { shimProcessMessageBilling } from './canonical-chat-legacy-shim'; // V9: redirected to canonical engine
 import {
   initializeWelcomeFunnel,
   trackFunnelConversion,
@@ -314,29 +314,5 @@ export async function isInWelcomeFunnel(userId: string): Promise<boolean> {
     return false;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

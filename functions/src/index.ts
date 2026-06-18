@@ -277,10 +277,10 @@ export {
 // ============================================================================
 
 // --- CHAT & MESSAGING ---
-export * from './chats';
+// export * from './chats';        // V9 DEACTIVATED: legacy word-billing + 35% fee removed
 export * from './chatSync';
 export * from './chatSecurity';
-export * from './chatMonetization';
+// export * from './chatMonetization'; // V9 DEACTIVATED: shimProcessMessageBilling replaced by canonical-chat-engine
 export * from './chatMediaFunctions';
 export * from './chatMediaMonetization';
 export * from './chatSystemNextGen';
@@ -1214,5 +1214,3 @@ export * from './chat/priorityReply';
 // MULTI-ROOM CHAT MONETIZATION
 export * from './chat/multiChatRoom';
 export * from './chat/priorityReply';
-
-

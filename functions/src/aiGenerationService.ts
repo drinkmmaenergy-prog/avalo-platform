@@ -273,12 +273,9 @@ export async function generateAIResponse(
     responseText = fallbackMessages[request.userLanguage as 'en' | 'pl'] || fallbackMessages.en;
   }
 
-  // Count words for billing
+  // V9: flat 3 tokens per AI message regardless of word count
   const numWords = countWords(responseText);
-  
-  // Calculate tokens (using Royal rate since this is earner earnings - 7 words per token)
-  const wordsPerToken = avatar.ownerId ? 7 : 11; // Assume Royal for AI avatars
-  const tokensCharged = Math.ceil(numWords / wordsPerToken);
+  const tokensCharged = 3; // BASE_MESSAGE_PRICE_TOKENS
 
   return {
     response: responseText,
