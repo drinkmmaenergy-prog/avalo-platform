@@ -27,7 +27,8 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 ;
 import { HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import { admin, auth, functions, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
+import { admin, auth, functions, generateId, getFirestore, increment, logger, onCall, serverTimestamp } from './runtime';
+import { processMessage } from './canonical-chat-engine';
 ;
 
 const db = getFirestore();
@@ -755,30 +756,4 @@ export const updateChatAISettings = onCall(
   }
 );
 
-logger.info("✅ Chat System Next-Gen module loaded successfully");
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// ===============================================

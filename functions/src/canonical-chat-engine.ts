@@ -21,6 +21,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, serverTimestamp, increment, generateId } from './init';
+import { transactTokens } from './wallet/walletService';
 import { Timestamp } from 'firebase-admin/firestore';
 import type {
   CanonicalChatDocument,
@@ -455,9 +456,9 @@ export async function reopenChat(
       throw new ChatEngineError('permission-denied', `User ${payerId} is not the payer`);
     }
 
-    const payerWalletRef = db.collection('user_wallets').doc(payerId);
+    const payerWalletRef = db.collection('wallets').doc(payerId);
     const payerSnap = await transaction.get(payerWalletRef);
-    const payerBalance = payerSnap.data()?.balance || 0;
+    const payerBalance = payerSnap.data()?.balance ?? 0;
 
     if (payerBalance < REOPEN_COST_TOKENS) {
       throw new ChatEngineError('failed-precondition', `Payer balance ${payerBalance} < reopen cost ${REOPEN_COST_TOKENS}`);
@@ -558,16 +559,25 @@ export function calculateBilling(
 export async function processMessage(
   chatId: string,
   senderId: string,
-  messageText: string
+  messageText: string,
+  messageId?: string
 ): Promise<BillingResult> {
   const chatRef = db.collection('chats').doc(chatId);
 
-  return db.runTransaction(async (transaction) => {
+  // Capture roles + sessionId from inside the transaction so we can call
+  // transactTokens (which runs its own transaction) AFTER the outer transaction.
+  let capturedPayerId = '';
+  let capturedEarnerId: string | null = null;
+  let capturedSessionId = '';
+
+  const result = await db.runTransaction(async (transaction) => {
     const chatSnap = await transaction.get(chatRef);
     if (!chatSnap.exists) {
       throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
     }
     const chat = chatSnap.data() as CanonicalChatDocument;
+    capturedPayerId = chat.roles.payerId;
+    capturedEarnerId = chat.roles.earnerId ?? null;
 
     // LOCKED — payer must reopen
     if (chat.state === 'LOCKED') {
@@ -633,7 +643,7 @@ export async function processMessage(
         updatedAt: serverTimestamp(),
       });
       // Fall through to billing below using newSession
-      const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
+      const payerWalletRef = db.collection('wallets').doc(chat.roles.payerId);
       const payerSnap = await transaction.get(payerWalletRef);
       const payerBalance = payerSnap.data()?.balance ?? 0;
       const result = calculateBilling(newSession.billingState, newSession.configSnapshot, chat.roles.earnerId, payerBalance);
@@ -644,6 +654,7 @@ export async function processMessage(
         return result;
       }
 
+      capturedSessionId = newSession.sessionId;
       return await _applyBillingResult(transaction, chat, chatRef, senderId, result, newSession.sessionId);
     }
 
@@ -655,7 +666,7 @@ export async function processMessage(
       throw new ChatEngineError('internal', `Chat ${chatId} in PAID_ACTIVE but no paidSession`);
     }
 
-    const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
+    const payerWalletRef = db.collection('wallets').doc(chat.roles.payerId);
     const payerSnap = await transaction.get(payerWalletRef);
     const payerBalance = payerSnap.data()?.balance ?? 0;
 
@@ -675,8 +686,34 @@ export async function processMessage(
       return result;
     }
 
+    capturedSessionId = chat.paidSession.sessionId;
     return await _applyBillingResult(transaction, chat, chatRef, senderId, result, chat.paidSession.sessionId);
   });
+
+  // ── Post-transaction: debit payer + credit earner via canonical walletService ──
+  // transactTokens() runs its own Firestore transaction and cannot be nested
+  // inside the state-machine transaction above.
+  if (result.billed) {
+    const idempotencyKey = messageId
+      ? `chat_msg_${chatId}_${messageId}`
+      : `chat_msg_${chatId}_${generateId()}`;
+    await transactTokens({
+      type: 'CHAT_BURN',
+      actorId: capturedPayerId,
+      counterpartyId: capturedEarnerId,
+      amountTokens: result.tokensConsumed,
+      split: {
+        creatorTokens: result.earnerCredit,
+        avaloTokens: result.platformCredit,
+      },
+      idempotencyKey,
+      chatId,
+      sessionId: capturedSessionId || null,
+      metadata: { senderId, chatId },
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -691,32 +728,7 @@ async function _applyBillingResult(
   result: BillingResult,
   sessionId: string
 ): Promise<BillingResult> {
-  // Deduct from payer wallet
-  const payerWalletRef = db.collection('user_wallets').doc(chat.roles.payerId);
-  transaction.set(payerWalletRef, {
-    balance: increment(-result.tokensConsumed),
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
-
-  // Credit earner wallet
-  if (result.earnerCredit > 0 && chat.roles.earnerId) {
-    const earnerWalletRef = db.collection('user_wallets').doc(chat.roles.earnerId);
-    transaction.set(earnerWalletRef, {
-      balance: increment(result.earnerCredit),
-      earned: increment(result.earnerCredit),
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-  }
-
-  // Credit platform (Avalo earns) if no earner
-  if (result.platformCredit > 0) {
-    const platformWalletRef = db.collection('system_wallets').doc('platform_platform');
-    transaction.set(platformWalletRef, {
-      balance: increment(result.platformCredit),
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
-  }
-
+  // Wallet debit/credit is handled by transactTokens() in processMessage (after transaction).
   // Update billing state + timestamps
   transaction.update(chatRef, {
     'paidSession.billingState': result.updatedBillingState,

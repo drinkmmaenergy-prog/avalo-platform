@@ -11,8 +11,9 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { getRealtimeBus, RealtimeEvent } from '../lib/realtime/realtimeBus';
-import { doc, updateDoc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { doc, updateDoc, getDoc, collection } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../lib/firebase';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -290,29 +291,51 @@ export function useChatRealtime(
     localMessageQueueRef.current.push(optimisticMessage);
 
     try {
-      // Send to backend
-      const messageDoc = await addDoc(collection(db, 'messages'), {
-        conversationId,
-        senderId: currentUserId,
+      // Phase 2E: Route through sendHumanMessageCallable for V9 canonical billing.
+      // The callable runs processMessage (state machine + walletService debit/credit)
+      // and writes the message to messages/ only if billing succeeds (not locked).
+      const sendHumanMessage = httpsCallable<
+        { chatId: string; content: string; type: string; localId: string },
+        { locked: boolean; messageId: string | null; billing: { billed: boolean; tokensConsumed: number } }
+      >(functions, 'sendHumanMessageCallable');
+
+      const callResult = await sendHumanMessage({
+        chatId: conversationId,
         content,
         type,
-        createdAt: serverTimestamp(),
-        deliveryState: 'sent',
-        localId
+        localId,
       });
+
+      const { locked, messageId: serverMessageId, billing } = callResult.data;
+
+      if (locked) {
+        // Chat is locked — payer has insufficient balance.
+        // Remove optimistic message and surface the error.
+        setState(prev => ({
+          ...prev,
+          messages: prev.messages.filter(m => m.localId !== localId),
+        }));
+        localMessageQueueRef.current = localMessageQueueRef.current.filter(
+          m => m.localId !== localId
+        );
+        throw new Error('Chat is locked: insufficient token balance');
+      }
+
+      const resolvedMessageId = serverMessageId!;
 
       // Publish realtime event
       await realtimeBus.publish('chat', {
         channel: 'chat',
         type: 'message_sent',
         payload: {
-          messageId: messageDoc.id,
+          messageId: resolvedMessageId,
           conversationId,
           senderId: currentUserId,
           content,
           type,
           timestamp: Date.now(),
-          localId
+          localId,
+          billed: billing?.billed ?? false,
         }
       });
 
@@ -321,7 +344,7 @@ export function useChatRealtime(
         ...prev,
         messages: prev.messages.map(m =>
           m.localId === localId
-            ? { ...m, id: messageDoc.id, deliveryState: 'sent' }
+            ? { ...m, id: resolvedMessageId, deliveryState: 'sent' }
             : m
         )
       }));
@@ -411,43 +434,4 @@ export function useChatRealtime(
     } catch (error) {
       console.error('[useChatRealtime] Mark as read error:', error);
     }
-  }, [conversationId, currentUserId, realtimeBus]);
-
-  // ==========================================================================
-  // ACTIONS: RETRY FAILED MESSAGE
-  // ==========================================================================
-
-  const retryFailedMessage = useCallback(async (localId: string) => {
-    const failedMessage = state.messages.find(m => m.localId === localId);
-    if (!failedMessage) return;
-
-    // Reset to pending
-    setState(prev => ({
-      ...prev,
-      messages: prev.messages.map(m =>
-        m.localId === localId
-          ? { ...m, deliveryState: 'local_pending' }
-          : m
-      )
-    }));
-
-    // Retry send
-    await sendMessage(failedMessage.content, failedMessage.type);
-  }, [state.messages, sendMessage]);
-
-  // ==========================================================================
-  // RETURN STATE & ACTIONS
-  // ==========================================================================
-
-  return [
-    state,
-    {
-      sendMessage,
-      setTyping,
-      markAsRead,
-      retryFailedMessage
-    }
-  ];
-}
-
-export default useChatRealtime;
+  }, [conversationId, current
