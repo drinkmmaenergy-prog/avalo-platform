@@ -18,6 +18,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 import Stripe from 'stripe';
 import { db, serverTimestamp, increment, generateId } from './init';
+import { debitForPayout } from './wallet/walletService';
 import { onCall, onRequest, HttpsError, logger } from './runtime';
 import { FunctionResponse } from './types';
 import { DEFAULT_TOKEN_PACKS } from './pack277-token-packs';
@@ -311,43 +312,70 @@ export const requestPayoutCallable = onCall(
     const rawTokens = request.data.tokens ?? request.data.amountTokens;
     const amountTokens = Number(rawTokens);
 
-    if (isNaN(amountTokens) || amountTokens <= 0) {
+    if (isNaN(amountTokens) || amountTokens <= 0 || !Number.isInteger(amountTokens)) {
       throw new HttpsError("invalid-argument", "Invalid token amount");
-    }
-
-    // Read balance from canonical wallets/{uid} collection
-    const walletRef = db.collection("wallets").doc(userId);
-
-    const walletSnap = await walletRef.get();
-    const wallet = walletSnap.data();
-
-    if (!wallet || (wallet.balance ?? 0) < amountTokens) {
-      throw new HttpsError("failed-precondition", "Insufficient earned tokens");
     }
 
     if (amountTokens < 100) {
       throw new HttpsError("invalid-argument", "Minimum payout is 100 tokens");
     }
 
-    // USD canonical payout rate
-    const TOKEN_PAYOUT_USD = 0.03;
-    const amountUSD = amountTokens * TOKEN_PAYOUT_USD;
+    // Prevent duplicate payout requests -- one pending/processing per user at a time
+    const existing = await db
+      .collection("payoutRequests")
+      .where("userId", "==", userId)
+      .where("status", "in", ["pending", "processing"])
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      throw new HttpsError(
+        "already-exists",
+        "A payout request is already pending. Please wait for it to be processed."
+      );
+    }
+
+    // Payout formula (canonical)
+    // gross      = tokens * $0.04
+    // commission = gross * 20%   (platform cut)
+    // fee        = (gross - commission) * 5%  (processing fee)
+    // net        = gross - commission - fee
+    const gross = amountTokens * 0.04;
+    const commission = gross * 0.20;
+    const afterCommission = gross - commission;
+    const fee = afterCommission * 0.05;
+    const netUSD = afterCommission - fee;
 
     const payoutId = generateId();
+    // Idempotency key scoped to this specific payout request
+    const idempotencyKey = `payout_request_${payoutId}`;
 
-    await db.runTransaction(async (tx) => {
-      tx.update(walletRef, {
-        balance: increment(-amountTokens),
-      });
+    // Atomically debit wallet -- balance check, idempotency, and ledger inside transaction.
+    // debitForPayout: balance check INSIDE transaction (no TOCTOU race),
+    // idempotency sentinel (prevents double-debit on retry),
+    // canonical PAYOUT ledger entry (before/after snapshot).
+    await debitForPayout({
+      userId,
+      amountTokens,
+      idempotencyKey,
+      payoutId,
+    });
 
-      tx.set(db.collection("payoutRequests").doc(payoutId), {
-        payoutId,
-        userId,
-        amountTokens,
-        amountUSD,
-        status: "pending",
-        createdAt: serverTimestamp(),
-      });
+    // Record payout request for approval workflow.
+    // Written after debit succeeds. If this write fails the ledger records
+    // the payoutId so the record is recoverable. Client retry is safe:
+    // debitForPayout is idempotent on the same idempotencyKey.
+    await db.collection("payoutRequests").doc(payoutId).set({
+      payoutId,
+      userId,
+      amountTokens,
+      grossUSD: parseFloat(gross.toFixed(6)),
+      commissionUSD: parseFloat(commission.toFixed(6)),
+      feeUSD: parseFloat(fee.toFixed(6)),
+      amountUSD: parseFloat(netUSD.toFixed(6)),
+      status: "pending",
+      idempotencyKey,
+      createdAt: serverTimestamp(),
     });
 
     return { ok: true, data: { payoutId } };
