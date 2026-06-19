@@ -65,7 +65,7 @@ export async function getEarningsDashboard(
     // Get wallet balance for available payout
     const walletDoc = await db.collection('wallets').doc(userId).get();
     const wallet = walletDoc.data();
-    const availableForPayout = wallet?.tokensBalance || 0;
+    const availableForPayout = wallet?.balance || 0;
     
     // Calculate lifetime payouts
     const payoutsQuery = await db.collection('withdrawalRequests')

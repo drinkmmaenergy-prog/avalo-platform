@@ -153,6 +153,9 @@ export type LedgerEntryType =
   | 'CALL_ESCROW_RESERVE'
   | 'CALL_ESCROW_RELEASE'
   | 'CALENDAR_REFUND'
+  | 'CALENDAR_RELEASE'
+  | 'AD_REWARD'
+  | 'MIGRATION'
   | 'PAYOUT';
 
 // ============================================================================
@@ -334,32 +337,3 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
  * Payout requests collection.
  */
 export const PAYOUT_REQUESTS_COLLECTION = 'payout_requests';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

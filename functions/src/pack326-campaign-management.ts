@@ -8,7 +8,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import { https } from 'firebase-functions';
 import { db, generateId, serverTimestamp } from './init';
 import { HttpsError } from 'firebase-functions/v2/https';
-import { getWalletBalance } from './pack277-wallet-service';
+import { getBalance } from './wallet/walletService';
 import {
   AdsCampaign,
   AdsCreative,
@@ -59,17 +59,13 @@ async function validateCampaignBudget(
     );
   }
   
-  // Check wallet balance
-  const wallet = await getWalletBalance(userId);
-  
-  if (!wallet) {
-    throw new HttpsError('not-found', 'Wallet not found');
-  }
-  
-  if (wallet.tokensBalance < budgetTokens) {
+  // Check wallet balance using canonical walletService
+  const currentBalance = await getBalance(userId);
+
+  if (currentBalance < budgetTokens) {
     throw new HttpsError(
       'failed-precondition',
-      `Insufficient balance. Required: ${budgetTokens}, Available: ${wallet.tokensBalance}`
+      `Insufficient balance. Required: ${budgetTokens}, Available: ${currentBalance}`
     );
   }
 }

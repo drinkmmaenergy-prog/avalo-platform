@@ -333,7 +333,7 @@ export async function transactTokens(
 export async function creditTokens(params: {
   userId: string;
   amountTokens: number;
-  type: 'PURCHASE' | 'CHAT_REFUND' | 'CALENDAR_REFUND' | 'CALL_ESCROW_RELEASE';
+  type: 'PURCHASE' | 'CHAT_REFUND' | 'CALENDAR_REFUND' | 'CALL_ESCROW_RELEASE' | 'AD_REWARD' | 'MIGRATION';
   idempotencyKey: string;
   metadata?: Record<string, unknown>;
 }): Promise<{ txId: string; newBalance: number }> {
@@ -532,20 +532,6 @@ export async function getPlatformBalance(): Promise<number> {
   if (!snap.exists) return 0;
   return (snap.data() as WalletDocument).balance;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
