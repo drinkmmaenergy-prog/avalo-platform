@@ -21,6 +21,7 @@ import type {
   BotEarningRecord,
 } from './types/aiBot';
 import { timestamp } from './runtime';
+import { getBalance, transactTokens } from './wallet/walletService';
 
 // Simple error class
 class HttpsError extends Error {
@@ -271,10 +272,9 @@ export async function processAiMessage(
   // V9: flat 3 tokens per AI message (BASE_MESSAGE_PRICE_TOKENS)
   const tokensCost = hasFreeMessages ? 0 : BASE_MESSAGE_PRICE_TOKENS;
 
-  // V9: check payer wallet balance (no escrow — direct wallet debit)
+  // V9: check payer wallet balance via canonical walletService
   if (!hasFreeMessages) {
-    const payerWalletSnap = await db.collection('user_wallets').doc(userId).get();
-    const payerBalance = payerWalletSnap.data()?.balance ?? 0;
+    const payerBalance = await getBalance(userId);
     if (payerBalance < tokensCost) {
       // Transition AI chat to LOCKED
       await chatRef.update({ state: 'LOCKED', updatedAt: serverTimestamp() });
@@ -289,12 +289,16 @@ export async function processAiMessage(
     }
   }
 
+  // Pre-generate message IDs — used as idempotency key suffix for transactTokens
+  const userMsgId = generateId();
+  const botMsgId = generateId();
+
   // Process billing and save messages in transaction
   await db.runTransaction(async (transaction) => {
     // Save user message
-    const userMsgRef = db.collection('aiChats').doc(request.chatId).collection('messages').doc();
+    const userMsgRef = db.collection('aiChats').doc(request.chatId).collection('messages').doc(userMsgId);
     transaction.set(userMsgRef, {
-      messageId: userMsgRef.id,
+      messageId: userMsgId,
       chatId: request.chatId,
       role: 'user',
       content: request.message,
@@ -304,9 +308,9 @@ export async function processAiMessage(
     });
 
     // Save AI response
-    const botMsgRef = db.collection('aiChats').doc(request.chatId).collection('messages').doc();
+    const botMsgRef = db.collection('aiChats').doc(request.chatId).collection('messages').doc(botMsgId);
     transaction.set(botMsgRef, {
-      messageId: botMsgRef.id,
+      messageId: botMsgId,
       chatId: request.chatId,
       role: 'bot',
       content: aiResponse,
@@ -336,22 +340,8 @@ export async function processAiMessage(
       // V9: deduct from payer wallet directly (no escrow)
       chatUpdates['billing.totalConsumed'] = increment(tokensCost);
 
-      const payerWalletRef = db.collection('user_wallets').doc(userId);
-      transaction.set(payerWalletRef, {
-        balance: increment(-tokensCost),
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
-
-      // V9: earner receives 100% of message cost
+      // V9: earner receives 100% of message cost; wallet mutation handled post-transaction
       const earnerCredit = tokensCost;
-      if (chat.earnerId) {
-        const earnerWalletRef = db.collection('user_wallets').doc(chat.earnerId);
-        transaction.set(earnerWalletRef, {
-          balance: increment(earnerCredit),
-          earned: increment(earnerCredit),
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-      }
 
       // Record earnings
       const earningsRef = db.collection('aiBotEarnings').doc(chat.botId).collection('records').doc();
@@ -371,6 +361,23 @@ export async function processAiMessage(
 
     transaction.update(chatRef, chatUpdates);
   });
+
+  // ── Canonical wallet mutation (outside Firestore transaction) ────────────────
+  if (!hasFreeMessages && tokensCost > 0) {
+    await transactTokens({
+      type: 'CHAT_BURN',
+      actorId: userId,
+      counterpartyId: chat.earnerId ?? null,
+      amountTokens: tokensCost,
+      split: {
+        creatorTokens: tokensCost, // V9: CREATOR_SHARE_PERCENT = 100%
+        avaloTokens: 0,            // V9: AVALO_SHARE_PERCENT = 0%
+      },
+      idempotencyKey: `ai_msg_${request.chatId}_${botMsgId}_${userId}`,
+      chatId: request.chatId,
+      metadata: { userId, botId: chat.botId, earnerId: chat.earnerId ?? null },
+    });
+  }
 
   // Update bot stats outside transaction (async)
   if (!hasFreeMessages) {
@@ -431,26 +438,19 @@ export async function processAiChatDeposit(
     throw new HttpsError('failed-precondition', 'Chat does not require deposit');
   }
   
-  // Check user wallet
-  const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  const wallet = walletSnap.data();
-  
-  if (!wallet || wallet.balance < CHAT_DEPOSIT_TOKENS) {
+  // V9: CHAT_DEPOSIT_TOKENS = 0 — balance check preserved for API compatibility
+  const payerBalance = await getBalance(userId);
+  if (payerBalance < CHAT_DEPOSIT_TOKENS) {
     throw new HttpsError('failed-precondition', 'Insufficient tokens');
   }
-  
+
   // Calculate split
   const platformFee = Math.ceil(CHAT_DEPOSIT_TOKENS * (PLATFORM_FEE_PERCENT / 100));
   const escrowAmount = CHAT_DEPOSIT_TOKENS - platformFee;
-  
+
   // Process deposit in transaction
   await db.runTransaction(async (transaction) => {
-    // Deduct from user
-    transaction.update(walletRef, {
-      balance: increment(-CHAT_DEPOSIT_TOKENS),
-      pending: increment(escrowAmount), // Escrow goes to pending
-    });
+    // V9: CHAT_DEPOSIT_TOKENS = 0 — no wallet debit needed
     
     // Update chat
     transaction.update(chatRef, {
@@ -509,15 +509,9 @@ export async function closeAiChat(
   
   // Close chat and refund
   await db.runTransaction(async (transaction) => {
-    // Refund remaining escrow
+    // V9: escrowBalance is always 0 (CHAT_DEPOSIT_TOKENS = 0);
+    // phantom wallet update removed — audit record preserved for backward compat.
     if (remainingEscrow > 0) {
-      const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-      transaction.update(walletRef, {
-        balance: increment(remainingEscrow),
-        pending: increment(-remainingEscrow),
-      });
-      
-      // Record refund transaction
       const txRef = db.collection('transactions').doc(generateId());
       transaction.set(txRef, {
         userId,
