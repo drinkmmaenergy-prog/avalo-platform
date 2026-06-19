@@ -156,7 +156,8 @@ export type LedgerEntryType =
   | 'CALENDAR_RELEASE'
   | 'AD_REWARD'
   | 'MIGRATION'
-  | 'PAYOUT';
+  | 'PAYOUT'
+  | 'DROP_PURCHASE';
 
 // ============================================================================
 // PAYOUT TYPES

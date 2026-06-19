@@ -27,6 +27,7 @@ import type {
 import { recordRankingAction } from './rankingEngine';
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
 import { timestamp } from './runtime';
+import { getBalance, transactTokens } from './wallet/walletService';
 
 // ============================================================================
 // CONSTANTS
@@ -666,17 +667,8 @@ export async function purchaseDrop(
     throw new HttpsError('failed-precondition', 'Drop is sold out');
   }
   
-  // Check user token balance
-  const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  
-  if (!walletSnap.exists) {
-    throw new HttpsError('failed-precondition', 'User wallet not found');
-  }
-  
-  const wallet = walletSnap.data();
-  const balance = wallet?.balance || 0;
-  
+  // Check user token balance via canonical walletService
+  const balance = await getBalance(userId);
   if (balance < drop.priceTokens) {
     throw new HttpsError('failed-precondition', 'Insufficient tokens');
   }
@@ -721,24 +713,8 @@ export async function purchaseDrop(
   };
   
   await db.runTransaction(async (transaction) => {
-    // Deduct tokens from user
-    transaction.update(walletRef, {
-      balance: increment(-drop.priceTokens),
-      spent: increment(drop.priceTokens),
-    });
-    
-    // Credit tokens to each earner
-    for (const earnerId of drop.ownerCreatorIds) {
-      const earner = revenueSplit[earnerId] || 0;
-      if (earner > 0) {
-        const earnerWalletRef = db.collection('users').doc(earnerId).collection('wallet').doc('current');
-        transaction.update(earnerWalletRef, {
-          balance: increment(earner),
-          earned: increment(earner),
-        });
-      }
-    }
-    
+    // Wallet mutation handled post-transaction via canonical walletService
+
     // Update drop stats
     transaction.update(dropRef, {
       soldCount: increment(1),
@@ -764,6 +740,24 @@ export async function purchaseDrop(
     );
   });
   
+  // ── Canonical wallet mutation (outside Firestore transaction) ────────────────
+  // Single-earner: ownerCreatorIds[0] receives earnerPoolShare.
+  // COOP: ownerCreatorIds[0] receives full earnerPoolShare; per-earner COOP
+  // redistribution is tracked in dropPurchases.revenueSplit for payout reconciliation.
+  const primaryEarnerId = drop.ownerCreatorIds[0] ?? null;
+  await transactTokens({
+    type: 'DROP_PURCHASE',
+    actorId: userId,
+    counterpartyId: primaryEarnerId,
+    amountTokens: drop.priceTokens,
+    split: {
+      creatorTokens: earnerPoolShare, // DROP_CONSTANTS.CREATOR_SHARE_PERCENTAGE (70%)
+      avaloTokens: platform,          // DROP_CONSTANTS.AVALO_SHARE_PERCENTAGE (30%)
+    },
+    idempotencyKey: `drop_purchase_${dropId}_${userId}`,
+    metadata: { dropId, purchaseId, earnerIds: drop.ownerCreatorIds, revenueSplit },
+  });
+
   // Record ranking actions for each earner (async, non-blocking)
   for (const earnerId of drop.ownerCreatorIds) {
     const earnerTokens = revenueSplit[earnerId] || 0;
@@ -860,28 +854,3 @@ export async function getCreatorDrops(earnerId: string): Promise<Drop[]> {
   
   return dropsSnapshot.docs.map(doc => doc.data() as Drop);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
