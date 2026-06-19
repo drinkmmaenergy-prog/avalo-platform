@@ -17,6 +17,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, storage } from './runtime';
+import { getBalance, transactTokens } from './wallet/walletService';
 
 // Simple error class
 class HttpsError extends Error {
@@ -229,103 +230,114 @@ export async function calculateMediaBilling(
 
 /**
  * Process media message billing
- * Charges the payer and credits the earner
+ *
+ * Phase 2F-A: Migrated from phantom users/{uid}/wallet/current.balance (prod=0)
+ * to canonical walletService.getBalance() + transactTokens(MEDIA_UNLOCK).
+ *
+ * BEFORE: users/{uid}/wallet/current.balance (always 0 → always failed)
+ * AFTER:  wallets/{uid}.balance (canonical) via walletService
  */
 export async function processMediaBilling(
   chatId: string,
   messageId: string,
   billing: MediaBilling
 ): Promise<{ success: boolean; error?: string }> {
-  
+
   if (billing.mode !== 'PAID' || !billing.paidByUserId) {
     throw new HttpsError('invalid-argument', 'Invalid billing mode for media');
   }
-  
+
   const payerId = billing.paidByUserId;
   const priceTokens = billing.chargedTokens;
-  
-  // Check payer's wallet balance
-  const walletRef = db.collection('users').doc(payerId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  const wallet = walletSnap.data();
-  
-  if (!wallet || wallet.balance < priceTokens) {
+
+  // ── 1. Read canonical balance (wallets/{uid}.balance) ──────────────────────
+  const payerBalance = await getBalance(payerId);
+  if (payerBalance < priceTokens) {
     return {
       success: false,
       error: `Insufficient tokens. Need ${priceTokens} tokens.`
     };
   }
-  
-  // Get chat to determine earner
+
+  // ── 2. Resolve earnerId from chat ───────────────────────────────────────────
   const chatSnap = await db.collection('chats').doc(chatId).get();
   const chat = chatSnap.data() as any;
   const earnerId = chat.roles.earnerId as string | null;
-  
-  // Execute billing transaction
-  await db.runTransaction(async (transaction) => {
-    // Deduct from payer
-    transaction.update(walletRef, {
-      balance: increment(-priceTokens),
-      spent: increment(priceTokens)
-    });
-    
-    // Record payer transaction
-    const payerTxRef = db.collection('transactions').doc(generateId());
-    transaction.set(payerTxRef, {
-      userId: payerId,
-      type: 'chat_media',
-      amount: -priceTokens,
-      metadata: {
-        chatId,
-        messageId,
-        purpose: 'media_message',
-        platform: billing.platformTokens,
-        earner: billing.earnerTokens
-      },
-      createdAt: serverTimestamp()
-    });
-    
-    // Credit earner if exists
-    if (earnerId && billing.earnerTokens > 0) {
-      const earnerWalletRef = db.collection('users').doc(earnerId).collection('wallet').doc('current');
-      transaction.update(earnerWalletRef, {
-        balance: increment(billing.earnerTokens),
-        earned: increment(billing.earnerTokens)
-      });
-      
-      // Record earner transaction
-      const earnerTxRef = db.collection('transactions').doc(generateId());
-      transaction.set(earnerTxRef, {
-        userId: earnerId,
-        type: 'chat_media_earned',
-        amount: billing.earnerTokens,
-        metadata: {
-          chatId,
-          messageId,
-          payerId,
-          purpose: 'media_message_earnings'
-        },
-        createdAt: serverTimestamp()
-      });
-    }
-    
-    // Platform fee (always recorded, whether earnOn or earnOff)
-    const platformTxRef = db.collection('transactions').doc(generateId());
-    transaction.set(platformTxRef, {
-      userId: 'platform',
-      type: 'platform_fee',
-      amount: billing.platformTokens,
-      metadata: {
-        chatId,
-        messageId,
-        source: 'chat_media',
-        payerId
-      },
-      createdAt: serverTimestamp()
-    });
+
+  // ── 3. Atomic debit + credit via canonical walletService ───────────────────
+  // transactTokens() runs its own Firestore transaction — must NOT be called
+  // inside an existing db.runTransaction().
+  // Idempotency key prevents double-charge on client retry.
+  const idempotencyKey = `media_unlock_${messageId}_${payerId}`;
+
+  await transactTokens({
+    type: 'MEDIA_UNLOCK',
+    actorId: payerId,
+    counterpartyId: earnerId,
+    amountTokens: priceTokens,
+    split: {
+      creatorTokens: billing.earnerTokens,   // 65% earnOn, 0% earnOff
+      avaloTokens:   billing.platformTokens,  // 35% earnOn, 100% earnOff
+    },
+    idempotencyKey,
+    chatId,
+    metadata: {
+      messageId,
+      chatId,
+      payerId,
+      earnerId: earnerId ?? 'platform',
+    },
   });
-  
-  // Track fan/kiss progression (async, non-blocking)
+
+  // ── 4. Preserve backward-compat audit records in transactions/ ─────────────
+  // walletService already wrote a canonical ledger + idempotency sentinel.
+  // These records maintain compatibility with existing admin/analytics queries.
+  const batch = db.batch();
+
+  batch.set(db.collection('transactions').doc(generateId()), {
+    userId: payerId,
+    type: 'chat_media',
+    amount: -priceTokens,
+    metadata: {
+      chatId, messageId,
+      purpose: 'media_message',
+      platform: billing.platformTokens,
+      earner: billing.earnerTokens,
+      idempotencyKey,
+    },
+    createdAt: serverTimestamp(),
+  });
+
+  if (earnerId && billing.earnerTokens > 0) {
+    batch.set(db.collection('transactions').doc(generateId()), {
+      userId: earnerId,
+      type: 'chat_media_earned',
+      amount: billing.earnerTokens,
+      metadata: {
+        chatId, messageId, payerId,
+        purpose: 'media_message_earnings',
+        idempotencyKey,
+      },
+      createdAt: serverTimestamp(),
+    });
+  }
+
+  batch.set(db.collection('transactions').doc(generateId()), {
+    userId: 'platform',
+    type: 'platform_fee',
+    amount: billing.platformTokens,
+    metadata: {
+      chatId, messageId,
+      source: 'chat_media',
+      payerId,
+      idempotencyKey,
+    },
+    createdAt: serverTimestamp(),
+  });
+
+  await batch.commit();
+
+  // ── 5. Post-billing hooks (preserved, async non-blocking) ──────────────────
   if (earnerId) {
     try {
       const { trackTokenSpend } = await import('./fanKissEconomy');
@@ -334,8 +346,7 @@ export async function processMediaBilling(
       logger.error('Failed to track fan spend:', error);
     }
   }
-  
-  // Track romantic journey (async, non-blocking)
+
   if (earnerId) {
     try {
       const { onChatMessageSent } = await import('./romanticJourneysIntegration');
@@ -344,7 +355,7 @@ export async function processMediaBilling(
       logger.error('Failed to track journey activity:', error);
     }
   }
-  
+
   return { success: true };
 }
 
@@ -673,29 +684,3 @@ export function validateMediaLimits(
   
   return { valid: true };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
