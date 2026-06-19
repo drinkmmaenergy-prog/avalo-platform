@@ -1073,7 +1073,7 @@ export const getWalletBalance = onCall(
 
       if (canonicalSnap.exists) {
         const data = canonicalSnap.data()!;
-        const balance = data.tokensBalance ?? 0;
+        const balance = data.balance ?? 0;
         return {
           balance,
           tokensBalance: balance,
