@@ -25,6 +25,7 @@ import {
   WebPurchaseResponse,
 } from './types/pack288-token-store.types';
 import { getCanonicalTokenPackById, normalizeTokenPackId } from './pack277-token-packs';
+import { creditTokens } from './wallet/walletService';
 import { admin, functions, increment, onCall, onRequest, timestamp } from './runtime';
 
 // Initialize Stripe
@@ -260,92 +261,94 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   }
 
   try {
-    // Atomic transaction: duplicate check + purchase record + wallet credit
-    // All inside a single Firestore transaction to prevent race conditions
-    const walletRef = db.collection('wallets').doc(userId);
-    const purchaseId = generateId();
+    // ── Idempotency fast-exit ────────────────────────────────────────────────
+    // processedStripeEvents is our secondary sentinel written after the credit.
+    // If it already exists the credit was already applied; skip everything.
+    const sentinelSnap = await db
+      .collection('processedStripeEvents')
+      .doc(`pack288_${session.id}`)
+      .get();
+    if (sentinelSnap.exists) {
+      logger.info('Purchase already processed (idempotent skip)', { sessionId: session.id });
+      return;
+    }
 
-    await db.runTransaction(async (transaction) => {
-      // Idempotency check: read the idempotency sentinel doc inside the transaction
-      const idempotencyRef = db.collection('processedStripeEvents').doc(`pack288_${session.id}`);
-      const idempotencyDoc = await transaction.get(idempotencyRef);
+    const purchaseId = `stripe_${session.id}`; // deterministic — safe to re-derive on retry
 
-      if (idempotencyDoc.exists) {
-        logger.warn('Purchase already processed (idempotent skip)', { sessionId: session.id });
-        return;
-      }
+    // ── Canonical credit (atomic, idempotent, writes ledger) ─────────────────
+    // creditTokens() checks idempotency_sentinels INSIDE its own transaction.
+    // If a duplicate call races in, one wins atomically; the other is a no-op.
+    const idempotencyKey = `pack288_purchase_${session.id}`;
+    const { txId, newBalance } = await creditTokens({
+      userId,
+      amountTokens: tokens,
+      type: 'PURCHASE',
+      idempotencyKey,
+      metadata: {
+        stripeSessionId: session.id,
+        packageId,
+        purchaseId,
+        platform: 'web',
+        priceUSD,
+      },
+    });
 
-      // Read wallet inside transaction for consistency
-      const walletDoc = await transaction.get(walletRef);
+    // ── Audit records (batch — idempotent by deterministic doc IDs) ──────────
+    const auditBatch = db.batch();
 
-      const currentBalance = walletDoc.exists
-        ? (walletDoc.data()?.tokensBalance || 0)
-        : 0;
-      const newBalance = currentBalance + tokens;
-
-      // 1. Write idempotency sentinel (prevents duplicate processing)
-      transaction.set(idempotencyRef, {
+    // Secondary sentinel: marks this session done for legacy code
+    auditBatch.set(
+      db.collection('processedStripeEvents').doc(`pack288_${session.id}`),
+      {
         sessionId: session.id,
         userId,
         tokens,
         processedAt: serverTimestamp(),
-      });
-
-      // 2. Create purchase record inside transaction
-      const purchase: TokenPurchase = {
-        purchaseId,
-        userId,
-        packageId: packageId as any,
-        tokens,
-        priceUSD,
-        paidCurrency: session.currency?.toUpperCase() || 'USD',
-        paidAmount: (session.amount_total || 0) / 100, // Convert from cents
-        platform: 'web',
-        provider: 'stripe',
-        providerOrderId: session.id,
-        status: 'COMPLETED',
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
-      };
-      transaction.set(db.collection('tokenPurchases').doc(purchaseId), purchase);
-
-      // 3. Credit tokens to wallet
-      if (walletDoc.exists) {
-        transaction.update(walletRef, {
-          tokensBalance: newBalance,
-          lifetimePurchasedTokens: FieldValue.increment(tokens),
-          lastUpdated: serverTimestamp(),
-        });
-      } else {
-        transaction.set(walletRef, {
-          userId,
-          tokensBalance: newBalance,
-          lifetimePurchasedTokens: tokens,
-          lifetimeSpentTokens: 0,
-          lifetimeEarnedTokens: 0,
-          lastUpdated: serverTimestamp(),
-          createdAt: serverTimestamp(),
-        });
+        ledgerTxId: txId,
       }
+    );
 
-      // 4. Create wallet transaction record
-      const txId = generateId();
-      transaction.set(db.collection('walletTransactions').doc(txId), {
+    // Purchase record
+    const purchase: TokenPurchase = {
+      purchaseId,
+      userId,
+      packageId: packageId as any,
+      tokens,
+      priceUSD,
+      paidCurrency: session.currency?.toUpperCase() || 'USD',
+      paidAmount: (session.amount_total || 0) / 100,
+      platform: 'web',
+      provider: 'stripe',
+      providerOrderId: session.id,
+      status: 'COMPLETED',
+      createdAt: serverTimestamp() as any,
+      updatedAt: serverTimestamp() as any,
+    };
+    auditBatch.set(db.collection('tokenPurchases').doc(purchaseId), purchase, { merge: true });
+
+    // Wallet transaction audit record (keyed by ledger txId)
+    auditBatch.set(
+      db.collection('walletTransactions').doc(txId),
+      {
         txId,
         userId,
         type: 'PURCHASE',
         source: 'STORE',
         amountTokens: tokens,
-        beforeBalance: currentBalance,
+        beforeBalance: newBalance - tokens,
         afterBalance: newBalance,
+        ledgerTxId: txId,
         metadata: {
           purchaseId,
           platform: 'web',
           stripeSessionId: session.id,
         },
         timestamp: serverTimestamp(),
-      });
-    });
+      },
+      { merge: true }
+    );
+
+    await auditBatch.commit();
 
     // Update monthly limit tracking
     const currentMonth = new Date().toISOString().substring(0, 7);

@@ -31,6 +31,7 @@ import { admin, auth, functions, getFirestore, increment, logger, onCall, onRequ
 import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 import { logServerEvent } from './lib/stubs';
 import * as crypto from 'crypto';
+import { creditTokens } from './wallet/walletService';
 
 ;
 ;
@@ -372,57 +373,53 @@ async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
   const sessionId = session.id;
 
   try {
-    // Credit tokens atomically — idempotency check is INSIDE the transaction
-    // to prevent TOCTOU race conditions on concurrent webhook deliveries
+    // ── Read paymentSession (needed for userId + tokens) ─────────────────────
+    const sessionDoc = await db.collection("paymentSessions").doc(sessionId).get();
+    if (!sessionDoc.exists) {
+      logger.error(`Payment session not found: ${sessionId}`);
+      return;
+    }
+
+    const paymentSession = sessionDoc.data() as PaymentSession;
+
+    // ── Idempotency fast-exit ─────────────────────────────────────────────────
+    // paymentSession.status === "completed" means credit already applied.
+    if (paymentSession.status === "completed") {
+      logger.info(`Already processed (idempotent skip): ${sessionId}`);
+      return;
+    }
+
+    const userId = paymentSession.userId;
+    const tokens = paymentSession.tokens!;
+    const idempotencyKey = `stripe_v2_${sessionId}`;
+
+    // ── Canonical credit (atomic, idempotent, writes ledger) ─────────────────
+    // creditTokens() checks idempotency_sentinels INSIDE its own transaction.
+    const { txId, newBalance } = await creditTokens({
+      userId,
+      amountTokens: tokens,
+      type: "PURCHASE",
+      idempotencyKey,
+      metadata: {
+        stripeSessionId: sessionId,
+        paymentSessionId: sessionId,
+        platform: "web",
+        provider: "stripe",
+      },
+    });
+
+    // ── Mark session completed + write transaction audit record ───────────────
+    // This is now state-tracking only; idempotency is guaranteed by creditTokens().
     await db.runTransaction(async (tx) => {
-      // Re-read payment session inside transaction for atomic idempotency
-      const sessionDoc = await tx.get(db.collection("paymentSessions").doc(sessionId));
+      // Re-read inside transaction for safety
+      const freshDoc = await tx.get(db.collection("paymentSessions").doc(sessionId));
+      if (!freshDoc.exists) return;
+      const freshSession = freshDoc.data() as PaymentSession;
+      if (freshSession.status === "completed") return; // already marked by a concurrent call
 
-      if (!sessionDoc.exists) {
-        logger.error(`Payment session not found: ${sessionId}`);
-        return;
-      }
-
-      const paymentSession = sessionDoc.data() as PaymentSession;
-
-      // Idempotency check — inside transaction to prevent duplicate credit
-      if (paymentSession.status === "completed") {
-        logger.info(`Already processed (idempotent skip): ${sessionId}`);
-        return;
-      }
-
-      const userId = paymentSession.userId;
-      const tokens = paymentSession.tokens!;
-
-      // Get or create wallet
-      const walletRef = db.collection("users").doc(userId).collection("wallet").doc("main");
-      const walletSnap = await tx.get(walletRef);
-
-      let currentBalance = 0;
-      if (walletSnap.exists) {
-        currentBalance = (walletSnap.data() as UserWallet).balance || 0;
-      } else {
-        // Initialize wallet
-        const newWallet: UserWallet = {
-          userId,
-          balance: 0,
-          pendingBalance: 0,
-          earnedBalance: 0,
-          spentBalance: 0,
-          preferredCurrency: paymentSession.currency,
-          totalDeposits: 0,
-          totalEarnings: 0,
-          totalSpending: 0,
-          totalRefunds: 0,
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now(),
-        };
-        tx.set(walletRef, newWallet);
-      }
-
-      // Create transaction record
+      // Transaction audit record
       const txRef = db.collection("transactions").doc(`tx_stripe_${sessionId}`);
-      const transaction: Transaction = {
+      const txRecord: Transaction = {
         txId: `tx_stripe_${sessionId}`,
         userId,
         type: "deposit",
@@ -434,45 +431,36 @@ async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
         providerTxId: session.payment_intent as string,
         paymentSessionId: sessionId,
         status: "completed",
-        balanceBefore: currentBalance,
-        balanceAfter: currentBalance + tokens,
+        balanceBefore: newBalance - tokens,
+        balanceAfter: newBalance,
         description: `Purchased ${tokens} tokens`,
-        metadata: {},
+        metadata: { ledgerTxId: txId },
         createdAt: Timestamp.now(),
         completedAt: Timestamp.now(),
       };
-      tx.set(txRef, transaction);
+      tx.set(txRef, txRecord, { merge: true });
 
-      // Update wallet
-      tx.update(walletRef, {
-        balance: FieldValue.increment(tokens),
-        totalDeposits: FieldValue.increment(tokens),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-
-      // Update payment session
-      tx.update(sessionDoc.ref, {
+      // Mark session completed
+      tx.update(freshDoc.ref, {
         status: "completed",
         completedAt: FieldValue.serverTimestamp(),
         webhookProcessedAt: FieldValue.serverTimestamp(),
+        ledgerTxId: txId,
       });
     });
 
-    logger.info(`Tokens credited successfully: ${sessionId}`);
+    logger.info(`Tokens credited successfully: ${sessionId}`, { ledgerTxId: txId, newBalance });
 
-    // Post-transaction logging (session metadata retrieved from Stripe session object)
     await logServerEvent("tokens_credited", session.metadata?.userId || sessionId, {
-      tokens: parseInt(session.metadata?.tokens || "0", 10),
+      tokens,
       provider: "stripe",
       sessionId,
     });
   } catch (error: any) {
     logger.error(`Transaction failed for ${sessionId}:`, error);
 
-    // Update attempt count — direct doc reference (outside failed transaction)
     await db.collection("paymentSessions").doc(sessionId).update({
       webhookAttempts: FieldValue.increment(1),
-      status: "failed",
     });
 
     throw error;

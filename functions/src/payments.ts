@@ -18,7 +18,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 import Stripe from 'stripe';
 import { db, serverTimestamp, increment, generateId } from './init';
-import { debitForPayout } from './wallet/walletService';
+import { debitForPayout, creditTokens } from './wallet/walletService';
 import { onCall, onRequest, HttpsError, logger } from './runtime';
 import { FunctionResponse } from './types';
 import { DEFAULT_TOKEN_PACKS } from './pack277-token-packs';
@@ -142,58 +142,44 @@ export const stripeWebhook = onRequest(
       return;
     }
 
-    // ── 10. Atomic transaction: idempotency + wallet credit ───────
+    // ── 10. Idempotency check + canonical credit ─────────────────
     const purchaseRef = db.collection('purchases').doc(sessionId);
-    const walletRef = db
-      .collection('users')
-      .doc(userId)
-      .collection('wallet')
-      .doc('current');
+    const existingPurchase = await purchaseRef.get();
+    if (existingPurchase.exists) {
+      logger.info(`[stripeWebhook] Duplicate session ${sessionId} — skipping`);
+      res.json({ received: true });
+      return;
+    }
 
     try {
-      await db.runTransaction(async (tx) => {
-        // Idempotency: check if session already processed
-        const existingPurchase = await tx.get(purchaseRef);
-        if (existingPurchase.exists) {
-          logger.info(`[stripeWebhook] Duplicate session ${sessionId} — skipping`);
-          return;
-        }
+      // Write purchase record (audit sentinel)
+      await purchaseRef.set({
+        sessionId,
+        userId,
+        packId: pack.id,
+        tokens: pack.tokens,
+        amountTotal: session.amount_total,
+        currency: session.currency,
+        status: 'COMPLETED',
+        stripePaymentIntentId: session.payment_intent,
+        stripeCustomerId: session.customer,
+        createdAt: serverTimestamp(),
+        processedAt: serverTimestamp(),
+      });
 
-        // Read wallet inside transaction for consistency
-        const walletSnap = await tx.get(walletRef);
-        const wallet = walletSnap.data();
-
-        // Write purchase record (idempotency sentinel)
-        tx.set(purchaseRef, {
-          sessionId,
-          userId,
+      // ── Canonical credit via walletService (idempotent) ──────────
+      // creditTokens() checks idempotency_sentinels inside its own transaction.
+      await creditTokens({
+        userId,
+        amountTokens: pack.tokens,
+        type: 'PURCHASE',
+        idempotencyKey: `stripe_v1_purchase_${sessionId}`,
+        metadata: {
+          stripeSessionId: sessionId,
           packId: pack.id,
-          tokens: pack.tokens,
-          amountTotal: session.amount_total,
-          currency: session.currency,
-          status: 'COMPLETED',
-          stripePaymentIntentId: session.payment_intent,
-          stripeCustomerId: session.customer,
-          createdAt: serverTimestamp(),
-          processedAt: serverTimestamp(),
-        });
-
-        // Credit tokens to wallet atomically
-        if (walletSnap.exists) {
-          tx.update(walletRef, {
-            purchased: increment(pack.tokens),
-            updatedAt: serverTimestamp(),
-          });
-        } else {
-          tx.set(walletRef, {
-            userId,
-            purchased: pack.tokens,
-            earned: 0,
-            spent: 0,
-            updatedAt: serverTimestamp(),
-            createdAt: serverTimestamp(),
-          });
-        }
+          platform: 'web',
+          webhookVersion: 'v1',
+        },
       });
 
       logger.info(`[stripeWebhook] Credited ${pack.tokens} tokens to ${userId} (session ${sessionId})`);
@@ -231,31 +217,12 @@ export const creditTokensCallable = onCall(
       throw new HttpsError('not-found', `Unknown packId: ${packId}`);
     }
 
+    // Write purchase record (idempotency sentinel for this callable)
     const purchaseRef = db.collection('purchases').doc(sessionId);
-    const walletRef = db
-      .collection('users')
-      .doc(userId)
-      .collection('wallet')
-      .doc('current');
+    const existingPurchase = await purchaseRef.get();
 
-    const result = await db.runTransaction(async (tx) => {
-      // Idempotency check
-      const existingPurchase = await tx.get(purchaseRef);
-      if (existingPurchase.exists) {
-        // Already credited — return current wallet balance
-        const walletSnap = await tx.get(walletRef);
-        const wallet = walletSnap.data();
-        return { newBalance: (wallet?.purchased || 0), alreadyProcessed: true };
-      }
-
-      // Read wallet
-      const walletSnap = await tx.get(walletRef);
-      const wallet = walletSnap.data();
-      const currentPurchased = wallet?.purchased || 0;
-      const newBalance = currentPurchased + pack.tokens;
-
-      // Write purchase record (idempotency sentinel)
-      tx.set(purchaseRef, {
+    if (!existingPurchase.exists) {
+      await purchaseRef.set({
         sessionId,
         userId,
         packId: pack.id,
@@ -265,34 +232,26 @@ export const creditTokensCallable = onCall(
         createdAt: serverTimestamp(),
         processedAt: serverTimestamp(),
       });
+    }
 
-      // Credit wallet
-      if (walletSnap.exists) {
-        tx.update(walletRef, {
-          purchased: increment(pack.tokens),
-          updatedAt: serverTimestamp(),
-        });
-      } else {
-        tx.set(walletRef, {
-          userId,
-          purchased: pack.tokens,
-          earned: 0,
-          spent: 0,
-          updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp(),
-        });
-      }
-
-      return { newBalance, alreadyProcessed: false };
+    // ── Canonical credit via walletService (idempotent) ───────────────────────
+    // creditTokens() checks idempotency_sentinels inside its own transaction.
+    // Safe to call on retry — if already credited, returns current balance as no-op.
+    const { newBalance } = await creditTokens({
+      userId,
+      amountTokens: pack.tokens,
+      type: 'PURCHASE',
+      idempotencyKey: `credit_callable_${sessionId}`,
+      metadata: { packId: pack.id, sessionId, source: 'creditTokensCallable' },
     });
 
-    if (result.alreadyProcessed) {
+    if (existingPurchase.exists) {
       logger.info(`[creditTokensCallable] Already processed session ${sessionId}`);
     } else {
       logger.info(`[creditTokensCallable] Credited ${pack.tokens} tokens to ${userId}`);
     }
 
-    return { ok: true, data: { newBalance: result.newBalance } };
+    return { ok: true, data: { newBalance } };
   }
 );
 
