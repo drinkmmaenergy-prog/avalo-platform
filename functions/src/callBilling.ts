@@ -1,16 +1,21 @@
 /**
  * PACK 75 - Call Billing Engine
- * 
+ *
  * Handles per-minute billing for voice & video calls
- * Charges caller, pays earner (earner) with 65/35 split
- * 
+ * Charges caller, pays earner (earner) with 80/20 split
+ *
  * NO FREE CALLS - all calls are paid, insufficient funds = graceful termination
+ *
+ * Phase 2D: Migrated from phantom user_wallets paths to canonical walletService:
+ *   BEFORE: user_wallets/{uid}.tokenBalance / earningsBalance (prod = 0, phantom)
+ *   AFTER:  walletService.getBalance() + transactTokens() → wallets/{uid}.balance + ledger
  */
 
 import { db, serverTimestamp } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { logEvent } from './observability';
 import { admin, functions } from './runtime';
+import { transactTokens, getBalance } from './wallet/walletService';
 
 interface CallSession {
   callId: string;
@@ -36,230 +41,202 @@ const AVALO_SPLIT  = 0.20; // 20% to Avalo
 
 /**
  * Bill a completed call session
- * Charges caller's wallet, credits callee's earnings wallet
+ * Charges caller's canonical wallet (wallets/{uid}.balance), credits callee via walletService
  */
 export async function billCall(callId: string): Promise<void> {
   try {
-    // Load call session
+    // ── 1. Load call session ───────────────────────────────────────────────
     const callDoc = await db.collection('call_sessions').doc(callId).get();
-    
+
     if (!callDoc.exists) {
       throw new Error(`Call session ${callId} not found`);
     }
 
     const callData = callDoc.data() as CallSession;
 
-    // Check if already billed
+    // ── 2. Idempotency fast-exit (call_sessions status) ───────────────────
+    // walletService.transactTokens() provides a second atomic idempotency guard
+    // via idempotency_sentinels/{call_bill_{callId}}.
     if (callData.billingStatus === 'CHARGED' || callData.billingStatus === 'PARTIALLY_CHARGED') {
       console.log(`Call ${callId} already billed, skipping`);
       return;
     }
 
-    // Validate call has started and ended
+    // ── 3. Validate call has started and ended ─────────────────────────────
     if (!callData.startedAt || !callData.endedAt) {
       throw new Error(`Call ${callId} missing start or end time`);
     }
 
-    // Calculate duration in seconds
+    // ── 4. Calculate duration + required tokens ────────────────────────────
     const startSeconds = callData.startedAt.toMillis() / 1000;
     const endSeconds = callData.endedAt.toMillis() / 1000;
     const durationSeconds = Math.max(0, endSeconds - startSeconds);
 
-    // Calculate billable minutes (round up)
     const billedMinutes = Math.ceil(durationSeconds / 60);
-
-    // Calculate required tokens
     const requiredTokens = billedMinutes * callData.tokensPerMinute;
 
+    // Sub-1-minute call — mark charged with zero tokens
     if (requiredTokens === 0) {
-      // Call was too short (< 1 minute)
       await db.collection('call_sessions').doc(callId).update({
         billedMinutes: 0,
         totalTokensCharged: 0,
         billingStatus: 'CHARGED',
-        lastUpdatedAt: serverTimestamp()
+        lastUpdatedAt: serverTimestamp(),
       });
       return;
     }
 
-    // Fetch caller's wallet balance
-    const callerWalletDoc = await db.collection('user_wallets').doc(callData.callerUserId).get();
-    
-    if (!callerWalletDoc.exists) {
-      throw new Error(`Caller wallet ${callData.callerUserId} not found`);
+    // ── 5. Read canonical balance ──────────────────────────────────────────
+    // walletService.getBalance() reads wallets/{uid}.balance — the sole canonical field.
+    const callerBalance = await getBalance(callData.callerUserId);
+
+    // ── 6. Determine charge amount and call walletService ─────────────────
+    let actualTokensCharged: number;
+    let actualBilledMinutes: number;
+    let finalBillingStatus: 'CHARGED' | 'PARTIALLY_CHARGED' | 'FAILED';
+
+    // Single idempotency key for this call regardless of full vs partial path.
+    // If transactTokens() already succeeded (sentinel exists), it returns early
+    // without double-charging, even if the call_sessions update below failed.
+    const idempotencyKey = `call_bill_${callId}`;
+
+    if (callerBalance >= requiredTokens) {
+      // ── Full charge ──────────────────────────────────────────────────────
+      actualTokensCharged = requiredTokens;
+      actualBilledMinutes = billedMinutes;
+      finalBillingStatus = 'CHARGED';
+
+      const earnerAmount  = Math.floor(requiredTokens * EARNER_SPLIT);
+      const platformAmount = requiredTokens - earnerAmount; // remainder to platform
+
+      await transactTokens({
+        type: 'CALL_BILL',
+        actorId: callData.callerUserId,
+        counterpartyId: callData.calleeUserId,
+        amountTokens: requiredTokens,
+        split: {
+          creatorTokens: earnerAmount,
+          avaloTokens: platformAmount,
+        },
+        idempotencyKey,
+        sessionId: callId,
+        metadata: {
+          callId,
+          billedMinutes,
+          tokensPerMinute: callData.tokensPerMinute,
+          mode: callData.mode,
+          chargeType: 'full',
+        },
+      });
+
+      await logEvent({
+        level: 'INFO',
+        source: 'BACKEND',
+        service: 'functions.calls',
+        module: 'CALL_BILLING',
+        message: `Call billed successfully: ${billedMinutes} minutes, ${requiredTokens} tokens`,
+        context: {
+          userId: callData.callerUserId,
+          functionName: 'billCall',
+        },
+        details: {
+          extra: {
+            callId,
+            billedMinutes,
+            tokensCharged: requiredTokens,
+            earnerAmount,
+            platformAmount,
+          },
+        },
+      });
+
+    } else if (callerBalance > 0) {
+      // ── Partial charge — use all available balance ────────────────────────
+      actualTokensCharged = callerBalance;
+      actualBilledMinutes = Math.floor(callerBalance / callData.tokensPerMinute);
+      finalBillingStatus = 'PARTIALLY_CHARGED';
+
+      const earnerAmount  = Math.floor(actualTokensCharged * EARNER_SPLIT);
+      const platformAmount = actualTokensCharged - earnerAmount;
+
+      await transactTokens({
+        type: 'CALL_BILL',
+        actorId: callData.callerUserId,
+        counterpartyId: callData.calleeUserId,
+        amountTokens: actualTokensCharged,
+        split: {
+          creatorTokens: earnerAmount,
+          avaloTokens: platformAmount,
+        },
+        idempotencyKey,
+        sessionId: callId,
+        metadata: {
+          callId,
+          billedMinutes: actualBilledMinutes,
+          tokensPerMinute: callData.tokensPerMinute,
+          mode: callData.mode,
+          chargeType: 'partial',
+          requestedTokens: requiredTokens,
+        },
+      });
+
+      await logEvent({
+        level: 'WARN',
+        source: 'BACKEND',
+        service: 'functions.calls',
+        module: 'CALL_BILLING',
+        message: `Call partially billed: insufficient funds`,
+        context: {
+          userId: callData.callerUserId,
+          functionName: 'billCall',
+        },
+        details: {
+          extra: {
+            callId,
+            requestedMinutes: billedMinutes,
+            billedMinutes: actualBilledMinutes,
+            requestedTokens: requiredTokens,
+            availableTokens: callerBalance,
+            tokensCharged: actualTokensCharged,
+          },
+        },
+      });
+
+    } else {
+      // ── Zero balance — billing failed ─────────────────────────────────────
+      actualTokensCharged = 0;
+      actualBilledMinutes = 0;
+      finalBillingStatus = 'FAILED';
+
+      await logEvent({
+        level: 'ERROR',
+        source: 'BACKEND',
+        service: 'functions.calls',
+        module: 'CALL_BILLING',
+        message: `Call billing failed: zero balance`,
+        context: {
+          userId: callData.callerUserId,
+          functionName: 'billCall',
+        },
+        details: {
+          extra: {
+            callId,
+            requestedMinutes: billedMinutes,
+            requestedTokens: requiredTokens,
+          },
+        },
+      });
     }
 
-    const callerBalance = callerWalletDoc.data()?.tokenBalance || 0;
-
-    // Perform billing transaction
-    await db.runTransaction(async (transaction) => {
-      // Re-read call session to ensure no concurrent billing
-      const callDocInTxn = await transaction.get(db.collection('call_sessions').doc(callId));
-      const callDataInTxn = callDocInTxn.data() as CallSession;
-
-      if (callDataInTxn.billingStatus !== 'PENDING') {
-        console.log(`Call ${callId} billing status changed, aborting transaction`);
-        return;
-      }
-
-      let actualTokensCharged: number;
-      let actualBilledMinutes: number;
-      let finalBillingStatus: 'CHARGED' | 'PARTIALLY_CHARGED' | 'FAILED';
-
-      if (callerBalance >= requiredTokens) {
-        // Full charge
-        actualTokensCharged = requiredTokens;
-        actualBilledMinutes = billedMinutes;
-        finalBillingStatus = 'CHARGED';
-
-        // Deduct from caller
-        transaction.update(db.collection('user_wallets').doc(callData.callerUserId), {
-          tokenBalance: callerBalance - requiredTokens,
-          lastUpdatedAt: serverTimestamp()
-        });
-
-        // Calculate earnings split
-        const earnerAmount = Math.floor(requiredTokens * EARNER_SPLIT);
-        const platformAmount = requiredTokens - earnerAmount;
-
-        // Credit callee's earnings wallet
-        const calleeWalletRef = db.collection('user_wallets').doc(callData.calleeUserId);
-        const calleeWalletDoc = await transaction.get(calleeWalletRef);
-        
-        if (calleeWalletDoc.exists) {
-          const currentEarnings = calleeWalletDoc.data()?.earningsBalance || 0;
-          transaction.update(calleeWalletRef, {
-            earningsBalance: currentEarnings + earnerAmount,
-            lastUpdatedAt: serverTimestamp()
-          });
-        } else {
-          transaction.set(calleeWalletRef, {
-            userId: callData.calleeUserId,
-            earningsBalance: earnerAmount,
-            tokenBalance: 0,
-            createdAt: serverTimestamp(),
-            lastUpdatedAt: serverTimestamp()
-          });
-        }
-
-        // Log successful billing
-        await logEvent({
-          level: 'INFO',
-          source: 'BACKEND',
-          service: 'functions.calls',
-          module: 'CALL_BILLING',
-          message: `Call billed successfully: ${billedMinutes} minutes, ${requiredTokens} tokens`,
-          context: {
-            userId: callData.callerUserId,
-            functionName: 'billCall'
-          },
-          details: {
-            extra: {
-              callId,
-              billedMinutes,
-              tokensCharged: requiredTokens,
-              earnerAmount,
-              platformAmount
-            }
-          }
-        });
-
-      } else if (callerBalance > 0) {
-        // Partial charge - use available balance
-        actualTokensCharged = callerBalance;
-        actualBilledMinutes = Math.floor(callerBalance / callData.tokensPerMinute);
-        finalBillingStatus = 'PARTIALLY_CHARGED';
-
-        // Deduct all available balance
-        transaction.update(db.collection('user_wallets').doc(callData.callerUserId), {
-          tokenBalance: 0,
-          lastUpdatedAt: serverTimestamp()
-        });
-
-        // Calculate earnings split on partial charge
-        const earnerAmount = Math.floor(actualTokensCharged * EARNER_SPLIT);
-
-        // Credit callee's earnings wallet
-        const calleeWalletRef = db.collection('user_wallets').doc(callData.calleeUserId);
-        const calleeWalletDoc = await transaction.get(calleeWalletRef);
-        
-        if (calleeWalletDoc.exists) {
-          const currentEarnings = calleeWalletDoc.data()?.earningsBalance || 0;
-          transaction.update(calleeWalletRef, {
-            earningsBalance: currentEarnings + earnerAmount,
-            lastUpdatedAt: serverTimestamp()
-          });
-        } else {
-          transaction.set(calleeWalletRef, {
-            userId: callData.calleeUserId,
-            earningsBalance: earnerAmount,
-            tokenBalance: 0,
-            createdAt: serverTimestamp(),
-            lastUpdatedAt: serverTimestamp()
-          });
-        }
-
-        // Log partial billing
-        await logEvent({
-          level: 'WARN',
-          source: 'BACKEND',
-          service: 'functions.calls',
-          module: 'CALL_BILLING',
-          message: `Call partially billed: insufficient funds`,
-          context: {
-            userId: callData.callerUserId,
-            functionName: 'billCall'
-          },
-          details: {
-            extra: {
-              callId,
-              requestedMinutes: billedMinutes,
-              billedMinutes: actualBilledMinutes,
-              requestedTokens: requiredTokens,
-              availableTokens: callerBalance,
-              tokensCharged: actualTokensCharged
-            }
-          }
-        });
-
-      } else {
-        // No balance - billing failed
-        actualTokensCharged = 0;
-        actualBilledMinutes = 0;
-        finalBillingStatus = 'FAILED';
-
-        // Log billing failure
-        await logEvent({
-          level: 'ERROR',
-          source: 'BACKEND',
-          service: 'functions.calls',
-          module: 'CALL_BILLING',
-          message: `Call billing failed: zero balance`,
-          context: {
-            userId: callData.callerUserId,
-            functionName: 'billCall'
-          },
-          details: {
-            extra: {
-              callId,
-              requestedMinutes: billedMinutes,
-              requestedTokens: requiredTokens
-            }
-          }
-        });
-      }
-
-      // Update call session with billing results
-      transaction.update(db.collection('call_sessions').doc(callId), {
-        billedMinutes: actualBilledMinutes,
-        totalTokensCharged: actualTokensCharged,
-        billingStatus: finalBillingStatus,
-        lastUpdatedAt: serverTimestamp()
-      });
+    // ── 7. Update call session with billing results ────────────────────────
+    await db.collection('call_sessions').doc(callId).update({
+      billedMinutes: actualBilledMinutes,
+      totalTokensCharged: actualTokensCharged,
+      billingStatus: finalBillingStatus,
+      lastUpdatedAt: serverTimestamp(),
     });
 
   } catch (error: any) {
-    // Log error
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
@@ -268,8 +245,8 @@ export async function billCall(callId: string): Promise<void> {
       message: `Call billing error: ${error.message}`,
       details: {
         stackSnippet: error.stack?.split('\n').slice(0, 10).join('\n'),
-        extra: { callId }
-      }
+        extra: { callId },
+      },
     });
 
     throw error;
@@ -278,7 +255,7 @@ export async function billCall(callId: string): Promise<void> {
 
 /**
  * Check if user has sufficient balance for a call
- * Used before starting a call
+ * Reads canonical wallets/{uid}.balance via walletService.getBalance()
  */
 export async function checkCallBalance(
   userId: string,
@@ -286,51 +263,20 @@ export async function checkCallBalance(
   minimumMinutes: number = 1
 ): Promise<{ sufficient: boolean; balance: number; required: number }> {
   try {
-    const walletDoc = await db.collection('user_wallets').doc(userId).get();
-    
-    const balance = walletDoc.exists ? (walletDoc.data()?.tokenBalance || 0) : 0;
+    const balance = await getBalance(userId);
     const required = tokensPerMinute * minimumMinutes;
 
     return {
       sufficient: balance >= required,
       balance,
-      required
+      required,
     };
   } catch (error) {
     console.error('Error checking call balance:', error);
     return {
       sufficient: false,
       balance: 0,
-      required: tokensPerMinute * minimumMinutes
+      required: tokensPerMinute * minimumMinutes,
     };
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
