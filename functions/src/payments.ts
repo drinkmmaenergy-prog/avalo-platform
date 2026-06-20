@@ -22,6 +22,7 @@ import { debitForPayout, creditTokens } from './wallet/walletService';
 import { onCall, onRequest, HttpsError, logger } from './runtime';
 import { FunctionResponse } from './types';
 import { DEFAULT_TOKEN_PACKS } from './pack277-token-packs';
+import { assertPayoutsEnabled } from './wallet/payoutGuard';
 
 // ─────────────────────────────────────────────
 // Stripe SDK — initialised lazily from Cloud Run secret
@@ -261,6 +262,9 @@ export const creditTokensCallable = onCall(
 export const requestPayoutCallable = onCall(
   { region: "europe-west1" },
   async (request): Promise<FunctionResponse<{ payoutId: string }>> => {
+    // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first, before any auth or wallet check
+    assertPayoutsEnabled();
+
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Auth required");
     }
@@ -331,37 +335,4 @@ export const requestPayoutCallable = onCall(
       grossUSD: parseFloat(gross.toFixed(6)),
       commissionUSD: parseFloat(commission.toFixed(6)),
       feeUSD: parseFloat(fee.toFixed(6)),
-      amountUSD: parseFloat(netUSD.toFixed(6)),
-      status: "pending",
-      idempotencyKey,
-      createdAt: serverTimestamp(),
-    });
-
-    return { ok: true, data: { payoutId } };
-  }
-);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      amountUSD: parse

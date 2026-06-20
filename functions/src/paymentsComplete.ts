@@ -32,6 +32,7 @@ import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 import { logServerEvent } from './lib/stubs';
 import * as crypto from 'crypto';
 import { creditTokens } from './wallet/walletService';
+import { assertPayoutsEnabled } from './wallet/payoutGuard';
 
 ;
 ;
@@ -1543,6 +1544,9 @@ export const cancelCalendarBooking = onCall(
 export const requestPayout = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+    assertPayoutsEnabled();
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -1727,10 +1731,4 @@ export const getCreatorSettlements = onCall(
 export const getPendingSettlements = onCall(
   { region: "europe-west1" },
   async (request) => {
-    const userId = request.auth?.uid;
-    if (!userId) {
-      throw new HttpsError("unauthenticated", "User must be authenticated");
-    }
-
-    // Check admin role
-    
+    con

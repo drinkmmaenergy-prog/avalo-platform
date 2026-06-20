@@ -37,7 +37,27 @@ interface PayoutRequest {
   completedAt?: Date;
 }
 
+// [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — show disabled state only
 export default function AIPayoutsWebPage() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center border border-amber-200">
+        <div className="text-5xl mb-6">🔒</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">AI Creator Payouts</h1>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+          <p className="text-sm font-semibold text-amber-800 mb-1">Not available yet</p>
+          <p className="text-sm text-amber-700 leading-relaxed">
+            Creator payouts are not available during the current launch phase.
+            Your earned tokens are safe and will be available for withdrawal
+            once creator payouts launch.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AIPayoutsWebPage_DISABLED_IMPL() {
   const router = useRouter();
   const auth = getAuth();
 
@@ -347,34 +367,4 @@ export default function AIPayoutsWebPage() {
               <p>Processing time: 2-5 business days</p>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-green-600 mt-0.5">✓</span>
-              <p>Conversion rate: 1 Token = {TOKEN_TO_PLN.toFixed(2)} PLN</p>
-            </div>
-            <div className="flex items-start gap-3">
-              <span className="text-green-600 mt-0.5">✓</span>
-              <p>Minimum payout: {MIN_PAYOUT_TOKENS} tokens</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center p-6 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            Ensure your tax profile and bank details are up to date before requesting a payout.
-          </p>
-          <button
-            onClick={() => router.push('/profile/earnings-taxes')}
-            className="text-blue-600 hover:text-blue-700 font-semibold"
-          >
-            Manage Tax Profile →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-
-
-
+              <span className=

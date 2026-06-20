@@ -15,6 +15,7 @@ import {
 } from "../payouts";
 import { auth, functions } from '../runtime';
 import { enforceCreatorAgreement } from '../pack451-earner-agreement';
+import { assertPayoutsEnabled } from '../wallet/payoutGuard';
 
 /**
  * Get payout state for authenticated user.
@@ -24,6 +25,7 @@ import { enforceCreatorAgreement } from '../pack451-earner-agreement';
 export const getPayoutStateCallable = onCall(
   { region: "europe-west1" },
   async (request) => {
+    assertPayoutsEnabled();
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
     }
@@ -51,12 +53,13 @@ export const getPayoutStateCallable = onCall(
 export const setupPayoutAccountCallable = onCall(
   { region: "europe-west1" },
   async (request) => {
+    assertPayoutsEnabled();
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
     }
 
     const userId = request.auth.uid;
-    
+
     // PHASE 4.2: Enforce B2B Creator Agreement acceptance
     await enforceCreatorAgreement(userId);
 
@@ -94,12 +97,13 @@ export const setupPayoutAccountCallable = onCall(
 export const requestPayoutCallable = onCall(
   { region: "europe-west1" },
   async (request) => {
+    assertPayoutsEnabled();
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be authenticated");
     }
 
     const userId = request.auth.uid;
-    
+
     // PHASE 4.2: Enforce B2B Creator Agreement acceptance
     await enforceCreatorAgreement(userId);
 
@@ -160,36 +164,4 @@ export const getPayoutRequestsCallable = onCall(
     } catch (error: any) {
       console.error("Error getting payout requests:", error);
       throw new HttpsError(
-        "internal",
-        error.message || "Failed to get payout requests"
-      );
-    }
-  }
-);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        "internal

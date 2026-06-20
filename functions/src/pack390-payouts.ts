@@ -26,6 +26,7 @@ import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
 import { TOKEN_PAYOUT_USD } from './config/economyConfig';
 import { getBalance, debitForPayout, creditTokens } from './wallet/walletService';
+import { assertPayoutsEnabled } from './wallet/payoutGuard';
 
 const db = admin.firestore();
 
@@ -63,6 +64,9 @@ enum PayoutStatus {
  * User requests a bank payout
  */
 export const pack390_requestBankPayout = functions.https.onCall(async (request) => {
+  // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+  assertPayoutsEnabled();
+
   const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
@@ -181,14 +185,17 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
  * Execute approved bank payout (Admin/System only)
  */
 export const pack390_executeBankPayout = functions.https.onCall(async (request) => {
+  // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+  assertPayoutsEnabled();
+
   const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
-  
+
   // Check admin/finance permissions
   const userDoc = await db.collection('users').doc(request.auth.uid).get();
-  const isAuthorized = userDoc.exists && 
+  const isAuthorized = userDoc.exists &&
     (userDoc.data()?.role === 'admin' || userDoc.data()?.permissions?.finance === true);
   
   if (!isAuthorized) {
@@ -340,6 +347,9 @@ export const pack390_executeBankPayout = functions.https.onCall(async (request) 
  * Reverse a failed transfer
  */
 export const pack390_reverseFailedTransfer = functions.https.onCall(async (request) => {
+  // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+  assertPayoutsEnabled();
+
   const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
@@ -366,10 +376,19 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (reque
     
     const payoutData = payoutDoc.data()!;
     
-    if (payoutData.status !== PayoutStatus.FAILED && payoutData.status !== PayoutStatus.COMPLETED) {
+    // [HARD-STOP] COMPLETED payouts cannot be reversed — fiat was already disbursed.
+    // Reversing a completed payout would credit tokens back to a user who already received money,
+    // creating free token inflation. Only FAILED payouts (never disbursed) are reversible.
+    if (payoutData.status === PayoutStatus.COMPLETED) {
       throw new functions.https.HttpsError(
         'failed-precondition',
-        'Only failed or completed payouts can be reversed'
+        '[COMPLETED_PAYOUT_REVERSAL_BLOCKED] Completed payouts cannot be reversed. Fiat was already disbursed. Contact finance team for manual reconciliation.',
+      );
+    }
+    if (payoutData.status !== PayoutStatus.FAILED) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Only FAILED payouts that were never disbursed may be reversed.',
       );
     }
     
@@ -433,38 +452,4 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (reque
 
 async function convertTokensToFiat(tokens: number, currency: string) {
   const BASE_TOKEN_VALUE_USD = TOKEN_PAYOUT_USD; // derived from TOKEN_PAYOUT_USD (0.03 USD)
-  const USDValue = tokens * BASE_TOKEN_VALUE_USD;
-  
-  if (currency === 'USD') {
-    return { amount: USDValue, fxRate: 1 };
-  }
-  
-  const rateDoc = await db.collection('fxRates').doc(`USD_${currency}`).get();
-  if (!rateDoc.exists) {
-    throw new functions.https.HttpsError('not-found', `Exchange rate for ${currency} not found`);
-  }
-  
-  const fxRate = rateDoc.data()!.rate;
-  return {
-    amount: Math.round(USDValue * fxRate * 100) / 100,
-    fxRate
-  };
-}
-
-function sanitizeBankDetails(bankDetails: any) {
-  // Remove sensitive data before storing
-  const sanitized = { ...bankDetails };
-  
-  // Mask account number (show only last 4 digits)
-  if (sanitized.accountNumber) {
-    const acc = sanitized.accountNumber.toString();
-    sanitized.accountNumberMasked = '****' + acc.slice(-4);
-    delete sanitized.accountNumber;
-  }
-  
-  return sanitized;
-}
-
-async function triggerAMLScan(
-  userId: string,
-  payoutId: string,
+  const USDValue = tokens * BASE_TOKEN_VALU

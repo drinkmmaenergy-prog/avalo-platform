@@ -16,6 +16,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, Timestamp, auth, onCall, serverTimestamp, timestamp, logger, onSchedule } from './runtime';
+import { assertPayoutsEnabled, checkPayoutsEnabledForScheduler } from './wallet/payoutGuard';
 
 const db = admin.firestore();
 
@@ -65,6 +66,7 @@ interface ProviderConfig {
  * Callable function
  */
 export const pack383_resolveOptimalPayoutRoute = functions.https.onCall(async (request) => {
+  assertPayoutsEnabled();
   const data = request.data;
     // Authentication check
     if (!request.auth) {
@@ -198,6 +200,7 @@ export const pack383_resolveOptimalPayoutRoute = functions.https.onCall(async (r
  * Creates payout entry and initiates provider execution
  */
 export const pack383_initiatePayout = functions.https.onCall(async (request) => {
+  assertPayoutsEnabled();
   const data = request.data;
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
@@ -379,6 +382,7 @@ export const pack383_initiatePayout = functions.https.onCall(async (request) => 
  * Scheduled function to process pending payouts
  */
 export const pack383_processPayoutQueue = onSchedule("every 5 minutes", async (event) => {
+    if (!checkPayoutsEnabledForScheduler('pack383_processPayoutQueue')) return;
     try {
       // Get pending payouts
       const pendingPayouts = await db
@@ -583,35 +587,4 @@ async function calculateWithholding(userId: string, grossAmount: number) {
   };
 }
 
-async function executePayoutViaProvider(payoutId: string, payout: any) {
-  // Placeholder - implemented in provider abstraction layer
-  return {
-    success: true,
-    transactionId: `mock-${payoutId}`,
-  };
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+async function executePayoutViaProvid

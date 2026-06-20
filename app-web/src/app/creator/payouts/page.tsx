@@ -85,7 +85,39 @@ function StatusBadge({ status }: { status: PayoutStatus | string }) {
 // MAIN PAGE
 // ============================================================================
 
+// ============================================================================
+// [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — server-side kill switch active.
+// This banner renders immediately; the payout request form is removed.
+// ============================================================================
+function PayoutsDisabledBanner() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-lg text-center border border-amber-200">
+        <div className="text-5xl mb-6">🔒</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Creator Payouts</h1>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-left">
+          <p className="text-sm font-semibold text-amber-800 mb-1">Not available yet</p>
+          <p className="text-sm text-amber-700 leading-relaxed">
+            Creator payouts are not available during the current launch phase.
+            We are building a secure earnings ledger to ensure every payout is
+            accurate and auditable.
+          </p>
+        </div>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Your earned tokens are safe. Once creator payouts launch you will be
+          able to withdraw directly to your bank account via Stripe.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function CreatorPayoutsPage() {
+  // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — show disabled state, do not render payout form
+  return <PayoutsDisabledBanner />;
+}
+
+function CreatorPayoutsPage_DISABLED_IMPL() {
   const { user } = useAuth();
   const [earnings, setEarnings] = useState<CreatorEarningsSummary | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
@@ -364,43 +396,4 @@ export default function CreatorPayoutsPage() {
 
                 {/* Firestore payout_requests (if any not in backend history) */}
                 {firestoreRequests
-                  .filter(
-                    (req) => !history.some((h) => h.payoutId === req.id),
-                  )
-                  .map((req) => (
-                    <tr key={req.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-900">
-                        {req.createdAt.toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-gray-900">
-                        {req.tokensRequested.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">—</td>
-                      <td className="px-4 py-3 text-gray-500">—</td>
-                      <td className="px-4 py-3">
-                        <StatusBadge status={req.status} />
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Info Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <span className="text-xl">ℹ️</span>
-          <div>
-            <h3 className="font-medium text-blue-900">Payout Processing</h3>
-            <p className="text-sm text-blue-700 mt-1">
-              Payouts are typically processed within 1-3 business days. Large payouts may require
-              additional verification. Make sure your Stripe Connect account is set up and verified.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+           

@@ -12,6 +12,7 @@ import { AdPlacementEngine } from './pack349-placement-engine';
 import { AdBillingEngine } from './pack349-billing';
 import { SponsoredCreatorEngine } from './pack349-sponsored-earners';
 import { HttpsError, admin, auth, onCall, onSchedule } from './runtime';
+import { assertPayoutsEnabled } from './wallet/payoutGuard';
 
 /**
  * Create Ad
@@ -497,6 +498,9 @@ export const getCreatorAnalytics = functions.https.onCall(async (request) => {
  * Request Creator Payout
  */
 export const requestCreatorPayout = functions.https.onCall(async (request) => {
+  // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+  assertPayoutsEnabled();
+
   const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
@@ -526,32 +530,4 @@ export const processScheduledCampaigns = onSchedule("every 1 hours", async (even
  * Scheduled: Process Minimum Guarantees
  * Runs on the 1st of each month
  */
-export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" }, async (event) => {
-    await SponsoredCreatorEngine.processMinimumGuarantees();
-    return null;
-  });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC

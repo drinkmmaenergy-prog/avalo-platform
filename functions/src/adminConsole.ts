@@ -25,6 +25,7 @@ import {
 import { applyEnforcement, getEnforcementState } from './moderationEngine';
 import { queryAuditLogs } from './auditLogger';
 import { logger, onRequest } from './runtime';
+import { assertPayoutsEnabled } from './wallet/payoutGuard';
 
 // ============================================================================
 // USER SEARCH & OVERVIEW
@@ -461,6 +462,12 @@ export const adminDisputesResolve = onRequest({}, async (req, res) => {
  */
 export const adminPayoutsDecision = onRequest({}, async (req, res) => {
   try {
+    // [PAYOUTS_DISABLED_FOR_SOFT_LAUNCH] — kill switch must be first
+    try { assertPayoutsEnabled(); } catch (e: any) {
+      res.status(503).json({ error: e.message });
+      return;
+    }
+
     if (req.method !== 'POST') {
       res.status(405).json({ error: 'Method not allowed' });
       return;
@@ -730,37 +737,4 @@ export const adminAuditSearch = onRequest({}, async (req, res) => {
 
     res.json(result);
   } catch (error: any) {
-    console.error('[Admin Console] Error in adminAuditSearch:', error);
-    
-    if (error.code) {
-      res.status(error.code === 'unauthenticated' ? 401 : 403).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: error.message });
-    }
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    console.error('[Admin Console] Error in adminAuditSearch:', error)
