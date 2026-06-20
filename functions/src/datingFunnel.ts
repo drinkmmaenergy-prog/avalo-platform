@@ -219,15 +219,11 @@ export async function createAttractionAction(
     }
 
     if (cost > 0) {
-      const userDoc = await db.collection('users').doc(fromUserId).get();
-      const balance = userDoc.data()?.tokenBalance || 0;
-      
-      if (balance < cost) {
-        return {
-          success: false,
-          error: `Insufficient tokens. ${actionType} costs ${cost} tokens.`,
-        };
-      }
+      // [SOFT_LAUNCH_DISABLED] Paid attraction actions use phantom users/{uid}.tokenBalance.
+      throw new functions.https.HttpsError(
+        'unavailable',
+        '[SOFT_LAUNCH_DISABLED] Paid attraction actions are not available in this release.'
+      );
     }
 
     const actionRef = db.collection('attraction_actions').doc();
@@ -245,22 +241,7 @@ export async function createAttractionAction(
     };
 
     await db.runTransaction(async (transaction) => {
-      if (cost > 0) {
-        const userRef = db.collection('users').doc(fromUserId);
-        transaction.update(userRef, {
-          tokenBalance: FieldValue.increment(-cost),
-          totalSpent: FieldValue.increment(cost),
-        });
-
-        const txRef = db.collection('transactions').doc();
-        transaction.set(txRef, {
-          userId: fromUserId,
-          type: `${actionType}_action`,
-          amount: -cost,
-          description: `${actionType} sent to user`,
-          timestamp: Timestamp.now(),
-        });
-      }
+      // cost is always 0 in soft launch (paid path hard-disabled above)
 
       transaction.set(actionRef, actionData);
 
@@ -449,15 +430,11 @@ export async function sendCompliment(
     const cost = isPremium ? FUNNEL_CONFIG.FLIRT.PREMIUM_COMPLIMENT_COST : 0;
 
     if (cost > 0) {
-      const userDoc = await db.collection('users').doc(senderId).get();
-      const balance = userDoc.data()?.tokenBalance || 0;
-
-      if (balance < cost) {
-        return {
-          success: false,
-          error: `Insufficient tokens. Premium compliments cost ${cost} tokens.`,
-        };
-      }
+      // [SOFT_LAUNCH_DISABLED] Premium compliments use phantom users/{uid}.tokenBalance.
+      throw new functions.https.HttpsError(
+        'unavailable',
+        '[SOFT_LAUNCH_DISABLED] Premium compliments are not available in this release.'
+      );
     }
 
     const complimentRef = db.collection('compliments').doc();
@@ -475,13 +452,7 @@ export async function sendCompliment(
     };
 
     await db.runTransaction(async (transaction) => {
-      if (cost > 0) {
-        const userRef = db.collection('users').doc(senderId);
-        transaction.update(userRef, {
-          tokenBalance: FieldValue.increment(-cost),
-          totalSpent: FieldValue.increment(cost),
-        });
-      }
+      // cost is always 0 in soft launch (paid path hard-disabled above)
 
       transaction.set(complimentRef, complimentData);
 
@@ -533,26 +504,20 @@ export async function activateChemistryBoost(
   const db = getFirestore();
   const cost = FUNNEL_CONFIG.FLIRT.CHEMISTRY_BOOST_COST;
 
+  // [SOFT_LAUNCH_DISABLED] Chemistry boost uses phantom users/{uid}.tokenBalance.
+  if (cost > 0) {
+    return {
+      success: false,
+      error: '[SOFT_LAUNCH_DISABLED] Chemistry boost is not available in this release.',
+    };
+  }
+
   try {
-    const userDoc = await db.collection('users').doc(userId).get();
-    const balance = userDoc.data()?.tokenBalance || 0;
-
-    if (balance < cost) {
-      return {
-        success: false,
-        error: `Insufficient tokens. Chemistry boost costs ${cost} tokens.`,
-      };
-    }
-
     const boostRef = db.collection('chemistry_discovery_boosts').doc();
     const boostId = boostRef.id;
 
     await db.runTransaction(async (transaction) => {
-      const userRef = db.collection('users').doc(userId);
-      transaction.update(userRef, {
-        tokenBalance: FieldValue.increment(-cost),
-        totalSpent: FieldValue.increment(cost),
-      });
+      // cost is always 0 in soft launch (paid path hard-disabled above)
 
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24);
@@ -794,3 +759,4 @@ export const DATING_FUNNEL = {
 
 
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          

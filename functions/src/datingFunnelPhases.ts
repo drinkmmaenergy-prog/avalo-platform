@@ -560,6 +560,12 @@ export async function createPaidTimeBooking(
   pricePerHour: number,
   scheduledAt: Date
 ): Promise<{ success: boolean; bookingId?: string; totalCost?: number; error?: string }> {
+  // [SOFT_LAUNCH_DISABLED] Paid time bookings use phantom users/{uid}.tokenBalance.
+  return {
+    success: false,
+    error: '[SOFT_LAUNCH_DISABLED] Paid time bookings are not available in this release.',
+  };
+
   const db = getFirestore();
 
   try {
@@ -650,6 +656,12 @@ export async function completePaidTimeBooking(
   bookingId: string,
   verified: boolean = true
 ): Promise<{ success: boolean; error?: string }> {
+  // [SOFT_LAUNCH_DISABLED] Paid time bookings use phantom users/{uid}.tokenBalance.
+  return {
+    success: false,
+    error: '[SOFT_LAUNCH_DISABLED] Paid time bookings are not available in this release.',
+  };
+
   const db = getFirestore();
 
   try {
@@ -855,43 +867,4 @@ export async function calculateRetentionMetrics(
       progress.phases.flirt.completed,
       progress.phases.connection.completed,
       progress.phases.meeting.completed,
-    ].filter(Boolean).length;
-
-    const conversionRate = (phasesCompleted / 4) * 100;
-
-    await db.collection('dating_funnel_progress').doc(userId).update({
-      retentionDays,
-      updatedAt: Timestamp.now(),
-    });
-
-    return { retentionDays, engagementScore, conversionRate };
-  } catch (error) {
-    logger.error('Error calculating retention metrics:', error);
-    return null;
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ].filter(Boolean)
