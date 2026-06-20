@@ -25,7 +25,7 @@ import {
   WebPurchaseResponse,
 } from './types/pack288-token-store.types';
 import { getCanonicalTokenPackById, normalizeTokenPackId } from './pack277-token-packs';
-import { creditTokens } from './wallet/walletService';
+import { creditTokens, debitForRefund } from './wallet/walletService';
 import { admin, functions, increment, onCall, onRequest, timestamp } from './runtime';
 
 // Initialize Stripe
@@ -380,6 +380,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
 /**
  * Handle charge refund
+ *
+ * Canonicalized (Phase 3A-4):
+ *   - Replaced wallets/{uid}.tokensBalance (wrong field, phantom) with
+ *     walletService.debitForRefund() → wallets/{uid}.balance (canonical).
+ *   - Idempotent by Stripe charge ID: duplicate webhook delivery is a no-op.
+ *   - Soft-debit policy: debits min(purchase.tokens, currentBalance).
+ *     If user already spent some tokens, remaining shortfall is logged for
+ *     manual review — we never create a negative canonical balance.
  */
 async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
   try {
@@ -410,18 +418,41 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
       updatedAt: serverTimestamp(),
     });
 
-    // Deduct tokens from wallet (if they still have them)
-    const walletRef = db.collection('wallets').doc(purchase.userId);
-    await walletRef.update({
-      tokensBalance: FieldValue.increment(-purchase.tokens),
-      lifetimePurchasedTokens: FieldValue.increment(-purchase.tokens),
-      lastUpdated: serverTimestamp(),
+    // ── Canonical token debit (soft) ─────────────────────────────────────────
+    // Idempotent by Stripe charge.id — re-delivery of charge.refunded is safe.
+    // Debits min(purchase.tokens, currentBalance): never goes negative.
+    // If shortfall > 0, tokens were already spent; flagged in ledger metadata
+    // for manual accounting review (money still refunded to card by Stripe).
+    const { tokensDebited, shortfall } = await debitForRefund({
+      userId: purchase.userId,
+      amountTokens: purchase.tokens,
+      idempotencyKey: `stripe_refund_${charge.id}`,
+      metadata: {
+        chargeId: charge.id,
+        paymentIntentId,
+        purchaseId: purchase.purchaseId,
+        platform: 'web',
+      },
     });
 
-    logger.info('Charge refunded, tokens deducted', {
+    if (shortfall > 0) {
+      logger.warn('Stripe refund shortfall: user already spent some tokens', {
+        userId: purchase.userId,
+        purchaseTokens: purchase.tokens,
+        tokensDebited,
+        shortfall,
+        chargeId: charge.id,
+        action: 'manual_review_required',
+      });
+    }
+
+    logger.info('Charge refunded, canonical tokens debited', {
       userId: purchase.userId,
-      tokens: purchase.tokens,
+      purchaseTokens: purchase.tokens,
+      tokensDebited,
+      shortfall,
       purchaseId: purchase.purchaseId,
+      chargeId: charge.id,
     });
   } catch (error: any) {
     logger.error('Handle charge refunded error:', error);
@@ -625,70 +656,3 @@ export const tokens_getPurchaseHistory = https.onCall(
     const auth = request.auth;
     if (!auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
-    }
-
-    const { limit: requestedLimit } = (request.data || {}) as { limit?: number };
-    const safeLimit = Math.min(Math.max(requestedLimit || 100, 1), 200);
-
-    try {
-      const snapshot = await db
-        .collection('tokenPurchases')
-        .where('userId', '==', auth.uid)
-        .orderBy('createdAt', 'desc')
-        .limit(safeLimit)
-        .get();
-
-      const purchases = snapshot.docs.map((doc) => {
-        const d = doc.data();
-        return {
-          sessionId: d.providerOrderId ?? doc.id,
-          providerOrderId: d.providerOrderId ?? null,
-          packageId: d.packageId ?? d.packId ?? null,
-          packId: d.packId ?? d.packageId ?? null,
-          tokens: d.tokens ?? 0,
-          amount: typeof d.paidAmount === 'number'
-            ? Math.round(d.paidAmount * 100)
-            : (d.amountTotal ?? null),
-          currency: d.paidCurrency ?? d.currency ?? null,
-          source: d.platform ?? d.source ?? 'web',
-          platform: d.platform ?? d.source ?? 'web',
-          status: d.status ?? 'UNKNOWN',
-          createdAt: d.createdAt?.toMillis?.() ?? null,
-        };
-      });
-
-      return { success: true, purchases };
-    } catch (error: any) {
-      logger.error('Get purchase history error:', error);
-      throw new HttpsError('internal', 'Failed to fetch purchase history');
-    }
-  }
-);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
