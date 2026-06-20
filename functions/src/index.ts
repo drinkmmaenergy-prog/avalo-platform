@@ -369,6 +369,21 @@ export {
   c11_cancelCalendarBooking,
 } from './calendar/canonicalCalendarBillingV2';
 
+// C12: Canonical payout system (behind PAYOUTS_ENABLED kill switch)
+export {
+  c12_requestPayout,
+  c12_cancelPayout,
+  c12_getPayoutStatus,
+  c12_adminFailPayout,
+  c12_adminConfirmPayout,
+  c12_adminGetPayoutSummary,
+  c12_adminReconcilePayouts,
+  c12_payoutProcessor,
+  c12_payoutReconciler,
+} from './payout/canonicalPayoutSystemV2';
+export { c12_stripePayoutWebhook } from './payout/canonicalPayoutWebhookHandler';
+
+
 // --- DATING FUNNEL ---
 export * from './datingFunnel';
 export {
