@@ -16,6 +16,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { logEvent } from './observability';
 import { admin, functions } from './runtime';
 import { transactTokens, getBalance } from './wallet/walletService';
+import { requireVerifiedAdult } from './compliance/ageGuard'; // C2
 
 interface CallSession {
   callId: string;
@@ -53,6 +54,11 @@ export async function billCall(callId: string): Promise<void> {
     }
 
     const callData = callDoc.data() as CallSession;
+
+    // ── C2: Verified-adult guard ───────────────────────────────────────────
+    // Both participants must be verified adults before billing proceeds.
+    await requireVerifiedAdult(callData.callerUserId);
+    await requireVerifiedAdult(callData.calleeUserId);
 
     // ── 2. Idempotency fast-exit (call_sessions status) ───────────────────
     // walletService.transactTokens() provides a second atomic idempotency guard

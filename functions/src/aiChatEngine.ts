@@ -22,6 +22,7 @@ import type {
 } from './types/aiBot';
 import { timestamp } from './runtime';
 import { getBalance, transactTokens } from './wallet/walletService';
+import { requireVerifiedAdult } from './compliance/ageGuard'; // C2
 
 // Simple error class
 class HttpsError extends Error {
@@ -111,7 +112,10 @@ export async function startAiChat(
   userId: string,
   request: StartAiChatRequest
 ): Promise<StartAiChatResponse> {
-  
+
+  // C2: AI chat is a monetized social surface. User must be a verified adult.
+  await requireVerifiedAdult(userId);
+
   // Get bot info
   const bot = await getBotInfo(request.botId);
   
@@ -256,9 +260,10 @@ export async function processAiMessage(
     };
   }
   
-  // Check if user is a minor for safety filters
-  const isMinor = await isUserMinor(userId);
-  
+  // C2: requireVerifiedAdult already called at startAiChat — user is confirmed adult.
+  await requireVerifiedAdult(userId);
+  const isMinor = false; // Invariant: verified adult → not a minor
+
   // Generate AI response
   const aiResponse = await generateAiResponse({
     botPersonality: bot.personality,

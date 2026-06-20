@@ -18,6 +18,7 @@ import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, storage } from './runtime';
 import { getBalance, transactTokens } from './wallet/walletService';
+import { requireVerifiedAdult } from './compliance/ageGuard'; // C2
 
 // Simple error class
 class HttpsError extends Error {
@@ -249,6 +250,10 @@ export async function processMediaBilling(
 
   const payerId = billing.paidByUserId;
   const priceTokens = billing.chargedTokens;
+
+  // ── C2: Age guard ─────────────────────────────────────────────────────────
+  // Media is a restricted monetized surface. Payer must be a verified adult.
+  await requireVerifiedAdult(payerId);
 
   // ── 1. Read canonical balance (wallets/{uid}.balance) ──────────────────────
   const payerBalance = await getBalance(payerId);

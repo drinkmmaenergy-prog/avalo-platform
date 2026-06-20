@@ -23,6 +23,8 @@ import { isAccountActive } from './accountLifecycle';
 // PACK 220: Fan & Kiss Economy
 import { trackTokenSpend } from './fanKissEconomy';
 import { Timestamp, timestamp } from './runtime';
+// C2: Age guard
+import { requireVerifiedAdult } from './compliance/ageGuard';
 
 // Simple error class for compatibility
 class HttpsError extends Error {
@@ -339,7 +341,11 @@ export async function startCall(params: {
 }): Promise<{ callId: string; pricePerMinute: number; payerId: string }> {
   
   const { userAId, userBId, initiatorId, callType } = params;
-  
+
+  // C2: Both call participants must be verified adults before any billing can occur.
+  await requireVerifiedAdult(userAId);
+  await requireVerifiedAdult(userBId);
+
   // Phase 9: Check both users have active accounts
   const userAActive = await isAccountActive(userAId);
   const userBActive = await isAccountActive(userBId);
