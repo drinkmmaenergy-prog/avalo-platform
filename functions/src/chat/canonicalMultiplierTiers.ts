@@ -45,6 +45,8 @@ import {
 } from '../compliance/ageGuard';
 import {
   BASE_CREATOR_RESPONSE_RATE_TOKENS,
+} from '../creator/canonicalEarningService';
+import {
   computeReservationAmount,
 } from '../wallet/walletService';
 import type { C5ChatState, C5SessionConfig } from './canonicalChatStateMachineV3';
