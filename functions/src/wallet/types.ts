@@ -36,6 +36,13 @@ export interface WalletDocument {
   spent: number;
   /** Tokens currently frozen by fraud/AML holds. */
   frozen: number;
+  /**
+   * C3: Tokens currently reserved for an active paid-chat session.
+   * These are NOT spendable — they are locked until the session ends.
+   * On session close: remainingReservedTokens are returned to balance.
+   * balance + reservedTokens = total user holdings at any moment.
+   */
+  reservedTokens: number;
   /** Last mutation timestamp. */
   updatedAt: Timestamp | FieldValue;
   /** Document creation timestamp. */
@@ -159,7 +166,11 @@ export type LedgerEntryType =
   | 'CALENDAR_RELEASE'
   | 'AD_REWARD'
   | 'MIGRATION'
-  | 'DROP_PURCHASE';
+  | 'DROP_PURCHASE'
+  // C3: Reservation lifecycle events
+  | 'CHAT_RESERVATION_RESERVE'   // tokens moved from balance → reservedTokens
+  | 'CHAT_RESERVATION_RELEASE'   // unused reserved tokens returned to balance
+  | 'CHAT_RESPONSE_BURN';        // finalRateTokens consumed from reservation
 
 // ============================================================================
 // PAYOUT TYPES
@@ -340,3 +351,62 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
  * Payout requests collection.
  */
 export const PAY
+
+// ============================================================================
+// C3: CHAT RESERVATION — chat_reservations/{reservationId}
+// ============================================================================
+
+/**
+ * Canonical Firestore collection for chat reservations.
+ * Documents are written only by walletService.reserveTokens().
+ * Clients may NOT write this collection (rules: write: if false).
+ */
+export const RESERVATIONS_COLLECTION = 'chat_reservations';
+
+/**
+ * Reservation status lifecycle.
+ *
+ * ACTIVE    — tokens are locked, session in progress
+ * RELEASED  — session ended normally; remaining tokens returned to balance
+ * EXHAUSTED — budget ran out mid-session; all reserved tokens consumed
+ * EXPIRED   — inactivity timeout; remaining tokens returned to balance
+ */
+export type ReservationStatus = 'ACTIVE' | 'RELEASED' | 'EXHAUSTED' | 'EXPIRED';
+
+/**
+ * A chat_reservations/{reservationId} document.
+ * Written atomically by reserveTokens(); updated by releaseReservation() /
+ * consumeFromReservation().
+ *
+ * Invariants:
+ *  - reservedTokens  = initial amount moved from balance (never changes after creation)
+ *  - consumedTokens  = sum of all CHAT_RESPONSE_BURN events against this reservation
+ *  - remainingTokens = reservedTokens − consumedTokens
+ *  - When remainingTokens < finalRateTokens → BUDGET_EXHAUSTED state triggers
+ */
+export interface ChatReservation {
+  /** Document ID (same as reservationId). */
+  reservationId: string;
+  /** Wallet owner. */
+  userId: string;
+  /** The chat session this reservation is tied to. */
+  chatId: string;
+  /** Status in the lifecycle. */
+  status: ReservationStatus;
+  /** Total tokens moved from balance at session entry (never changes). */
+  reservedTokens: number;
+  /** Total tokens consumed by paid responses so far. */
+  consumedTokens: number;
+  /** reservedTokens − consumedTokens. Updated atomically with each burn. */
+  remainingTokens: number;
+  /** The charge rate per creator response. */
+  finalRateTokens: number;
+  /** Minimum entry reservation enforced at creation (per invariant 0.4). */
+  minimumEntry: number;
+  /** When the reservation was created. */
+  createdAt: FirebaseFirestore.Timestamp | import('firebase-admin/firestore').FieldValue;
+  /** When the reservation was last modified. */
+  updatedAt: FirebaseFirestore.Timestamp | import('firebase-admin/firestore').FieldValue;
+  /** When the reservation was closed (released/exhausted/expired). */
+  closedAt?: FirebaseFirestore.Timestamp | import('firebase-admin/firestore').FieldValue;
+}

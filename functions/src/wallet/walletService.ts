@@ -520,3 +520,558 @@ export async function debitForPayout(params: {
  * @returns tokensDebited, shortfall, newBalance, txId
  */
 export async function debitForRefund(params: 
+{
+  userId: string;
+  amountTokens: number;
+  idempotencyKey: string;
+  metadata?: Record<string, unknown>;
+}): Promise<{ txId: string; tokensDebited: number; shortfall: number; newBalance: number }> {
+  if (params.amountTokens <= 0 || !Number.isInteger(params.amountTokens)) {
+    throw new Error('[WalletService] amountTokens must be a positive integer');
+  }
+
+  return db.runTransaction(async (transaction) => {
+    // Idempotency check
+    const existingTxId = await checkIdempotency(transaction, params.idempotencyKey);
+    if (existingTxId) {
+      const snap = await transaction.get(walletRef(params.userId));
+      const data = snap.data() as WalletDocument | undefined;
+      const currentBalance = data?.balance ?? 0;
+      return {
+        txId: existingTxId,
+        tokensDebited: Math.min(params.amountTokens, currentBalance),
+        shortfall: Math.max(0, params.amountTokens - currentBalance),
+        newBalance: currentBalance,
+      };
+    }
+
+    const userRef = walletRef(params.userId);
+    const userWallet = await readWalletInTransaction(transaction, userRef, params.userId);
+
+    // Soft debit: clamp to available balance (never go negative)
+    const tokensDebited = Math.min(params.amountTokens, userWallet.balance);
+    const shortfall = params.amountTokens - tokensDebited;
+    const newBalance = userWallet.balance - tokensDebited;
+
+    if (tokensDebited > 0) {
+      transaction.update(userRef, {
+        balance: newBalance,
+        spent: FieldValue.increment(tokensDebited),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+
+    const ledgerEntry: LedgerEntry = {
+      txId,
+      type: 'PURCHASE_REFUND',
+      actorId: params.userId,
+      counterpartyId: null,
+      chatId: null,
+      sessionId: null,
+      amountTokens: tokensDebited,
+      split: { creatorTokens: 0, avaloTokens: 0 },
+      beforeAfter: {
+        actor: { before: userWallet.balance, after: newBalance },
+        counterparty: null,
+        platform: { before: 0, after: 0 },
+      },
+      timestamp: FieldValue.serverTimestamp(),
+      idempotencyKey: params.idempotencyKey,
+      metadata: { ...params.metadata, shortfall, requestedAmount: params.amountTokens },
+    };
+
+    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+    writeIdempotencySentinel(transaction, params.idempotencyKey, txId);
+
+    return { txId, tokensDebited, shortfall, newBalance };
+  });
+}
+
+// ============================================================================
+// GET BALANCE — canonical balance read
+// ============================================================================
+
+/**
+ * Read a user's canonical available token balance from wallets/{uid}.balance.
+ * Returns 0 if the wallet document doesn't exist yet.
+ *
+ * NOTE: This is a non-transactional point read. For billing decisions inside
+ * transactions, use readWalletInTransaction() directly.
+ */
+export async function getBalance(userId: string): Promise<number> {
+  const snap = await walletRef(userId).get();
+  if (!snap.exists) return 0;
+  const data = snap.data() as WalletDocument;
+  return data.balance ?? 0;
+}
+
+/**
+ * Read a user's reserved token balance (tokens locked for an active chat session).
+ * Returns 0 if no wallet document exists.
+ */
+export async function getReservedBalance(userId: string): Promise<number> {
+  const snap = await walletRef(userId).get();
+  if (!snap.exists) return 0;
+  const data = snap.data() as WalletDocument;
+  return data.reservedTokens ?? 0;
+}
+
+// ============================================================================
+// C3: CANONICAL CONSUMER RESERVATION WALLET PRIMITIVES
+// ============================================================================
+//
+// Invariants enforced here (from canonical spec §0.4 and §0.5):
+//
+//   §0.4  Minimum session entry = max(100, finalRateTokens, creatorConfiguredMinimum).
+//         The reservation is a HOLD — not an immediate burn.
+//         All unconsumed tokens return automatically on close/expire/exhaustion.
+//
+//   §0.5  Budget exhaustion fires when remainingReservedTokens < finalRateTokens,
+//         NOT when remainingReservedTokens === 0.
+//
+// Wallet accounting:
+//   balance         = immediately spendable (canonical §0.1 field)
+//   reservedTokens  = locked for an active session (opaque to new spend)
+//   After reserve:  balance -= amount;  reservedTokens += amount
+//   After consume:  reservedTokens -= finalRateTokens  (creator+platform credited)
+//   After release:  reservedTokens -= remaining;  balance += remaining
+//
+// ============================================================================
+
+import {
+  ChatReservation,
+  ReservationStatus,
+  RESERVATIONS_COLLECTION,
+} from './types';
+
+/** Minimum session entry (invariant §0.4). */
+export const MIN_SESSION_ENTRY_TOKENS = 100;
+
+/**
+ * Compute the required reservation size per §0.4.
+ *
+ * @param finalRateTokens         — configured per-response rate (e.g. 3 × multiplier)
+ * @param creatorConfiguredMinimum — optional creator-set minimum (defaults to 0)
+ */
+export function computeReservationAmount(
+  finalRateTokens: number,
+  creatorConfiguredMinimum = 0,
+): number {
+  return Math.max(MIN_SESSION_ENTRY_TOKENS, finalRateTokens, creatorConfiguredMinimum);
+}
+
+// ── reserveTokens ─────────────────────────────────────────────────────────────
+
+/**
+ * C3: Open a paid-chat session by atomically moving tokens from the consumer's
+ * balance into a session reservation.
+ *
+ * Operations (single Firestore transaction):
+ *   1. Idempotency guard (reservationId as key).
+ *   2. Read wallets/{userId}.
+ *   3. Validate balance >= reservationAmount.
+ *   4. Deduct balance; increment reservedTokens.
+ *   5. Create chat_reservations/{reservationId} doc.
+ *   6. Write ledger entry (CHAT_RESERVATION_RESERVE).
+ *   7. Write idempotency sentinel.
+ *
+ * @throws Error if balance < reservationAmount
+ */
+export async function reserveTokens(params: {
+  userId: string;
+  chatId: string;
+  reservationId: string;       // typically chatId or a unique session key
+  reservationAmount: number;   // output of computeReservationAmount()
+  finalRateTokens: number;     // per-response rate (for budget exhaustion check)
+  creatorConfiguredMinimum?: number;
+}): Promise<{ txId: string; reservation: ChatReservation }> {
+  const { userId, chatId, reservationId, reservationAmount, finalRateTokens } = params;
+
+  if (!Number.isInteger(reservationAmount) || reservationAmount <= 0) {
+    throw new Error('[WalletService] reservationAmount must be a positive integer');
+  }
+  if (reservationAmount < MIN_SESSION_ENTRY_TOKENS) {
+    throw new Error(
+      `[WalletService] reservationAmount ${reservationAmount} < minimum ${MIN_SESSION_ENTRY_TOKENS}`
+    );
+  }
+
+  const idempotencyKey = `reservation_open_${reservationId}`;
+
+  return db.runTransaction(async (transaction) => {
+    // 1. Idempotency
+    const existingTxId = await checkIdempotency(transaction, idempotencyKey);
+    if (existingTxId) {
+      const resSnap = await transaction.get(
+        db.collection(RESERVATIONS_COLLECTION).doc(reservationId)
+      );
+      const existing = resSnap.data() as ChatReservation;
+      return { txId: existingTxId, reservation: existing };
+    }
+
+    // 2. Read wallet
+    const userWalletRef = walletRef(userId);
+    const userWallet = await readWalletInTransaction(transaction, userWalletRef, userId);
+
+    // 3. Validate
+    if (userWallet.balance < reservationAmount) {
+      throw new Error(
+        `[WalletService] Insufficient balance for chat reservation: ` +
+        `${userId} has ${userWallet.balance} tokens, needs ${reservationAmount}`
+      );
+    }
+
+    // 4. Wallet update
+    const balanceAfter = userWallet.balance - reservationAmount;
+    const reservedAfter = (userWallet.reservedTokens ?? 0) + reservationAmount;
+    transaction.update(userWalletRef, {
+      balance: balanceAfter,
+      reservedTokens: reservedAfter,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // 5. Reservation document
+    const now = FieldValue.serverTimestamp();
+    const reservation: ChatReservation = {
+      reservationId,
+      userId,
+      chatId,
+      status: 'ACTIVE',
+      reservedTokens: reservationAmount,
+      consumedTokens: 0,
+      remainingTokens: reservationAmount,
+      finalRateTokens,
+      minimumEntry: reservationAmount,
+      createdAt: now,
+      updatedAt: now,
+    };
+    transaction.set(db.collection(RESERVATIONS_COLLECTION).doc(reservationId), reservation);
+
+    // 6. Ledger entry
+    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+    const ledgerEntry: LedgerEntry = {
+      txId,
+      type: 'CHAT_RESERVATION_RESERVE',
+      actorId: userId,
+      counterpartyId: null,
+      chatId,
+      sessionId: reservationId,
+      amountTokens: reservationAmount,
+      split: { creatorTokens: 0, avaloTokens: 0 },
+      beforeAfter: {
+        actor: { before: userWallet.balance, after: balanceAfter },
+        counterparty: null,
+        platform: { before: 0, after: 0 },
+      },
+      timestamp: now,
+      idempotencyKey,
+      metadata: { reservationId, finalRateTokens },
+    };
+    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+
+    // 7. Idempotency sentinel
+    writeIdempotencySentinel(transaction, idempotencyKey, txId);
+
+    return { txId, reservation };
+  });
+}
+
+// ── consumeFromReservation ────────────────────────────────────────────────────
+
+/**
+ * C3: Atomically burn finalRateTokens from an active reservation for one paid
+ * creator response.
+ *
+ * Operations (single Firestore transaction):
+ *   1. Idempotency guard (responseIdempotencyKey).
+ *   2. Read reservation doc; verify ACTIVE + sufficient remaining.
+ *   3. Read wallets/{userId}: decrement reservedTokens (tokens already off balance).
+ *   4. Credit creator wallet (split.creatorTokens) and platform wallet (split.avaloTokens).
+ *   5. Update reservation: consumedTokens +=, remainingTokens -=.
+ *      If remainingTokens < finalRateTokens → mark EXHAUSTED.
+ *   6. Write ledger entry (CHAT_RESPONSE_BURN).
+ *   7. Write idempotency sentinel.
+ *
+ * Per canonical §0.3:
+ *   creatorEarningTokens = finalRateTokens (no split reduction)
+ *   payerTokensCharged   = finalRateTokens
+ *   Avalo commission     = 20% of gross payout USD value (applied at payout time, not here)
+ *
+ * IMPORTANT: The "no per-delivery token split" rule means we credit creator the FULL
+ * finalRateTokens here. Avalo takes its 20% commission when converting to USD at payout.
+ */
+export async function consumeFromReservation(params: {
+  userId: string;            // payer (fan)
+  creatorId: string;         // recipient of tokens
+  chatId: string;
+  reservationId: string;
+  finalRateTokens: number;   // must match reservation.finalRateTokens
+  responseIdempotencyKey: string;  // unique per response (e.g. msgId)
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  txId: string;
+  consumedTokens: number;
+  remainingTokens: number;
+  budgetExhausted: boolean;
+}> {
+  const { userId, creatorId, chatId, reservationId, finalRateTokens, responseIdempotencyKey } = params;
+
+  if (!Number.isInteger(finalRateTokens) || finalRateTokens <= 0) {
+    throw new Error('[WalletService] finalRateTokens must be a positive integer');
+  }
+
+  const idempotencyKey = `chat_burn_${responseIdempotencyKey}`;
+
+  return db.runTransaction(async (transaction) => {
+    // 1. Idempotency
+    const existingTxId = await checkIdempotency(transaction, idempotencyKey);
+    if (existingTxId) {
+      const resSnap = await transaction.get(
+        db.collection(RESERVATIONS_COLLECTION).doc(reservationId)
+      );
+      const res = resSnap.data() as ChatReservation;
+      return {
+        txId: existingTxId,
+        consumedTokens: res.consumedTokens,
+        remainingTokens: res.remainingTokens,
+        budgetExhausted: res.status === 'EXHAUSTED',
+      };
+    }
+
+    // 2. Read reservation
+    const resRef = db.collection(RESERVATIONS_COLLECTION).doc(reservationId);
+    const resSnap = await transaction.get(resRef);
+    if (!resSnap.exists) {
+      throw new Error(`[WalletService] Reservation ${reservationId} not found`);
+    }
+    const res = resSnap.data() as ChatReservation;
+
+    if (res.status !== 'ACTIVE') {
+      throw new Error(
+        `[WalletService] Reservation ${reservationId} is not ACTIVE (status: ${res.status})`
+      );
+    }
+    if (res.remainingTokens < finalRateTokens) {
+      throw new Error(
+        `[WalletService] Reservation ${reservationId} has insufficient remaining tokens: ` +
+        `${res.remainingTokens} < ${finalRateTokens}`
+      );
+    }
+    if (res.finalRateTokens !== finalRateTokens) {
+      throw new Error(
+        `[WalletService] Rate mismatch: reservation expects ${res.finalRateTokens}, ` +
+        `caller passed ${finalRateTokens}`
+      );
+    }
+
+    // 3. Update user wallet: decrement reservedTokens (balance already reduced at reserve time)
+    const userWalletRef = walletRef(userId);
+    const userWallet = await readWalletInTransaction(transaction, userWalletRef, userId);
+    const newReservedTokens = Math.max(0, (userWallet.reservedTokens ?? 0) - finalRateTokens);
+    transaction.update(userWalletRef, {
+      reservedTokens: newReservedTokens,
+      spent: FieldValue.increment(finalRateTokens),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // 4. Credit creator wallet (full finalRateTokens per §0.3 — Avalo 20% at payout time)
+    const creatorWalletRef = walletRef(creatorId);
+    const creatorWallet = await readWalletInTransaction(transaction, creatorWalletRef, creatorId);
+    const creatorBalanceAfter = creatorWallet.balance + finalRateTokens;
+    transaction.update(creatorWalletRef, {
+      balance: creatorBalanceAfter,
+      earned: FieldValue.increment(finalRateTokens),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // 5. Update reservation
+    const newConsumed = res.consumedTokens + finalRateTokens;
+    const newRemaining = res.remainingTokens - finalRateTokens;
+    const budgetExhausted = newRemaining < finalRateTokens;
+    const newStatus: ReservationStatus = budgetExhausted ? 'EXHAUSTED' : 'ACTIVE';
+    const resUpdate: Partial<ChatReservation> & Record<string, unknown> = {
+      consumedTokens: newConsumed,
+      remainingTokens: newRemaining,
+      status: newStatus,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+    if (budgetExhausted) {
+      resUpdate.closedAt = FieldValue.serverTimestamp();
+    }
+    transaction.update(resRef, resUpdate);
+
+    // 6. Ledger entry
+    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+    const ledgerEntry: LedgerEntry = {
+      txId,
+      type: 'CHAT_RESPONSE_BURN',
+      actorId: userId,
+      counterpartyId: creatorId,
+      chatId,
+      sessionId: reservationId,
+      amountTokens: finalRateTokens,
+      split: {
+        creatorTokens: finalRateTokens,  // §0.3: full amount to creator; Avalo 20% at payout
+        avaloTokens: 0,
+      },
+      beforeAfter: {
+        actor: {
+          before: userWallet.reservedTokens ?? 0,
+          after: newReservedTokens,
+        },
+        counterparty: {
+          before: creatorWallet.balance,
+          after: creatorBalanceAfter,
+        },
+        platform: { before: 0, after: 0 },
+      },
+      timestamp: FieldValue.serverTimestamp(),
+      idempotencyKey,
+      metadata: {
+        ...params.metadata,
+        reservationId,
+        responseIdempotencyKey,
+        consumedAfter: newConsumed,
+        remainingAfter: newRemaining,
+        budgetExhausted,
+      },
+    };
+    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+
+    // 7. Idempotency sentinel
+    writeIdempotencySentinel(transaction, idempotencyKey, txId);
+
+    return { txId, consumedTokens: newConsumed, remainingTokens: newRemaining, budgetExhausted };
+  });
+}
+
+// ── releaseReservation ────────────────────────────────────────────────────────
+
+/**
+ * C3: Close a chat session by returning all unconsumed reserved tokens to the
+ * consumer's spendable balance.
+ *
+ * Called when:
+ *  - Session ends normally (END_PROPOSED + accepted, or fan hangs up)
+ *  - Inactivity timeout fires (C7 scheduler)
+ *  - Creator declines / session never starts
+ *
+ * Operations (single Firestore transaction):
+ *   1. Idempotency guard.
+ *   2. Read reservation; if already RELEASED/EXPIRED/EXHAUSTED, return early.
+ *   3. Return remainingTokens: reservedTokens -= remaining; balance += remaining.
+ *   4. Mark reservation with finalStatus.
+ *   5. Write ledger entry (CHAT_RESERVATION_RELEASE) — only if tokens > 0.
+ *   6. Write idempotency sentinel.
+ */
+export async function releaseReservation(params: {
+  userId: string;
+  chatId: string;
+  reservationId: string;
+  finalStatus: 'RELEASED' | 'EXPIRED';
+  idempotencyKey: string;   // e.g. `release_${reservationId}_${reason}`
+  metadata?: Record<string, unknown>;
+}): Promise<{
+  txId: string | null;
+  tokensReturned: number;
+  finalStatus: ReservationStatus;
+}> {
+  const { userId, chatId, reservationId, finalStatus, idempotencyKey } = params;
+
+  return db.runTransaction(async (transaction) => {
+    // 1. Idempotency
+    const existingTxId = await checkIdempotency(transaction, idempotencyKey);
+    if (existingTxId) {
+      const resSnap = await transaction.get(
+        db.collection(RESERVATIONS_COLLECTION).doc(reservationId)
+      );
+      const res = resSnap.data() as ChatReservation;
+      return {
+        txId: existingTxId,
+        tokensReturned: 0,
+        finalStatus: res.status,
+      };
+    }
+
+    // 2. Read reservation
+    const resRef = db.collection(RESERVATIONS_COLLECTION).doc(reservationId);
+    const resSnap = await transaction.get(resRef);
+    if (!resSnap.exists) {
+      // Nothing to release — reservation may never have been created
+      return { txId: null, tokensReturned: 0, finalStatus: 'RELEASED' };
+    }
+    const res = resSnap.data() as ChatReservation;
+
+    // Already closed — idempotent
+    if (res.status !== 'ACTIVE') {
+      return { txId: null, tokensReturned: 0, finalStatus: res.status };
+    }
+
+    const tokensToReturn = res.remainingTokens;
+
+    // 3. Return tokens to balance (only if there is something to return)
+    if (tokensToReturn > 0) {
+      const userWalletRef = walletRef(userId);
+      const userWallet = await readWalletInTransaction(transaction, userWalletRef, userId);
+      const balanceAfter = userWallet.balance + tokensToReturn;
+      const newReserved = Math.max(0, (userWallet.reservedTokens ?? 0) - tokensToReturn);
+      transaction.update(userWalletRef, {
+        balance: balanceAfter,
+        reservedTokens: newReserved,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+
+      // 5. Ledger entry
+      const txId = db.collection(LEDGER_COLLECTION).doc().id;
+      const ledgerEntry: LedgerEntry = {
+        txId,
+        type: 'CHAT_RESERVATION_RELEASE',
+        actorId: userId,
+        counterpartyId: null,
+        chatId,
+        sessionId: reservationId,
+        amountTokens: tokensToReturn,
+        split: { creatorTokens: 0, avaloTokens: 0 },
+        beforeAfter: {
+          actor: { before: userWallet.balance, after: balanceAfter },
+          counterparty: null,
+          platform: { before: 0, after: 0 },
+        },
+        timestamp: FieldValue.serverTimestamp(),
+        idempotencyKey,
+        metadata: {
+          ...params.metadata,
+          reservationId,
+          finalStatus,
+          consumedTokens: res.consumedTokens,
+        },
+      };
+      transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+
+      // 6. Idempotency sentinel
+      writeIdempotencySentinel(transaction, idempotencyKey, txId);
+
+      // 4. Close reservation
+      transaction.update(resRef, {
+        status: finalStatus,
+        updatedAt: FieldValue.serverTimestamp(),
+        closedAt: FieldValue.serverTimestamp(),
+      });
+
+      return { txId, tokensReturned: tokensToReturn, finalStatus };
+    }
+
+    // No tokens to return — just close
+    transaction.update(resRef, {
+      status: finalStatus,
+      updatedAt: FieldValue.serverTimestamp(),
+      closedAt: FieldValue.serverTimestamp(),
+    });
+
+    writeIdempotencySentinel(transaction, idempotencyKey, '');
+
+    return { txId: null, tokensReturned: 0, finalStatus };
+  });
+}
