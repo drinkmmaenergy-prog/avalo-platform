@@ -47,8 +47,10 @@ export interface ReferralReward {
   id: string;
   userId: string;
   referralId: string;
-  rewardType: 'tokens' | 'boost' | 'discovery_exposure' | 'visibility_multiplier';
+  rewardType: 'tokens' | 'boost' | 'discovery_exposure' | 'visibility_multiplier' | 'priority_message_to_inviter' | 'inviter_badge' | 'profile_exposure';
   amount: number;
+  /** When true, this reward was created as a token reward but converted to a non-token perk because allowTokenRewards is false. */
+  convertedFromTokens?: boolean;
   duration?: number; // for time-based rewards (minutes)
   multiplier?: number; // for visibility multipliers
   status: 'pending' | 'granted' | 'revoked';
@@ -102,7 +104,25 @@ export interface ReferralConfig {
   id: string;
   enabled: boolean;
   rewardsEnabled: boolean;
-  
+
+  /**
+   * SOFT LAUNCH SAFETY GATE — must be explicitly set to true to enable token rewards.
+   *
+   * Free token rewards are disabled by default because tokens can become payout
+   * liability. Future V10 referral commission must be revenue-backed by a
+   * successful paid purchase, not minted for free.
+   *
+   * Default: false. Do not set to true without product + finance approval.
+   */
+  allowTokenRewards: boolean;
+
+  /**
+   * Fallback reward type when token rewards are disabled or rewardType === 'tokens'
+   * is requested but allowTokenRewards is false.
+   * Default: 'boost'
+   */
+  defaultRewardType: ReferralReward['rewardType'];
+
   // Reward amounts
   tokenRewardAmount: number;
   boostDurationMinutes: number;
@@ -190,28 +210,3 @@ export interface ReferralAnalytics {
   attributionBreakdown: Record<string, number>;
   countryBreakdown: Record<string, number>;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

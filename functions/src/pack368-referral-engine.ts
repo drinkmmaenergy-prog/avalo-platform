@@ -349,12 +349,43 @@ export async function distributeReward(
       return { success: false, error: 'Rewards currently disabled' };
     }
 
-    // Calculate reward amount
+    // =========================================================================
+    // SOFT LAUNCH SAFETY GATE — token rewards are disabled.
+    //
+    // Free token rewards are disabled because tokens can become payout liability.
+    // Future V10 referral commission must be revenue-backed by a successful paid
+    // purchase — not minted for free on signup. Token rewards require explicit
+    // opt-in via config.allowTokenRewards === true (default: false).
+    //
+    // When token rewards are requested but disabled: log warning, convert to
+    // the configured defaultRewardType (default: 'boost'), never call earnTokens
+    // or walletService.creditTokens.
+    // =========================================================================
+    let effectiveRewardType = rewardType;
+    let convertedFromTokens = false;
+
+    if (rewardType === 'tokens') {
+      if (config.allowTokenRewards === true && config.tokenRewardAmount > 0) {
+        // Token rewards explicitly enabled via config — allowed path.
+        effectiveRewardType = 'tokens';
+      } else {
+        // Token rewards disabled for soft launch. Convert to safe non-token reward.
+        console.warn(
+          `[referral] Token reward requested for referral ${referralId} but allowTokenRewards is false. ` +
+          `Converting to ${config.defaultRewardType || 'boost'}. ` +
+          `Set config.allowTokenRewards=true and tokenRewardAmount>0 to enable token rewards (requires finance approval).`
+        );
+        effectiveRewardType = config.defaultRewardType || 'boost';
+        convertedFromTokens = true;
+      }
+    }
+
+    // Calculate reward amount based on effective (post-gate) reward type
     let amount = 0;
     let duration: number | undefined;
     let multiplier: number | undefined;
 
-    switch (rewardType) {
+    switch (effectiveRewardType) {
       case 'tokens':
         amount = config.tokenRewardAmount;
         break;
@@ -371,6 +402,12 @@ export async function distributeReward(
         multiplier = config.visibilityMultiplier;
         duration = config.boostDurationMinutes;
         break;
+      case 'priority_message_to_inviter':
+      case 'inviter_badge':
+      case 'profile_exposure':
+        amount = 1;
+        duration = config.boostDurationMinutes;
+        break;
     }
 
     // Create reward record
@@ -379,21 +416,24 @@ export async function distributeReward(
       id: rewardId,
       userId: referral.inviterId,
       referralId,
-      rewardType,
+      rewardType: effectiveRewardType,
       amount,
       duration,
       multiplier,
       status: 'pending',
       createdAt: new Date(),
+      ...(convertedFromTokens ? { convertedFromTokens: true } : {}),
     };
 
-    // Grant reward based on type
-    if (rewardType === 'tokens') {
-      // Use wallet service to grant tokens
+    // Grant reward based on effective type
+    if (effectiveRewardType === 'tokens') {
+      // Token rewards only reach here when allowTokenRewards === true (enforced above).
+      // earnTokens writes to pack277 legacy wallet — must be migrated to
+      // walletService.creditTokens before token rewards are re-enabled in V10.
       const earnResult = await earnTokens({
         userId: referral.inviterId,
         amountTokens: amount,
-        source: 'TIP', // Using TIP as closest match for referral rewards
+        source: 'TIP',
         relatedId: referralId,
         metadata: {
           type: 'referral_reward',
@@ -409,8 +449,10 @@ export async function distributeReward(
       reward.status = 'granted';
       reward.grantedAt = new Date();
     } else {
-      // For boosts/multipliers, just mark as granted
-      // Actual application would be handled by discovery/visibility engines
+      // Non-token rewards: boost, discovery_exposure, visibility_multiplier,
+      // priority_message_to_inviter, inviter_badge, profile_exposure.
+      // Actual application is handled by discovery/visibility engines.
+      // No wallet mutations — cost-neutral to the platform.
       reward.status = 'granted';
       reward.grantedAt = new Date();
       reward.expiresAt = new Date(Date.now() + (duration || 0) * 60 * 1000);
@@ -455,12 +497,16 @@ async function getReferralConfig(): Promise<ReferralConfig> {
   const configDoc = await db.collection('referralConfig').doc('default').get();
 
   if (!configDoc.exists) {
-    // Return default config
+    // Safe default config for soft launch.
+    // Free token rewards are disabled because tokens can become payout liability.
+    // Future V10 referral commission must be revenue-backed by a successful paid purchase.
     return {
       id: 'default',
       enabled: true,
       rewardsEnabled: true,
-      tokenRewardAmount: 50,
+      allowTokenRewards: false,        // SOFT LAUNCH: token rewards disabled
+      defaultRewardType: 'boost',      // fallback when token reward is requested
+      tokenRewardAmount: 0,            // no free tokens
       boostDurationMinutes: 60,
       discoveryExposureBoost: 10,
       visibilityMultiplier: 2.0,
@@ -535,28 +581,3 @@ export async function getReferralStats(
     return null;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
