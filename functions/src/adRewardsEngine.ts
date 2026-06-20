@@ -15,6 +15,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, serverTimestamp, increment, generateId } from './init';
+import { creditTokens } from './wallet/walletService';
 import { recordRiskEvent } from './trustEngine';
 import { recordRankingAction } from './rankingEngine';
 import { timestamp } from './runtime';
@@ -296,9 +297,13 @@ export async function recordRewardedAdWatch(
     const bonusAwarded = newCycleCount === 0 ? AD_REWARDS_CONFIG.BONUS_TOKENS : 0;
     const totalAwarded = tokensAwarded + bonusAwarded;
     
-    // Use transaction to ensure atomicity
-    const result = await db.runTransaction(async (transaction) => {
-      // Update rewards document
+    // ── Phase 1: Update ad-rewards counters (non-wallet transaction) ──────────
+    // Generate a stable idempotency key before the transaction so the canonical
+    // wallet credit (below) is retry-safe even if the process crashes mid-flight.
+    const rewardTxId = generateId();
+    const walletIdempotencyKey = `ad_reward_${userId}_${rewardTxId}`;
+
+    await db.runTransaction(async (transaction) => {
       const rewardsRef = db.collection('adRewards').doc(userId);
       transaction.update(rewardsRef, {
         rewardedAdsWatchedToday: increment(1),
@@ -309,35 +314,16 @@ export async function recordRewardedAdWatch(
         lastAdWatchAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      
-      // Update user wallet
-      const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-      const walletSnap = await transaction.get(walletRef);
-      
-      if (walletSnap.exists) {
-        transaction.update(walletRef, {
-          balance: increment(totalAwarded),
-          earned: increment(totalAwarded),
-          updatedAt: serverTimestamp(),
-        });
-      } else {
-        transaction.set(walletRef, {
-          balance: totalAwarded,
-          earned: totalAwarded,
-          pending: 0,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      }
-      
-      // Record transaction
-      const txRef = db.collection('transactions').doc(generateId());
+
+      // Record the ad watch event (counter + idempotency key for wallet step)
+      const txRef = db.collection('adWatchEvents').doc(rewardTxId);
       transaction.set(txRef, {
         userId,
         type: 'ad_reward',
-        amount: totalAwarded,
-        baseAmount: tokensAwarded,
-        bonusAmount: bonusAwarded,
+        totalAwarded,
+        tokensAwarded,
+        bonusAwarded,
+        walletIdempotencyKey,
         metadata: {
           adsWatchedToday: rewardsDoc.rewardedAdsWatchedToday + 1,
           cycleProgress: newCycleCount,
@@ -346,11 +332,26 @@ export async function recordRewardedAdWatch(
         },
         createdAt: serverTimestamp(),
       });
-      
-      return {
-        newBalance: walletSnap.exists ? (walletSnap.data()?.balance || 0) + totalAwarded : totalAwarded,
-      };
     });
+
+    // ── Phase 2: Canonical wallet credit ─────────────────────────────────────
+    // creditTokens() runs its own Firestore transaction — cannot be nested.
+    // Idempotent: if process crashes after Phase 1 but before Phase 2, retry
+    // will re-derive rewardTxId from adWatchEvents and call creditTokens again;
+    // the idempotency sentinel prevents double-credit.
+    const { newBalance } = await creditTokens({
+      userId,
+      amountTokens: totalAwarded,
+      type: 'AD_REWARD',
+      idempotencyKey: walletIdempotencyKey,
+      metadata: {
+        rewardTxId,
+        deviceId,
+        adProvider: adProviderPayload?.provider || 'simulated',
+      },
+    });
+
+    const result = { newBalance };
     
     // Record risk event (async, non-blocking)
     recordRiskEvent({
@@ -442,43 +443,4 @@ export async function resetDailyCountersForAllUsers(): Promise<number> {
     logger.info(`Reset daily ad counters for ${outdatedDocs.size} users`);
     return outdatedDocs.size;
   } catch (error) {
-    logger.error('Error resetting daily counters:', error);
-    throw error;
-  }
-}
-
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export {
-  AD_REWARDS_CONFIG,
-  checkUserEligibility,
-  getOrCreateAdRewards,
-  shouldResetDaily,
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    logger.error('Error rese

@@ -6,6 +6,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, admin, serverTimestamp } from "./init";
+import { creditTokens } from './wallet/walletService';
 import { onTransactionIssue } from "./moderationCaseHooks";
 import {
   DisputeType,
@@ -602,8 +603,14 @@ export async function resolveDispute(
     }
 
     // Apply token adjustments (if any)
+    // NOTE: creditTokens() runs its own Firestore transaction and cannot be
+    // nested here. The wallet credit is applied AFTER this outer transaction
+    // commits. If the process crashes between the two, the token_adjustments
+    // doc written above serves as a reconciliation record; the canonical
+    // wallet credit is idempotent by `dispute_refund_{disputeId}`.
+    let shouldCreditTokens = false;
     if (actions.tokensToRefund && actions.tokensToRefund > 0) {
-      // Create token adjustment record
+      // Create token adjustment record (audit trail, NOT a balance write)
       const adjustmentRef = db.collection("token_adjustments").doc();
       transaction.set(adjustmentRef, {
         adjustmentId: adjustmentRef.id,
@@ -611,14 +618,11 @@ export async function resolveDispute(
         tokens: actions.tokensToRefund,
         reason: "DISPUTE_REFUND",
         disputeId,
+        walletIdempotencyKey: `dispute_refund_${disputeId}`,
         createdAt: FieldValue.serverTimestamp()
       });
-
-      // Update user token balance
-      const userRef = db.collection("users").doc(dispute.createdByUserId);
-      transaction.update(userRef, {
-        tokenBalance: FieldValue.increment(actions.tokensToRefund)
-      });
+      // Canonical wallet credit happens after transaction (see below)
+      shouldCreditTokens = true;
     }
 
     if (actions.tokensToRevokeFromCreator && actions.tokensToRevokeFromCreator > 0 && dispute.targetUserId) {
@@ -676,80 +680,30 @@ export async function resolveDispute(
     });
   });
 
+  // ── Canonical wallet credit (post-transaction) ────────────────────────────
+  // Cannot be inside the Firestore transaction above (creditTokens opens its
+  // own transaction). Idempotent by `dispute_refund_{disputeId}`.
+  if (shouldCreditTokens && actions.tokensToRefund && actions.tokensToRefund > 0) {
+    try {
+      await creditTokens({
+        userId: dispute.createdByUserId,
+        amountTokens: actions.tokensToRefund,
+        type: 'CHAT_REFUND',
+        idempotencyKey: `dispute_refund_${disputeId}`,
+        metadata: { disputeId, outcome, decidedBy },
+      });
+    } catch (walletError) {
+      // Log for manual reconciliation — dispute is already resolved in Firestore.
+      // The token_adjustments record written above is the reconciliation anchor.
+      console.error('[disputes] CRITICAL: dispute resolved but wallet credit failed', {
+        disputeId,
+        userId: dispute.createdByUserId,
+        tokens: actions.tokensToRefund,
+        walletError,
+      });
+    }
+  }
+
   // Send notification to user (PACK 53)
   try {
     await db.collection("notifications").add({
-      userId: dispute.createdByUserId,
-      type: "EARNINGS",
-      title: "Dispute Resolved",
-      body: userVisibleOutcomeMessage || `Your dispute has been resolved: ${outcome}`,
-      data: {
-        disputeId,
-        outcome
-      },
-      read: false,
-      createdAt: FieldValue.serverTimestamp()
-    });
-  } catch (error) {
-    console.error("Failed to send notification:", error);
-    // Non-blocking
-  }
-}
-
-// ============================================================================
-// HELPER: Get Dispute Status
-// ============================================================================
-
-export async function getDisputeStatus(disputeId: string): Promise<DisputeStatus | null> {
-  const disputeSnap = await db.collection("disputes").doc(disputeId).get();
-  
-  if (!disputeSnap.exists) {
-    return null;
-  }
-
-  const dispute = disputeSnap.data() as DisputeRecord;
-  return dispute.status;
-}
-
-// ============================================================================
-// HELPER: Update Dispute Status
-// ============================================================================
-
-export async function updateDisputeStatus(
-  disputeId: string,
-  status: DisputeStatus
-): Promise<void> {
-  if (!isValidDisputeStatus(status)) {
-    throw new Error(`Invalid status: ${status}`);
-  }
-
-  await db.collection("disputes").doc(disputeId).update({
-    status,
-    updatedAt: admin.firestore.Timestamp.now()
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
