@@ -198,6 +198,10 @@ function meetsAdvanceRequirement(
  * Create a new calendar booking
  */
 export async function createBooking(request: CreateBookingRequest): Promise<CalendarBooking> {
+  // [SOFT_LAUNCH_DISABLED] calendarEngine.createBooking uses phantom users/{uid}.tokens.
+  // Hard-disabled until calendarEngine is migrated to walletService canonical paths.
+  throw new Error('[SOFT_LAUNCH_DISABLED] Calendar booking is not available in this release.');
+
   const { hostId, guestId, slotId, start, end, priceTokens } = request;
   const bookingId = uuidv4();
   const now = new Date().toISOString();
@@ -299,6 +303,9 @@ export async function cancelBookingByGuest(
   bookingId: string,
   guestId: string
 ): Promise<CalendarBooking> {
+  // [SOFT_LAUNCH_DISABLED] uses phantom users/{uid}.tokens
+  throw new Error('[SOFT_LAUNCH_DISABLED] Calendar booking is not available in this release.');
+
   const bookingRef = db.collection('calendarBookings').doc(bookingId);
   const bookingDoc = await bookingRef.get();
 
@@ -387,6 +394,9 @@ export async function cancelBookingByHost(
   bookingId: string,
   hostId: string
 ): Promise<CalendarBooking> {
+  // [SOFT_LAUNCH_DISABLED] uses phantom users/{uid}.tokens
+  throw new Error('[SOFT_LAUNCH_DISABLED] Calendar booking is not available in this release.');
+
   const bookingRef = db.collection('calendarBookings').doc(bookingId);
   const bookingDoc = await bookingRef.get();
 
@@ -604,6 +614,9 @@ export async function reportMismatch(request: MismatchReportRequest): Promise<Ca
  * Complete meeting and process payout
  */
 export async function completeMeeting(request: CompleteMeetingRequest): Promise<CalendarBooking> {
+  // [SOFT_LAUNCH_DISABLED] uses phantom users/{uid}.tokens
+  throw new Error('[SOFT_LAUNCH_DISABLED] Calendar booking is not available in this release.');
+
   const { bookingId } = request;
   const bookingRef = db.collection('calendarBookings').doc(bookingId);
   const bookingDoc = await bookingRef.get();
@@ -686,6 +699,9 @@ export async function completeMeeting(request: CompleteMeetingRequest): Promise<
 export async function processGoodwillRefund(
   request: GoodwillRefundRequest
 ): Promise<CalendarBooking> {
+  // [SOFT_LAUNCH_DISABLED] uses phantom users/{uid}.tokens
+  throw new Error('[SOFT_LAUNCH_DISABLED] Calendar booking is not available in this release.');
+
   const { bookingId, hostId } = request;
   const bookingRef = db.collection('calendarBookings').doc(bookingId);
   const bookingDoc = await bookingRef.get();
@@ -774,60 +790,4 @@ export async function onMeetingStarted(bookingId: string): Promise<void> {
 export async function onPanicTriggered(
   bookingId: string,
   userId: string,
-  location?: { lat: number; lng: number }
-): Promise<void> {
-  // Import safety hooks
-  const { onCalendarPanic } = await import('./safetyHooks');
-  
-  // Call safety hook to trigger panic
-  await onCalendarPanic(bookingId, userId, location);
-}
-
-/**
- * Safety hook: Called when mismatch is reported
- */
-export async function onMismatchReported(
-  bookingId: string,
-  reportedBy: string,
-  reportedUserId: string
-): Promise<void> {
-  console.log(`[SAFETY_HOOK] Mismatch reported for booking: ${bookingId}`);
-  console.log(`Reported by: ${reportedBy}, Reported user: ${reportedUserId}`);
-
-  // Flag for manual review
-  await db.collection('reviewQueue').doc().set({
-    type: 'appearance_mismatch',
-    bookingId,
-    reportedBy,
-    reportedUserId,
-    status: 'pending',
-    priority: 'high',
-    createdAt: FieldValue.serverTimestamp(),
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  location?: 
