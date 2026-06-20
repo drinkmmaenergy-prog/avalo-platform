@@ -45,7 +45,13 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      // C1: Clients may NOT write wallet fields — phantom wallet self-credit prevention.
+      // Canonical wallet is wallets/{uid} (allow write: if false).
+      // users/{uid}.wallet.* must be server-only as of C1.
+      allow update: if (isOwner(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['wallet', 'tokenBalance', 'tokensBalance'])) ||
+        isAdmin();
       allow delete: if isAdmin();
 
       // Private user data (settings, preferences)
@@ -132,15 +138,31 @@ service cloud.firestore {
     match /chats/{chatId} {
       allow read: if isAuthenticated() &&
         request.auth.uid in resource.data.participants;
-      allow create: if isAuthenticated();
+      // C1: Clients may NOT write billing/state fields on chat documents.
+      // state, sessionBudgetTokens, remainingReservedTokens, paidResponseCount,
+      // configSnapshot, burnMultiplier, finalRateTokens are all server-only.
+      allow create: if isAuthenticated() &&
+        !request.resource.data.keys().hasAny([
+          'sessionBudgetTokens', 'remainingReservedTokens', 'paidResponseCount',
+          'configSnapshot', 'burnMultiplier', 'finalRateTokens', 'billing'
+        ]);
       allow update: if isAuthenticated() &&
-        request.auth.uid in resource.data.participants;
+        request.auth.uid in resource.data.participants &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'state', 'sessionBudgetTokens', 'remainingReservedTokens', 'paidResponseCount',
+          'configSnapshot', 'burnMultiplier', 'finalRateTokens', 'billing',
+          'creatorEarningTokens', 'payerTokensCharged'
+        ]);
 
       match /messages/{messageId} {
         allow read: if isAuthenticated() &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // C1: Message creation is non-billing (billing is server-side on creator message delivery).
+        // Clients may create their own messages only; billing fields are server-set.
         allow create: if isAuthenticated() &&
-          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+          request.resource.data.senderId == request.auth.uid &&
+          !request.resource.data.keys().hasAny(['cost', 'paid', 'earnerTokens', 'billingEventId']);
         allow update: if isOwner(resource.data.senderId) || isModerator();
         allow delete: if isOwner(resource.data.senderId) || isModerator();
       }
@@ -387,14 +409,23 @@ service cloud.firestore {
     // BLOCK 33: AI Chats — Fix 5 chat history persistence
     // ──────────────────────────────────────────────
     match /ai_chats/{chatId} {
-      allow read, write: if isAuthenticated();
+      // C1: Scoped to owner. Any authenticated user could previously read/write any AI chat.
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() &&
+        resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
 
       match /messages/{msgId} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isAuthenticated() &&
+          get(/databases/$(database)/documents/ai_chats/$(chatId)).data.userId == request.auth.uid;
       }
 
       match /meta/{metaDoc} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isAuthenticated() &&
+          get(/databases/$(database)/documents/ai_chats/$(chatId)).data.userId == request.auth.uid;
       }
     }
 
@@ -634,8 +665,89 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+
     // ──────────────────────────────────────────────
+    // C1: NEW RULES — Phantom wallet lockdown additions
     // ──────────────────────────────────────────────
-    // CREATOR USD LEDGER — server-only write collections
+
+    // age_verification/{uid} — soft/hard KYC records — server-only writes
+    match /age_verification/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false; // Written only by compliancePack55.ageSoftVerify and identity webhooks
+    }
+
+    // pairMatchHistory/{pairId} — rematch abuse prevention — server-only writes
+    match /pairMatchHistory/{pairId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.uidA == request.auth.uid || resource.data.uidB == request.auth.uid);
+      allow write: if false; // Written only by chat acceptance CF
+    }
+
+    // multi_rooms/{roomId} — all economic writes server-only
+    match /multi_rooms/{roomId} {
+      allow read: if isAuthenticated();
+      // Clients may NOT create rooms directly — only via createMultiRoom CF
+      allow write: if false;
+
+      match /participants/{uid} {
+        allow read: if isAuthenticated();
+        allow write: if false;
+      }
+
+      match /messages/{msgId} {
+        allow read: if isAuthenticated();
+        // Clients may NOT create room messages directly — server-authoritative only
+        allow write: if false;
+      }
+
+      match /guaranteed_requests/{reqId} {
+        allow read: if isAuthenticated() &&
+          (resource.data.requesterId == request.auth.uid ||
+           resource.data.creatorId == request.auth.uid || isAdmin());
+        allow write: if false;
+      }
+    }
+
+    // ──────────────────────────────────────────────
+    // CREATOR EARNING LEDGER — server-only write collections
     // Client: read own data only. All writes: server-side Cloud Functions only.
-    // ──────────────�
+    // ──────────────────────────────────────────────
+
+    // creatorEarningAccounts/{uid} — creator earning account state
+    match /creatorEarningAccounts/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
+    }
+
+    // creatorEarningLedger/{entryId} — append-only earning events
+    match /creatorEarningLedger/{entryId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // creatorPayoutRequests/{payoutId} — payout request state machine
+    match /creatorPayoutRequests/{payoutId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.creatorId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // chatSessions/{sessionId} — canonical paid chat session snapshots — server-only
+    match /chatSessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.payerId == request.auth.uid ||
+         resource.data.creatorId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // billingEvents/{eventId} — immutable billing audit trail
+    match /billingEvents/{eventId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.payerId == request.auth.uid ||
+         resource.data.creatorId == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+  } // end /databases/{database}/documents
+} // end service cloud.firestore

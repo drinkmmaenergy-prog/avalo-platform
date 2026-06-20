@@ -407,6 +407,18 @@ export const sendChatMessage = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
+    // C1 SHUTDOWN: This handler uses phantom wallet paths (users/{uid}.wallet.balance)
+    // and charges the FAN on send — both violate canonical billing rules.
+    // Canonical replacement: canonical-chat-engine.ts processMessage (charges PAYER on
+    // CREATOR response delivery, using wallets/{uid}.balance via walletService).
+    // This endpoint is disabled until the canonical chat state machine is deployed (C5).
+    throw new HttpsError(
+      "failed-precondition",
+      "HUMAN_CHAT_BILLING_DISABLED: Direct chat billing is being upgraded. " +
+      "Please use the Avalo app — the new chat system will be available shortly."
+    );
+
+    // --- DISABLED BELOW: phantom wallet billing, wrong direction, zero creator earnings ---
     const {
       chatId,
       type,
@@ -686,6 +698,13 @@ export const sendChatGift = onCall(
     if (!uid) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
+
+    // C1 SHUTDOWN: Routes through sendChatMessage which uses phantom wallet.
+    // Replaced by canonical tip/gift system in C8.
+    throw new HttpsError(
+      "failed-precondition",
+      "CHAT_GIFTS_DISABLED: Chat gifts are being upgraded to the canonical tip system."
+    );
 
     const { chatId, giftType } = request.data;
 

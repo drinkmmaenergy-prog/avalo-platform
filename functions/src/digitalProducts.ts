@@ -493,7 +493,16 @@ export const purchaseDigitalProduct = onCall(
     if (!uid) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
-    
+
+    // C1 SHUTDOWN: Uses phantom wallet (users/{uid}.wallet.balance) and
+    // MONETIZATION_SPLITS.CHAT.earner=0, yielding zero creator earnings.
+    // Replaced by canonical media PPV in C8 using wallets/{uid} + earning ledger.
+    throw new HttpsError(
+      'failed-precondition',
+      'DIGITAL_PRODUCTS_BILLING_DISABLED: Digital product purchases are being ' +
+      'upgraded to the canonical media PPV system.'
+    );
+
     const { productId } = request.data;
     
     if (!productId) {
