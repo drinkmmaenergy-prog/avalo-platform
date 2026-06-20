@@ -635,13 +635,7 @@ service cloud.firestore {
     }
 
     // ──────────────────────────────────────────────
-    // CATCH-ALL — Deny all other access
-    // Must be LAST. Any collection not matched above is denied.
     // ──────────────────────────────────────────────
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-  }
-}
-
+    // CREATOR USD LEDGER — server-only write collections
+    // Client: read own data only. All writes: server-side Cloud Functions only.
+    // ──────────────�
