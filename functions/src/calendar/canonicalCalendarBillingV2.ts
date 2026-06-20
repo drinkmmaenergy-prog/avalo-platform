@@ -37,7 +37,7 @@ import { recordCreatorEarning }     from '../creator/canonicalEarningService';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-export const CALENDAR_MIN_BOOKING_TOKENS  = 50;
+export const CALENDAR_MIN_BOOKING_TOKENS  = 100; // §1.9: calendar minimum is 100 tokens
 export const CALENDAR_MAX_BOOKING_TOKENS  = 100_000;
 
 /** Hours before booking start that determine fan refund tier. */

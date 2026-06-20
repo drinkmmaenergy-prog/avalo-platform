@@ -129,23 +129,31 @@ export const BADGE_REQUIREMENTS: Record<CreatorBadge, BadgeProgressionRequiremen
   },
   RISING_STAR: {
     badge: 'RISING_STAR',
+    // Policy thresholds are configurable via server-side config (§1.2).
+    // These defaults represent reasonable starting points; adjust via badgePolicyConfig/{badge}.
     requirements: { minPaidSessions: 50, minAverageRating: 4.0, minResponseRate: 0.80, kycLevel: 'CREATOR_KYC' },
   },
   PRO: {
     badge: 'PRO',
-    requirements: { minPaidSessions: 200, minAverageRating: 4.2, minResponseRate: 0.85, kycLevel: 'CREATOR_KYC' },
+    requirements: { minPaidSessions: 150, minAverageRating: 4.2, minResponseRate: 0.85, kycLevel: 'CREATOR_KYC' },
   },
   ELITE: {
     badge: 'ELITE',
-    requirements: { minPaidSessions: 500, minAverageRating: 4.5, minResponseRate: 0.90, kycLevel: 'CREATOR_KYC' },
+    requirements: { minPaidSessions: 300, minAverageRating: 4.5, minResponseRate: 0.90, kycLevel: 'CREATOR_KYC' },
+  },
+  ICON: {
+    badge: 'ICON',
+    // ICON: quality + retention + low dispute rate required; manual review gate.
+    requirements: { minPaidSessions: 600, minAverageRating: 4.7, minResponseRate: 0.93, kycLevel: 'ENHANCED_KYC' },
   },
   APEX: {
     badge: 'APEX',
-    requirements: { minPaidSessions: 1000, minAverageRating: 4.7, minResponseRate: 0.95, kycLevel: 'ENHANCED_KYC' },
+    // APEX: highest trust tier; manual review mandatory regardless of signals.
+    requirements: { minPaidSessions: 1000, minAverageRating: 4.8, minResponseRate: 0.95, kycLevel: 'ENHANCED_KYC' },
   },
 };
 
-const BADGE_ORDER: CreatorBadge[] = ['NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'APEX'];
+const BADGE_ORDER: CreatorBadge[] = ['NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'ICON', 'APEX'];
 
 function nextBadge(current: CreatorBadge): CreatorBadge | null {
   const idx = BADGE_ORDER.indexOf(current);
@@ -242,7 +250,7 @@ export async function evaluateBadgeEligibility(
   const target = nextBadge(currentBadge);
 
   if (!target) {
-    return { eligible: false, targetBadge: null, reasons: ['Already at APEX — highest badge'] };
+    return { eligible: false, targetBadge: null, reasons: ['Already at APEX — highest badge. Manual review required for any status change.'] };
   }
 
   // Read signals

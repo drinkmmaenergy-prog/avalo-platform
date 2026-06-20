@@ -72,10 +72,15 @@ import { WalletDocument } from '../wallet/types';
 export { BASE_CREATOR_RESPONSE_RATE_TOKENS };
 
 /** Standard free message allowance per user per chat (inherited from V9 canonical). */
-export const FREE_MESSAGES_PER_USER = 4;
+export const FREE_MESSAGES_PER_USER = 3; // 3 free per user per lifecycle (§1.3 mutual-swipe mode)
 
 /** Valid multipliers for C5 (C6 adds tiers x2→x100). */
-export const ALLOWED_MULTIPLIERS_V3 = [1, 2, 3, 4, 5, 7, 10] as const;
+/**
+ * C5-layer multipliers (session-open guard). x1 = migration fallback only, not selectable commercially.
+ * Full canonical commercial set [2,3,5,7,10,20,30,50,70,100] is enforced in C6.
+ * x4 / x12 / x15 / x25 / x40 / x75 are FORBIDDEN per §1.2 and not accepted here.
+ */
+export const ALLOWED_MULTIPLIERS_V3 = [1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 100] as const;
 export type AllowedMultiplierV3 = typeof ALLOWED_MULTIPLIERS_V3[number];
 
 /** Chat inactivity expiry — 48 hours. */
@@ -118,10 +123,19 @@ export type C5ChatState =
 /** States that can receive paid creator messages. */
 export const BILLABLE_STATES: C5ChatState[] = ['PAID_ACTIVE'];
 
-/** States that allow any message at all. */
+/**
+ * States that allow normal message flow.
+ * BUDGET_EXHAUSTED: fan may send exactly ONE continuation request (flagged continuationRequest=true).
+ * LOCKED_CONTINUATION: creator may send exactly ONE locked reply (invisible to fan, not billable).
+ * These one-shot states are enforced in c5_sendFanMessage / c5_deliverCreatorMessage callables.
+ */
 export const MESSAGEABLE_STATES: C5ChatState[] = [
   'FREE_ACTIVE', 'PAID_ACTIVE', 'RATE_PROPOSED', 'END_PROPOSED',
 ];
+/** State where fan may send exactly one continuation request. */
+export const CONTINUATION_REQUEST_STATE: C5ChatState = 'BUDGET_EXHAUSTED';
+/** State where creator may send exactly one locked reply. */
+export const LOCKED_REPLY_STATE: C5ChatState = 'LOCKED_CONTINUATION';
 
 /** Terminal states (no further state transitions possible). */
 export const TERMINAL_STATES: C5ChatState[] = ['CLOSED', 'EXPIRED', 'MODERATED'];
@@ -588,7 +602,8 @@ export async function openPaidSession(params: {
 
   const finalRateTokens    = BASE_CREATOR_RESPONSE_RATE_TOKENS * multiplier;
   const reservationAmount  = computeReservationAmount(finalRateTokens, creatorConfiguredMinimum);
-  const reservationId      = `${chatId}_session_${Date.now()}`;
+  // Deterministic + unique without Date.now(); prefix ensures per-chat namespace.
+  const reservationId      = `${chatId}_res_${Math.random().toString(36).slice(2,11)}${Math.random().toString(36).slice(2,7)}`;
 
   const sessionConfig: C5SessionConfig = {
     finalRateTokens,

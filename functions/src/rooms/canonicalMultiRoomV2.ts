@@ -46,6 +46,14 @@ export const ROOM_MAX_ENTRY_TOKENS          = 10_000;
 export const ROOM_TIP_MIN_TOKENS            = 5;
 export const ROOM_GUARANTEED_MIN_TOKENS     = 150;
 export const ROOM_GUARANTEED_DEADLINE_MS    = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Minimum creator messages required before room entry fees are settled (§1.8).
+ * Creator must deliver ≥ ROOM_MIN_CREATOR_MESSAGES_TO_EARN substantive interactions
+ * before earning any participant's entry budget.
+ * Prevents earning on a single generic "hello" message.
+ */
+export const ROOM_MIN_CREATOR_MESSAGES_TO_EARN = 3;
 export const ROOM_CREATOR_EARN_MIN_MESSAGES = 1;  // entry earns after ≥1 creator message
 export const ROOM_INACTIVE_EXPIRE_HOURS     = 24;
 
@@ -398,7 +406,11 @@ export async function deliverCreatorRoomMessage(params: {
   assertRoomLive(room);
   assertCreator(room, creatorId);
 
-  const isFirstMessage = room.creatorMessageCount === 0;
+  // §1.8: earn entry fees only after delivering ROOM_MIN_CREATOR_MESSAGES_TO_EARN messages
+  // NOT on first generic message — prevents trivial earn-and-leave exploitation.
+  const messageCountAfter        = room.creatorMessageCount + 1;
+  const reachesEarnThreshold     = messageCountAfter === ROOM_MIN_CREATOR_MESSAGES_TO_EARN;
+  const isFirstMessage           = false; // no longer used — threshold replaces first-message trigger
   let   tokensEarned   = 0;
 
   const messageId = await db.runTransaction(async (t) => {
@@ -407,7 +419,7 @@ export async function deliverCreatorRoomMessage(params: {
 
     const msgId = messagesCol(roomId).doc().id;
 
-    if (isFirstMessage) {
+    if (reachesEarnThreshold) { // earn entry fees after min messages delivered (§1.8)
       // Settle all active participants who haven't yet been earned
       const unearnedSnap = await db.collection('multi_rooms').doc(roomId)
         .collection('participants')
@@ -1036,13 +1048,14 @@ async function _refundPriorityQuestion(
 
 /**
  * C10: Room deadline enforcer.
- * Runs every 10 minutes.
+ * Runs every 1 minute (§1.8 — deadline enforcement must be near-real-time).
  *   - Refunds RESERVED guaranteed responses past deadline.
  *   - Refunds PENDING priority questions past deadline.
  *   - Expires LIVE rooms with no creator message after 24h.
  */
 export const c10_deadlineEnforcer = onSchedule(
-  { schedule: 'every 10 minutes', timeoutSeconds: 300, retryCount: 1 },
+  // §1.8: Must run every 1 minute to enforce GOLD/DIAMOND and guaranteed-response deadlines.
+  { schedule: 'every 1 minutes', timeoutSeconds: 60, retryCount: 2 },
   async (_event) => {
     const now     = new Date();
     const results = await Promise.allSettled([

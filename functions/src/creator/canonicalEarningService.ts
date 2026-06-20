@@ -38,8 +38,47 @@ export const TOKEN_PAYOUT_USD_GROSS = 0.04;
 export const AVALO_COMMISSION_RATE  = 0.20;
 export const TOKEN_PAYOUT_USD_NET   = TOKEN_PAYOUT_USD_GROSS * (1 - AVALO_COMMISSION_RATE);
 
-/** Hold period before earned tokens become payable (fraud/chargeback window). */
-export const EARNING_HOLD_DAYS = 7;
+/**
+ * Creator risk tiers — determine earning hold duration (§1.7).
+ * Risk tier is snapshotted at earning time, stored in ledger entry.
+ * Do NOT re-read current tier to alter a historical earning event.
+ */
+export type CreatorRiskTier = 'NEW' | 'VERIFIED' | 'TRUSTED' | 'HIGH_RISK';
+
+/** Hold duration in days per risk tier (§1.7). */
+export const EARNING_HOLD_DAYS_BY_TIER: Record<CreatorRiskTier, number> = {
+  NEW:       7,
+  VERIFIED:  3,
+  TRUSTED:   1,
+  HIGH_RISK: 14,
+};
+
+/** Fallback hold — used for backward compat and NEW creators without tier set. */
+export const EARNING_HOLD_DAYS = EARNING_HOLD_DAYS_BY_TIER.NEW; // 7 days
+
+/**
+ * Read creator's current risk tier from creatorEarningAccounts/{uid}.riskTier.
+ * Returns 'NEW' as safe default if not set.
+ * Caller must snapshot this at earning time — do not re-read later for historical events.
+ */
+export async function getCreatorRiskTier(
+  creatorId: string,
+  db: FirebaseFirestore.Firestore,
+): Promise<CreatorRiskTier> {
+  const snap = await db.collection('creatorEarningAccounts').doc(creatorId).get();
+  if (!snap.exists) return 'NEW';
+  const tier = (snap.data() as any).riskTier as CreatorRiskTier | undefined;
+  return tier ?? 'NEW';
+}
+
+/**
+ * Compute hold release date for a new earning event.
+ * Snapshots the creator's current risk tier.
+ */
+export function computeHoldRelease(riskTier: CreatorRiskTier): Date {
+  const holdDays = EARNING_HOLD_DAYS_BY_TIER[riskTier] ?? EARNING_HOLD_DAYS_BY_TIER.NEW;
+  return new Date(Date.now() + holdDays * 24 * 60 * 60 * 1000);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Firestore collection paths

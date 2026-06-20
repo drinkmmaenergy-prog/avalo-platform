@@ -53,19 +53,25 @@ import type { C5ChatState, C5SessionConfig } from './canonicalChatStateMachineV3
 // Multiplier tier table
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type CanonicalMultiplier = 1|2|3|4|5|7|10|12|15|20|30|50|70|100;
+/**
+ * Canonical commercial multipliers: [2,3,5,7,10,20,30,50,70,100].
+ * x1 = migration fallback only (not selectable commercially, visibleToFan=false).
+ * x4 / x12 / x15 / x25 / x40 / x75 are FORBIDDEN per §1.2 and removed.
+ */
+export type CanonicalMultiplier = 1|2|3|5|7|10|20|30|50|70|100;
 
 export const ALL_MULTIPLIERS: CanonicalMultiplier[] = [
-  1, 2, 3, 4, 5, 7, 10, 12, 15, 20, 30, 50, 70, 100,
+  1, 2, 3, 5, 7, 10, 20, 30, 50, 70, 100,
 ];
 
 export type CreatorBadge =
-  | 'NONE'         // unverified / no badge
-  | 'VERIFIED'     // identity verified, age verified
-  | 'RISING_STAR'  // 50+ paid sessions, quality signals passing
-  | 'PRO'          // 200+ paid sessions, BASIC KYC
-  | 'ELITE'        // 500+ paid sessions, STANDARD KYC
-  | 'APEX';        // top tier, ENHANCED KYC, unlocks x50/x70/x100
+  | 'NONE'         // unverified / no badge (x1 migration fallback only)
+  | 'VERIFIED'     // identity verified, age verified → max x3
+  | 'RISING_STAR'  // Rising creator — quality signals → max x7
+  | 'PRO'          // Professional creator — KYC → max x10
+  | 'ELITE'        // Elite creator — STANDARD KYC → max x20
+  | 'ICON'         // Icon creator — ENHANCED KYC → max x50
+  | 'APEX';        // Apex tier — ENHANCED KYC + manual review → max x100
 
 /**
  * KYC requirement per multiplier.
@@ -105,19 +111,26 @@ function spec(
   return { multiplier: m, finalRateTokens, grossUsdPerResponse, netUsdPerResponse, minBadge, kycRequired, visibleToFan: true };
 }
 
+/**
+ * Badge ceilings (§1.2):
+ *   VERIFIED     → max x3   (commercial: x2, x3)
+ *   RISING_STAR  → max x7   (commercial: x5, x7)
+ *   PRO          → max x10  (commercial: x10)
+ *   ELITE        → max x20  (commercial: x20)
+ *   ICON         → max x50  (commercial: x30, x50)  ENHANCED_KYC required
+ *   APEX         → max x100 (commercial: x70, x100) ENHANCED_KYC required
+ * x1 = migration fallback; visibleToFan=false, not a commercial tier.
+ */
 export const MULTIPLIER_TIERS: Record<CanonicalMultiplier, MultiplierTierSpec> = {
-  1:   spec(1,   'NONE',        'VERIFIED_ADULT'),
-  2:   spec(2,   'NONE',        'VERIFIED_ADULT'),
-  3:   spec(3,   'NONE',        'VERIFIED_ADULT'),
-  4:   spec(4,   'VERIFIED',    'VERIFIED_ADULT'),
-  5:   spec(5,   'VERIFIED',    'VERIFIED_ADULT'),
+  1:   { ...spec(1,   'NONE',        'VERIFIED_ADULT'), visibleToFan: false }, // migration fallback ONLY
+  2:   spec(2,   'VERIFIED',    'VERIFIED_ADULT'),
+  3:   spec(3,   'VERIFIED',    'VERIFIED_ADULT'),
+  5:   spec(5,   'RISING_STAR', 'CREATOR_KYC'),
   7:   spec(7,   'RISING_STAR', 'CREATOR_KYC'),
-  10:  spec(10,  'RISING_STAR', 'CREATOR_KYC'),
-  12:  spec(12,  'PRO',         'CREATOR_KYC'),
-  15:  spec(15,  'PRO',         'CREATOR_KYC'),
+  10:  spec(10,  'PRO',         'CREATOR_KYC'),
   20:  spec(20,  'ELITE',       'CREATOR_KYC'),
-  30:  spec(30,  'ELITE',       'CREATOR_KYC'),
-  50:  spec(50,  'APEX',        'ENHANCED_KYC'),
+  30:  spec(30,  'ICON',        'ENHANCED_KYC'),
+  50:  spec(50,  'ICON',        'ENHANCED_KYC'),
   70:  spec(70,  'APEX',        'ENHANCED_KYC'),
   100: spec(100, 'APEX',        'ENHANCED_KYC'),
 };
@@ -126,7 +139,7 @@ export const MULTIPLIER_TIERS: Record<CanonicalMultiplier, MultiplierTierSpec> =
  * Badge hierarchy order (lower index = lower tier).
  */
 export const BADGE_ORDER: CreatorBadge[] = [
-  'NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'APEX',
+  'NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'ICON', 'APEX',
 ];
 
 function badgeRank(badge: CreatorBadge): number {
@@ -265,7 +278,7 @@ export async function setCreatorChatConfig(params: {
 // Rate negotiation: RATE_PROPOSED state
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type RateProposalStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED';
+export type RateProposalStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'COUNTEROFFERED' | 'COUNTER_ACCEPTED' | 'COUNTER_DECLINED';
 
 export interface RateProposal {
   proposalId: string;
@@ -276,6 +289,10 @@ export interface RateProposal {
   proposedFinalRateTokens: number;
   proposedReservationAmount: number;
   status: RateProposalStatus;
+  /** Fan counteroffer multiplier (set when fan uses COUNTEROFFERED resolution). */
+  fanCounterMultiplier?: CanonicalMultiplier;
+  /** Whether fan has already used their one counteroffer for this proposal. */
+  counterofferUsed: boolean;
   createdAt: FirebaseFirestore.Timestamp | FieldValue;
   expiresAt: FirebaseFirestore.Timestamp;
   resolvedAt?: FirebaseFirestore.Timestamp | FieldValue;
@@ -298,8 +315,37 @@ export async function proposeRateChange(params: {
   fanId: string;
   currentMultiplier: CanonicalMultiplier;
   proposedMultiplier: CanonicalMultiplier;
+  /** Must pass at least one trigger condition (§1.6). */
+  triggerCondition: 'TIME_ELAPSED' | 'RESPONSE_COUNT' | 'BUDGET_NEAR_EXHAUSTION' | 'FAN_REQUESTED';
 }): Promise<RateProposal> {
-  const { chatId, creatorId, fanId, currentMultiplier, proposedMultiplier } = params;
+  const { chatId, creatorId, fanId, currentMultiplier, proposedMultiplier, triggerCondition } = params;
+
+  // ── §1.6 Trigger guards — creator may propose rate change only when a condition is met ──
+  const db2 = getFirestore();
+  const chatSnap = await db2.collection('chats').doc(chatId).get();
+  if (!chatSnap.exists) throw new HttpsError('not-found', `Chat ${chatId} not found`);
+  const chat = chatSnap.data() as { sessionConfig?: { reservationAmount: number }; paidResponseCount?: number; sessionStartedAt?: any; remainingReservedTokens?: number; state?: string };
+
+  const paidResponseCount      = chat.paidResponseCount ?? 0;
+  const reservationAmount      = chat.sessionConfig?.reservationAmount ?? 0;
+  const remainingTokens        = chat.remainingReservedTokens ?? 0;
+  const budgetPct              = reservationAmount > 0 ? (reservationAmount - remainingTokens) / reservationAmount : 0;
+  const sessionStartedAt       = chat.sessionStartedAt?.toDate?.() ?? new Date(0);
+  const hoursElapsed           = (Date.now() - sessionStartedAt.getTime()) / (1000 * 60 * 60);
+
+  const triggerMet = (() => {
+    switch (triggerCondition) {
+      case 'TIME_ELAPSED':         return hoursElapsed >= 24;
+      case 'RESPONSE_COUNT':       return paidResponseCount >= 30;
+      case 'BUDGET_NEAR_EXHAUSTION': return budgetPct >= 0.80;
+      case 'FAN_REQUESTED':        return true; // fan explicitly requested negotiation
+    }
+  })();
+  if (!triggerMet) {
+    throw new HttpsError('failed-precondition',
+      `RATE_NEGOTIATION_TRIGGER_NOT_MET: ${triggerCondition} condition not satisfied. ` +
+      `hours=${hoursElapsed.toFixed(1)}, responses=${paidResponseCount}, budgetPct=${(budgetPct*100).toFixed(0)}%`);
+  }
 
   // Validate the proposed multiplier is eligible
   await assertMultiplierEligibility(creatorId, proposedMultiplier);
@@ -319,6 +365,7 @@ export async function proposeRateChange(params: {
     proposedFinalRateTokens:    tierSpec.finalRateTokens,
     proposedReservationAmount:  proposedReservation,
     status: 'PENDING',
+    counterofferUsed: false,
     createdAt:  FieldValue.serverTimestamp(),
     expiresAt:  new Date(Date.now() + RATE_PROPOSAL_EXPIRY_MS) as any,
   };
@@ -404,8 +451,12 @@ export interface EndProposal {
   resolvedAt?: FirebaseFirestore.Timestamp | FieldValue;
 }
 
-/** End proposals expire after 5 minutes. After expiry → session auto-resumes. */
-export const END_PROPOSAL_EXPIRY_MS = 5 * 60 * 1000;
+/**
+ * End proposals expire after 120 minutes (§1.6).
+ * Creator proposes normal end → payer has 120 min to respond or chat auto-closes.
+ * Creator CANNOT abruptly end a normal chat solely because payer rejected a rate.
+ */
+export const END_PROPOSAL_EXPIRY_MS = 120 * 60 * 1000; // 120 minutes per §1.6
 
 /**
  * Either party can propose ending the paid session.
@@ -515,8 +566,8 @@ export interface SessionConsentRecord {
   consentedAt: FirebaseFirestore.Timestamp | FieldValue;
 }
 
-/** Multiplier threshold requiring explicit fan consent before session entry. */
-export const CONSENT_REQUIRED_MULTIPLIER_THRESHOLD = 4;
+/** Multiplier threshold requiring explicit fan consent before session entry. First non-VERIFIED-adult tier. */
+export const CONSENT_REQUIRED_MULTIPLIER_THRESHOLD = 5;
 
 /**
  * Record fan consent for a paid session at a given multiplier.
@@ -545,4 +596,99 @@ export async function recordSessionConsent(params: {
   } as SessionConsentRecord);
 
   return consentId;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fan counteroffer resolution (§1.6: fan may make exactly one counteroffer)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fan submits a counteroffer to creator's rate proposal.
+ * Fan may make exactly ONE counteroffer per proposal.
+ * Counter multiplier must be from the canonical tier set and ≤ proposedMultiplier.
+ */
+export async function submitFanCounteroffer(params: {
+  chatId: string;
+  proposalId: string;
+  fanId: string;
+  counterMultiplier: CanonicalMultiplier;
+}): Promise<void> {
+  const { chatId, proposalId, fanId, counterMultiplier } = params;
+  const db = getFirestore();
+  const proposalRef  = db.collection('rateProposals').doc(proposalId);
+  const proposalSnap = await proposalRef.get();
+
+  if (!proposalSnap.exists) throw new HttpsError('not-found', `Rate proposal ${proposalId} not found`);
+  const proposal = proposalSnap.data() as RateProposal;
+
+  if (proposal.status !== 'PENDING') {
+    throw new HttpsError('failed-precondition', `Proposal is already ${proposal.status}`);
+  }
+  if (proposal.counterofferUsed) {
+    throw new HttpsError('failed-precondition',
+      'COUNTEROFFER_ALREADY_USED: Fan may submit exactly one counteroffer per proposal.');
+  }
+  if (!ALL_MULTIPLIERS.includes(counterMultiplier)) {
+    throw new HttpsError('invalid-argument', `${counterMultiplier} is not a canonical multiplier`);
+  }
+  if (counterMultiplier >= proposal.proposedMultiplier) {
+    throw new HttpsError('invalid-argument',
+      'Counteroffer must be lower than the creator\'s proposed multiplier');
+  }
+
+  const batch = db.batch();
+  batch.update(proposalRef, {
+    status:              'COUNTEROFFERED',
+    fanCounterMultiplier: counterMultiplier,
+    counterofferUsed:    true,
+    resolvedAt:          FieldValue.serverTimestamp(),
+  });
+  // Keep chat in RATE_PROPOSED state — creator must respond to counteroffer
+  batch.update(db.collection('chats').doc(chatId), {
+    activeRateProposal: proposalId, // still active until creator responds
+    updatedAt:          FieldValue.serverTimestamp(),
+  });
+  await batch.commit();
+}
+
+/**
+ * Creator responds to fan's counteroffer.
+ * COUNTER_ACCEPTED → counteroffer multiplier applied to next session.
+ * COUNTER_DECLINED → chat returns to PAID_ACTIVE at current rate.
+ */
+export async function resolveCounteroffer(params: {
+  chatId: string;
+  proposalId: string;
+  creatorId: string;
+  resolution: 'COUNTER_ACCEPTED' | 'COUNTER_DECLINED';
+}): Promise<void> {
+  const { chatId, proposalId, resolution } = params;
+  const db = getFirestore();
+  const proposalRef  = db.collection('rateProposals').doc(proposalId);
+  const proposalSnap = await proposalRef.get();
+
+  if (!proposalSnap.exists) throw new HttpsError('not-found', `Proposal ${proposalId} not found`);
+  const proposal = proposalSnap.data() as RateProposal;
+  if (proposal.status !== 'COUNTEROFFERED') {
+    throw new HttpsError('failed-precondition', `Proposal is not in COUNTEROFFERED state (is ${proposal.status})`);
+  }
+
+  const batch = db.batch();
+  batch.update(proposalRef, { status: resolution, resolvedAt: FieldValue.serverTimestamp() });
+
+  if (resolution === 'COUNTER_ACCEPTED') {
+    batch.update(db.collection('chats').doc(chatId), {
+      state:              'PAID_ACTIVE',
+      activeRateProposal: null,
+      pendingMultiplier:  proposal.fanCounterMultiplier,
+      updatedAt:          FieldValue.serverTimestamp(),
+    });
+  } else {
+    batch.update(db.collection('chats').doc(chatId), {
+      state:              'PAID_ACTIVE',
+      activeRateProposal: null,
+      updatedAt:          FieldValue.serverTimestamp(),
+    });
+  }
+  await batch.commit();
 }

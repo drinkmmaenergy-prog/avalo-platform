@@ -383,6 +383,25 @@ export {
 } from './payout/canonicalPayoutSystemV2';
 export { c12_stripePayoutWebhook } from './payout/canonicalPayoutWebhookHandler';
 
+// C5/V1: Canonical direct-chat lifecycle callables (both entry modes)
+export {
+  c5_startMatchedChat,
+  c5_requestPaidChat,
+  c5_creatorAcceptPaidChat,
+  c5_creatorDeclinePaidChat,
+  c5_openPaidSessionCall,
+  c5_sendFanMessage,
+  c5_deliverCreatorMessage,
+  c5_fundNewSegment,
+  c5_closePaidSessionCall,
+  c5_proposeRateChange,
+  c5_resolveRateProposal,
+  c5_submitFanCounteroffer,
+  c5_resolveCounteroffer,
+  c5_proposeSessionEnd,
+  c5_resolveSessionEnd,
+} from './chat/canonicalDirectChatCallables';
+
 
 // --- DATING FUNNEL ---
 export * from './datingFunnel';
