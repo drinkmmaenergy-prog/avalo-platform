@@ -357,9 +357,17 @@ export {
   checkCallBalance as checkCallBalance_monetization,
 } from './callMonetization';
 export * from './callPricing';
-export * from './calendar';
-export * from './calendarEngine';
+export * from './calendar';        // billing callables hard-disabled (C11); read/confirm functions remain
+export * from './calendarEngine';  // createBooking already SOFT_LAUNCH_DISABLED
 export * from './calendarFunctions';
+
+// C11: Canonical calendar billing
+export {
+  c11_bookCalendarSlot,
+  c11_confirmCalendarBooking,
+  c11_completeCalendarBooking,
+  c11_cancelCalendarBooking,
+} from './calendar/canonicalCalendarBillingV2';
 
 // --- DATING FUNNEL ---
 export * from './datingFunnel';
@@ -1181,34 +1189,3 @@ console.log('📦 All PACK modules exported and ready for deployment');
 export { ciHealth } from './ciHealth';
 import * as functions from 'firebase-functions';
 
-export const ping = functions.https.onRequest((req, res) => {
-  res.send("OK");
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// MULTI-ROOM CHAT — legacy disabled; replaced by C10 canonical system
-// export * from './chat/multiChatRoom';   // C10: HARD-DISABLED — legacy 65/35 split, Date.now() idempotency, non-refundable 

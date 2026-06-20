@@ -35,14 +35,13 @@ export const bookSlotCallable = onCall(
         escrowTokens: number;
       }>
     > => {
-      if (!request.auth) {
-        throw new HttpsError(
-          "unauthenticated",
-          "Must be authenticated"
+      // C11: HARD-DISABLED — uses phantom users/{uid}/wallet/current paths.
+      // Replace with canonical calendar billing endpoint.
+      throw new HttpsError(
+          "failed-precondition",
+          "X_DISABLED: C11 — phantom wallet billing. Use canonical calendar booking endpoint."
         );
-      }
 
-      const bookerUid = request.auth.uid;
       const {
         earnerUid,
         start,
@@ -268,6 +267,12 @@ export const cancelBookingCallable = onCall(
           "Must be authenticated"
         );
       }
+      // C11: HARD-DISABLED — uses phantom users/{uid}/wallet/current paths.
+      // Use canonical calendar booking endpoint instead.
+      throw new HttpsError(
+          "failed-precondition",
+          "X_DISABLED: C11 — phantom wallet billing. Use canonical calendar booking endpoint."
+        );
 
       const userUid = request.auth.uid;
       const { bookingId, by } = request.data;
@@ -438,6 +443,12 @@ export const verifyMeetingCallable = onCall(
           "Must be authenticated"
         );
       }
+      // C11: HARD-DISABLED — uses phantom users/{uid}/wallet/current paths.
+      // Use canonical calendar booking endpoint instead.
+      throw new HttpsError(
+          "failed-precondition",
+          "X_DISABLED: C11 — phantom wallet billing. Use canonical calendar booking endpoint."
+        );
 
       const userUid = request.auth.uid;
       const { bookingId, method } = request.data;
@@ -605,6 +616,12 @@ export const issueVoluntaryRefundCallable = onCall(
       if (!request.auth) {
         throw new HttpsError("unauthenticated", "Must be authenticated");
       }
+      // C11: HARD-DISABLED — uses phantom users/{uid}/wallet/current paths.
+      // Use canonical calendar booking endpoint instead.
+      throw new HttpsError(
+          "failed-precondition",
+          "X_DISABLED: C11 — phantom wallet billing. Use canonical calendar booking endpoint."
+        );
 
       const earnerId = request.auth.uid;
       const { bookingId, refundPercent, reason } = request.data;

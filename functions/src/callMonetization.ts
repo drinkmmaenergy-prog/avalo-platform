@@ -15,6 +15,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, serverTimestamp, increment, generateId } from './init';
+import { transactTokens, getBalance } from './wallet/walletService'; // C11: canonical wallet
 import { getUserContext, ChatParticipantContext } from './chatMonetization';
 // Trust Engine Integration (Phase 8)
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
@@ -367,12 +368,9 @@ export async function startCall(params: {
     callType
   });
   
-  // Check payer balance
-  const walletRef = db.collection('users').doc(roles.payerId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  const wallet = walletSnap.data();
-  
-  if (!wallet || wallet.balance < roles.pricePerMinute) {
+  // C11: Canonical wallet balance check (wallets/{uid}.balance)
+  const payerBalance = await getBalance(roles.payerId);
+  if (payerBalance < roles.pricePerMinute) {
     throw new HttpsError(
       'failed-precondition',
       `Insufficient tokens. Need at least ${roles.pricePerMinute} tokens for 1 minute.`
@@ -481,68 +479,26 @@ export async function endCall(params: {
       updatedAt: serverTimestamp()
     });
     
-    // Deduct from payer
-    const payerWalletRef = db.collection('users').doc(call.payerId).collection('wallet').doc('current');
-    transaction.update(payerWalletRef, {
-      balance: increment(-totalTokens)
-    });
-    
-    // Credit earner if exists
-    if (call.earnerId && earnerReceived > 0) {
-      const earnerWalletRef = db.collection('users').doc(call.earnerId).collection('wallet').doc('current');
-      transaction.update(earnerWalletRef, {
-        balance: increment(earnerReceived),
-        earned: increment(earnerReceived)
-      });
-      
-      // Record earner transaction
-      const earnerTxRef = db.collection('transactions').doc(generateId());
-      transaction.set(earnerTxRef, {
-        userId: call.earnerId,
-        type: 'call_earning',
-        amount: earnerReceived,
-        metadata: {
-          callId,
-          callType: call.callType,
-          durationMinutes,
-          ratePerMinute: call.pricePerMinute
-        },
-        createdAt: serverTimestamp()
-      });
-    }
-    
-    // Record payer transaction
-    const payerTxRef = db.collection('transactions').doc(generateId());
-    transaction.set(payerTxRef, {
-      userId: call.payerId,
-      type: 'call_charge',
-      amount: -totalTokens,
-      metadata: {
-        callId,
-        callType: call.callType,
-        durationMinutes,
-        ratePerMinute: call.pricePerMinute,
-        earnerId: call.earnerId
-      },
-      createdAt: serverTimestamp()
-    });
-    
-    // Record Avalo revenue transaction
-    if (platformReceived > 0) {
-      const platformTxRef = db.collection('transactions').doc(generateId());
-      transaction.set(platformTxRef, {
-        userId: 'platform_platform',
-        type: 'call_fee',
-        amount: platformReceived,
-        metadata: {
-          callId,
-          callType: call.callType,
-          fromUserId: call.payerId
-        },
-        createdAt: serverTimestamp()
-      });
-    }
+    // C11: Phantom wallet transaction lines removed.
+    // Canonical billing via transactTokens() is called after this state update.
   });
+
+  // C11: Canonical wallet billing (wallets/{uid}.balance via transactTokens)
+  if (totalTokens > 0) {
+    await transactTokens({
+      type: 'CALL_BILL',
+      actorId: call.payerId,
+      counterpartyId: call.earnerId || null,
+      amountTokens: totalTokens,
+      split: {
+        creatorTokens: earnerReceived,
+        avaloTokens:   platformReceived,
+      },
+      idempotencyKey: `call_bill_mono_${callId}`,
+      sessionId: callId,
+      metadata: { callId, durationMinutes, callType: call.callType },
+    });
+  }
   
   logger.info(`Call ended: ${callId} - Duration: ${durationMinutes}min, Cost: ${totalTokens} tokens, Earner: ${earnerReceived}, Avalo: ${platformReceived}`);
   
@@ -694,11 +650,8 @@ export async function checkCallBalance(params: {
   
   const requiredTokens = pricePerMinute * durationMinutes;
   
-  // Check wallet
-  const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  const wallet = walletSnap.data();
-  const userBalance = wallet?.balance || 0;
+  // C11: Canonical wallet read
+  const userBalance = await getBalance(userId);
   
   return {
     hasBalance: userBalance >= requiredTokens,
