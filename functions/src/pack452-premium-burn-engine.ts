@@ -36,6 +36,7 @@ import {
   PremiumMultiplier,
 } from './types/pack452-monetization-vnext.types';
 import { TOKEN_PAYOUT_USD } from './config/economyConfig';
+import { transactTokens } from './wallet/walletService';
 
 // ============================================================================
 // CONSTANTS (unchanged from existing system)
@@ -192,6 +193,10 @@ export async function executePremiumBurn(
 
   const updatedResult = { ...burnResult };
 
+  // Pre-generate a stable ID for both the earningsLedger entry and the
+  // transactTokens idempotency key — ensures exactly-once semantics.
+  const ledgerEntryId = generateId();
+
   await db.runTransaction(async (transaction) => {
     // Get payer wallet
     const walletRef = db.collection('wallets').doc(payerId);
@@ -202,7 +207,7 @@ export async function executePremiumBurn(
     }
 
     const walletData = walletDoc.data()!;
-    const currentBalance = walletData.tokensBalance || 0;
+    const currentBalance = walletData.balance || 0;
     const currentReserved = walletData.reservedTokens || 0;
     const totalBurn = burnResult.totalTokensBurned;
 
@@ -236,27 +241,23 @@ export async function executePremiumBurn(
 
     // HARD INVARIANTS — if any fail, the entire transaction rolls back
     if (newBalance < 0) {
-      throw new Error('WALLET_INVARIANT_VIOLATION: tokensBalance would be negative');
+      throw new Error('WALLET_INVARIANT_VIOLATION: balance would be negative');
     }
     if (newReserved < 0) {
       throw new Error('WALLET_INVARIANT_VIOLATION: reservedTokens would be negative');
     }
     if (newReserved > newBalance) {
-      throw new Error('WALLET_INVARIANT_VIOLATION: reservedTokens would exceed tokensBalance');
+      throw new Error('WALLET_INVARIANT_VIOLATION: reservedTokens would exceed balance');
     }
 
-    // Update payer wallet
-    const walletUpdate: Record<string, any> = {
-      tokensBalance: FieldValue.increment(-totalBurn),
-      lifetimeSpentTokens: FieldValue.increment(totalBurn),
-      lastUpdated: serverTimestamp(),
-    };
-
+    // Update payer wallet: adjust reservedTokens only.
+    // Balance debit is handled by transactTokens() after this transaction closes.
     if (burnFromReserved > 0) {
-      walletUpdate.reservedTokens = FieldValue.increment(-burnFromReserved);
+      transaction.update(walletRef, {
+        reservedTokens: FieldValue.increment(-burnFromReserved),
+        lastUpdated: serverTimestamp(),
+      });
     }
-
-    transaction.update(walletRef, walletUpdate);
 
     // ================================================================
     // PACK 452 HARD PATCH: Track burnedFromReserved on the offer doc
@@ -270,15 +271,7 @@ export async function executePremiumBurn(
       });
     }
 
-    // Credit earner
-    if (burnResult.earnerReceives > 0) {
-      const earnerWalletRef = db.collection('wallets').doc(earnerId);
-      transaction.update(earnerWalletRef, {
-        tokensBalance: FieldValue.increment(burnResult.earnerReceives),
-        lifetimeEarnedTokens: FieldValue.increment(burnResult.earnerReceives),
-        lastUpdated: serverTimestamp(),
-      });
-    }
+    // Earner credit is handled by transactTokens() after this transaction closes.
 
     // Credit platform
     if (burnResult.platformReceives > 0) {
@@ -300,7 +293,7 @@ export async function executePremiumBurn(
     });
 
     // Record ledger entry with premium fields + PACK 452 audit fields
-    const ledgerRef = db.collection('earningsLedger').doc(generateId());
+    const ledgerRef = db.collection('earningsLedger').doc(ledgerEntryId);
     transaction.set(ledgerRef, {
       chatId,
       payerId,
@@ -385,6 +378,31 @@ export async function executePremiumBurn(
     }
   });
 
+  // Canonical wallet debit (payer) and credit (earner + platform) via walletService.
+  // Must NOT be nested inside runTransaction — walletService manages its own transaction.
+  await transactTokens({
+    type: 'CHAT_BURN',
+    actorId: payerId,
+    counterpartyId: earnerId,
+    amountTokens: burnResult.totalTokensBurned,
+    split: {
+      creatorTokens: burnResult.earnerReceives,
+      avaloTokens: burnResult.platformReceives,
+    },
+    idempotencyKey: `premium_burn_${chatId}_${payerId}_${ledgerEntryId}`,
+    metadata: {
+      chatId,
+      payerId,
+      earnerId,
+      multiplier: burnResult.multiplier,
+      offerId: burnResult.ledgerFields.offerId,
+      burnedFromReserved: updatedResult.burnedFromReserved,
+      burnedFromAvailable: updatedResult.burnedFromAvailable,
+      pricingMode: burnResult.ledgerFields.pricingMode,
+      exclusiveFlag: burnResult.ledgerFields.exclusiveFlag,
+    },
+  });
+
   return updatedResult;
 }
 
@@ -460,31 +478,3 @@ export async function getChatBurnParameters(chatId: string): Promise<{
     wordsPerToken,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

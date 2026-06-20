@@ -175,7 +175,7 @@ export async function createPremiumOffer(
       }
 
       const walletData = walletDoc.data()!;
-      const currentBalance = walletData.tokensBalance || 0;
+      const currentBalance = walletData.balance || 0;   // canonical: wallets/{uid}.balance
       const currentReserved = walletData.reservedTokens || 0;
       const availableTokens = currentBalance - currentReserved;
 
@@ -703,22 +703,6 @@ export async function releasePremiumOnChatEnd(chatId: string): Promise<void> {
     }
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
