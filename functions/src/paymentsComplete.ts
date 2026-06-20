@@ -530,57 +530,34 @@ export const validateAppleReceipt = onCall(
       // Extract token amount from product ID (e.g., "platform.tokens.standard.500")
       const tokens = extractTokensFromProductId(productId);
 
-      // Credit user atomically
-      await db.runTransaction(async (tx) => {
-        const walletRef = db.collection("users").doc(userId).collection("wallet").doc("main");
-        const walletSnap = await tx.get(walletRef);
-        const currentBalance = walletSnap.exists ? ((walletSnap.data() as UserWallet).balance || 0) : 0;
-
-        if (!walletSnap.exists) {
-          const newWallet: UserWallet = {
-            userId,
-            balance: 0,
-            pendingBalance: 0,
-            earnedBalance: 0,
-            spentBalance: 0,
-            preferredCurrency: "USD",
-            totalDeposits: 0,
-            totalEarnings: 0,
-            totalSpending: 0,
-            totalRefunds: 0,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-          };
-          tx.set(walletRef, newWallet);
-        }
-
-        // Create transaction record
-        const txRef = db.collection("transactions").doc(`tx_apple_${transactionId}`);
-        const transaction: Transaction = {
-          txId: `tx_apple_${transactionId}`,
-          userId,
-          type: "deposit",
-          subtype: "token_purchase",
-          tokens,
-          provider: PaymentProvider.APPLE_IAP,
-          providerTxId: transactionId,
-          status: "completed",
-          balanceBefore: currentBalance,
-          balanceAfter: currentBalance + tokens,
-          description: `Purchased ${tokens} tokens via Apple IAP`,
-          metadata: { productId },
-          createdAt: Timestamp.now(),
-          completedAt: Timestamp.now(),
-        };
-        tx.set(txRef, transaction);
-
-        // Update wallet
-        tx.update(walletRef, {
-          balance: FieldValue.increment(tokens),
-          totalDeposits: FieldValue.increment(tokens),
-          updatedAt: FieldValue.serverTimestamp(),
-        });
+      // ── Canonical credit (atomic, idempotent, writes ledger) ─────────────────
+      // Idempotent by Apple transactionId — duplicate receipts are a no-op.
+      // Replaces phantom users/{uid}/wallet/main write.
+      const { txId: walletTxId, newBalance } = await creditTokens({
+        userId,
+        amountTokens: tokens,
+        type: 'PURCHASE',
+        idempotencyKey: `apple_iap_${transactionId}`,
+        metadata: { productId, transactionId, platform: 'ios', provider: 'apple_iap' },
       });
+
+      // Audit record (non-wallet, idempotent doc set)
+      await db.collection('transactions').doc(`tx_apple_${transactionId}`).set({
+        txId: `tx_apple_${transactionId}`,
+        userId,
+        type: 'deposit',
+        subtype: 'token_purchase',
+        tokens,
+        provider: PaymentProvider.APPLE_IAP,
+        providerTxId: transactionId,
+        status: 'completed',
+        walletTxId,
+        newBalance,
+        description: `Purchased ${tokens} tokens via Apple IAP`,
+        metadata: { productId },
+        createdAt: Timestamp.now(),
+        completedAt: Timestamp.now(),
+      }, { merge: true });
 
       await logServerEvent("tokens_credited", userId, {
         tokens,
@@ -639,6 +616,14 @@ function extractTokensFromProductId(productId: string): number {
 export const initiateChat = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [SOFT_LAUNCH_DISABLED] V1 initiateChat superseded by V9 sendChatMessage
+    // (chatSystemNextGen). All active billing now goes through canonical-chat-engine
+    // → transactTokens(). This function must not execute any wallet operations.
+    throw new HttpsError(
+      'unavailable',
+      '[SOFT_LAUNCH_DISABLED] initiateChat is disabled. Use V9 sendChatMessage.'
+    );
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -787,6 +772,12 @@ export const initiateChat = onCall(
 export const releaseEscrowIncremental = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [SOFT_LAUNCH_DISABLED] V1 escrow superseded by V9 canonical-chat-engine.
+    throw new HttpsError(
+      'unavailable',
+      '[SOFT_LAUNCH_DISABLED] releaseEscrowIncremental is disabled. V9 chat handles billing.'
+    );
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -875,6 +866,10 @@ export const autoRefundInactiveEscrows = onSchedule(
     region: "europe-west1",
   },
   async () => {
+    // [SOFT_LAUNCH_DISABLED] V1 escrow scheduler disabled — no active V1 escrows exist.
+    logger.warn('[SOFT_LAUNCH_DISABLED] autoRefundInactiveEscrows: skipping (V1 escrow disabled)');
+    return;
+
     const now = Timestamp.now();
 
     const escrowsSnap = await db.collection("escrow")
@@ -1163,6 +1158,12 @@ logger.info("✅ Complete payment system loaded successfully");
 export const createCalendarBooking = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [SOFT_LAUNCH_DISABLED] Calendar booking uses phantom wallet paths.
+    throw new HttpsError(
+      'unavailable',
+      '[SOFT_LAUNCH_DISABLED] createCalendarBooking is not available in this release.'
+    );
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -1315,6 +1316,12 @@ export const createCalendarBooking = onCall(
 export const completeCalendarBooking = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [SOFT_LAUNCH_DISABLED] Calendar booking uses phantom wallet paths.
+    throw new HttpsError(
+      'unavailable',
+      '[SOFT_LAUNCH_DISABLED] completeCalendarBooking is not available in this release.'
+    );
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -1414,6 +1421,12 @@ export const completeCalendarBooking = onCall(
 export const cancelCalendarBooking = onCall(
   { region: "europe-west1" },
   async (request) => {
+    // [SOFT_LAUNCH_DISABLED] Calendar booking uses phantom wallet paths.
+    throw new HttpsError(
+      'unavailable',
+      '[SOFT_LAUNCH_DISABLED] cancelCalendarBooking is not available in this release.'
+    );
+
     const userId = request.auth?.uid;
     if (!userId) {
       throw new HttpsError("unauthenticated", "User must be authenticated");
@@ -1720,60 +1733,4 @@ export const getPendingSettlements = onCall(
     }
 
     // Check admin role
-    const userDoc = await db.collection("users").doc(userId).get();
-    const userData = userDoc.data();
-
-    if (!userData?.role || userData.role !== "admin") {
-      throw new HttpsError("permission-denied", "Admin access required");
-    }
-
-    try {
-      const settlementsSnap = await db.collection("settlements")
-        .where("status", "in", ["pending", "processing"])
-        .orderBy("createdAt", "asc")
-        .limit(100)
-        .get();
-
-      const settlements = settlementsSnap.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      return { settlements };
-    } catch (error: any) {
-      logger.error("Error getting pending settlements:", error);
-      throw new HttpsError("internal", `Failed to get settlements: ${error.message}`);
-
-    }
-  }
-);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
