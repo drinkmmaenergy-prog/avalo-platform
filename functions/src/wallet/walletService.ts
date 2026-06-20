@@ -333,7 +333,7 @@ export async function transactTokens(
 export async function creditTokens(params: {
   userId: string;
   amountTokens: number;
-  type: 'PURCHASE' | 'CHAT_REFUND' | 'CALENDAR_REFUND' | 'CALL_ESCROW_RELEASE' | 'AD_REWARD' | 'MIGRATION';
+  type: 'PURCHASE' | 'CHAT_REFUND' | 'CALENDAR_REFUND' | 'CALL_ESCROW_RELEASE' | 'AD_REWARD' | 'MIGRATION' | 'PAYOUT_REVERSAL';
   idempotencyKey: string;
   metadata?: Record<string, unknown>;
 }): Promise<{ txId: string; newBalance: number }> {
@@ -502,49 +502,21 @@ export async function debitForPayout(params: {
 }
 
 // ============================================================================
-// READ-ONLY HELPERS
+// DEBIT FOR REFUND (Stripe refund / purchase reversal)
 // ============================================================================
 
 /**
- * Get the current balance for a user.
- * Uses a fresh read (not cached).
+ * Soft-debit tokens from a user's wallet after a Stripe purchase refund.
+ *
+ * Unlike debitForPayout, this does NOT throw if the user's balance is lower
+ * than the refund amount (tokens may already have been spent). Instead it
+ * debits min(amountTokens, currentBalance) and returns the shortfall so the
+ * caller can log it for manual review.
+ *
+ * @param userId           — user whose tokens are being reclaimed
+ * @param amountTokens     — tokens originally purchased (positive integer)
+ * @param idempotencyKey   — unique key; idempotent by Stripe charge/event ID
+ * @param metadata         — optional context (chargeId, purchaseId, etc.)
+ * @returns tokensDebited, shortfall, newBalance, txId
  */
-export async function getBalance(userId: string): Promise<number> {
-  const snap = await walletRef(userId).get();
-  if (!snap.exists) return 0;
-  return (snap.data() as WalletDocument).balance;
-}
-
-/**
- * Get the full wallet document for a user.
- */
-export async function getWallet(userId: string): Promise<WalletDocument | null> {
-  const snap = await walletRef(userId).get();
-  if (!snap.exists) return null;
-  return snap.data() as WalletDocument;
-}
-
-/**
- * Get the platform wallet balance.
- */
-export async function getPlatformBalance(): Promise<number> {
-  const snap = await platformWalletRef().get();
-  if (!snap.exists) return 0;
-  return (snap.data() as WalletDocument).balance;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export async function debitForRefund(params: 

@@ -3,12 +3,29 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 /**
  * PACK 390 - GLOBAL PAYOUT ENGINE
  * Handles bank transfers, SEPA, SWIFT, Wise, and Stripe Connect payouts
+ *
+ * CANONICALIZED (Phase 3A-4):
+ *   - Balance checks: walletService.getBalance() → wallets/{uid}.balance
+ *   - Token debit:    walletService.debitForPayout() — atomic + idempotent + ledger
+ *   - Token reversal: walletService.creditTokens(PAYOUT_REVERSAL) — atomic + idempotent + ledger
+ *   - Replaces:       users/{uid}.tokens (phantom field, always 0 in prod)
+ *
+ * PAYOUT STATE MACHINE:
+ *   PENDING → AML_REVIEW → APPROVED → PROCESSING → COMPLETED
+ *                                                  → FAILED → [manual reversal]
+ *   APPROVED → FROZEN (admin action)
+ *
+ * IDEMPOTENCY:
+ *   - Wallet debit: idempotencyKey = `payout_debit_{payoutId}`
+ *   - Payout reversal: idempotencyKey = `payout_reversal_{payoutId}`
+ *   - Re-delivery of executeBankPayout is safe: status guard prevents re-debit.
  */
 
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { FieldValue, HttpsError, auth, increment, onCall, serverTimestamp, timestamp } from './runtime';
 import { TOKEN_PAYOUT_USD } from './config/economyConfig';
+import { getBalance, debitForPayout, creditTokens } from './wallet/walletService';
 
 const db = admin.firestore();
 
@@ -88,8 +105,8 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
       );
     }
     
-    // Check token balance
-    const tokenBalance = userData.tokens || 0;
+    // Check canonical token balance (wallets/{uid}.balance)
+    const tokenBalance = await getBalance(userId);
     if (tokenBalance < tokens) {
       throw new functions.https.HttpsError('failed-precondition', 'Insufficient token balance');
     }
@@ -196,19 +213,41 @@ export const pack390_executeBankPayout = functions.https.onCall(async (request) 
     
     // Check if payout is in approved state
     if (payoutData.status !== PayoutStatus.APPROVED) {
+      // Idempotent guard: already completed payouts return success without re-processing
+      if (payoutData.status === PayoutStatus.COMPLETED) {
+        return {
+          success: true,
+          payoutId,
+          transferId: payoutData.transferId || null,
+          message: 'Payout already completed (idempotent)'
+        };
+      }
       throw new functions.https.HttpsError(
         'failed-precondition',
         `Payout must be approved. Current status: ${payoutData.status}`
       );
     }
-    
-    // Update status to processing
+
+    // ── CANONICAL DEBIT (must happen BEFORE external transfer) ───────────────
+    // debitForPayout is atomic + idempotent + writes canonical ledger entry.
+    // If this throws (e.g. insufficient balance), payout is aborted cleanly —
+    // no external transfer is initiated and no money leaves the platform.
+    // idempotencyKey is deterministic so re-running executeBankPayout after a
+    // crash between debit and transfer is safe: debit is skipped on retry.
+    await debitForPayout({
+      userId: payoutData.userId,
+      amountTokens: payoutData.tokens,
+      idempotencyKey: `payout_debit_${payoutId}`,
+      payoutId,
+    });
+
+    // Update status to processing (after debit succeeded)
     await payoutRef.update({
       status: PayoutStatus.PROCESSING,
       processingStartedAt: admin.firestore.FieldValue.serverTimestamp(),
       processedBy: request.auth.uid
     });
-    
+
     // Execute payout based on method
     let transferResult;
     switch (payoutData.method) {
@@ -225,23 +264,24 @@ export const pack390_executeBankPayout = functions.https.onCall(async (request) 
         transferResult = await executeStripeConnectTransfer(payoutData);
         break;
       default:
+        // Revert status on unsupported method (debit already applied — needs reversal)
+        await payoutRef.update({
+          status: PayoutStatus.FAILED,
+          failedAt: admin.firestore.FieldValue.serverTimestamp(),
+          failureReason: 'Unsupported payout method',
+        });
         throw new functions.https.HttpsError('unimplemented', 'Payment method not implemented');
     }
-    
+
     if (transferResult.success) {
-      // Deduct tokens from user balance
-      await db.collection('users').doc(payoutData.userId).update({
-        tokens: admin.firestore.FieldValue.increment(-payoutData.tokens)
-      });
-      
-      // Update payout status
+      // Update payout status to COMPLETED (tokens already debited above)
       await payoutRef.update({
         status: PayoutStatus.COMPLETED,
         completedAt: admin.firestore.FieldValue.serverTimestamp(),
         transferId: transferResult.transferId,
         transferDetails: transferResult.details
       });
-      
+
       // Create fiat ledger entry
       await db.collection('fiatLedgers').add({
         userId: payoutData.userId,
@@ -253,7 +293,7 @@ export const pack390_executeBankPayout = functions.https.onCall(async (request) 
         method: payoutData.method,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
-      
+
       // Log to audit trail
       await db.collection('financialAuditLogs').add({
         type: 'payout_executed',
@@ -267,22 +307,24 @@ export const pack390_executeBankPayout = functions.https.onCall(async (request) 
         executedBy: request.auth.uid,
         timestamp: admin.firestore.FieldValue.serverTimestamp()
       });
-      
+
       return {
         success: true,
         payoutId,
         transferId: transferResult.transferId,
         message: 'Payout executed successfully'
       };
-      
+
     } else {
-      // Mark as failed
+      // Transfer failed after token debit. Mark as FAILED.
+      // Tokens remain debited until admin calls pack390_reverseFailedTransfer,
+      // which credits them back via creditTokens(PAYOUT_REVERSAL).
       await payoutRef.update({
         status: PayoutStatus.FAILED,
         failedAt: admin.firestore.FieldValue.serverTimestamp(),
         failureReason: transferResult.error
       });
-      
+
       throw new functions.https.HttpsError('internal', `Transfer failed: ${transferResult.error}`);
     }
     
@@ -331,11 +373,16 @@ export const pack390_reverseFailedTransfer = functions.https.onCall(async (reque
       );
     }
     
-    // Refund tokens to user
-    await db.collection('users').doc(payoutData.userId).update({
-      tokens: admin.firestore.FieldValue.increment(payoutData.tokens)
+    // Canonical credit back to user's wallet (wallets/{uid}.balance) + ledger entry.
+    // Idempotent: re-running reversal for same payoutId is a no-op on wallet.
+    await creditTokens({
+      userId: payoutData.userId,
+      amountTokens: payoutData.tokens,
+      type: 'PAYOUT_REVERSAL',
+      idempotencyKey: `payout_reversal_${payoutId}`,
+      metadata: { payoutId, reversedBy: request.auth.uid, reason },
     });
-    
+
     // Update payout status
     await payoutRef.update({
       status: PayoutStatus.REVERSED,
@@ -420,121 +467,4 @@ function sanitizeBankDetails(bankDetails: any) {
 
 async function triggerAMLScan(
   userId: string,
-  payoutId: string,
-  tokens: number,
-  currency: string,
-  fiatAmount: number
-) {
-  // This will be implemented in pack390-aml.ts
-  // For now, create a placeholder scan request
-  await db.collection('amlScans').add({
-    userId,
-    payoutId,
-    tokens,
-    currency,
-    fiatAmount,
-    scanType: 'payout',
-    status: 'pending',
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
-}
-
-// Mock transfer functions (to be integrated with real payment providers)
-async function executeSEPATransfer(payoutData: any) {
-  // TODO: Integrate with SEPA payment provider
-  console.log('Executing SEPA transfer:', payoutData);
-  return {
-    success: true,
-    transferId: `SEPA_${Date.now()}`,
-    details: { method: 'sepa_instant' }
-  };
-}
-
-async function executeSWIFTTransfer(payoutData: any) {
-  // TODO: Integrate with SWIFT payment provider
-  console.log('Executing SWIFT transfer:', payoutData);
-  return {
-    success: true,
-    transferId: `SWIFT_${Date.now()}`,
-    details: { method: 'swift' }
-  };
-}
-
-async function executeWiseTransfer(payoutData: any) {
-  // TODO: Integrate with Wise API
-  console.log('Executing Wise transfer:', payoutData);
-  return {
-    success: true,
-    transferId: `WISE_${Date.now()}`,
-    details: { method: 'wise' }
-  };
-}
-
-async function executeStripeConnectTransfer(payoutData: any) {
-  // TODO: Integrate with Stripe Connect
-  console.log('Executing Stripe Connect transfer:', payoutData);
-  return {
-    success: true,
-    transferId: `STRIPE_${Date.now()}`,
-    details: { method: 'stripe_connect' }
-  };
-}
-
-/**
- * Get user's payout history
- */
-export const pack390_getPayoutHistory = functions.https.onCall(async (request) => {
-  const data = request.data;
-  if (!request.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
-  }
-  
-  const userId = request.auth.uid;
-  const { limit = 20 } = data;
-  
-  try {
-    const payoutsSnapshot = await db.collection('payoutRequests')
-      .where('userId', '==', userId)
-      .orderBy('requestedAt', 'desc')
-      .limit(limit)
-      .get();
-    
-    const payouts = payoutsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      // Remove sensitive bank details
-      bankDetails: undefined
-    }));
-    
-    return { payouts };
-    
-  } catch (error) {
-    console.error('Get payout history error:', error);
-    throw new functions.https.HttpsError('internal', error.message);
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  payoutId: string,

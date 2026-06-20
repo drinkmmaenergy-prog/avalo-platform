@@ -140,6 +140,9 @@ export type LedgerEntryType =
   | 'CHAT_BURN'
   | 'CHAT_REFUND'
   | 'PURCHASE'
+  | 'PURCHASE_REFUND'
+  | 'PAYOUT'
+  | 'PAYOUT_REVERSAL'
   | 'SUBSCRIPTION'
   | 'SUBSCRIPTION_PAYMENT'
   | 'TIP'
@@ -156,7 +159,6 @@ export type LedgerEntryType =
   | 'CALENDAR_RELEASE'
   | 'AD_REWARD'
   | 'MIGRATION'
-  | 'PAYOUT'
   | 'DROP_PURCHASE';
 
 // ============================================================================
@@ -337,4 +339,4 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
 /**
  * Payout requests collection.
  */
-export const PAYOUT_REQUESTS_COLLECTION = 'payout_requests';
+export const PAY
