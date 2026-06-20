@@ -1210,10 +1210,5 @@ export const ping = functions.https.onRequest((req, res) => {
 
 
 
-// MULTI-ROOM CHAT
-export * from './chat/multiChatRoom';
-export * from './chat/priorityReply';
-
-// MULTI-ROOM CHAT MONETIZATION
-export * from './chat/multiChatRoom';
-export * from './chat/priorityReply';
+// MULTI-ROOM CHAT — legacy disabled; replaced by C10 canonical system
+// export * from './chat/multiChatRoom';   // C10: HARD-DISABLED — legacy 65/35 split, Date.now() idempotency, non-refundable 
