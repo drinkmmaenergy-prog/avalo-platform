@@ -341,66 +341,12 @@ export const joinClub = functions.https.onCall(async (request) => {
       let ownerEarnings = 0;
 
       if (club.accessType === ClubAccessType.TOKEN_GATED && club.entryTokens > 0) {
-        const userTokens = userData.tokenBalance || 0;
-
-        if (userTokens < club.entryTokens) {
-          throw new functions.https.HttpsError(
-            'failed-precondition',
-            `Insufficient tokens. Need ${club.entryTokens}, have ${userTokens}`
-          );
-        }
-
-        // Calculate split (65/35)
-        platformFee = Math.floor(club.entryTokens * MONETIZATION_SPLITS.CHAT.platform);
-        ownerEarnings = club.entryTokens - platformFee;
-
-        // Process payment in transaction
-        await db.runTransaction(async (transaction) => {
-          const userRef = db.collection('users').doc(userId);
-          const ownerRef = db.collection('users').doc(club.ownerId);
-          const clubRef = db.collection('clubs').doc(clubId);
-
-          const userSnapshot = await transaction.get(userRef);
-          const currentBalance = userSnapshot.data()?.tokenBalance || 0;
-
-          if (currentBalance < club.entryTokens) {
-            throw new Error('Insufficient tokens');
-          }
-
-          // Deduct from user
-          transaction.update(userRef, {
-            tokenBalance: increment(-club.entryTokens),
-          });
-
-          // Add to owner
-          transaction.update(ownerRef, {
-            tokenBalance: increment(ownerEarnings),
-            lifetimeEarnings: increment(ownerEarnings),
-          });
-
-          // Update club revenue
-          transaction.update(clubRef, {
-            totalRevenue: increment(club.entryTokens),
-            platformFee: increment(platformFee),
-            ownerEarnings: increment(ownerEarnings),
-            memberCount: increment(1),
-          });
-
-          // Create transaction record
-          transactionId = generateId();
-          const transactionRecord = {
-            transactionId,
-            type: 'CLUB_ENTRY',
-            fromUserId: userId,
-            toUserId: club.ownerId,
-            amount: club.entryTokens,
-            platformFee,
-            ownerEarnings,
-            clubId,
-            createdAt: serverTimestamp(),
-          };
-          transaction.set(db.collection('transactions').doc(transactionId), transactionRecord);
-        });
+        // [SOFT_LAUNCH_DISABLED] Token-gated clubs use phantom users/{uid}.tokenBalance.
+        // Hard-disabled until clubs are migrated to walletService canonical paths.
+        throw new functions.https.HttpsError(
+          'unavailable',
+          '[SOFT_LAUNCH_DISABLED] Token-gated clubs are not available in this release.'
+        );
       } else {
         // Free club - just increment members
         await db.collection('clubs').doc(clubId).update({
@@ -1099,3 +1045,4 @@ export const getClubAnalytics = functions.https.onCall(async (request) => {
 
 
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

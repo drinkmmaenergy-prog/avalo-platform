@@ -292,66 +292,12 @@ export const joinChallenge = functions.https.onCall(async (request) => {
       let earnerEarnings = 0;
 
       if (challenge.isPaid && challenge.entryTokens > 0) {
-        const userTokens = userData.tokenBalance || 0;
-
-        if (userTokens < challenge.entryTokens) {
-          throw new functions.https.HttpsError(
-            'failed-precondition',
-            `Insufficient tokens. Need ${challenge.entryTokens}, have ${userTokens}`
-          );
-        }
-
-        // Calculate split
-        platformFee = Math.floor(challenge.entryTokens * MONETIZATION_SPLITS.CHAT.platform);
-        earnerEarnings = challenge.entryTokens - platformFee;
-
-        // Process payment in transaction
-        await db.runTransaction(async (transaction) => {
-          const userRef = db.collection('users').doc(userId);
-          const earnerRef = db.collection('users').doc(challenge.earnerId);
-          const challengeRef = db.collection('challenges').doc(challengeId);
-
-          const userSnapshot = await transaction.get(userRef);
-          const currentBalance = userSnapshot.data()?.tokenBalance || 0;
-
-          if (currentBalance < challenge.entryTokens) {
-            throw new Error('Insufficient tokens');
-          }
-
-          // Deduct from user
-          transaction.update(userRef, {
-            tokenBalance: increment(-challenge.entryTokens),
-          });
-
-          // Add to earner
-          transaction.update(earnerRef, {
-            tokenBalance: increment(earnerEarnings),
-            lifetimeEarnings: increment(earnerEarnings),
-          });
-
-          // Update challenge revenue
-          transaction.update(challengeRef, {
-            totalRevenue: increment(challenge.entryTokens),
-            platformFee: increment(platformFee),
-            earnerEarnings: increment(earnerEarnings),
-            currentParticipants: increment(1),
-          });
-
-          // Create transaction record
-          transactionId = generateId();
-          const transactionRecord = {
-            transactionId,
-            type: 'CHALLENGE_ENTRY',
-            fromUserId: userId,
-            toUserId: challenge.earnerId,
-            amount: challenge.entryTokens,
-            platformFee,
-            earnerEarnings,
-            challengeId,
-            createdAt: serverTimestamp(),
-          };
-          transaction.set(db.collection('transactions').doc(transactionId), transactionRecord);
-        });
+        // [SOFT_LAUNCH_DISABLED] Paid challenges use phantom users/{uid}.tokenBalance.
+        // Hard-disabled until challenges are migrated to walletService canonical paths.
+        throw new functions.https.HttpsError(
+          'unavailable',
+          '[SOFT_LAUNCH_DISABLED] Paid challenges are not available in this release.'
+        );
       } else {
         // Free challenge - just increment participants
         await db.collection('challenges').doc(challengeId).update({
@@ -956,20 +902,16 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
       for (const doc of participantsSnapshot.docs) {
         const participant = doc.data() as ChallengeParticipant;
 
+        // [SOFT_LAUNCH_DISABLED] Paid challenge refund path uses phantom tokenBalance.
+        // Skip token operations — paid challenges were disabled at join time,
+        // so no real tokens were debited; paidTokens should always be 0 here.
         if (participant.paidTokens > 0) {
-          // Refund to user
-          const userRef = db.collection('users').doc(participant.userId);
-          batch.update(userRef, {
-            tokenBalance: increment(participant.paidTokens),
+          // Log for audit: this should not happen in soft launch.
+          console.warn('[SOFT_LAUNCH_DISABLED] cancelChallenge: found participant with paidTokens > 0 — skipping phantom refund', {
+            participantId: participant.userId,
+            paidTokens: participant.paidTokens,
+            challengeId,
           });
-
-          // Deduct from earner
-          const earnerRef = db.collection('users').doc(challenge.earnerId);
-          batch.update(earnerRef, {
-            tokenBalance: increment(-participant.earnerEarnings),
-            lifetimeEarnings: increment(-participant.earnerEarnings),
-          });
-
           refundedCount++;
         }
 
@@ -1031,3 +973,4 @@ export const cancelChallenge = functions.https.onCall(async (request) => {
 
 
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
