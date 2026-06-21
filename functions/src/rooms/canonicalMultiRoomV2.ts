@@ -102,13 +102,18 @@ export interface RoomDocument {
 }
 
 export interface ParticipantDocument {
-  userId:          string;
-  status:          ParticipantStatus;
-  reservedTokens:  number;
-  earnedByCreator: boolean;
-  joinedAt:        FirebaseFirestore.FieldValue;
-  leftAt?:         FirebaseFirestore.FieldValue;
-  idempotencyKey:  string;
+  userId:                   string;
+  status:                   ParticipantStatus;
+  /** G4: tokens held in escrow at join time. Immutable after join. */
+  entryReservationTokens:   number;
+  /** G4: remaining budget not yet consumed. Starts = entryReservationTokens; decreases on spend. */
+  remainingRoomBudgetTokens: number;
+  /** G4: tokens consumed so far. Starts = 0; increases on spend. */
+  roomSpentTokens:           number;
+  earnedByCreator:          boolean;
+  joinedAt:                 FirebaseFirestore.FieldValue;
+  leftAt?:                  FirebaseFirestore.FieldValue;
+  idempotencyKey:           string;
 }
 
 // ── Firestore refs ────────────────────────────────────────────────────────────
@@ -261,7 +266,7 @@ export async function joinRoom(params: {
   userId:         string;
   roomId:         string;
   idempotencyKey: string;
-}): Promise<{ reservedTokens: number; participantCount: number }> {
+}): Promise<{ entryReservationTokens: number; participantCount: number }> {
   const { userId, roomId } = params;
   const iKey = validateIdempotencyKey(params.idempotencyKey);
   await requireVerifiedAdult(userId);
@@ -287,7 +292,7 @@ export async function joinRoom(params: {
       const rSnap = await t.get(roomDocRef(roomId));
       const p = pSnap.data() as ParticipantDocument;
       const r = rSnap.data() as RoomDocument;
-      return { reservedTokens: p.reservedTokens, participantCount: r.participantCount };
+      return { entryReservationTokens: p.entryReservationTokens, participantCount: r.participantCount };
     }
 
     const entryTokens   = room.entryTokens;
@@ -310,11 +315,13 @@ export async function joinRoom(params: {
 
     const pDoc: ParticipantDocument = {
       userId,
-      status:          'ACTIVE',
-      reservedTokens:  entryTokens,
-      earnedByCreator: false,
-      joinedAt:        FieldValue.serverTimestamp(),
-      idempotencyKey:  fullKey,
+      status:                    'ACTIVE',
+      entryReservationTokens:    entryTokens,    // G4: immutable entry amount
+      remainingRoomBudgetTokens: entryTokens,    // G4: starts full, decreases on spend
+      roomSpentTokens:           0,              // G4: starts 0, increases on spend
+      earnedByCreator:           false,
+      joinedAt:                  FieldValue.serverTimestamp(),
+      idempotencyKey:            fullKey,
     };
     t.set(participantDocRef(roomId, userId), pDoc);
     t.update(roomDocRef(roomId), {
@@ -329,7 +336,7 @@ export async function joinRoom(params: {
     });
 
     return {
-      reservedTokens:  entryTokens,
+      entryReservationTokens: entryTokens,
       participantCount: room.participantCount + 1,
     };
   });
@@ -360,7 +367,7 @@ export async function leaveRoom(params: {
       throw new HttpsError('failed-precondition', 'Not an active participant');
     }
     const p = pSnap.data() as ParticipantDocument;
-    const tokensToReturn = p.earnedByCreator ? 0 : p.reservedTokens;
+    const tokensToReturn = p.earnedByCreator ? 0 : p.remainingRoomBudgetTokens; // G4: return what's left
 
     if (tokensToReturn > 0) {
       t.update(walletRef(userId), {
@@ -445,7 +452,7 @@ export async function deliverCreatorRoomMessage(params: {
       for (const pDoc of unearnedSnap.docs) {
         const p = pDoc.data() as ParticipantDocument;
         t.update(participantDocRef(roomId, p.userId), { earnedByCreator: true });
-        tokensEarned += p.reservedTokens;
+        tokensEarned += p.entryReservationTokens; // G4: creator earns the full entry reservation
       }
 
       if (tokensEarned > 0) {
@@ -904,13 +911,13 @@ export async function moderateParticipant(params: {
       });
       // F4: ban/kick releases unearned entry reservation back to fan wallet.
       // If earnedByCreator=true the entry was already settled as creator earning — no refund.
-      if (!p.earnedByCreator && p.reservedTokens > 0) {
+      if (!p.earnedByCreator && p.remainingRoomBudgetTokens /* G4 */ > 0) {
         t.update(walletRef(p.userId), {
-          balance:   FieldValue.increment(p.reservedTokens),
+          balance:   FieldValue.increment(p.remainingRoomBudgetTokens /* G4 */),
           updatedAt: FieldValue.serverTimestamp(),
         });
         t.update(roomDocRef(roomId), {
-          escrowReturnedTokens: FieldValue.increment(p.reservedTokens),
+          escrowReturnedTokens: FieldValue.increment(p.remainingRoomBudgetTokens /* G4 */),
         });
       }
     }
@@ -952,14 +959,14 @@ export async function closeRoom(params: {
   for (const pDoc of unearnedSnap.docs) {
     const p = pDoc.data() as ParticipantDocument;
     batch.update(walletRef(p.userId), {
-      balance:   FieldValue.increment(p.reservedTokens),
+      balance:   FieldValue.increment(p.remainingRoomBudgetTokens /* G4 */),
       updatedAt: FieldValue.serverTimestamp(),
     });
     batch.update(participantDocRef(roomId, p.userId), {
       status: 'LEFT',
       leftAt: FieldValue.serverTimestamp(),
     });
-    tokensReturned += p.reservedTokens;
+    tokensReturned += p.remainingRoomBudgetTokens /* G4 */;
   }
 
   batch.update(roomDocRef(roomId), {
