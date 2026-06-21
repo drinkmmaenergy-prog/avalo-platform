@@ -14,7 +14,11 @@
     "test:emulator": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 jest --testPathPattern=tests/integration --runInBand --forceExit",
     "test:rules": "firebase emulators:exec --only firestore,auth \"jest --testPathPattern=tests/rules --runInBand --forceExit\"",
     "test:storage-rules": "firebase emulators:exec --only storage \"jest --testPathPattern=tests/storage --runInBand --forceExit\"",
-    "validate:deploy": "npm run build && echo \"BUILD_VALIDATED \u2014 run: firebase deploy --only functions --dry-run\""
+    "validate:deploy": "npm run build && echo \"BUILD_VALIDATED \u2014 run: firebase deploy --only functions --dry-run\"",
+    "test:callable-auth": "jest --testPathPattern=tests/callable --runInBand --forceExit",
+    "test:schedulers": "jest --testPathPattern=tests/schedulers --runInBand --forceExit",
+    "test:g6b": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 jest --testPathPattern=g6b-mandatory-proof --runInBand --forceExit --verbose",
+    "test:all-unit": "jest --testPathPattern=\"__tests__|tests/unit\" --runInBand --forceExit"
   },
   "engines": {
     "node": "20"
