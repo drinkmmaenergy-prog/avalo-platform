@@ -855,7 +855,8 @@ export const enrollInCurriculum = onCall(
       // Check buyer balance
       const buyerRef = db.collection("users").doc(userId);
       const buyerDoc = await transaction.get(buyerRef);
-      const buyerBalance = buyerDoc.data()?.tokenBalance || 0;
+      throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+      const buyerBalance = 0;  // [P2] stub — unreachable; satisfies TS
 
       if (buyerBalance < priceTokens) {
         throw new HttpsError("failed-precondition", "Insufficient tokens");
@@ -977,7 +978,8 @@ export const scheduleMentorshipSession = onCall(
       // Check balance
       const userRef = db.collection("users").doc(userId);
       const userDoc = await transaction.get(userRef);
-      const userBalance = userDoc.data()?.tokenBalance || 0;
+      throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+      const userBalance = 0;  // [P2] stub — unreachable; satisfies TS
 
       if (userBalance < priceTokens) {
         throw new HttpsError("failed-precondition", "Insufficient tokens");

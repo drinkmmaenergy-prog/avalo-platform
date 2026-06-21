@@ -404,7 +404,8 @@ export const purchasePPVTicket = onCall(async (request) => {
   
   // Check user balance
   const userDoc = await db.collection('users').doc(userId).get();
-  const userBalance = userDoc.data()?.tokenBalance || 0;
+  throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+  const userBalance = 0;  // [P2] stub — unreachable; satisfies TS
   
   if (userBalance < ticketPrice) {
     throw new HttpsError(
@@ -529,7 +530,8 @@ export const sendLiveStreamGift = onCall(async (request) => {
   
   // Check sender balance
   const senderDoc = await db.collection('users').doc(senderId).get();
-  const senderBalance = senderDoc.data()?.tokenBalance || 0;
+  throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+  const senderBalance = 0;  // [P2] stub — unreachable; satisfies TS
   const senderName = senderDoc.data()?.displayName || 'Anonymous';
   
   if (senderBalance < tokenValue) {

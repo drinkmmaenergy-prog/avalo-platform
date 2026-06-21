@@ -335,7 +335,8 @@ async function lockTokensInEscrow(
   }
 
   const walletData = clientWallet.data();
-  const currentBalance = walletData?.tokenBalance || 0;
+  throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+  const currentBalance = 0;  // [P2] stub — unreachable; satisfies TS
 
   if (currentBalance < tokensLocked) {
     throw new Error(`Insufficient tokens. Required: ${tokensLocked}, Available: ${currentBalance}`);
@@ -359,7 +360,8 @@ async function lockTokensInEscrow(
   // Atomic transaction: deduct tokens and create escrow
   await db.runTransaction(async (transaction) => {
     const freshWallet = await transaction.get(clientWalletRef);
-    const freshBalance = freshWallet.data()?.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const freshBalance = 0;  // [P2] stub — unreachable; satisfies TS
 
     if (freshBalance < tokensLocked) {
       throw new Error('Insufficient tokens (transaction check)');

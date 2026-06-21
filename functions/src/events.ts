@@ -624,7 +624,8 @@ export const joinEvent = onCall<{
     const walletDoc = await db.collection('users').doc(userId)
       .collection('wallet').doc('main').get();
     const walletData = walletDoc.data();
-    const currentBalance = walletData?.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const currentBalance = 0;  // [P2] stub — unreachable; satisfies TS
     
     if (currentBalance < event.priceTokens) {
       throw new HttpsError(

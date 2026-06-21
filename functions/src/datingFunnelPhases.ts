@@ -584,7 +584,8 @@ export async function createPaidTimeBooking(
     const hostEarning = totalCost - platformFee;
 
     const bookerDoc = await db.collection('users').doc(bookerId).get();
-    const balance = bookerDoc.data()?.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const balance = 0;  // [P2] stub — unreachable; satisfies TS
 
     if (balance < totalCost) {
       return {
@@ -867,4 +868,10 @@ export async function calculateRetentionMetrics(
       progress.phases.flirt.completed,
       progress.phases.connection.completed,
       progress.phases.meeting.completed,
-    ].filter(Boolean)
+    ].filter(Boolean);
+    const conversionRate = phasesCompleted.length / 4;
+    return { retentionDays, engagementScore, conversionRate };
+  } catch (_e) {
+    return null;
+  }
+}

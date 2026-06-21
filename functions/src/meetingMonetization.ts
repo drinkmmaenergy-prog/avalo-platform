@@ -293,7 +293,8 @@ export async function bookMeeting(
     }
 
     const booker = bookerDoc.data();
-    const bookerBalance = booker?.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const bookerBalance = 0;  // [P2] stub — unreachable; satisfies TS
 
     // Check balance
     if (bookerBalance < meeting.priceTokens) {

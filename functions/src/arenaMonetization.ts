@@ -629,7 +629,8 @@ export async function sendGift(
     }
     
     const senderData = senderDoc.data()!;
-    const senderBalance = senderData.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const senderBalance = 0;  // [P2] stub — unreachable; satisfies TS
     
     if (senderBalance < giftConfig.cost) {
       return { success: false, error: 'Insufficient tokens' };
@@ -982,7 +983,8 @@ export async function purchaseSpotlight(
     }
     
     const userData = userDoc.data()!;
-    const balance = userData.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const balance = 0;  // [P2] stub — unreachable; satisfies TS
     
     if (balance < cost) {
       return { success: false, error: 'Insufficient tokens' };
@@ -1094,7 +1096,8 @@ export async function sendPriorityMessage(
     }
     
     const userData = userDoc.data()!;
-    const balance = userData.tokenBalance || 0;
+    throw new Error('HARD_DISABLED: legacy users/{uid}.tokenBalance path — migrate to wallets/{uid}.balance; see C1/C3');  // [P2]
+    const balance = 0;  // [P2] stub — unreachable; satisfies TS
     
     if (balance < cost) {
       return { success: false, error: 'Insufficient tokens' };
