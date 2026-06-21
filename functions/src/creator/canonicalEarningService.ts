@@ -171,6 +171,7 @@ export interface BillingEvent {
   reservationId?: string;
   multiplier?: number;
   idempotencyKey: string;
+  ledgerEntryId?: string;  // set by canonicalCallBillingV2 at commit time
   createdAt: Timestamp | FieldValue;
 }
 

@@ -242,10 +242,10 @@ async function getUserStatusFromDb(userId: string): Promise<UserStatus> {
   try {
     const subSnap = await db.collection('subscriptions').doc(userId).get();
     if (subSnap.exists) {
-      const subData = subSnap.data() as any;
+      const subData = subSnap.data() as { active?: boolean; renewalDate?: string | number; tier?: string };
       if (subData.active) {
         const now = new Date();
-        const renewalDate = new Date(subData.renewalDate);
+        const renewalDate = new Date(subData.renewalDate as string | number);
         if (renewalDate >= now) {
           if (subData.tier === 'royal') {
             return 'ROYAL';
@@ -265,7 +265,7 @@ async function getUserStatusFromDb(userId: string): Promise<UserStatus> {
     return 'STANDARD';
   }
   
-  const user = userSnap.data() as any;
+  const user = userSnap.data() as { roles?: { vip?: boolean }; vipSubscription?: { status?: string }; [key: string]: unknown };
   
   // PACK 50: Check Royal Club membership from royal_memberships collection
   try {

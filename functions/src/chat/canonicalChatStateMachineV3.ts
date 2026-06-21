@@ -56,6 +56,7 @@ import {
   BASE_CREATOR_RESPONSE_RATE_TOKENS,
   TOKEN_PAYOUT_USD_GROSS,
   EARNING_HOLD_DAYS,
+  BillingEvent,
 } from '../creator/canonicalEarningService';
 import {
   RESERVATIONS_COLLECTION,
@@ -326,7 +327,7 @@ export async function deliverPaidResponse(params: {
     const existingEvent   = await txn.get(billingEventRef);
     if (existingEvent.exists) {
       // Already delivered — return cached result
-      const ev = existingEvent.data() as any;
+      const ev = existingEvent.data() as BillingEvent;
       return {
         messageId,
         billed: true,

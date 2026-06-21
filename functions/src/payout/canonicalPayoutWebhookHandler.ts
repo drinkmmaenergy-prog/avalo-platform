@@ -76,7 +76,9 @@ export const c12_stripePayoutWebhook = onRequest(
     try {
       const webhookSecret = getWebhookSecret();
       const stripe        = getStripeClient();
-      const rawBody       = (req as any).rawBody as Buffer;
+      // rawBody: Firebase Functions v2 attaches rawBody for Stripe signature validation
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rawBody is not in standard Express.Request
+      const rawBody       = (req as any).rawBody as Buffer | undefined ?? Buffer.from('');
       const signature     = req.headers['stripe-signature'] as string;
 
       event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
@@ -104,16 +106,17 @@ export const c12_stripePayoutWebhook = onRequest(
 
     // ── Route to handler ───────────────────────────────────────────────────
     try {
-      switch ((event as any).type) {
+      // Stripe.Event.type is a discriminated union; cast to string for portability
+      switch (event.type as string) {
         case 'transfer.paid':
-          await handleTransferPaid((event as any).data.object as Stripe.Transfer);
+          await handleTransferPaid((event.data as { object: Stripe.Transfer }).object);
           break;
         case 'transfer.failed':
         case 'transfer.reversed':
-          await handleTransferFailed((event as any).data.object as Stripe.Transfer);
+          await handleTransferFailed((event.data as { object: Stripe.Transfer }).object);
           break;
         case 'account.updated':
-          await handleAccountUpdated((event as any).data.object as Stripe.Account);
+          await handleAccountUpdated((event.data as { object: Stripe.Account }).object);
           break;
         default:
           console.log(`[PayoutWebhook] Unhandled event type: ${event.type}`);
@@ -154,7 +157,8 @@ async function handleTransferFailed(transfer: Stripe.Transfer): Promise<void> {
   }
 
   const payout = snap.data() as PayoutRequestDocument;
-  const reversalCount = (transfer.reversals as any)?.data?.length ?? 0;
+  // reversals is Stripe.ApiList<Stripe.TransferReversal> or undefined
+  const reversalCount = (transfer.reversals as Stripe.ApiList<Stripe.TransferReversal> | undefined)?.data?.length ?? 0;
   const reason = `STRIPE_TRANSFER_FAILED: ${transfer.id} status=${reversalCount > 0 ? 'reversed' : 'failed'}`;
   console.log(`[PayoutWebhook] transfer.failed: payoutId=${payoutId} reason=${reason}`);
   await failPayout(payoutId, payout, reason);

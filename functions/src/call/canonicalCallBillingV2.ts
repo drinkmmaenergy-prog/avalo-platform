@@ -36,6 +36,7 @@ import { requireVerifiedAdult }     from '../compliance/ageGuard';
 import {
   BASE_CREATOR_RESPONSE_RATE_TOKENS,
   CreatorEarningAccount,
+  BillingEvent,
   getCreatorRiskTier,
   computeHoldRelease,
   computeGrossUsd,
@@ -137,7 +138,7 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
     const billingEventRef = db.collection(BILLING_EVENTS).doc(idempotencyKey);
     const existingEvent   = await t.get(billingEventRef);
     if (existingEvent.exists) {
-      const ev = existingEvent.data() as any;
+      const ev = existingEvent.data() as BillingEvent;
       return {
         callSessionId, billingWindowId, idempotencyKey,
         totalTokensCharged: ev.payerTokensCharged,

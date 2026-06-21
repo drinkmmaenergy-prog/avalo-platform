@@ -1084,5 +1084,5 @@ export async function getWallet(userId: string): Promise<any> {
 export async function getPlatformBalance(): Promise<number> {
   const db = getFirestore();
   const snap = await db.collection("wallets").doc("AVALO_PLATFORM").get();
-  return snap.exists ? (snap.data() as any).balance ?? 0 : 0;
+  return snap.exists ? (snap.data() as { balance: number; reservedTokens: number; updatedAt: unknown }).balance ?? 0 : 0;
 }

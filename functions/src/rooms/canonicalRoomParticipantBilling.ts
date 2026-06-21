@@ -184,7 +184,17 @@ export async function enterRoom(params: {
 
   return db.runTransaction(async (t) => {
     // Capacity / ban check
-    const room = (await t.get(roomRef(roomId))).data() as any;
+    // Room document — canonical fields used below: budget, participantBudget, priceTokens
+    const room = (await t.get(roomRef(roomId))).data() as {
+      status?: string;
+      bannedUsers?: string[];
+      activeParticipantCount?: number;
+      maxCapacity?: number;
+      participantBudget?: number;
+      budget?: number;
+      priceTokens?: number;
+      [key: string]: unknown;
+    };
     if (!room) throw new HttpsError('not-found', `Room ${roomId} not found`);
     if (room.status === 'CLOSED') throw new HttpsError('failed-precondition', 'Room is closed');
     if (room.bannedUsers?.includes(participantId)) {
@@ -254,7 +264,7 @@ export async function releaseParticipantBudget(params: {
     .collection(ROOM_BUDGET_RELEASES).doc(idempotencyKey);
   const existing = await releaseRef.get();
   if (existing.exists) {
-    return { tokensReleased: (existing.data() as any).tokensReleased ?? 0 };
+    return { tokensReleased: (existing.data() as { tokensReleased?: number }).tokensReleased ?? 0 };
   }
 
   return db.runTransaction(async (t) => {
@@ -335,7 +345,7 @@ export async function chargeRoomPaidInteraction(params: {
     const iRef  = db.collection(IDEMPOTENCY_COL).doc(`room_charge:${idempotencyKey}`);
     const iSnap = await t.get(iRef);
     if (iSnap.exists) {
-      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as any).eventId));
+      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as { eventId: string }).eventId));
       return existing.data() as RoomEarningEvent;
     }
 
@@ -460,7 +470,7 @@ export async function chargeRoomTip(params: {
     const iRef  = db.collection(IDEMPOTENCY_COL).doc(`room_tip:${idempotencyKey}`);
     const iSnap = await t.get(iRef);
     if (iSnap.exists) {
-      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as any).eventId));
+      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as { eventId: string }).eventId));
       return existing.data() as RoomEarningEvent;
     }
 
@@ -538,7 +548,7 @@ export async function reserveRoomInteraction(params: {
     const iRef  = db.collection(IDEMPOTENCY_COL).doc(`room_reserve:${idempotencyKey}`);
     const iSnap = await t.get(iRef);
     if (iSnap.exists) {
-      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as any).eventId));
+      const existing = await t.get(earningEventRef(roomId, (iSnap.data() as { eventId: string }).eventId));
       return existing.data() as RoomEarningEvent;
     }
 
@@ -599,7 +609,7 @@ export async function deliverReservedRoomInteraction(params: {
     const iRef  = db.collection(IDEMPOTENCY_COL).doc(`room_deliver:${idempotencyKey}`);
     const iSnap = await t.get(iRef);
     if (iSnap.exists) {
-      return { tokensEarned: (iSnap.data() as any).tokensEarned ?? 0 };
+      return { tokensEarned: (iSnap.data() as { tokensEarned?: number }).tokensEarned ?? 0 };
     }
 
     const evRef  = earningEventRef(roomId, eventId);
@@ -683,7 +693,7 @@ export async function refundRoomReservation(params: {
     const iRef  = db.collection(IDEMPOTENCY_COL).doc(`room_refund:${idempotencyKey}`);
     const iSnap = await t.get(iRef);
     if (iSnap.exists) {
-      return { tokensRefunded: (iSnap.data() as any).tokensRefunded ?? 0 };
+      return { tokensRefunded: (iSnap.data() as { tokensRefunded?: number }).tokensRefunded ?? 0 };
     }
 
     const evRef  = earningEventRef(roomId, eventId);

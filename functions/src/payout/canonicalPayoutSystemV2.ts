@@ -172,8 +172,8 @@ export async function requestPayout(params: {
     );
   }
   const taxMetadataSnapshot = {
-    formType:       (taxSnap.data() as any).formType,
-    submittedAt:    (taxSnap.data() as any).submittedAt,
+    formType:       (taxSnap.data() as { formType?: string; submittedAt?: unknown }).formType,
+    submittedAt:    (taxSnap.data() as { formType?: string; submittedAt?: unknown }).submittedAt,
     taxYear:        new Date().getFullYear(),
     snapshotAt:     new Date().toISOString(),
   };
