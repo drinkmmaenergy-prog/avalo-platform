@@ -789,7 +789,7 @@ export async function reserveTokens(params: {
  *   1. Idempotency guard (responseIdempotencyKey).
  *   2. Read reservation doc; verify ACTIVE + sufficient remaining.
  *   3. Read wallets/{userId}: decrement reservedTokens (tokens already off balance).
- *   4. Credit creator wallet (split.creatorTokens) and platform wallet (split.avaloTokens).
+ *   4. REMOVED [G1]: creator wallet credit removed — earning goes to creatorEarningAccounts only.
  *   5. Update reservation: consumedTokens +=, remainingTokens -=.
  *      If remainingTokens < finalRateTokens → mark EXHAUSTED.
  *   6. Write ledger entry (CHAT_RESPONSE_BURN).
@@ -877,15 +877,9 @@ export async function consumeFromReservation(params: {
       updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // 4. Credit creator wallet (full finalRateTokens per §0.3 — Avalo 20% at payout time)
-    const creatorWalletRef = walletRef(creatorId);
-    const creatorWallet = await readWalletInTransaction(transaction, creatorWalletRef, creatorId);
-    const creatorBalanceAfter = creatorWallet.balance + finalRateTokens;
-    transaction.update(creatorWalletRef, {
-      balance: creatorBalanceAfter,
-      earned: FieldValue.increment(finalRateTokens),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+    // 4. REMOVED [G1]: wallets/{creatorId} is consumer spending wallet only.
+    //    Creator earning goes exclusively to creatorEarningAccounts (step 7 of canonical flow).
+    //    Note: caller (deliverPaidResponse in canonicalChatStateMachineV3) handles earning account.
 
     // 5. Update reservation
     const newConsumed = res.consumedTokens + finalRateTokens;
@@ -923,8 +917,8 @@ export async function consumeFromReservation(params: {
           after: newReservedTokens,
         },
         counterparty: {
-          before: creatorWallet.balance,
-          after: creatorBalanceAfter,
+          before: 0, // [G1]: creator wallet not read/written here; earning goes to creatorEarningAccounts
+          after: finalRateTokens, // earning tokens credited to pendingEarningTokens (not consumer wallet)
         },
         platform: { before: 0, after: 0 },
       },

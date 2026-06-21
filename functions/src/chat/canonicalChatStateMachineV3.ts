@@ -376,33 +376,9 @@ export async function deliverPaidResponse(params: {
       updatedAt:      FieldValue.serverTimestamp(),
     });
 
-    // ── 4. Credit creator wallet (§0.3: full finalRateTokens; Avalo at payout) ─
-    const creatorWalletRef  = db.collection(WALLETS_COLLECTION).doc(creatorId);
-    const creatorWalletSnap = await txn.get(creatorWalletRef);
-    const creatorBalance    = creatorWalletSnap.exists
-      ? (creatorWalletSnap.data() as WalletDocument).balance
-      : 0;
-    const creatorBalanceAfter = creatorBalance + finalRateTokens;
-
-    if (creatorWalletSnap.exists) {
-      txn.update(creatorWalletRef, {
-        balance:   creatorBalanceAfter,
-        earned:    FieldValue.increment(finalRateTokens),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-    } else {
-      txn.set(creatorWalletRef, {
-        userId:          creatorId,
-        balance:         creatorBalanceAfter,
-        pending:         0,
-        earned:          finalRateTokens,
-        spent:           0,
-        frozen:          0,
-        reservedTokens:  0,
-        createdAt:       FieldValue.serverTimestamp(),
-        updatedAt:       FieldValue.serverTimestamp(),
-      });
-    }
+    // ── 4. REMOVED [G1]: creator consumer wallet must never receive earning tokens.
+    //    wallets/{creatorId} is a consumer spending wallet only.
+    //    Creator earning is credited exclusively via creatorEarningAccounts (steps 7-8 below).
 
     // ── 5. Update reservation ────────────────────────────────────────────────
     const newConsumed   = res.consumedTokens + finalRateTokens;
