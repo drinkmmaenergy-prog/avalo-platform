@@ -10,7 +10,11 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "firebase emulators:exec --only firestore \"jest --coverage --runInBand\""
+    "test": "firebase emulators:exec --only firestore \"jest --coverage --runInBand\"",
+    "test:emulator": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 jest --testPathPattern=tests/integration --runInBand --forceExit",
+    "test:rules": "firebase emulators:exec --only firestore,auth \"jest --testPathPattern=tests/rules --runInBand --forceExit\"",
+    "test:storage-rules": "firebase emulators:exec --only storage \"jest --testPathPattern=tests/storage --runInBand --forceExit\"",
+    "validate:deploy": "npm run build && echo \"BUILD_VALIDATED \u2014 run: firebase deploy --only functions --dry-run\""
   },
   "engines": {
     "node": "20"
