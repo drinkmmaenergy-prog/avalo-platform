@@ -494,13 +494,17 @@ export const purchaseDigitalProduct = onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
-    // C1 SHUTDOWN: Uses phantom wallet (users/{uid}.wallet.balance) and
-    // MONETIZATION_SPLITS.CHAT.earner=0, yielding zero creator earnings.
-    // Replaced by canonical media PPV in C8 using wallets/{uid} + earning ledger.
+    // HARD_DISABLED [C1/F3]: legacy path used forbidden users/{uid}.wallet.balance
+    // and MONETIZATION_SPLITS.CHAT.earner=0 (zero creator earnings — broken).
+    // Dead code below this throw contains forbidden wallet paths and is unreachable.
+    // Canonical replacement: media PPV in C8 using wallets/{uid} + recordCreatorEarning.
+    // Do NOT remove this throw until a full canonical implementation replaces all
+    // dead code below (billing, earning, delivery, guard, idempotency, hold).
     throw new HttpsError(
       'failed-precondition',
-      'DIGITAL_PRODUCTS_BILLING_DISABLED: Digital product purchases are being ' +
-      'upgraded to the canonical media PPV system.'
+      'DIGITAL_PRODUCTS_BILLING_DISABLED [F3]: Digital product purchases require ' +
+      'canonical migration (wallets/{uid} debit + recordCreatorEarning with hold). ' +
+      'Contact platform engineering. [C1/F3]'
     );
 
     const { productId } = request.data;
@@ -723,44 +727,10 @@ export const getProductDownloadUrl = onCall(
       downloadUrl,
       downloadUrlExpiry: expiryTime,
     });
-    
-    logger.info(`Download URL generated for purchase ${purchaseId}`);
-    
+
     return {
-      success: true,
       downloadUrl,
-      expiresAt: expiryTime,
-      remainingDownloads: purchase.maxDownloads - purchase.downloadCount - 1,
+      expiryTime: expiryTime.toMillis(),
     };
-  }
+  },
 );
-
-logger.info('✅ Digital Products (PACK 116) module loaded successfully');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

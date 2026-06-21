@@ -10,7 +10,9 @@
 import { db, serverTimestamp, generateId } from './init';
 import { Timestamp } from 'firebase-admin/firestore';
 import { getCallPricing } from './callPricing';
-import { billCall, checkCallBalance } from './callBilling';
+// billCall import removed [F2]: billCall is HARD_DISABLED; endCall below is HARD_DISABLED.
+// Active call billing: endCallMonetized from callMonetization.ts → canonicalCallBillingV2.billCallWindow
+import { checkCallBalance } from './callBilling';
 import { logEvent } from './observability';
 import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit';
 import { admin, functions } from './runtime';
@@ -197,23 +199,24 @@ export async function createCall(params: {
       mode
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
       service: 'functions.calls',
       module: 'CALLS',
-      message: `Create call failed: ${error.message}`,
+      message: `Create call failed: ${err.message}`,
       context: {
         userId: callerUserId,
         functionName: 'createCall'
       },
       details: {
-        stackSnippet: error.stack?.split('\n').slice(0, 10).join('\n')
+        stackSnippet: err.stack?.split('\n').slice(0, 10).join('\n')
       }
     });
 
-    throw error;
+    throw err;
   }
 }
 
@@ -251,13 +254,14 @@ export async function startRinging(params: {
 
     // TODO: Send push notification to callee (future pack)
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
       service: 'functions.calls',
       module: 'CALLS',
-      message: `Start ringing failed: ${error.message}`,
+      message: `Start ringing failed: ${err.message}`,
       context: {
         userId: callerUserId,
         functionName: 'startRinging'
@@ -267,7 +271,7 @@ export async function startRinging(params: {
       }
     });
 
-    throw error;
+    throw err;
   }
 }
 
@@ -323,13 +327,14 @@ export async function acceptCall(params: {
       signalingChannelId: callData.signalingChannelId
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
       service: 'functions.calls',
       module: 'CALLS',
-      message: `Accept call failed: ${error.message}`,
+      message: `Accept call failed: ${err.message}`,
       context: {
         userId: calleeUserId,
         functionName: 'acceptCall'
@@ -339,7 +344,7 @@ export async function acceptCall(params: {
       }
     });
 
-    throw error;
+    throw err;
   }
 }
 
@@ -381,13 +386,14 @@ export async function rejectCall(params: {
       lastUpdatedAt: serverTimestamp()
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
       service: 'functions.calls',
       module: 'CALLS',
-      message: `Reject call failed: ${error.message}`,
+      message: `Reject call failed: ${err.message}`,
       context: {
         userId: calleeUserId,
         functionName: 'rejectCall'
@@ -397,7 +403,7 @@ export async function rejectCall(params: {
       }
     });
 
-    throw error;
+    throw err;
   }
 }
 
@@ -436,13 +442,14 @@ export async function markCallActive(params: {
       });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     await logEvent({
       level: 'ERROR',
       source: 'BACKEND',
       service: 'functions.calls',
       module: 'CALLS',
-      message: `Mark call active failed: ${error.message}`,
+      message: `Mark call active failed: ${err.message}`,
       context: {
         userId: participantUserId,
         functionName: 'markCallActive'
@@ -452,108 +459,32 @@ export async function markCallActive(params: {
       }
     });
 
-    throw error;
+    throw err;
   }
 }
 
 /**
- * End call and trigger billing
+ * HARD_DISABLED [F2]: legacy endCall used HARD_DISABLED billCall() (forbidden 80/20 split).
+ *
+ * Active call end path:
+ *   endCallMonetized from callMonetization.ts
+ *   → billCallWindow from call/canonicalCallBillingV2.ts
+ *
+ * This export is retained to prevent import errors while callers migrate,
+ * but throws immediately before any Firestore write or billing side effect.
+ *
+ * @deprecated Use endCallMonetized from callMonetization.ts
  */
-export async function endCall(params: {
+export async function endCall(_params: {
   callId: string;
   endedByUserId?: string;
   reason?: 'NORMAL' | 'NETWORK_ERROR' | 'INSUFFICIENT_FUNDS' | 'OTHER';
 }): Promise<void> {
-  const { callId, endedByUserId, reason = 'NORMAL' } = params;
-
-  try {
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
-
-    if (!callDoc.exists) {
-      throw new Error('Call not found');
-    }
-
-    const callData = callDoc.data() as CallSession;
-
-    // Determine who disconnected
-    let disconnectedBy: 'CALLER' | 'CALLEE' | 'SYSTEM' = 'SYSTEM';
-    if (endedByUserId) {
-      if (endedByUserId === callData.callerUserId) {
-        disconnectedBy = 'CALLER';
-      } else if (endedByUserId === callData.calleeUserId) {
-        disconnectedBy = 'CALLEE';
-      }
-    }
-
-    // Determine final status
-    let finalStatus: CallStatus = 'ENDED';
-    if (reason === 'INSUFFICIENT_FUNDS') {
-      finalStatus = 'INSUFFICIENT_FUNDS';
-    } else if (callData.status === 'CREATED' || callData.status === 'RINGING') {
-      finalStatus = 'CANCELLED';
-    } else if (callData.status === 'ACCEPTED' && !callData.startedAt) {
-      finalStatus = 'FAILED';
-    }
-
-    // Update call session
-    await db.collection('call_sessions').doc(callId).update({
-      status: finalStatus,
-      endedAt: callData.endedAt || serverTimestamp(),
-      disconnectedBy,
-      endedReason: reason,
-      lastUpdatedAt: serverTimestamp()
-    });
-
-    // Trigger billing if call was active
-    if (callData.startedAt && finalStatus !== 'CANCELLED' && finalStatus !== 'FAILED') {
-      await billCall(callId);
-    } else {
-      // No billing for calls that never started
-      await db.collection('call_sessions').doc(callId).update({
-        billingStatus: 'CHARGED', // Mark as "charged" (nothing to charge)
-        billedMinutes: 0,
-        totalTokensCharged: 0
-      });
-    }
-
-    await logEvent({
-      level: 'INFO',
-      source: 'BACKEND',
-      service: 'functions.calls',
-      module: 'CALLS',
-      message: `Call ended: ${finalStatus}`,
-      context: {
-        userId: endedByUserId,
-        functionName: 'endCall'
-      },
-      details: {
-        extra: {
-          callId,
-          reason,
-          disconnectedBy
-        }
-      }
-    });
-
-  } catch (error: any) {
-    await logEvent({
-      level: 'ERROR',
-      source: 'BACKEND',
-      service: 'functions.calls',
-      module: 'CALLS',
-      message: `End call failed: ${error.message}`,
-      context: {
-        userId: endedByUserId,
-        functionName: 'endCall'
-      },
-      details: {
-        stackSnippet: error.stack?.split('\n').slice(0, 10).join('\n'),
-        extra: { callId }
-      }
-    });
-
-    throw error;
-  }
+  throw new Error(
+    'HARD_DISABLED [F2]: legacy endCall() is disabled — ' +
+    'use endCallMonetized() from callMonetization.ts which routes through ' +
+    'canonicalCallBillingV2.billCallWindow with canonical earning hold. [F2]'
+  );
 }
 
 /**
@@ -573,29 +504,3 @@ export async function getCallSession(callId: string): Promise<CallSession | null
     return null;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

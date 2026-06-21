@@ -461,13 +461,11 @@ export async function endCall(params: {
   // Calculate total cost
   const totalTokens = durationMinutes * call.pricePerMinute;
   
-  // Calculate split
-  const config = call.callType === 'VOICE' ? CALL_CONFIG.VOICE : CALL_CONFIG.VIDEO;
-  let earnerReceived = call.earnerId
-    ? Math.floor(totalTokens * (config.EARNER_CUT_PERCENT / 100))
-    : 0;
-  let platformReceived = totalTokens - earnerReceived;
-  
+  // §1.2 [F2]: NO delivery split. earnerReceived = totalTokens; commission taken at payout.
+  // EARNER_CUT_PERCENT is removed — it was 80/20 which violates canonical rules.
+  let earnerReceived   = 0;   // set by canonical billing below
+  let platformReceived = 0;   // commission taken at payout, not at delivery
+
   // Process transaction
   await db.runTransaction(async (transaction) => {
     // Update call record
@@ -479,9 +477,9 @@ export async function endCall(params: {
       endedBy,
       updatedAt: serverTimestamp()
     });
-    
+
     // C11: Phantom wallet transaction lines removed.
-    // Canonical billing via transactTokens() is called after this state update.
+    // Canonical billing via billCallWindow() is called after this state update.
   });
 
   // B2/P1: Route through canonical call billing (fan debit + creator earning ledger with hold)
@@ -500,7 +498,7 @@ export async function endCall(params: {
       billedMinutes:   durationMinutes,
       allowPartialCharge: true,
     });
-    // §1.2: creator earns 100% — no platform split at delivery
+    // §1.2: creator earns 100% (= payerTokensCharged); no platform split at delivery
     earnerReceived   = billingResult.earnerTokens;
     platformReceived = 0; // Commission taken at payout time, not here
   } else if (totalTokens > 0 && !call.earnerId) {
@@ -674,36 +672,6 @@ export async function checkCallBalance(params: {
     hasBalance: userBalance >= requiredTokens,
     userBalance,
     requiredTokens,
-    pricePerMinute
+    pricePerMinute,
   };
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

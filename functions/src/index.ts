@@ -352,14 +352,16 @@ export {
 } from './pack298-unified-engine';
 
 // --- CALLS & CALENDAR ---
+// calls.ts endCall is HARD_DISABLED [F2] — active call end: use endCallMonetized below.
 export * from './calls';
-export * from './callBilling';
+// callBilling.ts: export only checkCallBalance; billCall is HARD_DISABLED [P7/F2] — never export it.
+export { checkCallBalance } from './callBilling';
 export {
   determineCallPayerAndEarner,
   getCallMinuteCost,
   startCall as startCallMonetized,
   updateCallActivity,
-  endCall as endCallMonetized,
+  endCall as endCallMonetized,  // CANONICAL active call end path
   autoDisconnectIdleCalls,
   getActiveCallForUser,
   checkCallBalance as checkCallBalance_monetization,
@@ -1224,9 +1226,4 @@ export {
 
 // ============================================================================
 // DIAGNOSTICS LOG
-// ============================================================================
-console.log('✅ AVALO Firebase Functions entrypoint loaded successfully');
-console.log('📦 All PACK modules exported and ready for deployment');
-
-export { ciHealth } from './ciHealth';
-import * as functions from 'firebase-functions';
+// =================================================================

@@ -902,6 +902,17 @@ export async function moderateParticipant(params: {
         participantCount: FieldValue.increment(-1),
         updatedAt:        FieldValue.serverTimestamp(),
       });
+      // F4: ban/kick releases unearned entry reservation back to fan wallet.
+      // If earnedByCreator=true the entry was already settled as creator earning — no refund.
+      if (!p.earnedByCreator && p.reservedTokens > 0) {
+        t.update(walletRef(p.userId), {
+          balance:   FieldValue.increment(p.reservedTokens),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        t.update(roomDocRef(roomId), {
+          escrowReturnedTokens: FieldValue.increment(p.reservedTokens),
+        });
+      }
     }
   });
 }
@@ -1283,18 +1294,6 @@ export const c10_moderateParticipant = onCall(
       roomId:         req.data.roomId,
       targetUserId:   req.data.targetUserId,
       action:         req.data.action,
-      idempotencyKey: req.data.idempotencyKey,
-    });
-  },
-);
-
-export const c10_closeRoom = onCall(
-  { enforceAppCheck: false },
-  async (req) => {
-    if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
-    return closeRoom({
-      creatorId:      req.auth.uid,
-      roomId:         req.data.roomId,
       idempotencyKey: req.data.idempotencyKey,
     });
   },
