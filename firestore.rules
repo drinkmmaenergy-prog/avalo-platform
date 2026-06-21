@@ -206,13 +206,12 @@ service cloud.firestore {
       allow write: if false; // Only via Cloud Functions (kycProviderService.ts)
     }
 
-    // ── HARD DENY: forbidden legacy wallet paths ─────────────────────────────────
-    // Explicit deny is defense-in-depth (Firestore implicit deny also covers them).
-    match /user_wallets/{docId} {
-      allow read, write: if false; // FORBIDDEN: use wallets/{uid} instead
+    // ── P5: Server-side policy config — admin-write only ─────────────────────────
+    // Badge threshold overrides: Avalo admin-only write; no client read of raw config.
+    match /_config/{docId} {
+      allow read: if isAdmin();
+      allow write: if false; // Admin SDK only — no client writes ever
     }
-    match /wallet/{docId} {
-      allow read, write: if false; // FORBIDDEN: wallet/main and wallet/current are banned paths
-    }
-  }
-}
+
+    // Creator multiplier approvals (APEX x70/x100 manual approval records)
+    match /creatorMultiplierApprovals/{creator

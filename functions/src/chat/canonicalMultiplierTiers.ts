@@ -36,7 +36,7 @@
  *   Unlocks multiplier tiers and discovery boost
  */
 
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import {
   requireEnhancedKYC,
@@ -193,7 +193,7 @@ export async function assertMultiplierEligibility(
   const overrides = await getBadgeThresholdConfig();
   const tierSpec  = await resolveEffectiveTierSpec(multiplier, overrides);
 
-  if ((tierSpec as any).disabled) {
+  if (tierSpec.disabled) {
     throw new HttpsError('invalid-argument',
       `MULTIPLIER_DISABLED: x${multiplier} has been disabled by server configuration`);
   }
@@ -353,7 +353,7 @@ export async function getCreatorChatConfig(creatorId: string): Promise<CreatorCh
       defaultMultiplier: 1,
       minimumSessionEntry: 0,
       chatEnabled: true,
-      updatedAt: new Date() as any,
+      updatedAt: Timestamp.now(),
     };
   }
   return snap.data() as CreatorChatConfig;
@@ -483,7 +483,7 @@ export async function proposeRateChange(params: {
     status: 'PENDING',
     counterofferUsed: false,
     createdAt:  FieldValue.serverTimestamp(),
-    expiresAt:  new Date(Date.now() + RATE_PROPOSAL_EXPIRY_MS) as any,
+    expiresAt:  Timestamp.fromMillis(Date.now() + RATE_PROPOSAL_EXPIRY_MS),
   };
 
   // Write proposal + transition chat state
@@ -597,7 +597,7 @@ export async function proposeSessionEnd(params: {
     proposerRole,
     status:    'PENDING',
     createdAt: FieldValue.serverTimestamp(),
-    expiresAt: new Date(Date.now() + END_PROPOSAL_EXPIRY_MS) as any,
+    expiresAt: Timestamp.fromMillis(Date.now() + END_PROPOSAL_EXPIRY_MS),
   };
 
   const batch = db.batch();
@@ -729,7 +729,7 @@ export async function submitFanCounteroffer(params: {
 }): Promise<{ status: string; counterMultiplier: CanonicalMultiplier }> {
   const { chatId, proposalId, fanId, counterMultiplier } = params;
   const db = getFirestore();
-  await db.collection('chatRateProposals').doc(proposalId).update({
+  await db.collection('rateProposals').doc(proposalId).update({
     counterMultiplier,
     counterofferedBy:  fanId,
     counterofferedAt:  FieldValue.serverTimestamp(),
@@ -747,11 +747,10 @@ export async function resolveCounteroffer(params: {
   const { chatId, proposalId, creatorId, resolution } = params;
   const db = getFirestore();
   const status = resolution === 'ACCEPT' ? 'ACCEPTED' : 'DECLINED';
-  await db.collection('chatRateProposals').doc(proposalId).update({
+  await db.collection('rateProposals').doc(proposalId).update({
     status,
     resolvedBy:  creatorId,
     resolvedAt:  FieldValue.serverTimestamp(),
   });
   return { status };
 }
-

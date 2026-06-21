@@ -1,25 +1,21 @@
-import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
-
 /**
  * PACK 452 — Monetization Engine vNext Types
  *
  * Premium Offer Engine v1, Configurable Entry Threshold,
  * Revenue Coach v1, Exclusive Mode v2
  *
- * INVARIANTS PRESERVED:
- * - Free chemistry messages unchanged
- * - Chat initiation never blocked
- * - No concurrency limits introduced (except exclusive mode)
- * - Word buckets unchanged: Standard = 11, Royal = 7
- * - Base burn = 1 token per bucket
- * - 65/35 split unchanged
- * - Payout per token = 0.04 USD unchanged
- * - Token pack pricing unchanged
- * - Historical ledger never recalculated
- * - Premium data private (not public profile)
+ * NOTE: This module is REACHABLE_DISABLED (chatMonetization.ts is deactivated
+ * in index.ts). Do not activate without full canonical-chat-engine migration review.
+ *
+ * Economy invariants (canonical, as of P1):
+ * - creatorEarningTokens = payerTokensCharged (no split at delivery)
+ * - Avalo 20% commission taken at payout time only
+ * - Multiplier values must be from canonical set: [2,3,5,7,10,20,30,50,70,100]
+ * - x1 is migration fallback only (not commercially selectable)
+ * - x15 is FORBIDDEN — removed from PREMIUM_MULTIPLIERS [P5]
  *
  * @module pack452-monetization-vnext.types
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { Timestamp } from 'firebase-admin/firestore';
@@ -48,8 +44,12 @@ export const ENTRY_THRESHOLD_LIMITS = {
 // PREMIUM OFFER
 // ============================================================================
 
-/** Allowed multiplier values for premium offers */
-export const PREMIUM_MULTIPLIERS = [2, 3, 5, 10, 15, 20] as const;
+/**
+ * Allowed multiplier values for premium offers.
+ * Must be a strict subset of CanonicalMultiplier from canonicalMultiplierTiers.ts.
+ * FORBIDDEN values removed [P5]: 15 (not in canonical set [2,3,5,7,10,20,30,50,70,100])
+ */
+export const PREMIUM_MULTIPLIERS = [2, 3, 5, 7, 10, 20] as const;
 export type PremiumMultiplier = typeof PREMIUM_MULTIPLIERS[number];
 
 /** Minimum multiplier required for exclusive mode */
@@ -352,28 +352,3 @@ export interface CancelPremiumOfferResponse {
   refundedTokens?: number;
   error?: string;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
