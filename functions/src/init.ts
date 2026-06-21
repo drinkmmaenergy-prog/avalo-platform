@@ -42,11 +42,11 @@ export const auth = admin.auth();
 export const storage = admin.storage();
 
 // Firestore global settings
-if(!global.__firestore_settings){try { if (!(globalThis as any).__AVALO_FS_SETTINGS_APPLIED) {
+if(!global.__firestore_settings){try { if (!(globalThis as Record<string, unknown>).__AVALO_FS_SETTINGS_APPLIED) {
   try {
     db.settings({ ignoreUndefinedProperties: true })
   } catch (e) {}
-  ;(globalThis as any).__AVALO_FS_SETTINGS_APPLIED = true
+  ;(globalThis as Record<string, unknown>).__AVALO_FS_SETTINGS_APPLIED = true
 } } catch(e) {}global.__firestore_settings=true};
 
 // Re-export admin for custom operations (tokens, messaging, etc.)

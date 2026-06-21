@@ -312,7 +312,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     const purchase: TokenPurchase = {
       purchaseId,
       userId,
-      packageId: packageId as any,
+      packageId: packageId as 'mini' | 'basic' | 'standard' | 'premium' | 'pro' | 'elite' | 'royal', // F5: narrow cast; validated upstream
       tokens,
       priceUSD,
       paidCurrency: session.currency?.toUpperCase() || 'USD',

@@ -405,7 +405,7 @@ export const tokens_mobilePurchase = https.onCall(
       const purchase: TokenPurchase = {
         purchaseId,
         userId: auth.uid,
-        packageId: packageId as any,
+        packageId: packageId as 'mini' | 'basic' | 'standard' | 'premium' | 'pro' | 'elite' | 'royal', // F5: narrow cast; validated by getPackageById() above
         tokens: pack.tokens,
         priceUSD: pack.priceUSD,
         paidCurrency: verification.paidCurrency || 'USD',
