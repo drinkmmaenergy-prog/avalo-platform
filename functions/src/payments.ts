@@ -335,4 +335,9 @@ export const requestPayoutCallable = onCall(
       grossUSD: parseFloat(gross.toFixed(6)),
       commissionUSD: parseFloat(commission.toFixed(6)),
       feeUSD: parseFloat(fee.toFixed(6)),
-      amountUSD: parse
+      amountUSD: parseFloat('0'),
+    });
+    return { ok: true, data: { payoutId } };
+  }
+);
+// TRUNCATED_EOF

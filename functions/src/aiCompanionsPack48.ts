@@ -162,7 +162,10 @@ async function getOrCreateAISubscription(
  * Check if user has sufficient tokens
  */
 async function checkTokenBalance(userId: string, required: number): Promise<boolean> {
-  const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
+  // HARD_DISABLED [G5]: used phantom users/{uid}/wallet/current.
+  throw new Error('HARD_DISABLED [G5]: aiCompanionsPack48 billing used phantom wallet/current.');
+
+    const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
   const walletSnap = await walletRef.get();
 
   if (!walletSnap.exists) {

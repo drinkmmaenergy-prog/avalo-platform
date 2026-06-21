@@ -790,4 +790,7 @@ export async function onMeetingStarted(bookingId: string): Promise<void> {
 export async function onPanicTriggered(
   bookingId: string,
   userId: string,
-  location?: 
+  location?: string
+): Promise<void> {
+  // TRUNCATED_EOF
+}

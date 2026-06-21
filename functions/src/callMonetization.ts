@@ -17,7 +17,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import { db, serverTimestamp, increment, generateId } from './init';
 import { transactTokens, getBalance } from './wallet/walletService'; // C11: canonical wallet
 import { billCallWindow } from './call/canonicalCallBillingV2'; // B2: canonical call earning ledger
-import { getUserContext, ChatParticipantContext } from './chatMonetization';
+import { getUserContext, ChatParticipantContext } from './chat/userContext'; // G6a: extracted from ARCHIVED chatMonetization
 // Trust Engine Integration (Phase 8)
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
 // Account Lifecycle Integration (Phase 9)

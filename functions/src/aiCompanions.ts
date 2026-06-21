@@ -652,7 +652,11 @@ export const unlockAIGalleryCallable = onCall(
         }
 
         // Check wallet balance
-        const walletRef = db.collection("users").doc(userId).collection("wallet").doc("current");
+  // HARD_DISABLED [G5]: billing used phantom users/{uid}/wallet/current (always 0).
+  // Canonical replacement: wallets/{uid} debit + recordCreatorEarning hold.
+  throw new Error('HARD_DISABLED [G5]: AI companion billing used phantom wallet/current. Canonical migration required.');
+
+          const walletRef = db.collection("users").doc(userId).collection("wallet").doc("current");
         const walletSnap = await walletRef.get();
 
         if (!walletSnap.exists) {

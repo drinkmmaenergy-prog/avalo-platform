@@ -737,4 +737,7 @@ export const adminAuditSearch = onRequest({}, async (req, res) => {
 
     res.json(result);
   } catch (error: any) {
-    console.error('[Admin Console] Error in adminAuditSearch:', error)
+    console.error('[Admin Console] Error in adminAuditSearch:', error);
+  }
+}
+);

@@ -313,8 +313,8 @@ export async function moderateContent(
       reason,
       reviewedByAdmin: null,
       reviewedAt: null,
-      createdAt: FieldValue.serverTimestamp() as any,
-      updatedAt: FieldValue.serverTimestamp() as any,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
     };
 
     await db.collection('content_moderation').doc(contentId).set(moderationRecord);

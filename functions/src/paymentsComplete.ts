@@ -1081,22 +1081,8 @@ export const getWalletBalance = onCall(
         };
       }
 
-      // Fallback: legacy users/{uid}/wallet/main subcollection
-      const legacySnap = await db.collection("users").doc(userId).collection("wallet").doc("main").get();
-
-      if (legacySnap.exists) {
-        const wallet = legacySnap.data() as UserWallet;
-        const balance = wallet.balance || 0;
-        return {
-          balance,
-          tokensBalance: balance,
-          tokenBalance: balance,
-          pendingBalance: wallet.pendingBalance || 0,
-          earnedBalance: wallet.earnedBalance || 0,
-          totalDeposits: wallet.totalDeposits || 0,
-          totalEarnings: wallet.totalEarnings || 0,
-        };
-      }
+      // G5: legacy users/{uid}/wallet/main fallback REMOVED — forbidden path.
+      // If wallets/{uid} doesn't exist yet (new user), return zero balance.
 
       // No wallet found — return zero balance
       return {

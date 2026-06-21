@@ -164,4 +164,9 @@ export const getPayoutRequestsCallable = onCall(
     } catch (error: any) {
       console.error("Error getting payout requests:", error);
       throw new HttpsError(
-        "internal
+        "internal",
+        "Internal error [TRUNCATED]"
+      );
+    }
+  }
+);

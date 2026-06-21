@@ -51,17 +51,12 @@ export const expireStaleChats = onSchedule(
         const refundAmount = chat.billing?.currentBalance || 0;
 
         if (refundAmount > 0 && chat.roles?.payer) {
-          // Refund escrow to payer
-          const walletRef = db
-            .collection("users")
-            .doc(chat.roles.payer)
-            .collection("wallet")
-            .doc("current");
-
-          batch.update(walletRef, {
-            balance: increment(refundAmount),
-            pending: increment(-refundAmount),
-          });
+          // G5/HARD_DISABLED: phantom users/{uid}/wallet/current path removed.
+          // Canonical escrow refund: canonical reservation wallet (wallets/{uid}.reservedTokens)
+          // is handled by canonical chat state machine on session expiry; this legacy
+          // schedule path wrote to a phantom path (balance = 0) that had no real effect.
+          // TODO: wire to walletService.releaseReservation() in full migration.
+          // (skip wallet write — was a no-op in production)
 
           // Record refund transaction
           const txId = generateId();

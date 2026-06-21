@@ -7,7 +7,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, increment, generateId } from './init';
-import { getUserContext } from './chatMonetization';
+import { getUserContext } from './chat/userContext'; // G6a: extracted from ARCHIVED chatMonetization
 import { generateAIResponse, validateAvatarConfig } from './aiGenerationService';
 import type {
   AIAvatar,

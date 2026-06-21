@@ -555,10 +555,9 @@ export async function getDeletionEligibility(
   const warnings: string[] = [];
   
   // Check wallet balance
-  const walletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-  const walletSnap = await walletRef.get();
-  const wallet = walletSnap.data();
-  const balance = wallet?.balance || 0;
+  // G5: replaced phantom users/{uid}/wallet/current with canonical wallets/{uid}
+  const { getBalance } = require('./wallet/walletService');
+  const balance = await getBalance(userId);
   
   if (balance > 0) {
     warnings.push(

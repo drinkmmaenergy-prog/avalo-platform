@@ -83,13 +83,11 @@ export const initiateMediaUpload = onCall(
     // Calculate billing BEFORE upload
     const billing = await calculateMediaBilling(chatId, mediaTypeEnum, userId);
     
-    // Check if payer has sufficient tokens
+    // G5: pre-billing balance check via canonical getBalance (processMediaBilling re-checks)
     const payerId = billing.paidByUserId!;
-    const walletRef = db.collection('users').doc(payerId).collection('wallet').doc('current');
-    const walletSnap = await walletRef.get();
-    const wallet = walletSnap.data();
-    
-    if (!wallet || wallet.balance < billing.priceTokens) {
+    const { getBalance } = require('../wallet/walletService');
+    const fanBalance = await getBalance(payerId);
+    if (fanBalance < billing.priceTokens) {
       throw new HttpsError(
         'failed-precondition',
         `Insufficient tokens. Need ${billing.priceTokens} tokens to send this media.`

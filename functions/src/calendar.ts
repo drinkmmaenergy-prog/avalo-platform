@@ -42,6 +42,7 @@ export const bookSlotCallable = onCall(
           "X_DISABLED: C11 — phantom wallet billing. Use canonical calendar booking endpoint."
         );
 
+      const bookerUid = request.auth?.uid ?? "";
       const {
         earnerUid,
         start,
@@ -154,8 +155,8 @@ export const bookSlotCallable = onCall(
             location,
             acknowledgments,
             status: BookingStatus.PENDING,
-            createdAt: serverTimestamp() as any,
-            updatedAt: serverTimestamp() as any,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
           };
 
           transaction.set(

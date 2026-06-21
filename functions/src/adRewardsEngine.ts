@@ -443,4 +443,6 @@ export async function resetDailyCountersForAllUsers(): Promise<number> {
     logger.info(`Reset daily ad counters for ${outdatedDocs.size} users`);
     return outdatedDocs.size;
   } catch (error) {
-    logger.error('Error rese
+    logger.error('Error [TRUNCATED]');
+  }
+}

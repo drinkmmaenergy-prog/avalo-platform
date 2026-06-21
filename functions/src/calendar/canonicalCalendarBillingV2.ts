@@ -93,7 +93,7 @@ async function checkIdempotency(
   key: string,
 ): Promise<string | null> {
   const snap = await t.get(idempotencyDocRef(key));
-  return snap.exists ? ((snap.data() as any).result as string) : null;
+  return snap.exists ? ((snap.data() as { result: string }).result) : null;
 }
 
 async function loadBooking(bookingId: string): Promise<CanonicalCalendarBooking> {
@@ -157,7 +157,7 @@ export async function bookCalendarSlot(params: {
 
     const fanSnap = await t.get(walletRef(bookerId));
     if (!fanSnap.exists) throw new HttpsError('not-found', `Wallet not found: ${bookerId}`);
-    const balance = (fanSnap.data() as any).balance as number;
+    const balance = (fanSnap.data() as { balance: number }).balance;
     if (balance < priceTokens) {
       throw new HttpsError(
         'failed-precondition',
@@ -308,7 +308,7 @@ export async function cancelCalendarBooking(params: {
     // Fan cancels → time-based policy
     const hoursLeft = hoursUntil(booking.startAt instanceof Date
       ? booking.startAt
-      : new Date((booking.startAt as any).toDate ? (booking.startAt as any).toDate() : booking.startAt));
+      : new Date((booking.startAt as { toDate?: () => Date }).toDate ? (booking.startAt as { toDate: () => Date }).toDate() : booking.startAt));
 
     if (hoursLeft >= REFUND_TIER_FULL_HOURS) {
       tokensToReturn  = booking.escrowTokens;

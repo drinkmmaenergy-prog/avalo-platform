@@ -167,7 +167,8 @@ async function calculateRetentionStats(userId: string, userData?: any): Promise<
   const daysSinceLastActive = Math.floor((Date.now() - lastActiveAt.getTime()) / (1000 * 60 * 60 * 24));
   
   // Get wallet stats
-  const walletSnap = await db.collection('users').doc(userId).collection('wallet').doc('current').get();
+  // G5: replaced phantom wallet/current with canonical wallets/{uid}
+  const walletSnap = await db.collection('wallets').doc(userId).get();
   const wallet = walletSnap.data();
   
   // Determine membership tier

@@ -1,3 +1,7 @@
+// TYPES_ONLY [G6a] — Pure type definitions. No implementation bodies.
+// Original engine (pack209-refund-complaint-engine.ts) replaced with HARD_DISABLED_COMPATIBILITY stub.
+// Kept in src/ to satisfy calendar.ts type references (all callers behind HARD_DISABLED throws).
+
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
