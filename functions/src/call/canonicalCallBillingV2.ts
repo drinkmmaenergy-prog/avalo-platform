@@ -6,7 +6,7 @@
  * Replaces callBilling.ts. Key corrections vs V1:
  *
  *  1. Creator call earnings route through canonicalEarningService.recordCreatorEarning()
- *     → pendingTokens with risk-tier hold period (NEW=7d, VERIFIED=3d, TRUSTED=1d, HIGH_RISK=14d)
+ *     → pendingEarningTokens with risk-tier hold period (NEW=7d, VERIFIED=3d, TRUSTED=1d, HIGH_RISK=14d)
  *     → NOT directly to wallets/{uid}.balance
  *
  *  2. Fan debit and creator earning credit are committed atomically in a single
@@ -23,7 +23,7 @@
  * Earning flow per call billing window:
  *   Fan wallet       wallets/{fanId}.balance          → debit totalTokens
  *   Platform wallet  [REMOVED] — §1.2: no platform credit at billing time
- *   Creator ledger   creatorEarningAccounts/{creatorId}.pendingTokens → credit earnerTokens (80%)
+ *   Creator ledger   creatorEarningAccounts/{creatorId}.pendingEarningTokens → credit earnerTokens (100%)
  *   Creator ledger entry  creatorEarningLedger/{entryId}               → immutable event
  *   Billing event    billingEvents/{idempotencyKey}                     → immutable payer audit
  *
@@ -89,7 +89,7 @@ export interface CallBillingParams {
  *
  * Atomic guarantees (single Firestore transaction):
  *   • Fan wallet debited
- *   • Creator earning account credited (pendingTokens with hold)
+ *   • Creator earning account credited (pendingEarningTokens with hold)
  *   • Platform wallet credited
  *   • Immutable billing event written
  *   • Immutable earning ledger entry written

@@ -448,7 +448,7 @@ describe('Test 16: Call billing uses canonical wallet, not legacy splits', () =>
     );
     expect(v2).not.toContain('user_wallets');
     expect(v2).toContain('creatorEarningAccounts'); // earnings go to ledger
-    expect(v2).toContain('pendingTokens');           // with hold period
+    expect(v2).toContain('pendingEarningTokens');    // P1: renamed from pendingTokens per spec
   });
 
   it('callMonetization.ts imports transactTokens from canonical walletService', async () => {
