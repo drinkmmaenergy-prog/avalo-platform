@@ -256,13 +256,11 @@ export async function completeCalendarBooking(params: {
   // Record creator earning (C4 ledger — 7-day hold before payout eligible)
   await recordCreatorEarning({
     creatorId:          booking.creatorId,
-    earningTokens:      booking.escrowTokens,
-    payerTokensCharged: booking.priceTokens,
-    productType:        'CALENDAR_BOOKING',
-    sourceType:         'CALENDAR_COMPLETION',
-    sourceId:           bookingId,
+    payerId:            booking.bookerId,
+    tokenAmount:        booking.escrowTokens,
+    sourceRef:          bookingId,
+    type:               'CALENDAR_BOOKING',
     idempotencyKey:     `cal_earn:${bookingId}:${iKey}`,
-    metadata:           { bookingId, bookerId: booking.bookerId, durationMinutes: booking.durationMinutes },
   });
 }
 
@@ -355,13 +353,11 @@ export async function cancelCalendarBooking(params: {
   if (tokensToCreator > 0) {
     await recordCreatorEarning({
       creatorId:          booking.creatorId,
-      earningTokens:      tokensToCreator,
-      payerTokensCharged: booking.priceTokens,
-      productType:        'CALENDAR_BOOKING',
-      sourceType:         'CALENDAR_CANCELLATION_PARTIAL',
-      sourceId:           bookingId,
+      payerId:            booking.bookerId,
+      tokenAmount:        tokensToCreator,
+      sourceRef:          bookingId,
+      type:               'CALENDAR_BOOKING',
       idempotencyKey:     `cal_cancel_earn:${bookingId}:${iKey}`,
-      metadata:           { bookingId, bookerId: booking.bookerId, reason: reason ?? 'fan_cancellation' },
     });
   }
 

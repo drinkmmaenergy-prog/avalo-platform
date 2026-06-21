@@ -104,16 +104,16 @@ export const c12_stripePayoutWebhook = onRequest(
 
     // ── Route to handler ───────────────────────────────────────────────────
     try {
-      switch (event.type) {
+      switch ((event as any).type) {
         case 'transfer.paid':
-          await handleTransferPaid(event.data.object as Stripe.Transfer);
+          await handleTransferPaid((event as any).data.object as Stripe.Transfer);
           break;
         case 'transfer.failed':
         case 'transfer.reversed':
-          await handleTransferFailed(event.data.object as Stripe.Transfer);
+          await handleTransferFailed((event as any).data.object as Stripe.Transfer);
           break;
         case 'account.updated':
-          await handleAccountUpdated(event.data.object as Stripe.Account);
+          await handleAccountUpdated((event as any).data.object as Stripe.Account);
           break;
         default:
           console.log(`[PayoutWebhook] Unhandled event type: ${event.type}`);
@@ -154,7 +154,8 @@ async function handleTransferFailed(transfer: Stripe.Transfer): Promise<void> {
   }
 
   const payout = snap.data() as PayoutRequestDocument;
-  const reason = `STRIPE_TRANSFER_FAILED: ${transfer.id} status=${transfer.reversals?.total_count ? 'reversed' : 'failed'}`;
+  const reversalCount = (transfer.reversals as any)?.data?.length ?? 0;
+  const reason = `STRIPE_TRANSFER_FAILED: ${transfer.id} status=${reversalCount > 0 ? 'reversed' : 'failed'}`;
   console.log(`[PayoutWebhook] transfer.failed: payoutId=${payoutId} reason=${reason}`);
   await failPayout(payoutId, payout, reason);
 }

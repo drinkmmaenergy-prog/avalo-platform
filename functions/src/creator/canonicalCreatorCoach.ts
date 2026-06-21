@@ -13,13 +13,13 @@
  *   NONE → VERIFIED:
  *     - requireVerifiedAdult() passes (C2)
  *
- *   VERIFIED → RISING_STAR:
+ *   VERIFIED → RISING:
  *     - 50+ completed paid sessions (paidSessionCount >= 50)
  *     - Average fan session rating >= 4.0 (if ratings enabled)
  *     - Response rate >= 80% (within 24h)
  *     - requireCreatorKYC() passes (C2)
  *
- *   RISING_STAR → PRO:
+ *   RISING → PRO:
  *     - 200+ completed paid sessions
  *     - Average rating >= 4.2
  *     - Response rate >= 85%
@@ -62,7 +62,7 @@ import {
   requireCreatorKYC,
   requireEnhancedKYC,
 } from '../compliance/ageGuard';
-import type { CreatorBadge } from './canonicalMultiplierTiers';
+import type { CreatorBadge } from '../chat/canonicalMultiplierTiers';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -127,8 +127,8 @@ export const BADGE_REQUIREMENTS: Record<CreatorBadge, BadgeProgressionRequiremen
     badge: 'VERIFIED',
     requirements: { minPaidSessions: 0, minAverageRating: null, minResponseRate: 0, kycLevel: 'VERIFIED_ADULT' },
   },
-  RISING_STAR: {
-    badge: 'RISING_STAR',
+  RISING: {
+    badge: 'RISING',
     // Policy thresholds are configurable via server-side config (§1.2).
     // These defaults represent reasonable starting points; adjust via badgePolicyConfig/{badge}.
     requirements: { minPaidSessions: 50, minAverageRating: 4.0, minResponseRate: 0.80, kycLevel: 'CREATOR_KYC' },
@@ -153,7 +153,7 @@ export const BADGE_REQUIREMENTS: Record<CreatorBadge, BadgeProgressionRequiremen
   },
 };
 
-const BADGE_ORDER: CreatorBadge[] = ['NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'ICON', 'APEX'];
+const BADGE_ORDER: CreatorBadge[] = ['NONE', 'VERIFIED', 'RISING', 'PRO', 'ELITE', 'ICON', 'APEX'];
 
 function nextBadge(current: CreatorBadge): CreatorBadge | null {
   const idx = BADGE_ORDER.indexOf(current);

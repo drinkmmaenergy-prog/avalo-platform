@@ -115,11 +115,22 @@ export type CreatorPayoutStatus =
 
 export interface CreatorEarningAccount {
   creatorId: string;
+  /** Earning tokens in hold period (not yet available for payout). */
   pendingTokens: number;
-  availableTokens: number;
-  inPayoutTokens: number;
+  /** Earning tokens released from hold — available for payout. Spec: availableEarningTokens. */
+  availableEarningTokens: number;
+  /** Earning tokens reserved for an active payout request. Spec: reservedEarningTokens. */
+  reservedEarningTokens: number;
+  /** Total earning tokens paid out lifetime. Spec: paidOutEarningTokens. */
+  paidOutEarningTokens: number;
   lifetimeEarnedTokens: number;
-  lifetimePayoutTokens: number;
+  riskTier?: string;
+  stripeConnectAccountId?: string;
+  stripeOnboardingComplete?: boolean;
+  stripeChargesEnabled?: boolean;
+  stripePayoutsEnabled?: boolean;
+  stripeDetailsSubmitted?: boolean;
+  stripeAccountUpdatedAt?: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
   createdAt: Timestamp | FieldValue;
 }
@@ -185,7 +196,7 @@ export function computeNetUsd(tokenAmount: number): number {
  * that commits the creator message visible to the payer (§0.2 atomicity).
  *
  * Tokens go to pendingTokens (hold period). releaseHeldEarnings() (C7 scheduler)
- * moves them to availableTokens after EARNING_HOLD_DAYS.
+ * moves them to availableEarningTokens after the risk-tier hold period.
  */
 export async function recordCreatorEarning(params: {
   creatorId: string;
@@ -231,11 +242,11 @@ export async function recordCreatorEarning(params: {
     if (!accountSnap.exists) {
       const newAccount: CreatorEarningAccount = {
         creatorId,
-        pendingTokens:        tokenAmount,
-        availableTokens:      0,
-        inPayoutTokens:       0,
-        lifetimeEarnedTokens: tokenAmount,
-        lifetimePayoutTokens: 0,
+        pendingTokens:          tokenAmount,
+        availableEarningTokens: 0,
+        reservedEarningTokens:  0,
+        paidOutEarningTokens:   0,
+        lifetimeEarnedTokens:   tokenAmount,
         createdAt:  FieldValue.serverTimestamp(),
         updatedAt:  FieldValue.serverTimestamp(),
       };
@@ -321,8 +332,8 @@ export async function releaseHeldEarnings(
 
     const accountRef = db.collection(CREATOR_EARNING_ACCOUNTS).doc(creatorId);
     transaction.update(accountRef, {
-      pendingTokens:   FieldValue.increment(-tokensToRelease),
-      availableTokens: FieldValue.increment(tokensToRelease),
+      pendingTokens:          FieldValue.increment(-tokensToRelease),
+      availableEarningTokens: FieldValue.increment(tokensToRelease),
       updatedAt:       FieldValue.serverTimestamp(),
     });
 
@@ -379,10 +390,10 @@ export async function assertPayoutEligibility(
       'PAYOUT_NO_ACCOUNT: Creator earning account not found.',
     );
   }
-  if (account.availableTokens < requestedTokens) {
+  if ((account.availableEarningTokens ?? 0) < requestedTokens) {
     throw new HttpsError(
       'failed-precondition',
-      `PAYOUT_INSUFFICIENT: ${account.availableTokens} available, needs ${requestedTokens}.`,
+      `PAYOUT_INSUFFICIENT: ${account.availableEarningTokens ?? 0} available, needs ${requestedTokens}.`,
     );
   }
   return account;
@@ -398,13 +409,13 @@ export async function reserveForPayout(params: {
     const snap        = await transaction.get(accountRef);
     if (!snap.exists) throw new HttpsError('failed-precondition', 'PAYOUT_NO_ACCOUNT');
     const account = snap.data() as CreatorEarningAccount;
-    if (account.availableTokens < params.tokenAmount) {
+    if ((account.availableEarningTokens ?? 0) < params.tokenAmount) {
       throw new HttpsError('failed-precondition', 'PAYOUT_INSUFFICIENT');
     }
     transaction.update(accountRef, {
-      availableTokens: FieldValue.increment(-params.tokenAmount),
-      inPayoutTokens:  FieldValue.increment(params.tokenAmount),
-      updatedAt:       FieldValue.serverTimestamp(),
+      availableEarningTokens: FieldValue.increment(-params.tokenAmount),
+      reservedEarningTokens:  FieldValue.increment(params.tokenAmount),
+      updatedAt:              FieldValue.serverTimestamp(),
     });
   });
 }
@@ -418,15 +429,15 @@ export async function finalizePayoutReservation(params: {
     const accountRef = db.collection(CREATOR_EARNING_ACCOUNTS).doc(params.creatorId);
     if (params.success) {
       transaction.update(accountRef, {
-        inPayoutTokens:       FieldValue.increment(-params.tokenAmount),
-        lifetimePayoutTokens: FieldValue.increment(params.tokenAmount),
-        updatedAt:            FieldValue.serverTimestamp(),
+        reservedEarningTokens: FieldValue.increment(-params.tokenAmount),
+        paidOutEarningTokens:  FieldValue.increment(params.tokenAmount),
+        updatedAt:             FieldValue.serverTimestamp(),
       });
     } else {
       transaction.update(accountRef, {
-        inPayoutTokens:  FieldValue.increment(-params.tokenAmount),
-        availableTokens: FieldValue.increment(params.tokenAmount),
-        updatedAt:       FieldValue.serverTimestamp(),
+        reservedEarningTokens:  FieldValue.increment(-params.tokenAmount),
+        availableEarningTokens: FieldValue.increment(params.tokenAmount),
+        updatedAt:              FieldValue.serverTimestamp(),
       });
     }
   });
@@ -456,13 +467,13 @@ export async function clawbackCreatorEarning(params: {
 
     const account = snap.data() as CreatorEarningAccount;
     const fromPending   = Math.min(tokenAmount, account.pendingTokens);
-    const fromAvailable = Math.min(tokenAmount - fromPending, account.availableTokens);
+    const fromAvailable = Math.min(tokenAmount - fromPending, account.availableEarningTokens ?? 0);
     const total         = fromPending + fromAvailable;
 
     if (total > 0) {
       transaction.update(accountRef, {
-        pendingTokens:   FieldValue.increment(-fromPending),
-        availableTokens: FieldValue.increment(-fromAvailable),
+        pendingTokens:          FieldValue.increment(-fromPending),
+        availableEarningTokens: FieldValue.increment(-fromAvailable),
         updatedAt:       FieldValue.serverTimestamp(),
       });
     }

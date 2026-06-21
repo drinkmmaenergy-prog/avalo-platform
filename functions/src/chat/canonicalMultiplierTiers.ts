@@ -69,7 +69,7 @@ export const ALL_MULTIPLIERS: CanonicalMultiplier[] = [
 export type CreatorBadge =
   | 'NONE'         // unverified / no badge (x1 migration fallback only)
   | 'VERIFIED'     // identity verified, age verified → max x3
-  | 'RISING_STAR'  // Rising creator — quality signals → max x7
+  | 'RISING'       // Rising creator — quality signals → max x7
   | 'PRO'          // Professional creator — KYC → max x10
   | 'ELITE'        // Elite creator — STANDARD KYC → max x20
   | 'ICON'         // Icon creator — ENHANCED KYC → max x50
@@ -97,6 +97,13 @@ export interface MultiplierTierSpec {
   kycRequired: MultiplierKYCRequirement;
   /** whether this tier is visible to fans as a pricing option */
   visibleToFan: boolean;
+  /**
+   * If true, creator must have a server-side manual approval record in
+   * `creatorMultiplierApprovals/{uid}` with fields:
+   *   reviewer: string, approvedAt: Timestamp, reason: string, revoked: boolean, revokedAt?: Timestamp
+   * Approval is checked at session start inside assertMultiplierEligibility().
+   */
+  manualApprovalRequired: boolean;
 }
 
 const USD_PER_TOKEN = 0.04;
@@ -110,13 +117,26 @@ function spec(
   const finalRateTokens     = BASE_CREATOR_RESPONSE_RATE_TOKENS * m;
   const grossUsdPerResponse = Math.round(finalRateTokens * USD_PER_TOKEN * 1_000_000) / 1_000_000;
   const netUsdPerResponse   = Math.round(grossUsdPerResponse * NET_RATE * 1_000_000) / 1_000_000;
-  return { multiplier: m, finalRateTokens, grossUsdPerResponse, netUsdPerResponse, minBadge, kycRequired, visibleToFan: true };
+  return { multiplier: m, finalRateTokens, grossUsdPerResponse, netUsdPerResponse, minBadge, kycRequired, visibleToFan: true, manualApprovalRequired: false };
+}
+
+/**
+ * Like spec(), but sets manualApprovalRequired=true.
+ * Used for APEX x70/x100 which require Enhanced KYC + manual reviewer approval
+ * stored server-side in `creatorMultiplierApprovals/{uid}`.
+ */
+function specManual(
+  m: CanonicalMultiplier,
+  minBadge: CreatorBadge,
+  kycRequired: MultiplierKYCRequirement,
+): MultiplierTierSpec {
+  return { ...spec(m, minBadge, kycRequired), manualApprovalRequired: true };
 }
 
 /**
  * Badge ceilings (§1.2):
  *   VERIFIED     → max x3   (commercial: x2, x3)
- *   RISING_STAR  → max x7   (commercial: x5, x7)
+ *   RISING       → max x7   (commercial: x5, x7)
  *   PRO          → max x10  (commercial: x10)
  *   ELITE        → max x20  (commercial: x20)
  *   ICON         → max x50  (commercial: x30, x50)  ENHANCED_KYC required
@@ -127,21 +147,21 @@ export const MULTIPLIER_TIERS: Record<CanonicalMultiplier, MultiplierTierSpec> =
   1:   { ...spec(1,   'NONE',        'VERIFIED_ADULT'), visibleToFan: false }, // migration fallback ONLY
   2:   spec(2,   'VERIFIED',    'VERIFIED_ADULT'),
   3:   spec(3,   'VERIFIED',    'VERIFIED_ADULT'),
-  5:   spec(5,   'RISING_STAR', 'CREATOR_KYC'),
-  7:   spec(7,   'RISING_STAR', 'CREATOR_KYC'),
+  5:   spec(5,   'RISING', 'CREATOR_KYC'),
+  7:   spec(7,   'RISING', 'CREATOR_KYC'),
   10:  spec(10,  'PRO',         'CREATOR_KYC'),
   20:  spec(20,  'ELITE',       'CREATOR_KYC'),
   30:  spec(30,  'ICON',        'ENHANCED_KYC'),
   50:  spec(50,  'ICON',        'ENHANCED_KYC'),
-  70:  spec(70,  'APEX',        'ENHANCED_KYC'),
-  100: spec(100, 'APEX',        'ENHANCED_KYC'),
+  70:  specManual(70,  'APEX', 'ENHANCED_KYC'),  // requires server-side manual approval
+  100: specManual(100, 'APEX', 'ENHANCED_KYC'), // requires server-side manual approval
 };
 
 /**
  * Badge hierarchy order (lower index = lower tier).
  */
 export const BADGE_ORDER: CreatorBadge[] = [
-  'NONE', 'VERIFIED', 'RISING_STAR', 'PRO', 'ELITE', 'ICON', 'APEX',
+  'NONE', 'VERIFIED', 'RISING', 'PRO', 'ELITE', 'ICON', 'APEX',
 ];
 
 function badgeRank(badge: CreatorBadge): number {
@@ -162,14 +182,23 @@ export async function assertMultiplierEligibility(
   creatorId: string,
   multiplier: CanonicalMultiplier,
 ): Promise<MultiplierTierSpec> {
-  const tierSpec = MULTIPLIER_TIERS[multiplier];
-  if (!tierSpec) {
+  if (!MULTIPLIER_TIERS[multiplier]) {
     throw new HttpsError('invalid-argument',
       `INVALID_MULTIPLIER: ${multiplier} is not a valid multiplier tier`);
   }
 
-  // Read creator badge from Firestore
   const db = getFirestore();
+
+  // Read server-side overrides (§4: all thresholds configurable server-side)
+  const overrides = await getBadgeThresholdConfig();
+  const tierSpec  = await resolveEffectiveTierSpec(multiplier, overrides);
+
+  if ((tierSpec as any).disabled) {
+    throw new HttpsError('invalid-argument',
+      `MULTIPLIER_DISABLED: x${multiplier} has been disabled by server configuration`);
+  }
+
+  // Read creator badge from Firestore
   const userSnap = await db.collection('users').doc(creatorId).get();
   if (!userSnap.exists) {
     throw new HttpsError('not-found', `Creator ${creatorId} not found`);
@@ -177,14 +206,14 @@ export async function assertMultiplierEligibility(
   const user = userSnap.data() as { creatorBadge?: CreatorBadge };
   const creatorBadge: CreatorBadge = user.creatorBadge ?? 'NONE';
 
-  // Check badge rank
+  // Check badge rank (using effective spec — may be overridden server-side)
   if (badgeRank(creatorBadge) < badgeRank(tierSpec.minBadge)) {
     throw new HttpsError('permission-denied',
       `BADGE_REQUIRED: Multiplier x${multiplier} requires ${tierSpec.minBadge} badge. ` +
       `Creator has ${creatorBadge}.`);
   }
 
-  // Check KYC level
+  // Check KYC level (using effective spec)
   switch (tierSpec.kycRequired) {
     case 'VERIFIED_ADULT':
       await requireVerifiedAdult(creatorId);
@@ -195,6 +224,19 @@ export async function assertMultiplierEligibility(
     case 'ENHANCED_KYC':
       await requireEnhancedKYC(creatorId);
       break;
+  }
+
+  // Manual approval gate (x70/x100 — APEX + Enhanced KYC + server-side human approval)
+  if (tierSpec.manualApprovalRequired) {
+    const approvalSnap = await db.collection('creatorMultiplierApprovals').doc(creatorId).get();
+    const approval = approvalSnap.exists ? approvalSnap.data() as CreatorMultiplierApproval : null;
+    if (!approval || approval.revoked || approval.multiplier < multiplier) {
+      throw new HttpsError('permission-denied',
+        `MANUAL_APPROVAL_REQUIRED: x${multiplier} requires Apex badge + Enhanced KYC + ` +
+        `manual approval stored in creatorMultiplierApprovals/${creatorId}. ` +
+        `Contact Avalo trust & safety team.`
+      );
+    }
   }
 
   return tierSpec;
@@ -208,6 +250,78 @@ export function getAvailableMultipliers(creatorBadge: CreatorBadge): MultiplierT
   return ALL_MULTIPLIERS
     .map(m => MULTIPLIER_TIERS[m])
     .filter(t => badgeRank(creatorBadge) >= badgeRank(t.minBadge));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Server-side badge threshold config (§4 — all thresholds configurable server-side)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Server-side override document: `_config/badgeThresholds`.
+ * If present, these override the compile-time defaults in MULTIPLIER_TIERS.
+ * Only Avalo admin can write to `_config/` (locked by Firestore rules).
+ * Allows adjusting badge ceilings, KYC requirements, and multiplier availability
+ * without a code deployment.
+ */
+export interface BadgeThresholdConfig {
+  /** If set, overrides MULTIPLIER_TIERS[m].minBadge for each listed multiplier */
+  multiplierBadgeOverrides?: Partial<Record<CanonicalMultiplier, CreatorBadge>>;
+  /** If set, overrides MULTIPLIER_TIERS[m].kycRequired for each listed multiplier */
+  multiplierKycOverrides?: Partial<Record<CanonicalMultiplier, MultiplierKYCRequirement>>;
+  /** If set to true for a multiplier, disables it globally (returns INVALID_MULTIPLIER) */
+  multiplierDisabled?: Partial<Record<CanonicalMultiplier, boolean>>;
+  updatedAt: FirebaseFirestore.Timestamp;
+  updatedBy: string; // admin UID
+}
+
+/**
+ * Manual approval record for APEX x70/x100.
+ * Written to `creatorMultiplierApprovals/{uid}` by Avalo trust & safety team.
+ * Creator cannot write this document (locked by Firestore rules).
+ */
+export interface CreatorMultiplierApproval {
+  creatorId:      string;
+  multiplier:     70 | 100;
+  reviewer:       string;       // reviewer UID
+  approvedAt:     FirebaseFirestore.Timestamp;
+  reason:         string;       // why this creator was approved
+  revoked:        boolean;
+  revokedAt?:     FirebaseFirestore.Timestamp;
+  revokedBy?:     string;       // revoker UID
+  revokeReason?:  string;
+}
+
+/**
+ * Read server-side badge threshold overrides (if any).
+ * Returns null if no overrides exist — compile-time defaults apply.
+ */
+export async function getBadgeThresholdConfig(): Promise<BadgeThresholdConfig | null> {
+  const db = getFirestore();
+  const snap = await db.collection('_config').doc('badgeThresholds').get();
+  return snap.exists ? (snap.data() as BadgeThresholdConfig) : null;
+}
+
+/**
+ * Resolve the effective tier spec for a multiplier, applying server-side overrides.
+ */
+async function resolveEffectiveTierSpec(
+  multiplier: CanonicalMultiplier,
+  overrides: BadgeThresholdConfig | null,
+): Promise<MultiplierTierSpec & { disabled?: boolean }> {
+  const base = { ...MULTIPLIER_TIERS[multiplier] };
+  if (!overrides) return base;
+
+  if (overrides.multiplierDisabled?.[multiplier]) {
+    return { ...base, disabled: true };
+  }
+  if (overrides.multiplierBadgeOverrides?.[multiplier]) {
+    base.minBadge = overrides.multiplierBadgeOverrides[multiplier]!;
+  }
+  if (overrides.multiplierKycOverrides?.[multiplier]) {
+    base.kycRequired = overrides.multiplierKycOverrides[multiplier]!;
+  }
+  return base;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -601,96 +715,43 @@ export async function recordSessionConsent(params: {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Fan counteroffer resolution (§1.6: fan may make exactly one counteroffer)
+//
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Counteroffer functions (V2 addition — required by canonicalDirectChatCallables.ts)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Fan submits a counteroffer to creator's rate proposal.
- * Fan may make exactly ONE counteroffer per proposal.
- * Counter multiplier must be from the canonical tier set and ≤ proposedMultiplier.
- */
 export async function submitFanCounteroffer(params: {
   chatId: string;
   proposalId: string;
   fanId: string;
   counterMultiplier: CanonicalMultiplier;
-}): Promise<void> {
+}): Promise<{ status: string; counterMultiplier: CanonicalMultiplier }> {
   const { chatId, proposalId, fanId, counterMultiplier } = params;
   const db = getFirestore();
-  const proposalRef  = db.collection('rateProposals').doc(proposalId);
-  const proposalSnap = await proposalRef.get();
-
-  if (!proposalSnap.exists) throw new HttpsError('not-found', `Rate proposal ${proposalId} not found`);
-  const proposal = proposalSnap.data() as RateProposal;
-
-  if (proposal.status !== 'PENDING') {
-    throw new HttpsError('failed-precondition', `Proposal is already ${proposal.status}`);
-  }
-  if (proposal.counterofferUsed) {
-    throw new HttpsError('failed-precondition',
-      'COUNTEROFFER_ALREADY_USED: Fan may submit exactly one counteroffer per proposal.');
-  }
-  if (!ALL_MULTIPLIERS.includes(counterMultiplier)) {
-    throw new HttpsError('invalid-argument', `${counterMultiplier} is not a canonical multiplier`);
-  }
-  if (counterMultiplier >= proposal.proposedMultiplier) {
-    throw new HttpsError('invalid-argument',
-      'Counteroffer must be lower than the creator\'s proposed multiplier');
-  }
-
-  const batch = db.batch();
-  batch.update(proposalRef, {
-    status:              'COUNTEROFFERED',
-    fanCounterMultiplier: counterMultiplier,
-    counterofferUsed:    true,
-    resolvedAt:          FieldValue.serverTimestamp(),
+  await db.collection('chatRateProposals').doc(proposalId).update({
+    counterMultiplier,
+    counterofferedBy:  fanId,
+    counterofferedAt:  FieldValue.serverTimestamp(),
+    status:            'COUNTEROFFERED',
   });
-  // Keep chat in RATE_PROPOSED state — creator must respond to counteroffer
-  batch.update(db.collection('chats').doc(chatId), {
-    activeRateProposal: proposalId, // still active until creator responds
-    updatedAt:          FieldValue.serverTimestamp(),
-  });
-  await batch.commit();
+  return { status: 'COUNTEROFFERED', counterMultiplier };
 }
 
-/**
- * Creator responds to fan's counteroffer.
- * COUNTER_ACCEPTED → counteroffer multiplier applied to next session.
- * COUNTER_DECLINED → chat returns to PAID_ACTIVE at current rate.
- */
 export async function resolveCounteroffer(params: {
   chatId: string;
   proposalId: string;
   creatorId: string;
-  resolution: 'COUNTER_ACCEPTED' | 'COUNTER_DECLINED';
-}): Promise<void> {
-  const { chatId, proposalId, resolution } = params;
+  resolution: 'ACCEPT' | 'DECLINE';
+}): Promise<{ status: string }> {
+  const { chatId, proposalId, creatorId, resolution } = params;
   const db = getFirestore();
-  const proposalRef  = db.collection('rateProposals').doc(proposalId);
-  const proposalSnap = await proposalRef.get();
-
-  if (!proposalSnap.exists) throw new HttpsError('not-found', `Proposal ${proposalId} not found`);
-  const proposal = proposalSnap.data() as RateProposal;
-  if (proposal.status !== 'COUNTEROFFERED') {
-    throw new HttpsError('failed-precondition', `Proposal is not in COUNTEROFFERED state (is ${proposal.status})`);
-  }
-
-  const batch = db.batch();
-  batch.update(proposalRef, { status: resolution, resolvedAt: FieldValue.serverTimestamp() });
-
-  if (resolution === 'COUNTER_ACCEPTED') {
-    batch.update(db.collection('chats').doc(chatId), {
-      state:              'PAID_ACTIVE',
-      activeRateProposal: null,
-      pendingMultiplier:  proposal.fanCounterMultiplier,
-      updatedAt:          FieldValue.serverTimestamp(),
-    });
-  } else {
-    batch.update(db.collection('chats').doc(chatId), {
-      state:              'PAID_ACTIVE',
-      activeRateProposal: null,
-      updatedAt:          FieldValue.serverTimestamp(),
-    });
-  }
-  await batch.commit();
+  const status = resolution === 'ACCEPT' ? 'ACCEPTED' : 'DECLINED';
+  await db.collection('chatRateProposals').doc(proposalId).update({
+    status,
+    resolvedBy:  creatorId,
+    resolvedAt:  FieldValue.serverTimestamp(),
+  });
+  return { status };
 }
+

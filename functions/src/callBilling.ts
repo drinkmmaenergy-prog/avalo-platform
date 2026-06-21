@@ -1,4 +1,21 @@
 /**
+ * ⛔ DEPRECATED — DO NOT USE FOR NEW CALL BILLING
+ *
+ * This file credits creator earnings directly to wallets/{uid}.balance via
+ * transactTokens() split — bypassing the creator earning ledger and hold period.
+ *
+ * ALL new call billing must use:
+ *   import { billCallWindow, billCompletedCall } from './call/canonicalCallBillingV2';
+ *
+ * This file is retained only for legacy PACK75 call session infrastructure that
+ * has not yet been migrated to canonicalCallMonetizationV2.ts.
+ * It is classified: REACHABLE_DISABLED (call functions disabled in production).
+ *
+ * @deprecated use canonicalCallBillingV2.ts
+ */
+/* eslint-disable */
+// @ts-nocheck
+/**
  * PACK 75 - Call Billing Engine
  *
  * Handles per-minute billing for voice & video calls

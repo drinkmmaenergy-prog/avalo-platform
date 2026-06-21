@@ -84,6 +84,7 @@ async function readWalletInTransaction(
     earned: 0,
     spent: 0,
     frozen: 0,
+    reservedTokens: 0,
     updatedAt: FieldValue.serverTimestamp(),
     createdAt: FieldValue.serverTimestamp(),
   };
@@ -1074,4 +1075,14 @@ export async function releaseReservation(params: {
 
     return { txId: null, tokensReturned: 0, finalStatus };
   });
+}
+
+export async function getWallet(userId: string): Promise<any> {
+  return getBalance(userId);
+}
+
+export async function getPlatformBalance(): Promise<number> {
+  const db = getFirestore();
+  const snap = await db.collection("wallets").doc("AVALO_PLATFORM").get();
+  return snap.exists ? (snap.data() as any).balance ?? 0 : 0;
 }

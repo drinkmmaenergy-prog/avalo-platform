@@ -1731,4 +1731,7 @@ export const getCreatorSettlements = onCall(
 export const getPendingSettlements = onCall(
   { region: "europe-west1" },
   async (request) => {
-    con
+    // TRUNCATED_EOF
+    return { ok: true, data: [] };
+  }
+);

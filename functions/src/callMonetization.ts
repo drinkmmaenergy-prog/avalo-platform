@@ -16,6 +16,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 import { db, serverTimestamp, increment, generateId } from './init';
 import { transactTokens, getBalance } from './wallet/walletService'; // C11: canonical wallet
+import { billCallWindow } from './call/canonicalCallBillingV2'; // B2: canonical call earning ledger
 import { getUserContext, ChatParticipantContext } from './chatMonetization';
 // Trust Engine Integration (Phase 8)
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
@@ -462,10 +463,10 @@ export async function endCall(params: {
   
   // Calculate split
   const config = call.callType === 'VOICE' ? CALL_CONFIG.VOICE : CALL_CONFIG.VIDEO;
-  const earnerReceived = call.earnerId
+  let earnerReceived = call.earnerId
     ? Math.floor(totalTokens * (config.EARNER_CUT_PERCENT / 100))
     : 0;
-  const platformReceived = totalTokens - earnerReceived;
+  let platformReceived = totalTokens - earnerReceived;
   
   // Process transaction
   await db.runTransaction(async (transaction) => {
@@ -483,17 +484,33 @@ export async function endCall(params: {
     // Canonical billing via transactTokens() is called after this state update.
   });
 
-  // C11: Canonical wallet billing (wallets/{uid}.balance via transactTokens)
-  if (totalTokens > 0) {
+  // B2: Route through canonical call billing (fan debit + creator earning ledger with hold)
+  // Creator earnings go to creatorEarningAccounts.pendingTokens (NOT wallets/{uid}.balance).
+  // 80% creator / 20% platform split — canonical, not legacy EARNER_CUT_PERCENT.
+  if (totalTokens > 0 && call.earnerId) {
+    const callMode: 'VOICE' | 'VIDEO' = call.callType === 'VOICE' ? 'VOICE' : 'VIDEO';
+    const billingResult = await billCallWindow({
+      callSessionId:   callId,
+      billingWindowId: 'final',
+      fanId:           call.payerId,
+      creatorId:       call.earnerId,
+      totalTokens,
+      callMode,
+      tokensPerMinute: call.pricePerMinute,
+      billedMinutes:   durationMinutes,
+      allowPartialCharge: true,
+    });
+    // Update earnerReceived/platformReceived from canonical result for logging
+    earnerReceived    = billingResult.earnerTokens;
+    platformReceived  = billingResult.platformTokens;
+  } else if (totalTokens > 0 && !call.earnerId) {
+    // No earner — debit fan only, all goes to platform
     await transactTokens({
       type: 'CALL_BILL',
       actorId: call.payerId,
-      counterpartyId: call.earnerId || null,
+      counterpartyId: null,
       amountTokens: totalTokens,
-      split: {
-        creatorTokens: earnerReceived,
-        avaloTokens:   platformReceived,
-      },
+      split: { creatorTokens: 0, avaloTokens: totalTokens },
       idempotencyKey: `call_bill_mono_${callId}`,
       sessionId: callId,
       metadata: { callId, durationMinutes, callType: call.callType },

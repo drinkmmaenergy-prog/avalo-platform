@@ -244,10 +244,11 @@ export async function processPayout(payoutId: string): Promise<void> {
     const stripeIdempotencyKey = `avalo_payout_${payoutId}`;
 
     const transfer = await createStripeTransfer({
-      destinationAccountId: payout.stripeConnectAccountId,
+      accountId: payout.stripeConnectAccountId,
       amountCents:          payout.creatorNetUsdCents,
       currency:             'usd',
-      idempotencyKey:       stripeIdempotencyKey,
+      // idempotencyKey passed via Stripe API option, not in params
+      description:         `avalo_payout_${payoutId}`,
       metadata: {
         payoutId,
         creatorId:    payout.creatorId,

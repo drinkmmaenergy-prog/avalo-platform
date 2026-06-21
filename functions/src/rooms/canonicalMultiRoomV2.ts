@@ -38,6 +38,17 @@ import { db }                 from '../init';
 import { requireVerifiedAdult, requireCreatorKYC } from '../compliance/ageGuard';
 import { walletRef }          from '../wallet/walletService';
 import { recordCreatorEarning } from '../creator/canonicalEarningService';
+// B3: canonical per-participant billing — use instead of message-threshold earning
+import {
+  enterRoom as canonicalEnterRoom,
+  releaseParticipantBudget,
+  chargeRoomPaidInteraction,
+  chargeRoomTip as canonicalChargeRoomTip,
+  reserveRoomInteraction,
+  deliverReservedRoomInteraction,
+  refundRoomReservation,
+  sweepExpiredRoomReservations,
+} from './canonicalRoomParticipantBilling';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -48,13 +59,13 @@ export const ROOM_GUARANTEED_MIN_TOKENS     = 150;
 export const ROOM_GUARANTEED_DEADLINE_MS    = 10 * 60 * 1000; // 10 minutes
 
 /**
- * Minimum creator messages required before room entry fees are settled (§1.8).
- * Creator must deliver ≥ ROOM_MIN_CREATOR_MESSAGES_TO_EARN substantive interactions
- * before earning any participant's entry budget.
- * Prevents earning on a single generic "hello" message.
+ * @deprecated B3: Message-count-based earning is NOT canonical.
+ * Room entry fee settling is determined by explicit per-product earning events (A–F)
+ * in canonicalRoomParticipantBilling.ts. ROOM_MIN_CREATOR_MESSAGES_TO_EARN is removed.
+ * See canonicalRoomParticipantBilling.ts for the canonical earning model.
  */
-export const ROOM_MIN_CREATOR_MESSAGES_TO_EARN = 3;
-export const ROOM_CREATOR_EARN_MIN_MESSAGES = 1;  // entry earns after ≥1 creator message
+// REMOVED: export const ROOM_MIN_CREATOR_MESSAGES_TO_EARN — see canonicalRoomParticipantBilling.ts
+export const ROOM_CREATOR_EARN_MIN_MESSAGES = 1;  // kept for legacy data migration compatibility
 export const ROOM_INACTIVE_EXPIRE_HOURS     = 24;
 
 export const ROOM_PRIORITY_TIERS = {
@@ -406,10 +417,14 @@ export async function deliverCreatorRoomMessage(params: {
   assertRoomLive(room);
   assertCreator(room, creatorId);
 
-  // §1.8: earn entry fees only after delivering ROOM_MIN_CREATOR_MESSAGES_TO_EARN messages
+  // B3: DEPRECATED — message-count threshold earning removed.
+  // Entry budget is NOT earned here. Use chargeRoomPaidInteraction() for explicit paid interactions.
+  // Keeping room.creatorMessageCount increment for analytics/scheduling only.
+  // §1.8 canonical earning is triggered by per-product events (A–F).
+  // ↓ Original threshold block preserved as DEAD_CODE for reference only:
   // NOT on first generic message — prevents trivial earn-and-leave exploitation.
   const messageCountAfter        = room.creatorMessageCount + 1;
-  const reachesEarnThreshold     = messageCountAfter === ROOM_MIN_CREATOR_MESSAGES_TO_EARN;
+  const reachesEarnThreshold     = false; // DEAD_CODE: message-threshold earning removed (B3); was messageCountAfter === ROOM_MIN_CREATOR_MESSAGES_TO_EARN
   const isFirstMessage           = false; // no longer used — threshold replaces first-message trigger
   let   tokensEarned   = 0;
 
@@ -465,13 +480,11 @@ export async function deliverCreatorRoomMessage(params: {
   if (tokensEarned > 0) {
     await recordCreatorEarning({
       creatorId,
-      earningTokens:      tokensEarned,
-      payerTokensCharged: tokensEarned,
-      productType:        'ROOM_ENTRY',
-      sourceType:         'ROOM_ENTRY_SETTLEMENT',
-      sourceId:           roomId,
-      idempotencyKey:     `room_entry_earn:${roomId}:${iKey}`,
-      metadata:           { roomId, firstMessage: true },
+      payerId:          'ROOM_POOL',
+      type:             'ROOM_PRODUCT',
+      tokenAmount:      tokensEarned,
+      sourceRef:        roomId,
+      idempotencyKey:   `room_entry_earn:${roomId}:${iKey}`,
     }).catch((err: unknown) => {
       console.error('[C10] recordCreatorEarning failed (room entry):', err);
     });
@@ -570,14 +583,12 @@ export async function sendRoomTip(params: {
   });
 
   await recordCreatorEarning({
-    creatorId:          room.creatorId,
-    earningTokens:      tokens,
-    payerTokensCharged: tokens,
-    productType:        'TIP',
-    sourceType:         'ROOM_TIP',
-    sourceId:           tipId,
-    idempotencyKey:     `room_tip_earn:${roomId}:${iKey}`,
-    metadata:           { roomId, payerId },
+    creatorId:        room.creatorId,
+    payerId:          payerId,
+    type:             'TIP',
+    tokenAmount:      tokens,
+    sourceRef:        roomId,
+    idempotencyKey:   `room_tip_earn:${roomId}:${iKey}`,
   });
 
   return { tipId, tokensCharged: tokens };
@@ -658,14 +669,12 @@ export async function sendPriorityQuestion(params: {
   // BRONZE/SILVER: earn immediately (no delivery required)
   if (!promisesResponse) {
     await recordCreatorEarning({
-      creatorId:          room.creatorId,
-      earningTokens:      tokens,
-      payerTokensCharged: tokens,
-      productType:        'PRIORITY_QUESTION',
-      sourceType:         'ROOM_PRIORITY_IMMEDIATE',
-      sourceId:           questionId,
-      idempotencyKey:     `room_pq_earn:${roomId}:${iKey}`,
-      metadata:           { roomId, tier, payerId },
+      creatorId:        room.creatorId,
+      payerId:          payerId,
+      type:             'ROOM_PRODUCT',
+      tokenAmount:      tokens,
+      sourceRef:        `${roomId}:priority_question`,
+      idempotencyKey:   `room_pq_earn:${roomId}:${iKey}`,
     });
   }
 
@@ -726,13 +735,11 @@ export async function deliverPriorityAnswer(params: {
 
   await recordCreatorEarning({
     creatorId,
-    earningTokens:      q.tokens,
-    payerTokensCharged: q.tokens,
-    productType:        'PRIORITY_QUESTION',
-    sourceType:         'ROOM_PRIORITY_DELIVERED',
-    sourceId:           questionId,
-    idempotencyKey:     `room_pq_earn:${roomId}:${questionId}:${iKey}`,
-    metadata:           { roomId, tier: q.tier, payerId: q.payerId },
+    payerId:          q.payerId ?? 'UNKNOWN',
+    type:             'ROOM_PRODUCT',
+    tokenAmount:      q.tokens,
+    sourceRef:        `${roomId}:priority_question`,
+    idempotencyKey:   `room_pq_earn:${roomId}:${questionId}:${iKey}`,
   });
 }
 
@@ -853,13 +860,11 @@ export async function deliverGuaranteedResponse(params: {
 
   await recordCreatorEarning({
     creatorId,
-    earningTokens:      g.tokens,
-    payerTokensCharged: g.tokens,
-    productType:        'GUARANTEED_ROOM_RESPONSE',
-    sourceType:         'ROOM_GUARANTEED_DELIVERED',
-    sourceId:           responseId,
-    idempotencyKey:     `room_gr_earn:${roomId}:${responseId}:${iKey}`,
-    metadata:           { roomId, payerId: g.payerId },
+    payerId:          g.payerId ?? 'UNKNOWN',
+    type:             'ROOM_PRODUCT',
+    tokenAmount:      g.tokens,
+    sourceRef:        `${roomId}:guaranteed_response`,
+    idempotencyKey:   `room_gr_earn:${roomId}:${responseId}:${iKey}`,
   });
 }
 

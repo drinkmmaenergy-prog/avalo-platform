@@ -350,7 +350,7 @@ export const IDEMPOTENCY_COLLECTION = 'idempotency_sentinels';
 /**
  * Payout requests collection.
  */
-export const PAY
+export const PAYOUT_REQUESTS_COLLECTION = "payoutRequests";
 
 // ============================================================================
 // C3: CHAT RESERVATION — chat_reservations/{reservationId}
