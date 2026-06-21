@@ -51,9 +51,10 @@
  * @version 1.0.0
  */
 
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { HttpsError }               from 'firebase-functions/v2/https';
-import { logger }                   from 'firebase-functions/v2';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { HttpsError, onRequest }              from 'firebase-functions/v2/https';
+import { logger }                             from 'firebase-functions/v2';
+import Stripe                                 from 'stripe';
 
 // ── Canonical types (must match ageGuard.ts) ─────────────────────────────────
 
@@ -194,18 +195,16 @@ class StripeIdentityProvider implements KycProvider {
         'STRIPE_IDENTITY_NOT_CONFIGURED: Set STRIPE_SECRET_KEY and STRIPE_IDENTITY_WEBHOOK_SECRET.');
     }
 
-    // Dynamic import — only loads Stripe when this provider is actually used.
-    // Keeps cold-start fast when a different provider is configured.
-    const Stripe = require('stripe');
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
 
-    const options: Record<string, any> = {
-      type: 'document',
+    type SessionCreateParams = Stripe.Identity.VerificationSessionCreateParams;
+    const options: SessionCreateParams = {
+      type:     'document',
       metadata: { uid: req.uid, ...req.metadata },
     };
     if (req.verificationType === 'LIVENESS_CHALLENGE') {
-      options.type = 'id_number';  // Stripe uses id_number type for selfie+liveness
-      options.options = { document: { allowed_types: ['driving_license', 'passport', 'id_card'] } };
+      // Stripe uses id_number + options.document for selfie+liveness flow
+      (options as SessionCreateParams & { type: string }).type = 'id_number';
     }
     if (req.redirectUrl) options.return_url = req.redirectUrl;
 
@@ -213,7 +212,7 @@ class StripeIdentityProvider implements KycProvider {
 
     return {
       sessionId:  session.id,
-      sessionUrl: session.url ?? undefined,
+      sessionUrl: (session as { url?: string }).url ?? undefined,
       expiresAt:  session.created ? new Date((session.created + 3600) * 1000) : undefined,
     };
   }
@@ -224,48 +223,58 @@ class StripeIdentityProvider implements KycProvider {
   ): Promise<VerificationCompletionResult | null> {
     if (!this.isConfigured()) return null;
 
-    const Stripe = require('stripe');
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
-    const sig    = headers['stripe-signature'] ?? headers['Stripe-Signature'] ?? '';
+    const sig       = headers['stripe-signature'] ?? headers['Stripe-Signature'] ?? '';
 
-    let event: any;
+    let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(
         rawBody, sig, process.env.STRIPE_IDENTITY_WEBHOOK_SECRET!
-      );
+      ) as Stripe.Event;
     } catch (err) {
       logger.error('[KYC:stripe_identity] Webhook signature verification failed', err);
       throw new HttpsError('unauthenticated', 'KYC_WEBHOOK_SIGNATURE_INVALID');
     }
 
-    const vs = event.data?.object;
-    const uid = vs?.metadata?.uid;
-    if (!uid) return null;
-
-    const relevantEvents = [
+    const IDENTITY_EVENTS = [
       'identity.verification_session.verified',
       'identity.verification_session.requires_input',
       'identity.verification_session.canceled',
-    ];
-    if (!relevantEvents.includes(event.type)) return null;
+    ] as const;
+    type IdentityEventType = typeof IDENTITY_EVENTS[number];
 
-    const isVerified = event.type === 'identity.verification_session.verified';
-    const checks     = vs?.last_verification_report?.document ?? {};
+    if (!(IDENTITY_EVENTS as readonly string[]).includes(event.type)) return null;
+
+    // Stripe Identity event payload — use explicit cast with unknown intermediate
+    const vs = (event.data as { object: Record<string, unknown> }).object;
+    const uid = (vs['metadata'] as Record<string, string> | undefined)?.['uid'];
+    if (!uid) return null;
+
+    const eventType     = event.type as IdentityEventType;
+    const isVerified    = eventType === 'identity.verification_session.verified';
+    const vsStatus      = vs['status'] as string | undefined;
+    const lastReport    = vs['last_verification_report'] as Record<string, unknown> | undefined;
+    const selfieStatus  = (lastReport?.['selfie'] as Record<string, unknown> | undefined)?.['status'];
+    const docReport     = (lastReport?.['document'] as Record<string, unknown> | undefined) ?? {};
+    const dob           = docReport['dob'] as { year?: number; month?: number; day?: number } | undefined;
+    const lastError     = vs['last_error'] as Record<string, unknown> | undefined;
 
     return {
       uid,
       provider:              this.slug,
-      providerReference:     vs?.id ?? '',
-      status:                isVerified ? 'VERIFIED' : (vs?.status === 'requires_input' ? 'REQUIRES_REVIEW' : 'REJECTED'),
+      providerReference:     (vs['id'] as string | undefined) ?? '',
+      status:                isVerified
+                               ? 'VERIFIED'
+                               : (vsStatus === 'requires_input' ? 'REQUIRES_REVIEW' : 'REJECTED'),
       ageVerified:           isVerified,
-      verifiedAdult:         isVerified && (checks.dob ? isAdultDob(checks.dob) : true),
+      verifiedAdult:         isVerified && (dob ? isAdultDob(dob) : true),
       verificationLevel:     isVerified ? 'HARD' : 'NONE',
-      livenessPassed:        isVerified && (vs?.last_verification_report?.selfie?.status === 'verified'),
-      faceMatchPassed:       isVerified && (vs?.last_verification_report?.selfie?.status === 'verified'),
+      livenessPassed:        isVerified && selfieStatus === 'verified',
+      faceMatchPassed:       isVerified && selfieStatus === 'verified',
       ageEstimateConfidence: isVerified ? 0.9 : 0.0,
       kycLevel:              isVerified ? 'STANDARD' : 'NONE',
-      reviewRequired:        vs?.status === 'requires_input',
-      reviewReason:          vs?.last_error?.reason ?? null,
+      reviewRequired:        vsStatus === 'requires_input',
+      reviewReason:          (lastError?.['reason'] as string | undefined) ?? null,
       verifiedAt:            isVerified ? new Date() : null,
     };
   }
@@ -292,23 +301,54 @@ const PROVIDER_REGISTRY: Record<string, KycProvider> = {
  * Resolve the active KYC provider from the KYC_PROVIDER env var.
  * If KYC_PROVIDER is unset or names an unknown provider, returns NullProvider
  * which fails-closed on all initiate() calls.
+ *
+ * PRODUCTION/STAGING GUARD [P6]:
+ * If the resolved provider is NullProvider and the environment is NOT
+ * 'development' or 'test', this function throws immediately so that a
+ * misconfigured staging/production deployment fails loudly at request time
+ * rather than silently passing verification checks.
  */
 export function getKycProvider(): KycProvider {
   const slug = process.env.KYC_PROVIDER?.trim().toLowerCase();
   if (!slug) {
     logger.warn('[KYC] KYC_PROVIDER env var not set — fail-closed mode');
-    return new NullProvider();
+    return enforceNullProviderPolicy(new NullProvider());
   }
   const provider = PROVIDER_REGISTRY[slug];
   if (!provider) {
     logger.error(`[KYC] Unknown KYC_PROVIDER="${slug}". Valid: ${Object.keys(PROVIDER_REGISTRY).join(', ')}`);
-    return new NullProvider();
+    return enforceNullProviderPolicy(new NullProvider());
   }
   if (!provider.isConfigured()) {
     logger.error(`[KYC] Provider "${slug}" is not fully configured — missing env vars`);
-    return new NullProvider();
+    return enforceNullProviderPolicy(new NullProvider());
   }
   return provider;
+}
+
+/**
+ * Enforce that NullProvider cannot be used in staging or production.
+ * Allowed environments: ENVIRONMENT=development | test (or NODE_ENV=test).
+ * In any other environment (production, staging, unset), throws immediately
+ * so the misconfiguration is caught at deploy-time or first request.
+ */
+function enforceNullProviderPolicy(p: NullProvider): NullProvider {
+  const env = (process.env.ENVIRONMENT ?? process.env.NODE_ENV ?? '').toLowerCase();
+  const isTestOrDev = env === 'development' || env === 'test' || env === 'emulator';
+  if (!isTestOrDev) {
+    // Log a critical error AND throw — NullProvider in production is a hard stop
+    logger.error(
+      '[KYC] CRITICAL: NullProvider active in non-development environment. ' +
+      `ENVIRONMENT="${process.env.ENVIRONMENT}" NODE_ENV="${process.env.NODE_ENV}". ` +
+      'Set KYC_PROVIDER and required credentials before deploying.'
+    );
+    throw new HttpsError(
+      'internal',
+      'KYC_PROVIDER_MISCONFIGURED: Verification is not configured for this environment. ' +
+      'This is a deployment configuration error. Contact Avalo engineering.',
+    );
+  }
+  return p;
 }
 
 // ── Firestore writer ──────────────────────────────────────────────────────────
@@ -325,6 +365,38 @@ export async function finalizeVerification(result: VerificationCompletionResult)
   const db  = getFirestore();
   const ref = db.collection(AGE_VERIFICATION_COL).doc(result.uid);
 
+  // ── Idempotency guard [P6] ───────────────────────────────────────────────
+  // If a VERIFIED record already exists with the SAME providerReference,
+  // do not overwrite it. This prevents provider webhook replay from
+  // downgrading a verified user.
+  const existing = await ref.get();
+  if (existing.exists) {
+    const curr = existing.data() as {
+      providerReference?: string;
+      status?: string;
+    };
+    if (
+      curr.providerReference &&
+      curr.providerReference !== 'pending' &&
+      curr.providerReference === result.providerReference &&
+      curr.status === result.status
+    ) {
+      logger.info(
+        `[KYC] Idempotent skip: uid=${result.uid} providerRef=${result.providerReference} ` +
+        `status=${result.status} already recorded`
+      );
+      return; // exact replay — safe to ignore
+    }
+    // If current status is VERIFIED and new event would downgrade, reject.
+    if (curr.status === 'VERIFIED' && result.status !== 'VERIFIED') {
+      logger.warn(
+        `[KYC] Replay protection: refusing to downgrade VERIFIED uid=${result.uid} ` +
+        `to ${result.status} (providerRef=${result.providerReference})`
+      );
+      return;
+    }
+  }
+
   // Build the canonical record (all required fields explicitly set)
   const record = {
     uid:                    result.uid,
@@ -340,40 +412,48 @@ export async function finalizeVerification(result: VerificationCompletionResult)
     reviewRequired:         result.reviewRequired,
     reviewReason:           result.reviewReason ?? null,
     kycLevel:               result.kycLevel,
-    verifiedAt:             result.verifiedAt ? result.verifiedAt : null,
+    verifiedAt:             result.verifiedAt
+                              ? Timestamp.fromDate(result.verifiedAt)
+                              : null,
     updatedAt:              FieldValue.serverTimestamp(),
   };
 
-  const existing = await ref.get();
   if (!existing.exists) {
-    await ref.set({
-      ...record,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-    logger.info(`[KYC] Verification record created for uid=${result.uid} provider=${result.provider} status=${result.status}`);
+    await ref.set({ ...record, createdAt: FieldValue.serverTimestamp() });
+    logger.info(
+      `[KYC] Verification record created: uid=${result.uid} ` +
+      `provider=${result.provider} status=${result.status}`
+    );
   } else {
-    await ref.update({
-      ...record,
-    });
-    logger.info(`[KYC] Verification record updated for uid=${result.uid} status=${result.status}`);
+    await ref.update(record);
+    logger.info(
+      `[KYC] Verification record updated: uid=${result.uid} status=${result.status}`
+    );
+  }
+
+  // ── Manual review queue [P6] ─────────────────────────────────────────────
+  if (result.reviewRequired) {
+    await db.collection('kycManualReviewQueue').doc(result.uid).set({
+      uid:               result.uid,
+      provider:          result.provider,
+      providerReference: result.providerReference,
+      reviewReason:      result.reviewReason ?? 'unknown',
+      status:            'PENDING_REVIEW',
+      queuedAt:          FieldValue.serverTimestamp(),
+      resolvedAt:        null,
+      resolvedBy:        null,
+    }, { merge: true });
+    logger.info(`[KYC] Manual review queue entry written for uid=${result.uid}`);
   }
 }
 
 // ── KYC session initiator ─────────────────────────────────────────────────────
 
-/**
- * Begin a verification session via the active provider.
- * Returns provider session details (URL, ID) for the client to proceed.
- * Writes a PENDING record to `age_verification/{uid}` immediately.
- *
- * FAIL CLOSED: if no provider is configured, throws failed-precondition.
- */
 export async function initiateVerification(
   req: VerificationInitRequest,
 ): Promise<VerificationInitResult> {
   const provider = getKycProvider();
 
-  // Write PENDING record immediately (fail-closed: guards see PENDING and reject)
   await finalizeVerification({
     uid:                    req.uid,
     provider:               provider.slug,
@@ -393,7 +473,6 @@ export async function initiateVerification(
 
   const result = await provider.initiate(req);
 
-  // Update with actual provider reference
   const db = getFirestore();
   await db.collection(AGE_VERIFICATION_COL).doc(req.uid).update({
     providerReference: result.sessionId,
@@ -405,16 +484,6 @@ export async function initiateVerification(
 
 // ── Webhook dispatcher ────────────────────────────────────────────────────────
 
-/**
- * Parse and dispatch a KYC provider webhook.
- * Called from the HTTP webhook endpoint (kycWebhookHandler Cloud Function).
- *
- * Returns the parsed verification result, or null if the webhook was not
- * a verification-related event.
- *
- * ALWAYS returns 200 to the provider even on parse failures — to avoid
- * provider retry storms. Errors are logged.
- */
 export async function dispatchKycWebhook(
   rawBody:  Buffer | string,
   headers:  Record<string, string>,
@@ -430,7 +499,7 @@ export async function dispatchKycWebhook(
   }
 
   if (!result) {
-    return { processed: false };  // non-verification event
+    return { processed: false };
   }
 
   try {
@@ -442,3 +511,49 @@ export async function dispatchKycWebhook(
     return { processed: false };
   }
 }
+
+// ── HTTP webhook endpoint (exported from index.ts as kycWebhookHandler) ───────
+
+/**
+ * Cloud Function HTTP endpoint that receives provider callbacks.
+ * Export name: kycWebhookHandler
+ * URL (once deployed): https://<region>-<project>.cloudfunctions.net/kycWebhookHandler
+ *
+ * Required configuration:
+ *   - Register this URL with the KYC provider dashboard as the webhook endpoint
+ *   - Providers must sign all callbacks; signature is verified inside parseWebhook()
+ *
+ * Always returns HTTP 200 to the provider to prevent retry storms.
+ * Errors are logged but not re-thrown.
+ */
+export const kycWebhookHandler = onRequest(
+  { cors: false },   // no CORS — provider-to-server only
+  async (req, res) => {
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
+    // Collect raw body as Buffer for signature verification
+    const rawBody: Buffer = Buffer.isBuffer(req.rawBody)
+      ? req.rawBody
+      : Buffer.from(typeof req.rawBody === 'string' ? req.rawBody : JSON.stringify(req.body));
+
+    const headers: Record<string, string> = {};
+    for (const [k, v] of Object.entries(req.headers)) {
+      if (typeof v === 'string') headers[k.toLowerCase()] = v;
+    }
+
+    try {
+      const result = await dispatchKycWebhook(rawBody, headers);
+      if (result.processed) {
+        logger.info(`[KYC] Webhook accepted: uid=${result.uid} status=${result.status}`);
+      }
+    } catch (err) {
+      // Log but always return 200 to avoid provider retries
+      logger.error('[KYC] kycWebhookHandler fatal error:', err);
+    }
+
+    res.status(200).send('OK');
+  }
+);

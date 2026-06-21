@@ -142,6 +142,14 @@ export {
   kyc_admin_listPending,
 } from './pack289-kyc';
 
+// CANONICAL KYC WEBHOOK HANDLER [P6]
+// Receives signed callbacks from KYC provider (Stripe Identity or equivalent).
+// Webhook URL: https://<region>-<project>.cloudfunctions.net/kycWebhookHandler
+// Register this URL in the provider dashboard (Stripe → Developers → Webhooks).
+// Required env vars: KYC_PROVIDER=stripe_identity, STRIPE_SECRET_KEY,
+//   STRIPE_IDENTITY_WEBHOOK_SECRET, ENVIRONMENT=production|staging|development
+export { kycWebhookHandler } from './compliance/kycProviderService';
+
 // PACK 350: SUBSCRIPTION ENDPOINTS
 export {
   pack350_getMySubscription,
@@ -1222,4 +1230,3 @@ console.log('📦 All PACK modules exported and ready for deployment');
 
 export { ciHealth } from './ciHealth';
 import * as functions from 'firebase-functions';
-
