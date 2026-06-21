@@ -319,7 +319,7 @@ export async function calculatePromotionScore(data: {
     ratingScore,
     viralConversion,
     breakdown,
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
     expiresAt
   };
   

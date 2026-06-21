@@ -282,13 +282,13 @@ export const pack304_listAnomalies = onCall(
 
       // Apply filters
       if (type) {
-        query = query.where('type', '==', type) as any;
+        query = query.where('type', '==', type);
       }
       if (status) {
-        query = query.where('status', '==', status) as any;
+        query = query.where('status', '==', status);
       }
       if (userId) {
-        query = query.where('userId', '==', userId) as any;
+        query = query.where('userId', '==', userId);
       }
 
       // Pagination

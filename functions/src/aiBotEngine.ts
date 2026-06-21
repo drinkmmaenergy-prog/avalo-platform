@@ -145,8 +145,8 @@ export async function createBot(
       uniqueChats: 0,
       returningUsers: 0,
     },
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
   
   await db.collection('aiBots').doc(botId).set(botData);

@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -43,7 +44,7 @@ export async function generateWatermark(
   const metadata: WatermarkMetadata = {
     userId,
     deviceFingerprint,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     checksum: generateWatermarkChecksum(userId, contentId, deviceFingerprint),
     sessionId,
     ipAddress: ipAddress ? hashIPAddress(ipAddress) : undefined,
@@ -99,7 +100,7 @@ export async function embedWatermark(
     watermarkData,
     sessionId,
     ipAddressHash: hashIPAddress(deviceFingerprint),
-    accessedAt: serverTimestamp() as any,
+    accessedAt: serverTimestamp() as unknown as Timestamp,
     suspiciousActivity: false,
   };
   
@@ -247,7 +248,7 @@ export async function detectPiracyFromWatermark(
     leakerPayoutFrozen: false,
     
     evidencUSDls: piratedUrl ? [piratedUrl] : [],
-    detectedAt: serverTimestamp() as any,
+    detectedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('piracy_detections').doc(detectionId).set(detection);
@@ -302,7 +303,7 @@ export async function reportPiracy(
     leakerPayoutFrozen: false,
     
     evidencUSDls: [piratedUrl],
-    detectedAt: serverTimestamp() as any,
+    detectedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('piracy_detections').doc(detectionId).set(detection);
@@ -402,7 +403,7 @@ export async function scanExternalPlatform(
     matchesFound: 0,
     detections: [],
     status: 'IN_PROGRESS',
-    startedAt: serverTimestamp() as any,
+    startedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('external_platform_scans').doc(scanId).set(scan);

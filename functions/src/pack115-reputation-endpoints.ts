@@ -218,7 +218,7 @@ export const reputation_admin_getAbuseAttempts = functions.https.onCall(async (r
       .limit(limit);
 
     if (userId) {
-      query = query.where('userId', '==', userId) as any;
+      query = query.where('userId', '==', userId);
     }
 
     const snapshot = await query.get();

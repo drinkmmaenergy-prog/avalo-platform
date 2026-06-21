@@ -313,7 +313,7 @@ export const adminGetExperimentAssignments = onRequest(
         .limit(Math.min(limit, 1000));
 
       if (experimentKey) {
-        query = query.where('experimentKey', '==', experimentKey) as any;
+        query = query.where('experimentKey', '==', experimentKey);
       }
 
       const snapshot = await query.get();

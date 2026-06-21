@@ -122,17 +122,17 @@ async function getBaseCandidates(
   
   // Apply filters
   if (filters?.gender) {
-    query = query.where('gender', '==', filters.gender) as any;
+    query = query.where('gender', '==', filters.gender);
   }
   
   if (filters?.minAge) {
     const maxBirthYear = new Date().getFullYear() - filters.minAge;
-    query = query.where('birthYear', '<=', maxBirthYear) as any;
+    query = query.where('birthYear', '<=', maxBirthYear);
   }
   
   if (filters?.maxAge) {
     const minBirthYear = new Date().getFullYear() - filters.maxAge;
-    query = query.where('birthYear', '>=', minBirthYear) as any;
+    query = query.where('birthYear', '>=', minBirthYear);
   }
   
   // Fetch more than needed for filtering and ranking

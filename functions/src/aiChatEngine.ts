@@ -157,9 +157,9 @@ export async function startAiChat(
     contextWindow: {
       lastMessages: [],
     },
-    createdAt: serverTimestamp() as any,
-    lastMessageAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
+    lastMessageAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
   
   await db.collection('aiChats').doc(chatId).set(chatData);

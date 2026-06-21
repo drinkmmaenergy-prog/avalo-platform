@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -61,8 +62,8 @@ export const pack336_createExperiment = functions.https.onCall(async (request) =
       endDate,
       controlMetric,
       targetMetric,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
       createdBy: request.auth.uid,
     };
     

@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -181,7 +182,7 @@ export async function scanForDuplicateContent(
           thumbnailSimilarity: 0,
         },
         modificationsDetected: [],
-        checkedAt: serverTimestamp() as any,
+        checkedAt: serverTimestamp() as unknown as Timestamp,
       };
     }
     
@@ -198,7 +199,7 @@ export async function scanForDuplicateContent(
         thumbnailSimilarity: 1.0,
       },
       modificationsDetected: [],
-      checkedAt: serverTimestamp() as any,
+      checkedAt: serverTimestamp() as unknown as Timestamp,
     };
   }
   
@@ -246,7 +247,7 @@ export async function scanForDuplicateContent(
             thumbnailSimilarity,
           },
           modificationsDetected: modifications,
-          checkedAt: serverTimestamp() as any,
+          checkedAt: serverTimestamp() as unknown as Timestamp,
         };
       }
     }
@@ -263,7 +264,7 @@ export async function scanForDuplicateContent(
       thumbnailSimilarity: 0,
     },
     modificationsDetected: [],
-    checkedAt: serverTimestamp() as any,
+    checkedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 

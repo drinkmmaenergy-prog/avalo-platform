@@ -1045,11 +1045,11 @@ export async function getPanicAlerts(params?: {
   let query = db.collection('panic_alerts').orderBy('createdAt', 'desc');
 
   if (status) {
-    query = query.where('status', '==', status) as any;
+    query = query.where('status', '==', status);
   }
 
   if (tier) {
-    query = query.where('tier', '==', tier) as any;
+    query = query.where('tier', '==', tier);
   }
 
   const alertsSnap = await query.limit(limit).get();

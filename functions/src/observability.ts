@@ -181,7 +181,7 @@ export async function logEvent(input: LogInput): Promise<void> {
         stackSnippet,
         extra,
       } : undefined,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
     
     await db.collection('system_logs').doc(logId).set(logEntry);

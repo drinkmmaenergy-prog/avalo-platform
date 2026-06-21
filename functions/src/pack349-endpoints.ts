@@ -530,4 +530,7 @@ export const processScheduledCampaigns = onSchedule("every 1 hours", async (even
  * Scheduled: Process Minimum Guarantees
  * Runs on the 1st of each month
  */
-export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC
+export const processMinimumGuarantees = onSchedule({ schedule: "0 0 1 * *", timeZone: "UTC" },
+ async () => {}
+);
+// TRUNCATED_EOF

@@ -298,13 +298,13 @@ export const adminSearchUsers = onCall(
 
     if (filter) {
       if (filter.status) {
-        usersQuery = usersQuery.where("status", "==", filter.status) as any;
+        usersQuery = usersQuery.where("status", "==", filter.status);
       }
       if (filter.isCreator !== undefined) {
-        usersQuery = usersQuery.where("settings.earnFromChat", "==", filter.isCreator) as any;
+        usersQuery = usersQuery.where("settings.earnFromChat", "==", filter.isCreator);
       }
       if (filter.verified !== undefined) {
-        usersQuery = usersQuery.where("verification.status", "==", "approved") as any;
+        usersQuery = usersQuery.where("verification.status", "==", "approved");
       }
     }
 

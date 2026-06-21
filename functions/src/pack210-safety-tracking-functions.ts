@@ -495,15 +495,15 @@ export const pack210_admin_getSafetyLogs = functions.https.onCall(async (request
       .limit(data.limit || 100);
 
     if (data.sessionId) {
-      query = query.where('sessionId', '==', data.sessionId) as any;
+      query = query.where('sessionId', '==', data.sessionId);
     }
 
     if (data.userId) {
-      query = query.where('userId', '==', data.userId) as any;
+      query = query.where('userId', '==', data.userId);
     }
 
     if (data.requiresReview !== undefined) {
-      query = query.where('requiresReview', '==', data.requiresReview) as any;
+      query = query.where('requiresReview', '==', data.requiresReview);
     }
 
     const logsSnap = await query.get();

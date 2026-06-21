@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -269,8 +270,8 @@ export const tax_submitProfile = https.onCall<SubmitTaxProfileRequest>(
         documentsVerified: false,
         requiresWithholding,
         vatEligible,
-        createdAt: existingProfile?.createdAt || (serverTimestamp() as any),
-        updatedAt: serverTimestamp() as any,
+        createdAt: existingProfile?.createdAt || serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
         notes: consistency.warnings.length > 0 
           ? `Region inconsistencies detected: ${consistency.warnings.join('; ')}`
           : undefined,
@@ -536,7 +537,7 @@ export const tax_checkCompliance = https.onCall(
         blockers,
         warnings,
         passed: blockers.length === 0,
-        checkedAt: serverTimestamp() as any,
+        checkedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       // Store compliance check result

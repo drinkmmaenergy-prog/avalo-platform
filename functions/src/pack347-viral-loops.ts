@@ -324,7 +324,7 @@ async function updateCreatorViralStats(
             conversionRate: 0
           }
         },
-        updatedAt: serverTimestamp() as any
+        updatedAt: serverTimestamp() as unknown as Timestamp
       };
       transaction.set(statsRef, initialStats);
     } else {
@@ -433,7 +433,7 @@ export async function getCreatorViralInvites(data: {
     .limit(limit);
   
   if (status) {
-    query = query.where('status', '==', status) as any;
+    query = query.where('status', '==', status);
   }
   
   const snapshot = await query.get();

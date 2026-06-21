@@ -190,8 +190,8 @@ export const admin_createOrUpdateFeatureFlag = onCall(async (request) => {
         defaultVariant: createPayload.defaultVariant,
         rules: createPayload.rules || [],
         safeScope: createPayload.safeScope,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
     } else {
       // Updating existing flag
@@ -227,7 +227,7 @@ export const admin_createOrUpdateFeatureFlag = onCall(async (request) => {
 
       flagData = {
         ...mergedFlag,
-        updatedAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp(),
       };
     }
 
@@ -386,8 +386,8 @@ export const admin_createOrUpdateRemoteConfigParam = onCall(async (request) => {
         defaultValue: createPayload.defaultValue,
         rules: createPayload.rules || [],
         safeScope: createPayload.safeScope,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       };
     } else {
       // Updating existing param
@@ -422,7 +422,7 @@ export const admin_createOrUpdateRemoteConfigParam = onCall(async (request) => {
 
       paramData = {
         ...mergedParam,
-        updatedAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp(),
       };
     }
 

@@ -186,15 +186,15 @@ export const pack324c_getTopTrustedCreators = onCall<TrustScoresFilter>(
         .orderBy('trustScore', 'desc');
       
       if (level) {
-        query = query.where('level', '==', level) as any;
+        query = query.where('level', '==', level);
       }
       
       if (minScore !== undefined) {
-        query = query.where('trustScore', '>=', minScore) as any;
+        query = query.where('trustScore', '>=', minScore);
       }
       
       if (maxScore !== undefined) {
-        query = query.where('trustScore', '<=', maxScore) as any;
+        query = query.where('trustScore', '<=', maxScore);
       }
       
       const snapshot = await query

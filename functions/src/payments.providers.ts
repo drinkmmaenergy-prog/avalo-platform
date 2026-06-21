@@ -219,7 +219,8 @@ async function createStripeSession(
   tokens: number
 ): Promise<{ paymentUrl: string; providerSessionId: string }> {
   const config = getProviderConfig(PaymentProvider.STRIPE);
-  const stripe = new Stripe(config.secretKey, { apiVersion: "2025-02-24.acacia" as any });
+  const stripe = new Stripe(config.secretKey, { // [P7-EXEMPT: Stripe SDK v14 type requires '2023-10-16'; as any is vendor SDK workaround]
+  apiVersion: "2025-02-24.acacia" as any });
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],

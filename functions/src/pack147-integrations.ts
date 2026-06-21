@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -113,7 +114,7 @@ async function recordReputationImpact(params: {
     dimension,
     scoreImpact,
     reason,
-    recordedAt: serverTimestamp() as any
+    recordedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('reputation_impact_records').doc(impactId).set(record);

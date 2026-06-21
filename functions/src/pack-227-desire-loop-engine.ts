@@ -203,10 +203,10 @@ export async function getDesireState(userId: string): Promise<DesireState> {
   const newState: DesireState = {
     userId,
     ...DEFAULT_DESIRE_STATE,
-    lastUpdated: serverTimestamp() as any,
-    lastActivityAt: serverTimestamp() as any,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    lastUpdated: serverTimestamp() as unknown as Timestamp,
+    lastActivityAt: serverTimestamp() as unknown as Timestamp,
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await stateRef.set(newState);
@@ -491,7 +491,7 @@ async function createTriggerContent(
     actionText,
     actionTarget,
     priority,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     expiresAt: expiresAt as any,
     dismissed: false,
     actioned: false,

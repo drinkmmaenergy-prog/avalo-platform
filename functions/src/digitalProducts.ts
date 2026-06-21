@@ -439,7 +439,7 @@ export const listCreatorDigitalProducts = onCall(
       .orderBy('createdAt', 'desc');
     
     if (!includeInactive) {
-      query = query.where('isActive', '==', true) as any;
+      query = query.where('isActive', '==', true);
     }
     
     const snapshot = await query.limit(50).get();

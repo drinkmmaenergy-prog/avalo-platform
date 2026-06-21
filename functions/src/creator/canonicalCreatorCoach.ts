@@ -179,11 +179,11 @@ const db = getFirestore();
 export async function recomputeProgressionSignals(creatorId: string): Promise<CreatorProgressionSignals> {
   // Read earning account for lifetime token data
   const earningSnap = await db.collection('creatorEarningAccounts').doc(creatorId).get();
-  const earningData = earningSnap.exists ? earningSnap.data() as any : null;
+  const earningData = earningSnap.exists ? earningSnap.data() as { lifetimeEarnedTokens?: number } : null;
 
   // Read session aggregate (maintained by session close handlers)
   const sessionAggSnap = await db.collection('creatorSessionAggregates').doc(creatorId).get();
-  const aggData = sessionAggSnap.exists ? sessionAggSnap.data() as any : null;
+  const aggData = sessionAggSnap.exists ? sessionAggSnap.data() as { paidSessionCount?: number; averageRating?: number | null; responseRate24h?: number; avgDurationMinutes?: number; fanRetentionRate?: number; revenuePerSession?: number; activeReportCount?: number } : null;
 
   const signals: CreatorProgressionSignals = {
     creatorId,
@@ -325,7 +325,7 @@ export async function grantBadgeIfEligible(creatorId: string): Promise<{
   // Read current badge to confirm transition
   const userRef  = db.collection('users').doc(creatorId);
   const userSnap = await userRef.get();
-  const currentBadge: CreatorBadge = (userSnap.data() as any)?.creatorBadge ?? 'NONE';
+  const currentBadge: CreatorBadge = ((userSnap.data() as { creatorBadge?: string })?.creatorBadge ?? 'NONE') as CreatorBadge;
 
   if (nextBadge(currentBadge) !== targetBadge) {
     return { upgraded: false, newBadge: null };
@@ -375,7 +375,7 @@ export async function generateCoachRecommendations(creatorId: string): Promise<C
   const { eligible, targetBadge, reasons } = await evaluateBadgeEligibility(creatorId);
 
   const userSnap = await db.collection('users').doc(creatorId).get();
-  const currentBadge: CreatorBadge = (userSnap.data() as any)?.creatorBadge ?? 'NONE';
+  const currentBadge: CreatorBadge = ((userSnap.data() as { creatorBadge?: string })?.creatorBadge ?? 'NONE') as CreatorBadge;
 
   const recommendations: CoachRecommendation[] = [];
   const db2 = db;
@@ -424,7 +424,7 @@ export async function generateCoachRecommendations(creatorId: string): Promise<C
   const earningSnap = await db2.collection('creatorEarningAccounts').doc(creatorId).get();
   const MIN_PAYOUT_THRESHOLD = 500;
   if (earningSnap.exists) {
-    const earning = earningSnap.data() as any;
+    const earning = earningSnap.data() as { availableTokens?: number };
     if ((earning.availableTokens ?? 0) >= MIN_PAYOUT_THRESHOLD) {
       const recId = db2.collection('creatorCoachRecommendations').doc().id;
       recommendations.push({
@@ -475,7 +475,7 @@ export async function markRecommendationSeen(
 ): Promise<void> {
   const ref  = db.collection('creatorCoachRecommendations').doc(recommendationId);
   const snap = await ref.get();
-  if (!snap.exists || (snap.data() as any).creatorId !== creatorId) {
+  if (!snap.exists || (snap.data() as { creatorId: string }).creatorId !== creatorId) {
     throw new HttpsError('not-found', 'Recommendation not found');
   }
   await ref.update({ seenAt: FieldValue.serverTimestamp() });

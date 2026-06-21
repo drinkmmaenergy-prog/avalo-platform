@@ -212,7 +212,7 @@ export async function listCountriesByReadiness(
   let query = db.collection('countryRollout').orderBy('launchReadiness', 'desc');
   
   if (strategy) {
-    query = query.where('recommendedLaunchStrategy', '==', strategy) as any;
+    query = query.where('recommendedLaunchStrategy', '==', strategy);
   }
   
   const snapshot = await query.get();

@@ -43,8 +43,8 @@ export const onPanicButtonTriggered = onDocumentCreated(
       
       const ticket: SupportTicket = {
         ticketId,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
         createdBy: {
           type: 'SYSTEM',
         },
@@ -148,8 +148,8 @@ export const onIdentityMismatchRefund = onDocumentCreated(
       
       const ticket: SupportTicket = {
         ticketId,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
         createdBy: {
           type: 'SYSTEM',
         },

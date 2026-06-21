@@ -461,11 +461,11 @@ export const pack211_admin_getSafetyEvents = functions.https.onCall(async (reque
       let query = db.collection('adaptive_safety_events').orderBy('createdAt', 'desc');
 
       if (requiresReview !== undefined) {
-        query = query.where('requiresReview', '==', requiresReview) as any;
+        query = query.where('requiresReview', '==', requiresReview);
       }
 
       if (severity) {
-        query = query.where('severity', '==', severity) as any;
+        query = query.where('severity', '==', severity);
       }
 
       const snapshot = await query.limit(limit).get();

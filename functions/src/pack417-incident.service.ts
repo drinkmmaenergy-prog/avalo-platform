@@ -405,13 +405,13 @@ export async function getIncidentActions(
   includeCompleted = true
 ): Promise<IncidentActionItem[]> {
   try {
-    let query = db
+    let query: FirebaseFirestore.Query = db
       .collection('incidents')
       .doc(incidentId)
       .collection('actions');
 
     if (!includeCompleted) {
-      query = query.where('completed', '==', false) as any;
+      query = query.where('completed', '==', false);
     }
 
     const snapshot = await query.get();

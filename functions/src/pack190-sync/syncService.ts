@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
 
 /**
@@ -358,7 +359,7 @@ export class SyncService {
       
       return {
         success: true,
-        syncedAt: serverTimestamp() as any,
+        syncedAt: serverTimestamp() as unknown as Timestamp,
         updates,
         conflicts: allConflicts.length > 0 ? allConflicts : undefined,
         newVersion: {
@@ -373,7 +374,7 @@ export class SyncService {
       console.error('Sync error:', error);
       return {
         success: false,
-        syncedAt: serverTimestamp() as any,
+        syncedAt: serverTimestamp() as unknown as Timestamp,
         updates: {},
         newVersion: {
           chat: lastSyncVersion.chat || 0,

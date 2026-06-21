@@ -684,7 +684,7 @@ async function assignDailyMissions(earnerId: string, level: CreatorLevel): Promi
       },
       status: 'active',
       assignedAt: serverTimestamp() as FirebaseFirestore.Timestamp,
-      expiresAt: FieldValue.serverTimestamp() as any,
+      expiresAt: FieldValue.serverTimestamp() as unknown as Timestamp,
     };
 
     await db
@@ -749,7 +749,7 @@ async function assignWeeklyMissions(earnerId: string, level: CreatorLevel): Prom
       },
       status: 'active',
       assignedAt: serverTimestamp() as FirebaseFirestore.Timestamp,
-      expiresAt: FieldValue.serverTimestamp() as any,
+      expiresAt: FieldValue.serverTimestamp() as unknown as Timestamp,
     };
 
     await db

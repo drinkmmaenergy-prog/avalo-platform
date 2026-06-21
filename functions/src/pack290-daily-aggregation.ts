@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -51,7 +52,7 @@ export const earner_analytics_daily_aggregation = onSchedule(
       jobId,
       date: dateStr,
       status: 'RUNNING',
-      startedAt: serverTimestamp() as any,
+      startedAt: serverTimestamp() as unknown as Timestamp,
       usersProcessed: 0,
       totalUsers: 0,
       errors: [],
@@ -118,7 +119,7 @@ export const earner_analytics_daily_aggregation = onSchedule(
       // Mark as completed
       jobStatus.status = 'COMPLETED';
       jobStatus.usersProcessed = processed;
-      jobStatus.completedAt = serverTimestamp() as any;
+      jobStatus.completedAt = serverTimestamp() as unknown as Timestamp;
       jobStatus.errors = errors;
       
       await db.collection('aggregationJobs').doc(jobId).update({
@@ -173,8 +174,8 @@ async function aggregateUserDay(
     calendarBookings: 0,
     eventTickets: 0,
     
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   const uniquePayerIds = new Set<string>();

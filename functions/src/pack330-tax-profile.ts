@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -161,8 +162,8 @@ export const pack330_setTaxProfile = https.onCall<SetTaxProfileRequest>(
         consentToElectronicDocs: true, // Required for tax reports
         createdAt: existingProfile.exists 
           ? existingProfile.data()!.createdAt 
-          : (serverTimestamp() as any),
-        updatedAt: serverTimestamp() as any,
+          : (serverTimestamp()),
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       await profileRef.set(taxProfile, { merge: true });

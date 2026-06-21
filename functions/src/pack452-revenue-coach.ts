@@ -316,7 +316,7 @@ export async function generateSuggestionsForUser(userId: string): Promise<number
       message: suggestion.message,
       priority: suggestion.priority,
       dismissed: false,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
       metricsSnapshot: metrics,
     };
 

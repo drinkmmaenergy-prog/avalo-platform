@@ -282,7 +282,7 @@ export async function createLocalBoost(data: {
     tokensCharged: config.tokens,
     earnerReceives,
     platformReceives,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     expiresAt,
     metadata: {
       city,
@@ -330,7 +330,7 @@ export async function createGlobalBoost(data: {
     tokensCharged: config.tokens,
     earnerReceives,
     platformReceives,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     expiresAt,
     metadata: {
       duration: config.durationHours
@@ -391,7 +391,7 @@ export async function createEventBoost(data: {
     tokensCharged: config.tokens,
     earnerReceives,
     platformReceives,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     expiresAt,
     metadata: {
       eventId,
@@ -450,7 +450,7 @@ export async function createAICompanionBoost(data: {
     tokensCharged: config.tokens,
     earnerReceives,
     platformReceives,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     expiresAt,
     metadata: {
       aiCompanionId,

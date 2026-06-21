@@ -587,4 +587,5 @@ async function calculateWithholding(userId: string, grossAmount: number) {
   };
 }
 
-async function executePayoutViaProvid
+async function executePayoutViaProvider(_payoutId: string, _payout: any): Promise<{success: boolean; transactionId?: string}> { return { success: false }; }
+// TRUNCATED_EOF

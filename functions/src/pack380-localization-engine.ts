@@ -330,7 +330,7 @@ export const getLocalizedCreatorMaterials = functions.https.onCall(async (reques
     let query = db.collection('earnerMaterials')
       .where('language', '==', language)
       .where('region', 'in', [region, 'global'])
-      .where('status', '==', 'published') as any;
+      .where('status', '==', 'published');
 
     if (materialType) {
       query = query.where('type', '==', materialType);

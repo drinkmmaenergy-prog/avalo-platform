@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -158,7 +159,7 @@ export async function createRecoveryAnalytics(
     timeToRestart: 0,
     returnedToActive: false,
     churnedAfterRecovery: false,
-    createdAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('breakup_recovery_analytics').doc(analyticsId).set(analytics);
@@ -478,8 +479,8 @@ export async function createBreakupSafetyIncident(
     forcedInvisibility,
     monitoredRestart,
     status: 'active',
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('breakup_safety_incidents').doc(incidentId).set(incident);

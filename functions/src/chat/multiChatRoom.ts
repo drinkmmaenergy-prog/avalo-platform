@@ -267,7 +267,7 @@ async function loadParticipant(roomId: string, userId: string): Promise<Particip
 async function getUserDisplayName(userId: string): Promise<string> {
   const snap = await db.collection('users').doc(userId).get();
   if (!snap.exists) return 'Anonymous';
-  const data = snap.data() as any;
+  const data = snap.data() as { displayName?: string; name?: string };
   return data.displayName || data.name || 'Anonymous';
 }
 
@@ -279,7 +279,7 @@ async function validateEarnerStatus(userId: string): Promise<void> {
   if (!snap.exists) {
     throw new HttpsError('not-found', 'User not found');
   }
-  const data = snap.data() as any;
+  const data = snap.data() as Record<string, unknown>;
   if (!data.earn_on) {
     throw new HttpsError('permission-denied', 'User must have earning enabled to create rooms');
   }
@@ -462,7 +462,7 @@ export async function joinMultiRoom(
     wordBudgetRemaining: participantState === 'ACTIVE' ? wordBudget : wordBudget,
     wordBudgetTotal: wordBudget,
     tokensSpent: room.entryFeeTokens,
-    joinedAt: serverTimestamp() as any,
+    joinedAt: serverTimestamp(),
     isMuted: false,
     isBanned: false,
     state: participantState,
@@ -579,7 +579,7 @@ export async function sendMultiRoomMessage(
     pinExpiresAt: null,
     earnerMustReply: false,
     earnerReplied: false,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
   };
 
   await messagesCol(roomId).doc(messageId).set(messageDoc);
@@ -756,7 +756,7 @@ export async function sendPriorityMessage(
     pinExpiresAt: pinExpiresAtTs,
     earnerMustReply: earnerMustReplyFlag,
     earnerReplied: false,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
   };
 
   // Save to both messages and priority queue
@@ -849,7 +849,7 @@ export async function requestGuaranteedReply(
     respondedAt: null,
     refundedAt: null,
     deadlineAt: null,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
   };
 
   await guaranteedRequestsCol(roomId).doc(requestId).set(requestDoc);
@@ -949,7 +949,7 @@ export async function respondToGuaranteedRequest(
     pinExpiresAt: null,
     earnerMustReply: true,
     earnerReplied: false,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
   };
 
   await messagesCol(roomId).doc(messageId).set(messageDoc);

@@ -374,7 +374,7 @@ export async function generateDiscoveryFeed(
     // Apply gender filter if viewer has preferences
     const preferredGenders = viewerData?.profile?.seeking || [];
     if (preferredGenders.length > 0 && preferredGenders.length <= 10) {
-      query = query.where('profile.gender', 'in', preferredGenders) as any;
+      query = query.where('profile.gender', 'in', preferredGenders);
     }
 
     // Fetch candidates (fetch more than needed for filtering)

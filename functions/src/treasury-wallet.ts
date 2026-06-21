@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -39,8 +40,8 @@ async function ensureHotWallet(): Promise<void> {
       totalBalance: WALLET_POLICY.HOT_WALLET_TARGET_BALANCE,
       dailyPayoutLimit: WALLET_POLICY.HOT_WALLET_MAX_BALANCE,
       rebalanceThreshold: WALLET_POLICY.HOT_WALLET_MAX_BALANCE,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     await walletRef.set(newWallet);
     logger.info('Hot wallet initialized', { balance: newWallet.totalBalance });
@@ -58,8 +59,8 @@ async function ensureColdWallet(): Promise<void> {
     const newWallet: TreasuryColdWallet = {
       id: 'cold_wallet',
       totalBalance: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     await walletRef.set(newWallet);
     logger.info('Cold wallet initialized');
@@ -147,7 +148,7 @@ export const treasury_rebalanceWallet = https.onCall(
           direction: null,
           hotBalance: (await db.collection('treasury_hot_wallet').doc('hot_wallet').get()).data()?.totalBalance || 0,
           coldBalance: (await db.collection('treasury_cold_wallet').doc('cold_wallet').get()).data()?.totalBalance || 0,
-          timestamp: serverTimestamp() as any,
+          timestamp: serverTimestamp(),
           message: 'No rebalancing needed',
         });
 
@@ -217,7 +218,7 @@ export const treasury_rebalanceWallet = https.onCall(
         direction: check.direction!,
         hotBalance: hotWalletSnap.data()?.totalBalance || 0,
         coldBalance: coldWalletSnap.data()?.totalBalance || 0,
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as unknown as Timestamp,
       };
 
       logger.info('Wallet rebalanced', {

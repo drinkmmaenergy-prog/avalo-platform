@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -155,7 +156,7 @@ export const audienceGrowth_updateSocialLinks = onCall(
       const updatedLinks: Partial<CreatorSocialLinks> = {
         ...(socialLinksSnap.exists ? socialLinksSnap.data() : {}),
         earnerId: userId,
-        updatedAt: serverTimestamp() as any,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       // Update provided fields

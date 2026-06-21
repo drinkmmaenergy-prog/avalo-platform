@@ -119,21 +119,21 @@ export const pack324b_getFraudSignals = onCall<FraudSignalsFilter>(
       
       // Apply filters
       if (userId) {
-        query = query.where('userId', '==', userId) as any;
+        query = query.where('userId', '==', userId);
       }
       
       if (source) {
-        query = query.where('source', '==', source) as any;
+        query = query.where('source', '==', source);
       }
       
       if (signalType) {
-        query = query.where('signalType', '==', signalType) as any;
+        query = query.where('signalType', '==', signalType);
       }
       
       if (severity) {
-        query = query.where('severity', '==', severity) as any;
+        query = query.where('severity', '==', severity);
       } else if (minSeverity) {
-        query = query.where('severity', '>=', minSeverity) as any;
+        query = query.where('severity', '>=', minSeverity);
       }
       
       if (startDate) {
@@ -212,19 +212,19 @@ export const pack324b_getHighRiskUsers = onCall<HighRiskUsersFilter>(
       
       // Apply filters
       if (level) {
-        query = query.where('level', '==', level) as any;
+        query = query.where('level', '==', level);
       }
       
       if (minRiskScore !== undefined) {
-        query = query.where('riskScore', '>=', minRiskScore) as any;
+        query = query.where('riskScore', '>=', minRiskScore);
       }
       
       if (maxRiskScore !== undefined) {
-        query = query.where('riskScore', '<=', maxRiskScore) as any;
+        query = query.where('riskScore', '<=', maxRiskScore);
       }
       
       if (signalType) {
-        query = query.where('lastSignalType', '==', signalType) as any;
+        query = query.where('lastSignalType', '==', signalType);
       }
       
       // Get total count

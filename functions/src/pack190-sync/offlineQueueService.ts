@@ -61,7 +61,7 @@ export class OfflineQueueService {
       .orderBy('createdAt', 'asc');
     
     if (deviceId) {
-      query = query.where('deviceId', '==', deviceId) as any;
+      query = query.where('deviceId', '==', deviceId);
     }
     
     const queueSnapshot = await query.limit(100).get();
@@ -321,7 +321,7 @@ export class OfflineQueueService {
     let query = queueRef.where('userId', '==', userId);
     
     if (deviceId) {
-      query = query.where('deviceId', '==', deviceId) as any;
+      query = query.where('deviceId', '==', deviceId);
     }
     
     const snapshot = await query.get();

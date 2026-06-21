@@ -154,7 +154,7 @@ async function seedRateLimitConfig() {
         escalateThresholdPerDay: 1000
       } as RateLimitRuleConfig
     },
-    updatedAt: serverTimestamp() as any
+    updatedAt: serverTimestamp()
   };
 
   // Production configuration (more restrictive)
@@ -196,7 +196,7 @@ async function seedRateLimitConfig() {
         escalateThresholdPerDay: 800
       } as RateLimitRuleConfig
     },
-    updatedAt: serverTimestamp() as any
+    updatedAt: serverTimestamp()
   };
 
   // Staging configuration (more lenient for testing)
@@ -228,7 +228,7 @@ async function seedRateLimitConfig() {
         hardLimit: false
       } as RateLimitRuleConfig
     },
-    updatedAt: serverTimestamp() as any
+    updatedAt: serverTimestamp()
   };
 
   try {

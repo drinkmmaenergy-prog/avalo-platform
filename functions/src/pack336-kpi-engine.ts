@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -99,7 +100,7 @@ export async function calculateNorthStarMetric(
     monthlyPayingUsers,
     avgInteractionsPerUser,
     avgRevenuePerUser,
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 
@@ -219,7 +220,7 @@ export async function calculateDailyGlobalKpi(
     refundsCount,
     refundVolumeUSD,
     refundRate,
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 
@@ -308,7 +309,7 @@ export async function calculateDailyByCountryKpi(
       payingUsers: countryPayingUsers.size,
       revenueUSD,
       avgSpendPerUserUSD,
-      calculatedAt: serverTimestamp() as any,
+      calculatedAt: serverTimestamp() as unknown as Timestamp,
     });
   }
   
@@ -394,7 +395,7 @@ export async function calculateRevenueStreams(
     subscriptionsUSD: subscriptionsRevenue * TOKEN_TO_USD,
     tipsRevenueUSD: tipsRevenue * TOKEN_TO_USD,
     totalRevenueUSD,
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 
@@ -467,7 +468,7 @@ export async function calculateViralityMetrics(
     activatedFromInvite: activatedUsers.data().count,
     kFactor,
     viralRevenueUSD: viralRevenue * TOKEN_TO_USD,
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 

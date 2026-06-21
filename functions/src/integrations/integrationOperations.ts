@@ -510,7 +510,7 @@ export const listCreatorIntegrations = https.onCall(async (request) => {
       .orderBy('createdAt', 'desc');
 
     if (status) {
-      query = query.where('status', '==', status) as any;
+      query = query.where('status', '==', status);
     }
 
     const snapshot = await query.get();

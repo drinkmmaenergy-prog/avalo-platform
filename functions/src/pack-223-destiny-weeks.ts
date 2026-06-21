@@ -323,7 +323,7 @@ export async function generateWeeklyTheme(
     actions: config.actions,
     softMode: config.softMode,
     active: true,
-    createdAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('destiny_weekly_themes').doc(themeId).set(theme);
@@ -449,8 +449,8 @@ export async function getUserDestinyState(userId: string): Promise<UserDestinySt
     rewards: [],
     breakRecoverySync: false,
     inBreakupRecovery: false,
-    weekStartedAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    weekStartedAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await stateRef.set(newState);
@@ -581,7 +581,7 @@ async function checkAndUnlockMilestone(
       userId,
       themeId,
       scoreThreshold: nextThreshold,
-      reachedAt: serverTimestamp() as any,
+      reachedAt: serverTimestamp() as unknown as Timestamp,
       reward,
       claimed: false
     };
@@ -663,7 +663,7 @@ export async function claimMilestoneReward(
       weekOf: milestone.reachedAt,
       score: milestone.scoreThreshold
     },
-    activatedAt: serverTimestamp() as any,
+    activatedAt: serverTimestamp() as unknown as Timestamp,
     expiresAt: config.durationHours 
       ? new Date(Date.now() + config.durationHours * 60 * 60 * 1000) as any
       : undefined,

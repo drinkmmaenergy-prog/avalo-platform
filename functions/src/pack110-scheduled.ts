@@ -100,12 +100,12 @@ async function aggregateFeedback(
     
     if (featureKey === 'overall') {
       // NPS feedback only
-      query = query.where('eventType', '==', 'NPS') as any;
+      query = query.where('eventType', '==', 'NPS');
     } else {
       // Feature-specific feedback
       query = query
-        .where('eventType', '==', 'FEATURE') as any;
-      query = query.where('featureKey', '==', featureKey) as any;
+        .where('eventType', '==', 'FEATURE');
+      query = query.where('featureKey', '==', featureKey);
     }
     
     const eventsSnapshot = await query.get();

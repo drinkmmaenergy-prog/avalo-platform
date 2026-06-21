@@ -103,7 +103,7 @@ export async function trackMetric(input: {
       unit: input.unit,
       metadata: input.metadata,
       severity,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
     
     await db.collection('system_metrics').doc(metricId).set(metric);

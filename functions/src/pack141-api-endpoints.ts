@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -362,8 +363,8 @@ export const completeAICompanionOnboarding = onCall<Partial<AICompanionOnboardin
         disableEmotionalTopics: onboardingData.disableEmotionalTopics || false,
         disableVoiceMessages: onboardingData.disableVoiceMessages || false,
         disableAvatarImages: onboardingData.disableAvatarImages || false,
-        onboardedAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        onboardedAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('ai_companion_onboarding').doc(userId).set(onboarding);

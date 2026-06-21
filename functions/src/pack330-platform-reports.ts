@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -205,7 +206,7 @@ async function generatePlatformReport(period: string): Promise<TaxReportPlatform
     totalPayoutsUSD: totalCreatorPayoutsUSD,
     totalAvaloRevenueUSD,
     regionBreakdown,
-    generatedAt: serverTimestamp() as any,
+    generatedAt: serverTimestamp() as unknown as Timestamp,
   };
 
   // Save report to Firestore

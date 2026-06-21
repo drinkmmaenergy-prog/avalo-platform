@@ -82,7 +82,7 @@ export async function resolveConcurrentWrite(
       conflictingOperations: operations,
       resolutionStrategy: 'LAST_WRITE_WINS',
       status: 'RESOLVING',
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
     
     await db.collection('stability_conflicts').doc(conflictId).set(conflict);

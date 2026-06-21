@@ -48,7 +48,7 @@ export async function pack352_logKpiEvent(
     const eventDoc: KpiEvent = {
       eventId: db.collection('kpiEvents').doc().id,
       userId: event.userId,
-      createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
       eventType: event.eventType,
       context: sanitizeContext(event.context),
       metadata: event.metadata,
@@ -137,7 +137,7 @@ export const logKpiEventsBatch = functions.https.onCall(async (request) => {
       const eventDoc: KpiEvent = {
         eventId,
         userId: event.userId,
-        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
         eventType: event.eventType,
         context: sanitizeContext(event.context),
         metadata: event.metadata,

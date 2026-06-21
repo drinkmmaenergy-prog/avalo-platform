@@ -204,7 +204,7 @@ export async function computeBudgetClassification(
       purchaseFrequency: spending.gift.count
     },
     totalSpending,
-    lastUpdated: serverTimestamp() as any
+    lastUpdated: serverTimestamp() as unknown as Timestamp
   };
 
   // Save to cache
@@ -371,7 +371,7 @@ export async function computeIntentClassification(
     callFrequency,
     meetingFrequency,
     eventFrequency,
-    lastUpdated: serverTimestamp() as any
+    lastUpdated: serverTimestamp() as unknown as Timestamp
   };
 
   // Save to cache
@@ -421,7 +421,7 @@ export async function computeProximity(
         countryCode: viewerLoc?.countryCode || 'XX',
         lat: 0,
         lng: 0,
-        lastUpdated: serverTimestamp() as any
+        lastUpdated: serverTimestamp() as unknown as Timestamp
       },
       earnerLocation: {
         city: null,
@@ -429,9 +429,9 @@ export async function computeProximity(
         countryCode: earnerLoc?.countryCode || 'XX',
         lat: 0,
         lng: 0,
-        lastUpdated: serverTimestamp() as any
+        lastUpdated: serverTimestamp() as unknown as Timestamp
       },
-      lastUpdated: serverTimestamp() as any
+      lastUpdated: serverTimestamp() as unknown as Timestamp
     };
   }
 
@@ -466,7 +466,7 @@ export async function computeProximity(
       countryCode: viewerLoc.countryCode,
       lat: viewerLoc.lat,
       lng: viewerLoc.lng,
-      lastUpdated: serverTimestamp() as any
+      lastUpdated: serverTimestamp() as unknown as Timestamp
     },
     earnerLocation: {
       city: earnerLoc.city || null,
@@ -474,9 +474,9 @@ export async function computeProximity(
       countryCode: earnerLoc.countryCode,
       lat: earnerLoc.lat,
       lng: earnerLoc.lng,
-      lastUpdated: serverTimestamp() as any
+      lastUpdated: serverTimestamp() as unknown as Timestamp
     },
-    lastUpdated: serverTimestamp() as any
+    lastUpdated: serverTimestamp() as unknown as Timestamp
   };
 
   // Save to cache
@@ -610,7 +610,7 @@ export async function computePassionSignals(
     visualAttraction,
     loyaltyScore,
     loyalFollower,
-    lastUpdated: serverTimestamp() as any
+    lastUpdated: serverTimestamp() as unknown as Timestamp
   };
 
   // Save to cache
@@ -657,7 +657,7 @@ export async function computeAudienceSegment(
     proximity: proximityCache.proximityClass,
     passion,
     risk,
-    lastUpdated: serverTimestamp() as any,
+    lastUpdated: serverTimestamp() as unknown as Timestamp,
     version: 1
   };
 
@@ -688,7 +688,7 @@ async function logSegmentUpdate(
     changes,
     reason: `Segment ${changeType}`,
     trigger,
-    createdAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp
   };
 
   await db.collection('segment_update_events').add(event);
@@ -807,7 +807,7 @@ export async function computeCreatorAudienceAnalytics(
         avgRevenue: 0
       },
     growingSegment: null, // Would need historical data
-    calculatedAt: serverTimestamp() as any,
+    calculatedAt: serverTimestamp() as unknown as Timestamp,
     nextUpdateAt: new Date(Date.now() + 24 * 60 * 60 * 1000) as any // 24 hours
   };
 

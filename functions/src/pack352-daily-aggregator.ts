@@ -54,7 +54,7 @@ export const aggregateDailyKpis = onSchedule({ schedule: "0 2 * * *", timeZone: 
         growth,
         monetization,
         safety,
-        computedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        computedAt: admin.firestore.FieldValue.serverTimestamp(),
         version: 1,
       };
 
@@ -113,7 +113,7 @@ export const aggregateKpisForDate = functions.https.onCall(async (request) => {
         growth,
         monetization,
         safety,
-        computedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        computedAt: admin.firestore.FieldValue.serverTimestamp(),
         version: 1,
       };
 

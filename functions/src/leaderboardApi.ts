@@ -50,7 +50,7 @@ export const getLeaderboardRankings = onCall(
 
       // Filter by region if provided
       if (region) {
-        query = query.where('region', '==', region) as any;
+        query = query.where('region', '==', region);
       }
 
       const snapshot = await query.get();
@@ -357,7 +357,7 @@ export const getUserLeaderboardHistory = onCall(
 
       // Filter by category if provided
       if (category) {
-        query = query.where('category', '==', category) as any;
+        query = query.where('category', '==', category);
       }
 
       const snapshot = await query.get();
@@ -598,7 +598,7 @@ export const getLeaderboardNotifications = onCall(
 
       // Filter by unread if requested
       if (unreadOnly) {
-        query = query.where('read', '==', false) as any;
+        query = query.where('read', '==', false);
       }
 
       const snapshot = await query.get();

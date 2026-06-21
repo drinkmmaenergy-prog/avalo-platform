@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "../config/monetizationSplits";
 
 import * as functions from 'firebase-functions';
@@ -84,8 +85,8 @@ export const uploadCourse = functions.https.onCall(async (request) => {
     allowsQA: false,
     maxQASessionsPerMonth: 0,
     tags: [],
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
     complianceScore: complianceCheck.score,
     scamRiskScore: complianceCheck.scamRisk
   };
@@ -130,8 +131,8 @@ export const uploadCourseModule = functions.https.onCall(async (request) => {
     attachments: [],
     hasQuiz: false,
     isPreview: data.isPreview,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
 
   await moduleRef.set(module);
@@ -189,8 +190,8 @@ export const purchaseCourse = functions.https.onCall(async (request) => {
     status: 'pending',
     paymentMethod: data.paymentMethod,
     transactionId: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    purchasedAt: serverTimestamp() as any,
-    accessGrantedAt: serverTimestamp() as any
+    purchasedAt: serverTimestamp() as unknown as Timestamp,
+    accessGrantedAt: serverTimestamp() as unknown as Timestamp
   };
 
   await db.runTransaction(async (transaction) => {
@@ -211,8 +212,8 @@ export const purchaseCourse = functions.https.onCall(async (request) => {
       totalTimeSpent: 0,
       quizScores: {},
       completed: false,
-      startedAt: serverTimestamp() as any,
-      lastAccessedAt: serverTimestamp() as any,
+      startedAt: serverTimestamp() as unknown as Timestamp,
+      lastAccessedAt: serverTimestamp() as unknown as Timestamp,
       certificateIssued: false
     };
     transaction.set(progressRef, progress);
@@ -272,7 +273,7 @@ export const logCourseProgress = functions.https.onCall(async (request) => {
     currentModuleId: data.moduleId,
     progressPercentage,
     totalTimeSpent: progressData.totalTimeSpent + data.timeSpent,
-    lastAccessedAt: serverTimestamp() as any
+    lastAccessedAt: serverTimestamp() as unknown as Timestamp
   };
 
   if (data.quizScore !== undefined) {
@@ -284,7 +285,7 @@ export const logCourseProgress = functions.https.onCall(async (request) => {
 
   if (progressPercentage === 100 && !progressData.completed) {
     updateData.completed = true;
-    updateData.completedAt = serverTimestamp() as any;
+    updateData.completedAt = serverTimestamp() as unknown as Timestamp;
 
     await db.collection('courses').doc(data.courseId).update({
       completionRate: increment(1)
@@ -358,7 +359,7 @@ export const issueCertificate = functions.https.onCall(async (request) => {
     earnerId: courseData.earnerId,
     earnerName: courseData.earnerName,
     completionDate: progressData.completedAt,
-    issuedAt: serverTimestamp() as any,
+    issuedAt: serverTimestamp() as unknown as Timestamp,
     certificateNumber,
     digitalSignature: `sig_${Date.now()}_${Math.random().toString(36).substr(2, 16)}`,
     verificationUrl: `https://platform.app/verify-certificate/${certificateRef.id}`,
@@ -428,8 +429,8 @@ export const createQASession = functions.https.onCall(async (request) => {
     coachName: courseData.earnerName,
     question: data.question,
     status: 'pending',
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
   };
 
   await sessionRef.set(session);
@@ -475,7 +476,7 @@ export const submitComplianceReport = functions.https.onCall(async (request) => 
     evidence: data.evidence,
     severity: 'medium',
     status: 'pending',
-    createdAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp
   };
 
   await reportRef.set(report);

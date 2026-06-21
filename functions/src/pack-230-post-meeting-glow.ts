@@ -269,8 +269,8 @@ export async function submitPostMeetingFeedback(params: {
       selfieMismatchReported,
       selfieMismatchDetails,
       voluntaryRefundOffered: isEarner ? voluntaryRefundPercent : undefined,
-      submittedAt: serverTimestamp() as any,
-      createdAt: serverTimestamp() as any
+      submittedAt: serverTimestamp() as unknown as Timestamp,
+      createdAt: serverTimestamp() as unknown as Timestamp
     };
     
     await db.collection('postMeetingFeedbacks').doc(feedbackId).set(feedback);
@@ -371,8 +371,8 @@ async function checkAndCreateGlowState(bookingId: string): Promise<void> {
     momentumBonus: 15, // As per spec
     memoryCreated: false,
     journeyAdvanced: false,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('postMeetingGlowStates').doc(glowId).set(glowState);
@@ -698,8 +698,8 @@ async function createSelfieMismatchCase(
     status: 'pending',
     refundApproved: false,
     meetingEndedImmediately: details.requestMeetingEnd,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('selfieMismatchCases').doc(caseId).set(mismatchCase);
@@ -868,8 +868,8 @@ export async function submitEventFeedback(params: {
       wouldAttendAgain,
       isActive: eventVibe === 'excellent' || eventVibe === 'good',
       expiresAt: expiresAt as any,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp
     };
     
     await db.collection('eventGlowStates').doc(eventGlowId).set(eventGlow);

@@ -288,19 +288,19 @@ export const adminHealthLogs = onRequest(
         const levelOrder = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL'];
         const minIndex = levelOrder.indexOf(levelMin);
         const allowedLevels = levelOrder.slice(minIndex);
-        query = query.where('level', 'in', allowedLevels) as any;
+        query = query.where('level', 'in', allowedLevels);
       }
 
       if (module) {
-        query = query.where('module', '==', module) as any;
+        query = query.where('module', '==', module);
       }
 
       if (service) {
-        query = query.where('service', '==', service) as any;
+        query = query.where('service', '==', service);
       }
 
       if (source) {
-        query = query.where('source', '==', source) as any;
+        query = query.where('source', '==', source);
       }
 
       if (fromTimestamp) {

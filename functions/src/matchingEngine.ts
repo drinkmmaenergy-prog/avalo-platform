@@ -485,17 +485,17 @@ export const getDiscoveryFeedV1 = onCall(
 
       // Apply filters
       if (filters?.gender && filters.gender !== "any") {
-        query = query.where("gender", "==", filters.gender) as any;
+        query = query.where("gender", "==", filters.gender);
       }
 
       if (filters?.minAge) {
         const maxBirthYear = new Date().getFullYear() - filters.minAge;
-        query = query.where("birthYear", "<=", maxBirthYear) as any;
+        query = query.where("birthYear", "<=", maxBirthYear);
       }
 
       if (filters?.maxAge) {
         const minBirthYear = new Date().getFullYear() - filters.maxAge;
-        query = query.where("birthYear", ">=", minBirthYear) as any;
+        query = query.where("birthYear", ">=", minBirthYear);
       }
 
       // Get candidate profiles

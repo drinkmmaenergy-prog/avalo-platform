@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -242,7 +243,7 @@ async function executeSafetyCheck(
     blockedReasons,
     checks,
     riskScore: fraudCheck.score,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
   };
 
   return result;

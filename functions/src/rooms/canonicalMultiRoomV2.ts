@@ -177,7 +177,7 @@ async function checkIdempotency(
   key: string,
 ): Promise<string | null> {
   const snap = await t.get(idempotencyDocRef(key));
-  if (snap.exists) return (snap.data() as any).result as string;
+  if (snap.exists) return (snap.data() as { result: string }).result;
   return null;
 }
 
@@ -295,7 +295,7 @@ export async function joinRoom(params: {
     const fanSnap       = await t.get(fanWalletRef);
     if (!fanSnap.exists) throw new HttpsError('not-found', `Wallet not found: ${userId}`);
 
-    const balance = (fanSnap.data() as any).balance as number;
+    const balance = (fanSnap.data() as { balance: number }).balance;
     if (balance < entryTokens) {
       throw new HttpsError(
         'failed-precondition',
@@ -560,7 +560,7 @@ export async function sendRoomTip(params: {
 
     const fanSnap = await t.get(walletRef(payerId));
     if (!fanSnap.exists) throw new HttpsError('not-found', `Wallet not found: ${payerId}`);
-    const balance = (fanSnap.data() as any).balance as number;
+    const balance = (fanSnap.data() as { balance: number }).balance;
     if (balance < tokens) {
       throw new HttpsError(
         'failed-precondition',
@@ -635,7 +635,7 @@ export async function sendPriorityQuestion(params: {
 
     const fanSnap = await t.get(walletRef(payerId));
     if (!fanSnap.exists) throw new HttpsError('not-found', `Wallet not found: ${payerId}`);
-    const balance = (fanSnap.data() as any).balance as number;
+    const balance = (fanSnap.data() as { balance: number }).balance;
     if (balance < tokens) {
       throw new HttpsError(
         'failed-precondition',
@@ -705,7 +705,7 @@ export async function deliverPriorityAnswer(params: {
 
   const qSnap = await priorityCol(roomId).doc(questionId).get();
   if (!qSnap.exists) throw new HttpsError('not-found', 'Priority question not found');
-  const q = qSnap.data() as any;
+  const q = qSnap.data() as { payerId: string; tokens: number; status: string; [key: string]: unknown };
 
   if (!q.promisesResponse) {
     throw new HttpsError('invalid-argument', 'This tier does not require a delivered answer');
@@ -723,7 +723,7 @@ export async function deliverPriorityAnswer(params: {
   await db.runTransaction(async (t) => {
     const qRef  = priorityCol(roomId).doc(questionId);
     const qSnap2 = await t.get(qRef);
-    if ((qSnap2.data() as any).status !== 'PENDING') return; // double-check in tx
+    if ((qSnap2.data() as { status: string }).status !== 'PENDING') return; // double-check in tx
     t.update(qRef, {
       status:     'ANSWERED' as PriorityStatus,
       answer:     answer.trim(),
@@ -780,7 +780,7 @@ export async function requestGuaranteedResponse(params: {
 
     const fanSnap = await t.get(walletRef(payerId));
     if (!fanSnap.exists) throw new HttpsError('not-found', `Wallet not found: ${payerId}`);
-    const balance = (fanSnap.data() as any).balance as number;
+    const balance = (fanSnap.data() as { balance: number }).balance;
     if (balance < tokens) {
       throw new HttpsError(
         'failed-precondition',
@@ -833,7 +833,7 @@ export async function deliverGuaranteedResponse(params: {
 
   const gSnap = await guaranteedCol(roomId).doc(responseId).get();
   if (!gSnap.exists) throw new HttpsError('not-found', 'Guaranteed response record not found');
-  const g = gSnap.data() as any;
+  const g = gSnap.data() as { payerId: string; tokens: number; status: string; [key: string]: unknown };
 
   if (g.status !== 'RESERVED') {
     throw new HttpsError('failed-precondition', `Response is already ${g.status}`);
@@ -848,7 +848,7 @@ export async function deliverGuaranteedResponse(params: {
   await db.runTransaction(async (t) => {
     const gRef   = guaranteedCol(roomId).doc(responseId);
     const gSnap2 = await t.get(gRef);
-    if ((gSnap2.data() as any).status !== 'RESERVED') return;
+    if ((gSnap2.data() as { status: string }).status !== 'RESERVED') return;
     t.update(gRef, {
       status:      'DELIVERED' as GuaranteedStatus,
       response:    response.trim(),
@@ -1001,7 +1001,7 @@ async function _refundGuaranteedResponse(
   await db.runTransaction(async (t) => {
     const gRef   = guaranteedCol(roomId).doc(responseId);
     const gSnap  = await t.get(gRef);
-    if (!gSnap.exists || (gSnap.data() as any).status !== 'RESERVED') return;
+    if (!gSnap.exists || (gSnap.data() as { status: string }).status !== 'RESERVED') return;
 
     t.update(walletRef(g.payerId), {
       balance:   FieldValue.increment(g.tokens),
@@ -1032,7 +1032,7 @@ async function _refundPriorityQuestion(
   await db.runTransaction(async (t) => {
     const qRef  = priorityCol(roomId).doc(questionId);
     const qSnap = await t.get(qRef);
-    if (!qSnap.exists || (qSnap.data() as any).status !== 'PENDING') return;
+    if (!qSnap.exists || (qSnap.data() as { status: string }).status !== 'PENDING') return;
 
     t.update(walletRef(q.payerId), {
       balance:   FieldValue.increment(q.tokens),
@@ -1070,7 +1070,7 @@ export const c10_deadlineEnforcer = onSchedule(
     ]);
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
-        console.error(`[c10_deadlineEnforcer] task ${i} failed:`, (r as any).reason);
+        console.error(`[c10_deadlineEnforcer] task ${i} failed:`, (r as PromiseRejectedResult).reason);
       }
     });
   },

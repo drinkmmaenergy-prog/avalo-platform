@@ -221,13 +221,13 @@ export const listAICompanionsCallable = onCall(
 
         // Apply filters
         if (data.gender) {
-          query = query.where("gender", "==", data.gender) as any;
+          query = query.where("gender", "==", data.gender);
         }
         if (data.ethnicity) {
-          query = query.where("ethnicity", "==", data.ethnicity) as any;
+          query = query.where("ethnicity", "==", data.ethnicity);
         }
         if (data.personality) {
-          query = query.where("personality", "==", data.personality) as any;
+          query = query.where("personality", "==", data.personality);
         }
 
         const companionsSnapshot = await query.orderBy("popularityScore", "desc").limit(limit).get();

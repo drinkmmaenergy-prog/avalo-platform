@@ -194,16 +194,16 @@ export async function getMomentumState(userId: string): Promise<RomanticMomentum
     userId,
     score: 20, // Start at standard visibility
     trend: 'stable',
-    lastUpdate: serverTimestamp() as any,
-    lastActivityAt: serverTimestamp() as any,
+    lastUpdate: serverTimestamp() as unknown as Timestamp,
+    lastActivityAt: serverTimestamp() as unknown as Timestamp,
     hasRoyalTier: userData?.tier === 'royal' || false,
     hasInfluencerBadge: userData?.badges?.includes('influencer') || false,
     actionsToday: 0,
     lastActionDate: new Date().toISOString().split('T')[0],
     consecutiveDaysActive: 0,
     violationCount: 0,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await stateRef.set(newState);
@@ -398,7 +398,7 @@ async function recordViolation(
     severity,
     details,
     momentumPenalty: penalty,
-    timestamp: serverTimestamp() as any
+    timestamp: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('momentum_violations').doc(violationId).set(violation);
@@ -445,7 +445,7 @@ async function updateVisualIndicators(userId: string, score: number): Promise<vo
     userId,
     indicatorLevel,
     description,
-    updatedAt: serverTimestamp() as any
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('momentum_visual_indicators').doc(userId).set(indicator);
@@ -482,7 +482,7 @@ async function updateBoostCache(
     userId,
     boostLevel: boostMultiplier,
     visualIndicator,
-    lastUpdate: serverTimestamp() as any
+    lastUpdate: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('momentum_boost_cache').doc(userId).set(cache);
@@ -544,7 +544,7 @@ async function logMomentumAction(
     scoreBefore,
     scoreAfter,
     metadata,
-    timestamp: serverTimestamp() as any
+    timestamp: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('momentum_actions_log').doc(logId).set(log);

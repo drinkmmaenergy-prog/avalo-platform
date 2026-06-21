@@ -48,11 +48,11 @@ export const admin_getAppearanceComplaints = onCall(
     let query = db.collection('appearance_complaints').orderBy('createdAt', 'desc');
 
     if (decision) {
-      query = query.where('decision', '==', decision) as any;
+      query = query.where('decision', '==', decision);
     }
 
     if (requiresReview !== undefined) {
-      query = query.where('manualReview', '==', requiresReview) as any;
+      query = query.where('manualReview', '==', requiresReview);
     }
 
     const snapshot = await query.limit(limit).offset(offset).get();
@@ -102,11 +102,11 @@ export const admin_getRefundTransactions = onCall(
     let query = db.collection('refund_transactions').orderBy('createdAt', 'desc');
 
     if (refundType) {
-      query = query.where('refundType', '==', refundType) as any;
+      query = query.where('refundType', '==', refundType);
     }
 
     if (source) {
-      query = query.where('metadata.source', '==', source) as any;
+      query = query.where('metadata.source', '==', source);
     }
 
     if (userId) {
@@ -196,7 +196,7 @@ export const admin_getVoluntaryRefunds = onCall(
     let query = db.collection('voluntary_refunds').orderBy('createdAt', 'desc');
 
     if (source) {
-      query = query.where('metadata.source', '==', source) as any;
+      query = query.where('metadata.source', '==', source);
     }
 
     if (userId) {
@@ -288,19 +288,19 @@ export const admin_getTrustIncidents = onCall(
     let query = db.collection('trust_safety_incidents').orderBy('createdAt', 'desc');
 
     if (type) {
-      query = query.where('type', '==', type) as any;
+      query = query.where('type', '==', type);
     }
 
     if (severity) {
-      query = query.where('severity', '==', severity) as any;
+      query = query.where('severity', '==', severity);
     }
 
     if (requiresReview !== undefined) {
-      query = query.where('requiresManualReview', '==', requiresReview) as any;
+      query = query.where('requiresManualReview', '==', requiresReview);
     }
 
     if (userId) {
-      query = query.where('userId', '==', userId) as any;
+      query = query.where('userId', '==', userId);
     }
 
     const snapshot = await query.limit(limit).offset(offset).get();

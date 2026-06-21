@@ -157,11 +157,11 @@ export const admin_getRecentFeedback = onCall(
       
       // Apply filters
       if (data.eventType) {
-        query = query.where('eventType', '==', data.eventType) as any;
+        query = query.where('eventType', '==', data.eventType);
       }
       
       if (data.featureKey) {
-        query = query.where('featureKey', '==', data.featureKey) as any;
+        query = query.where('featureKey', '==', data.featureKey);
       }
       
       const eventsSnapshot = await query.get();
@@ -215,11 +215,11 @@ export const admin_exportFeedback = onCall(
         .orderBy('createdAt', 'desc');
       
       if (data.eventType) {
-        query = query.where('eventType', '==', data.eventType) as any;
+        query = query.where('eventType', '==', data.eventType);
       }
       
       if (data.featureKey) {
-        query = query.where('featureKey', '==', data.featureKey) as any;
+        query = query.where('featureKey', '==', data.featureKey);
       }
       
       const eventsSnapshot = await query.get();

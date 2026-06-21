@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -43,7 +44,7 @@ export async function storeCompanionMemory(
     companionId,
     memoryType,
     content,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     importance,
     safetyValidated: true,
   };

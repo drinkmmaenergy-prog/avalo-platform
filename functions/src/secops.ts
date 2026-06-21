@@ -574,11 +574,11 @@ export const getSecurityIncidentsV1 = onCall(
       .limit(limit);
 
     if (status) {
-      query = query.where("status", "==", status) as any;
+      query = query.where("status", "==", status);
     }
 
     if (severity) {
-      query = query.where("severity", "==", severity) as any;
+      query = query.where("severity", "==", severity);
     }
 
     const incidentsSnapshot = await query.get();

@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -69,7 +70,7 @@ export async function logTrustEvent(input: LogTrustEventInput): Promise<void> {
     type,
     weight,
     meta,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   };
 
   // Write event to Firestore
@@ -154,7 +155,7 @@ export async function recalculateUserRisk(userId: string): Promise<UserTrustProf
     riskScore: newScore,
     enforcementLevel: newEnforcement,
     flags: newFlags,
-    lastUpdatedAt: serverTimestamp() as any,
+    lastUpdatedAt: serverTimestamp() as unknown as Timestamp,
     version: CONFIG.version,
     manualOverride: currentProfile.manualOverride,
   };
@@ -200,7 +201,7 @@ async function initializeTrustProfile(userId: string): Promise<UserTrustProfile>
     riskScore: CONFIG.baseScore,
     enforcementLevel: "NONE",
     flags: [],
-    lastUpdatedAt: serverTimestamp() as any,
+    lastUpdatedAt: serverTimestamp() as unknown as Timestamp,
     version: CONFIG.version,
   };
 
@@ -416,7 +417,7 @@ async function createAuditEntry(entry: Omit<UserTrustAudit, "id" | "createdAt">)
   const auditEntry: UserTrustAudit = {
     id: auditId,
     ...entry,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   };
 
   await db.collection("user_trust_audit").doc(auditId).set(auditEntry);

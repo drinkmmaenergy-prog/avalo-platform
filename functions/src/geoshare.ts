@@ -323,9 +323,9 @@ export const startGeoshareSession = onCall(
         durationMinutes,
         paidAmount: pricing.totalTokens,
         platformFee: pricing.platformFee,
-        createdAt: serverTimestamp() as any,
-        expiresAt: serverTimestamp() as any, // Will be overwritten with calculated time
-        lastUpdateAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        expiresAt: serverTimestamp() as unknown as Timestamp, // Will be overwritten with calculated time
+        lastUpdateAt: serverTimestamp() as unknown as Timestamp,
       };
 
       // Set expiry time explicitly
@@ -424,7 +424,7 @@ export const updateGeoshareLocation = onCall(
       latitude,
       longitude,
       accuracy: accuracy || 0,
-      timestamp: serverTimestamp() as any,
+      timestamp: serverTimestamp() as unknown as Timestamp,
       sessionId,
     };
 

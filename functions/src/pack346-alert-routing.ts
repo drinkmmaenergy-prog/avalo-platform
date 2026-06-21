@@ -30,7 +30,7 @@ export async function triggerAlert(
     threshold: alert.threshold,
     region: alert.region,
     metadata: alert.metadata || {},
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp(),
   };
 
   // Save alert

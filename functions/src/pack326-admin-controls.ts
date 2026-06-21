@@ -330,7 +330,7 @@ export const pack326_adminListCampaigns = https.onCall(
       let query = db.collection('adsCampaigns').orderBy('createdAt', 'desc');
       
       if (status) {
-        query = query.where('status', '==', status) as any;
+        query = query.where('status', '==', status);
       }
       
       const snapshot = await query.limit(limit).get();
@@ -375,7 +375,7 @@ export const pack326_getFraudAlerts = https.onCall(
       let query = db.collection('fraudAlerts').orderBy('createdAt', 'desc');
       
       if (severity) {
-        query = query.where('severity', '==', severity) as any;
+        query = query.where('severity', '==', severity);
       }
       
       const snapshot = await query.limit(limit).get();

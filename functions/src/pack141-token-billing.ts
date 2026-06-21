@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -198,7 +199,7 @@ export async function startBillableSession(
     sessionId,
     userId,
     companionId,
-    startedAt: serverTimestamp() as any,
+    startedAt: serverTimestamp() as unknown as Timestamp,
     medium,
     messageCount: 0,
     durationSeconds: 0,

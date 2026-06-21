@@ -149,7 +149,7 @@ export const pack335_searchFaqArticles = functions.https.onCall(async (request) 
     
     let faqQuery = db
       .collection("supportFaqArticles")
-      .where("isPublished", "==", true) as any;
+      .where("isPublished", "==", true);
     
     if (category) {
       faqQuery = faqQuery.where("category", "==", category);
@@ -162,7 +162,7 @@ export const pack335_searchFaqArticles = functions.https.onCall(async (request) 
     faqQuery = faqQuery.limit(limit);
     
     const snapshot = await faqQuery.get();
-    const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const articles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as { title?: string; bodyMarkdown?: string; tags?: string[] } }));
     
     // Simple text search (in production, use Algolia or similar)
     if (query) {
@@ -242,7 +242,7 @@ export const pack335_getFaqCategories = functions.https.onCall(async (request) =
     let query = db
       .collection("supportFaqArticles")
       .where("isPublished", "==", true)
-      .where("language", "==", language) as any;
+      .where("language", "==", language);
     
     const snapshot = await query.get();
     const articles = snapshot.docs.map(doc => doc.data() as SupportFaqArticle);

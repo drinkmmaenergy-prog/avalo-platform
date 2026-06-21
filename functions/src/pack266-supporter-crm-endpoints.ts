@@ -565,7 +565,7 @@ export const getSmartAlerts = onCall(
         .limit(limit);
 
       if (unreadOnly) {
-        query = query.where('readAt', '==', null) as any;
+        query = query.where('readAt', '==', null);
       }
 
       const snapshot = await query.get();

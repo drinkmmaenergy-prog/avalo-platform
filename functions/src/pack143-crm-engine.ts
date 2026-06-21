@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -46,15 +47,15 @@ export class CRMEngine {
       displayName: userData.displayName,
       avatar: userData.avatar,
       labels: [],
-      firstInteractionAt: serverTimestamp() as any,
-      lastInteractionAt: serverTimestamp() as any,
+      firstInteractionAt: serverTimestamp() as unknown as Timestamp,
+      lastInteractionAt: serverTimestamp() as unknown as Timestamp,
       totalSpent: 0,
       purchaseCount: 0,
       purchaseHistory: [],
       engagementScore: 0,
       optedOutBroadcasts: false,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await contactRef.set(newContact);
@@ -190,8 +191,8 @@ export class CRMEngine {
       description,
       filters,
       contactCount: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await segmentRef.set(segment);
@@ -269,10 +270,10 @@ export class CRMEngine {
         completedCount: 0,
         conversionRate: 0,
         revenueGenerated: 0,
-        lastUpdated: serverTimestamp() as any,
+        lastUpdated: serverTimestamp() as unknown as Timestamp,
       },
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await funnelRef.set(funnel);
@@ -358,8 +359,8 @@ export class CRMEngine {
       openedCount: 0,
       clickedCount: 0,
       optOutCount: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await broadcastRef.set(broadcast);
@@ -498,7 +499,7 @@ export class CRMEngine {
       earnerId,
       period,
       periodStart: timestamp.fromDate(periodStart) as any,
-      periodEnd: serverTimestamp() as any,
+      periodEnd: serverTimestamp() as unknown as Timestamp,
       metrics: {
         totalContacts,
         newContacts,
@@ -509,7 +510,7 @@ export class CRMEngine {
         topPerformingFunnels: [],
         segmentGrowth: [],
       },
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
 
     return analytics;

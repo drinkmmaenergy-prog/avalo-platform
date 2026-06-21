@@ -21,7 +21,7 @@ export const trackUserActivity = onDocumentCreated("sessions/{sessionId}", async
     const userId = session.userId;
 
     await updateChurnRecord(userId, {
-      lastActivity: serverTimestamp() as any,
+      lastActivity: serverTimestamp() as unknown as Timestamp,
       totalSessions: 1, // Will be incremented
     });
 
@@ -38,7 +38,7 @@ export const trackRefundForChurn = onDocumentCreated("refunds/{refundId}", async
     const userId = refund.userId;
 
     await updateChurnRecord(userId, {
-      lastRefund: serverTimestamp() as any,
+      lastRefund: serverTimestamp() as unknown as Timestamp,
       totalRefunds: 1, // Will be incremented
     });
 
@@ -60,7 +60,7 @@ export const trackPanicForChurn = onDocumentCreated("safetyEvents/{eventId}", as
     const userId = eventData.userId;
 
     await updateChurnRecord(userId, {
-      lastPanic: serverTimestamp() as any,
+      lastPanic: serverTimestamp() as unknown as Timestamp,
     });
 
     return;
@@ -78,7 +78,7 @@ export const trackCancelForChurn = onDocumentUpdated("calendarBookings/{bookingI
     // User cancelled
     if (before.status !== "cancelled_by_user" && after.status === "cancelled_by_user") {
       await updateChurnRecord(after.userId, {
-        lastCalendarCancel: serverTimestamp() as any,
+        lastCalendarCancel: serverTimestamp() as unknown as Timestamp,
       });
     }
 
@@ -113,8 +113,8 @@ async function updateChurnRecord(
       totalRefunds: 0,
       engagementScore: 100,
       retentionAttemptsCount: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       ...updates,
     };
 

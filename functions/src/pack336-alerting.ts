@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -52,7 +53,7 @@ export async function createAlert(
     currentValue,
     threshold,
     status: 'ACTIVE',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     metadata: metadata || {},
   };
   
@@ -105,7 +106,7 @@ export async function getRecentAlerts(
     .limit(limit);
   
   if (onlyUnacknowledged) {
-    query = query.where('status', '==', 'ACTIVE') as any;
+    query = query.where('status', '==', 'ACTIVE');
   }
   
   const snapshot = await query.get();

@@ -220,7 +220,7 @@ export const getSharedPreferencesForAi = onCall(
 
         let query = db
           .collection('ai_shared_preferences')
-          .where('userId', '==', data.userId) as any;
+          .where('userId', '==', data.userId);
 
         if (data.categories && data.categories.length > 0) {
           const allowedCats = data.categories.filter((cat) =>

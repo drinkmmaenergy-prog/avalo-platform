@@ -314,7 +314,7 @@ export const getCreatorQuests = onCall(
       .where("status", "in", [QuestStatus.ACTIVE, QuestStatus.COMPLETED]);
 
     if (type) {
-      query = query.where("type", "==", type) as any;
+      query = query.where("type", "==", type);
     }
 
     const snapshot = await query.get();

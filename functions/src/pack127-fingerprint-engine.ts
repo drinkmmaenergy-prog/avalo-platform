@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -47,7 +48,7 @@ export async function registerFingerprint(
     assetUrl: input.assetUrl,
     ...fingerprints,
     hasWatermark: false,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     registeredVia: 'UPLOAD',
     status: 'ACTIVE',
     disputeCount: 0,
@@ -239,7 +240,7 @@ async function findSimilarFingerprints(
         isSameUser: fingerprint.ownerUserId === existing.ownerUserId,
         isTeamMember: await checkTeamMembership(fingerprint.ownerUserId, existing.ownerUserId),
         detectionMethod: matchResult.method,
-        matchedAt: serverTimestamp() as any,
+        matchedAt: serverTimestamp() as unknown as Timestamp,
         actionTaken: 'FLAGGED',
       };
       

@@ -645,7 +645,7 @@ export const getScalingHistory = functions.https.onCall(async (request) => {
       .limit(data.limit || 100);
     
     if (data.serviceName) {
-      query = query.where("serviceName", "==", data.serviceName) as any;
+      query = query.where("serviceName", "==", data.serviceName);
     }
     
     const snapshot = await query.get();

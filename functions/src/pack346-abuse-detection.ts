@@ -371,7 +371,7 @@ async function createAbuseSignal(
     earnerId: signal.earnerId,
     type: signal.type!,
     severity: signal.severity!,
-    detectedAt: serverTimestamp() as any,
+    detectedAt: serverTimestamp(),
     resolved: false,
     metadata: signal.metadata || {},
   };

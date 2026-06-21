@@ -136,8 +136,8 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
       userId,
       tokens,
       currency,
-      fiatAmount: (conversionResult as any).amount ?? conversionResult,
-      fxRate: (conversionResult as any).fxRate ?? 1,
+      fiatAmount: (conversionResult as { amount?: number } | number as { amount?: number }).amount ?? (conversionResult as number),
+      fxRate: ((conversionResult as unknown as { fxRate?: number }).fxRate ?? 1),
       method,
       bankDetails: bankDetails ?? {},
       status: PayoutStatus.PENDING,
@@ -149,7 +149,7 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
     const payoutRef = await db.collection('payoutRequests').add(payoutRequest);
     
     // Trigger AML scan
-    await triggerAMLScan(userId, payoutRef.id, tokens, currency, (conversionResult as any).amount ?? conversionResult);
+    await triggerAMLScan(userId, payoutRef.id, tokens, currency, (conversionResult as { amount?: number } | number as { amount?: number }).amount ?? (conversionResult as number));
     
     // Log to audit trail
     await db.collection('financialAuditLogs').add({
@@ -158,7 +158,7 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
       payoutId: payoutRef.id,
       tokens,
       currency,
-      fiatAmount: (conversionResult as any).amount ?? conversionResult,
+      fiatAmount: (conversionResult as { amount?: number } | number as { amount?: number }).amount ?? (conversionResult as number),
       method,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -168,7 +168,7 @@ export const pack390_requestBankPayout = functions.https.onCall(async (request) 
       payoutId: payoutRef.id,
       status: PayoutStatus.PENDING,
       tokens,
-      fiatAmount: (conversionResult as any).amount ?? conversionResult,
+      fiatAmount: (conversionResult as { amount?: number } | number as { amount?: number }).amount ?? (conversionResult as number),
       currency,
       message: 'Payout request created. Undergoing AML review.'
     };
@@ -459,9 +459,9 @@ async function convertTokensToFiat(tokens: number, currency: string) {
 // TRUNCATED_EOF
 
 // STUB: required by index.ts
-export const pack390_getPayoutHistory = require("firebase-functions").https.onCall(async () => { throw new Error("NOT_IMPLEMENTED"); });
-async function executeSEPATransfer(..._args: any[]): Promise<any> { throw new Error("executeSEPATransfer: NOT_IMPLEMENTED"); }
-async function executeSWIFTTransfer(..._args: any[]): Promise<any> { throw new Error("executeSWIFTTransfer: NOT_IMPLEMENTED"); }
-async function executeWiseTransfer(..._args: any[]): Promise<any> { throw new Error("executeWiseTransfer: NOT_IMPLEMENTED"); }
-async function executeStripeConnectTransfer(..._args: any[]): Promise<any> { throw new Error("executeStripeConnectTransfer: NOT_IMPLEMENTED"); }
-async function triggerAMLScan(..._args: any[]): Promise<any> { throw new Error("triggerAMLScan: NOT_IMPLEMENTED"); }
+export const pack390_getPayoutHistory = functions.https.onCall(async () => { throw new Error("pack390_getPayoutHistory: NOT_IMPLEMENTED"); });
+async function executeSEPATransfer(..._args: any[]): Promise<never> { throw new Error("executeSEPATransfer: NOT_IMPLEMENTED"); }
+async function executeSWIFTTransfer(..._args: any[]): Promise<never> { throw new Error("executeSWIFTTransfer: NOT_IMPLEMENTED"); }
+async function executeWiseTransfer(..._args: any[]): Promise<never> { throw new Error("executeWiseTransfer: NOT_IMPLEMENTED"); }
+async function executeStripeConnectTransfer(..._args: any[]): Promise<never> { throw new Error("executeStripeConnectTransfer: NOT_IMPLEMENTED"); }
+async function triggerAMLScan(..._args: unknown[]): Promise<void> { throw new Error("triggerAMLScan: NOT_IMPLEMENTED"); }

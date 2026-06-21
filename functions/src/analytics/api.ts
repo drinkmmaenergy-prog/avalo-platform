@@ -244,7 +244,7 @@ export const getSafetyAlerts = onRequest({}, async (req, res) => {
       .limit(limit);
 
     if (severity) {
-      query = query.where('severity', '==', severity) as any;
+      query = query.where('severity', '==', severity);
     }
 
     const alertsSnapshot = await query.get();
@@ -300,7 +300,7 @@ export const getFraudAlerts = onRequest({}, async (req, res) => {
       .limit(limit);
 
     if (riskLevel) {
-      query = query.where('severity', '==', riskLevel) as any;
+      query = query.where('severity', '==', riskLevel);
     }
 
     const alertsSnapshot = await query.get();

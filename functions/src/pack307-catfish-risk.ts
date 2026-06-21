@@ -897,10 +897,10 @@ export const getCatfishRiskDashboard = functions.https.onCall(async (request) =>
   try {
     const { riskLevel, limit = 50 } = data;
     
-    let query = db.collection('userRisk');
+    let query: FirebaseFirestore.Query = db.collection('userRisk');
     
     if (riskLevel) {
-      query = query.where('riskLevel', '==', riskLevel) as any;
+      query = query.where('riskLevel', '==', riskLevel);
     }
     
     const snapshot = await query

@@ -13,7 +13,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, generateId, serverTimestamp } from "./init";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { TokenPack, PurchaseResponse } from "./types/pack277-wallet.types";
 
 // P0-5: Prices synced to canonicalEconomy.ts (was pack277 live ~25% below intended).
@@ -57,8 +57,8 @@ export async function initializeTokenPacks(): Promise<void> {
     for (const pack of DEFAULT_TOKEN_PACKS) {
       packs[pack.id] = {
         ...pack,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
     }
     await packsRef.set({ packs, lastUpdated: serverTimestamp() });

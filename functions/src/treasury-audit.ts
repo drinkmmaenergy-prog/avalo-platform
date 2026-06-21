@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -118,7 +119,7 @@ export const treasury_generateAuditReport = https.onCall(
       // Create audit report
       const report: TreasuryAuditReport = {
         reportId,
-        generatedAt: serverTimestamp() as any,
+        generatedAt: serverTimestamp() as unknown as Timestamp,
         generatedBy: auth.uid,
         period: {
           startDate: start as any,
@@ -207,7 +208,7 @@ export const treasury_dailyReconciliation = scheduler.onSchedule(
       const reportId = generateId();
       const report: Partial<TreasuryAuditReport> = {
         reportId,
-        generatedAt: serverTimestamp() as any,
+        generatedAt: serverTimestamp() as unknown as Timestamp,
         period: {
           startDate: yesterday as any,
           endDate: today as any,

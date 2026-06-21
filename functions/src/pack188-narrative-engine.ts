@@ -225,13 +225,13 @@ export const listStoryArcs = onCall(
         .where('isSafe', '==', true);
 
       if (characterId) {
-        query = query.where('characterId', '==', characterId) as any;
+        query = query.where('characterId', '==', characterId);
       }
       if (category) {
-        query = query.where('category', '==', category) as any;
+        query = query.where('category', '==', category);
       }
       if (season) {
-        query = query.where('season', '==', season) as any;
+        query = query.where('season', '==', season);
       }
 
       const snapshot = await query

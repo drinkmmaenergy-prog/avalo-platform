@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -397,7 +398,7 @@ export async function createExportRequest(
     expiresAt: expiresAt as any,
     downloadCount: 0,
     maxDownloads: MAX_EXPORT_DOWNLOADS,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('ledger_exports').doc(exportId).set(exportRecord);

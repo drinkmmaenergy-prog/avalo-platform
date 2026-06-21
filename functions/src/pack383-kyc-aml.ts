@@ -110,8 +110,8 @@ export const pack383_submitKYC = functions.https.onCall(async (request) => {
         residenceCountry: data.residenceCountry,
         address: data.address,
         riskScore: 50, // Default medium risk
-        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('userKYCProfiles').doc(userId).set(kycProfile);
@@ -202,7 +202,7 @@ export const pack383_runAMLCheck = functions.https.onCall(async (request) => {
         flags: amlResult.flags,
         screeningProvider: 'internal',
         screeningData: amlResult.data,
-        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('amlScreeningResults').add(amlScreening);
@@ -281,7 +281,7 @@ export const pack383_runSanctionsScreening = functions.https.onCall(async (reque
         matchScore: sanctionsResult.matchScore,
         details: sanctionsResult.details,
         screeningProvider: 'internal',
-        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('sanctionsScreeningResults').add(sanctionsScreening);

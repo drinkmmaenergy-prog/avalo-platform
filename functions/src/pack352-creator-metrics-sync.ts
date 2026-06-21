@@ -542,7 +542,7 @@ async function saveCreatorMetrics(
 
     const doc: CreatorDailyMetricsDocument = {
       ...metric,
-      computedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+      computedAt: admin.firestore.FieldValue.serverTimestamp(),
       version: 1,
     };
 

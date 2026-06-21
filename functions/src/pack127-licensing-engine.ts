@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -64,8 +65,8 @@ export async function createLicense(
     transferable: false,
     sublicensable: false,
     
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('ip_licenses').doc(licenseId).set(license);

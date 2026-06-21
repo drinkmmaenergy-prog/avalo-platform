@@ -257,7 +257,7 @@ export async function getCreatorContracts(data: {
     .orderBy('createdAt', 'desc');
 
   if (data.status) {
-    query = query.where('status', '==', data.status) as any;
+    query = query.where('status', '==', data.status);
   }
 
   if (data.limit) {

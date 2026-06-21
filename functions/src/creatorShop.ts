@@ -786,19 +786,19 @@ export const getCreatorProducts = onCall(
     let query = db.collection("earnerProducts").orderBy("createdAt", "desc");
 
     if (earnerId) {
-      query = query.where("earnerId", "==", earnerId) as any;
+      query = query.where("earnerId", "==", earnerId);
     }
 
     if (type) {
-      query = query.where("type", "==", type) as any;
+      query = query.where("type", "==", type);
     }
 
     if (status) {
-      query = query.where("status", "==", status) as any;
+      query = query.where("status", "==", status);
     } else {
       // Only show active products by default for non-owners
       if (!earnerId || earnerId !== uid) {
-        query = query.where("status", "==", ProductStatus.ACTIVE) as any;
+        query = query.where("status", "==", ProductStatus.ACTIVE);
       }
     }
 

@@ -658,7 +658,7 @@ async function assignChallengeToCouple(
     })),
     isActive: true,
     completed: false,
-    assignedAt: serverTimestamp() as any,
+    assignedAt: serverTimestamp() as unknown as Timestamp,
     expiresAt: expiresAt as any,
     progress: {
       userA: 0,

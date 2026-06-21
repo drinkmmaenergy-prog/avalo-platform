@@ -296,7 +296,7 @@ async function createBreakupRecoveryState(
     connectionId,
     status: 'active',
     reason,
-    startDate: serverTimestamp() as any,
+    startDate: serverTimestamp() as unknown as Timestamp,
     endDate: endDate as any,
     expectedDuration: durationDays,
     restartStage: 0,
@@ -319,8 +319,8 @@ async function createBreakupRecoveryState(
     safetyIncidentId,
     permanentBlock: false,
     restartedDiscovery: false,
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('breakup_recovery_states').doc(recoveryId).set(recoveryState);

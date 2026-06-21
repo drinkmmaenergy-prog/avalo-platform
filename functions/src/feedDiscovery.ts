@@ -592,15 +592,15 @@ async function getSwipeFeed(
 
   // Apply filters
   if (filters.gender && filters.gender.length > 0) {
-    query = query.where("profile.gender", "in", filters.gender) as any;
+    query = query.where("profile.gender", "in", filters.gender);
   }
 
   if (filters.verified) {
-    query = query.where("verification.status", "==", "approved") as any;
+    query = query.where("verification.status", "==", "approved");
   }
 
   if (filters.online) {
-    query = query.where("presence.online", "==", true) as any;
+    query = query.where("presence.online", "==", true);
   }
 
   const snapshot = await query.get();

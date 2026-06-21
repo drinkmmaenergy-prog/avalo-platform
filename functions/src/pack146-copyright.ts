@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -164,7 +165,7 @@ async function createCopyrightCase(input: {
     title: 'Copyright Claim Submitted',
     message: 'Your copyright claim is being reviewed.',
     actionUrl: `/copyright/case/${input.caseId}`,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   });
   
   return copyrightCase as CopyrightCase;
@@ -360,7 +361,7 @@ async function processTakedown(
       contentId: copyrightCase.infringingContentId,
       title: 'Takedown Successful',
       message: 'The infringing content has been removed.',
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     });
     
     // Notify offender
@@ -372,7 +373,7 @@ async function processTakedown(
       title: 'Content Removed',
       message: 'Your content was removed due to copyright infringement.',
       actionUrl: `/copyright/case/${caseId}`,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     });
     
     logger.info(`Takedown processed for case ${caseId}`);

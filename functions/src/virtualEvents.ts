@@ -709,7 +709,7 @@ export const pack118_listEventsByRegion = onCall<ListVirtualEventsRequest, Promi
 
     // Optional region filter
     if (region) {
-      query = query.where('region', '==', region) as any;
+      query = query.where('region', '==', region);
     }
 
     // Pagination

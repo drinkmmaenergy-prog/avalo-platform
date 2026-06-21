@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -113,7 +114,7 @@ async function logAdultModeAction(
     chatId,
     userId,
     action,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     bothEnabledAfterAction,
     userAgent: context?.userAgent,
     ipAddress: context?.ipAddress,
@@ -141,7 +142,7 @@ async function sendAdultModeNotification(
     otherUserName: actingUserName,
     action,
     message,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
   };
   
   // Create notification document
@@ -234,7 +235,7 @@ export const toggleAdultMode = onCall(
     const settingsRef = db.collection('adult_mode_settings').doc(chatId);
     const settingsDoc = await settingsRef.get();
     
-    const now = serverTimestamp() as any;
+    const now = serverTimestamp() as unknown as Timestamp;
     
     if (!settingsDoc.exists) {
       // Create new settings document
@@ -413,7 +414,7 @@ export const reportAdultModeAbuse = onCall(
       chatId,
       reason,
       description,
-      timestamp: serverTimestamp() as any,
+      timestamp: serverTimestamp() as unknown as Timestamp,
       status: 'pending',
       adultModeWasActive: adultModeActive,
       bothUsersHadConsented: bothConsented,

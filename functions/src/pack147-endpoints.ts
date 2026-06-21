@@ -344,7 +344,7 @@ export const pack147_admin_getPendingRefunds = onCall(
         .limit(limit);
       
       if (tier) {
-        query = query.where('tier', '==', tier) as any;
+        query = query.where('tier', '==', tier);
       }
       
       const snapshot = await query.get();

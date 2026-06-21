@@ -78,7 +78,7 @@ export const c12_stripePayoutWebhook = onRequest(
       const stripe        = getStripeClient();
       // rawBody: Firebase Functions v2 attaches rawBody for Stripe signature validation
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rawBody is not in standard Express.Request
-      const rawBody       = (req as any).rawBody as Buffer | undefined ?? Buffer.from('');
+      const rawBody       = (req as import("firebase-functions").https.Request).rawBody as Buffer | undefined ?? Buffer.from('');
       const signature     = req.headers['stripe-signature'] as string;
 
       event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);

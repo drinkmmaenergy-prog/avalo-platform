@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -132,7 +133,7 @@ async function recordToBlockchain(
     previousHash,
     data: blockData,
     nonce,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     verified: true,
   };
   
@@ -219,7 +220,7 @@ export async function recordLedgerTransaction(
   
   // Create ledger transaction record
   const ledgerId = generateId();
-  const now = serverTimestamp() as any;
+  const now = serverTimestamp() as unknown as Timestamp;
   
   const ledgerTransaction: LedgerTransaction = {
     id: ledgerId,

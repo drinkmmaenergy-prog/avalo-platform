@@ -115,6 +115,7 @@ export function getStripe(): Stripe | null {
   }
 
   stripeInstance = new Stripe(secretKey, {
+    // [P7-EXEMPT: Stripe SDK v14 type requires '2023-10-16'; as any is vendor SDK workaround]
     apiVersion: '2024-12-18.acacia' as any, // Latest stable API version
     typescript: true,
     telemetry: false, // Disable telemetry in production

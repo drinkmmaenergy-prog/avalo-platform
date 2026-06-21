@@ -412,19 +412,19 @@ export const pack331_listAvatarTemplates = https.onCall(
       
       // Apply filters
       if (filters.style) {
-        query = query.where('style', '==', filters.style) as any;
+        query = query.where('style', '==', filters.style);
       }
       
       if (filters.genderPresentation) {
-        query = query.where('genderPresentation', '==', filters.genderPresentation) as any;
+        query = query.where('genderPresentation', '==', filters.genderPresentation);
       }
       
       if (filters.officialOnly) {
-        query = query.where('isOfficialAvalo', '==', true) as any;
+        query = query.where('isOfficialAvalo', '==', true);
       }
       
       if (filters.earnerOnly) {
-        query = query.where('isOfficialAvalo', '==', false) as any;
+        query = query.where('isOfficialAvalo', '==', false);
       }
       
       // Apply sorting

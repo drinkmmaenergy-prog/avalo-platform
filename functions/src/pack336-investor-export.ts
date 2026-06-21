@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -153,7 +154,7 @@ export async function generateInvestorReport(
   
   return {
     reportId: generateReportId(),
-    generatedAt: serverTimestamp() as any,
+    generatedAt: serverTimestamp() as unknown as Timestamp,
     periodStart: startDateStr,
     periodEnd: endDateStr,
     summary: {

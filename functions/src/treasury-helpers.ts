@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -35,7 +36,7 @@ export async function createLedgerEntry(
     earnerId,
     tokenAmount,
     vault,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     metadata,
   };
 

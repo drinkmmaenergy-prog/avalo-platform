@@ -682,7 +682,7 @@ export const getTransactionHistoryV2 = onCall(
       .limit(limit);
 
     if (request.data.currency) {
-      query = query.where("fromCurrency", "==", request.data.currency) as any;
+      query = query.where("fromCurrency", "==", request.data.currency);
     }
 
     const snapshot = await query.get();

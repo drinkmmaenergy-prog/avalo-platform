@@ -179,7 +179,7 @@ export const applyToAccelerator = functions.https.onCall(async (request) => {
     whyAccelerator,
     commitment,
     status: 'pending',
-    appliedAt: FieldValue.serverTimestamp() as any,
+    appliedAt: FieldValue.serverTimestamp() as unknown as Timestamp,
     flags: {
       hasEthicsViolations: false,
       hasExploitationFlags: false,
@@ -237,7 +237,7 @@ export const reviewAcceleratorApplication = functions.https.onCall(async (reques
       userName: appData.userName,
       email: appData.email,
       tier: 'starter',
-      joinedAt: FieldValue.serverTimestamp() as any,
+      joinedAt: FieldValue.serverTimestamp() as unknown as Timestamp,
       ethicsAgreementSigned: false,
       progress: {
         workshopsCompleted: 0,
@@ -346,7 +346,7 @@ export const logMentorshipSession = functions.https.onCall(async (request) => {
       noFavoritism: true,
       verified: false,
     },
-    createdAt: FieldValue.serverTimestamp() as any,
+    createdAt: FieldValue.serverTimestamp() as unknown as Timestamp,
   };
 
   await db.collection('mentorship_sessions').doc(sessionId).set(session);
@@ -449,7 +449,7 @@ export const requestGrant = functions.https.onCall(async (request) => {
     justification,
     itemsRequested,
     status: 'pending',
-    requestedAt: FieldValue.serverTimestamp() as any,
+    requestedAt: FieldValue.serverTimestamp() as unknown as Timestamp,
   };
 
   await db.collection('earner_grants').doc(requestId).set(grantRequest);

@@ -48,7 +48,7 @@ export async function createCustomTheme(
     actions: config.actions,
     softMode: config.softMode,
     active: false, // Manually activate
-    createdAt: serverTimestamp() as any
+    createdAt: serverTimestamp() as unknown as Timestamp
   };
   
   await db.collection('destiny_weekly_themes').doc(themeId).set(theme);

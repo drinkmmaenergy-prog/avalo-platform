@@ -418,7 +418,7 @@ export const pack413_getPanicModeHistory = functions.https.onCall(async (request
       .limit(limit);
 
     if (modeId) {
-      query = query.where('modeId', '==', modeId) as any;
+      query = query.where('modeId', '==', modeId);
     }
 
     const snapshot = await query.get();

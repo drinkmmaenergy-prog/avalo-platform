@@ -450,11 +450,11 @@ export const listPartners = https.onCall(async (request) => {
     let query = db.collection('api_partner_profiles').orderBy('createdAt', 'desc');
 
     if (status) {
-      query = query.where('status', '==', status) as any;
+      query = query.where('status', '==', status);
     }
 
     if (category) {
-      query = query.where('category', '==', category) as any;
+      query = query.where('category', '==', category);
     }
 
     const snapshot = await query.limit(limit).get();

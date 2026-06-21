@@ -627,11 +627,11 @@ export const getAccessLogs = https.onCall(async (request) => {
     let query = db.collection('api_access_logs').orderBy('timestamp', 'desc');
 
     if (partnerId) {
-      query = query.where('partnerId', '==', partnerId) as any;
+      query = query.where('partnerId', '==', partnerId);
     }
 
     if (integrationId) {
-      query = query.where('integrationId', '==', integrationId) as any;
+      query = query.where('integrationId', '==', integrationId);
     }
 
     const snapshot = await query.limit(limit).get();

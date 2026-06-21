@@ -79,7 +79,7 @@ export async function validateFirestoreRules(): Promise<RulesAuditReport> {
       passed,
       score,
       collections,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
     
     await db.collection('firestore_rules_audits').doc(auditId).set(report);

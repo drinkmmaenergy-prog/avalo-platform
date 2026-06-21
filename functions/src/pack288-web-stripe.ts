@@ -17,7 +17,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 import { https, logger } from 'firebase-functions/v2';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, generateId } from './init';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import Stripe from 'stripe';
 import {
   TokenPurchase,
@@ -321,8 +321,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       provider: 'stripe',
       providerOrderId: session.id,
       status: 'COMPLETED',
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     auditBatch.set(db.collection('tokenPurchases').doc(purchaseId), purchase, { merge: true });
 
@@ -656,3 +656,7 @@ export const tokens_getPurchaseHistory = https.onCall(
     const auth = request.auth;
     if (!auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
+    }
+  }
+);
+// TRUNCATED_EOF

@@ -623,10 +623,10 @@ export async function getFunnelAnalytics(userCategory?: UserCategory): Promise<{
   };
 }> {
   
-  let query = db.collection('welcome_funnels');
+  let query: FirebaseFirestore.Query = db.collection('welcome_funnels');
   
   if (userCategory) {
-    query = query.where('userCategory', '==', userCategory) as any;
+    query = query.where('userCategory', '==', userCategory);
   }
   
   const funnelSnapshot = await query.get();

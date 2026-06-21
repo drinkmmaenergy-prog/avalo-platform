@@ -619,8 +619,8 @@ export async function computeWeeklyMetrics(): Promise<void> {
         metricComponents: {}, // Could store breakdown here
         region,
         gender,
-        computedAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        computedAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
       
       batch.set(metricRef, metricData, { merge: true });
@@ -772,8 +772,8 @@ export async function calculateRankings(
           userBadges: metric.userData?.badges || [],
           isActive: true,
           expiresAt: Timestamp.fromDate(expiresAt),
-          createdAt: serverTimestamp() as any,
-          updatedAt: serverTimestamp() as any,
+          createdAt: serverTimestamp() as unknown as Timestamp,
+          updatedAt: serverTimestamp() as unknown as Timestamp,
         };
         
         batch.set(rankingRef, rankingData, { merge: true });
@@ -844,7 +844,7 @@ async function distributeRewards(
       weekNumber: period === 'WEEKLY' ? weekNumber : undefined,
       month: period === 'MONTHLY' ? month : undefined,
       year,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
     
     await db.collection('visibility_rewards').doc(rewardId).set(rewardData);
@@ -906,7 +906,7 @@ async function createLeaderboardBadge(
     weekNumber: period === 'WEEKLY' ? weekNumber : undefined,
     month: period === 'MONTHLY' ? month : undefined,
     year,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('leaderboard_badges').doc(badgeId).set(badgeData);
@@ -957,7 +957,7 @@ async function sendPositiveNotification(
     category,
     rank,
     read: false,
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db
@@ -1130,7 +1130,7 @@ async function publishMonthlySummary(
     highestMetricValue,
     monthOverMonthGrowth,
     regionBreakdown,
-    publishedAt: serverTimestamp() as any,
+    publishedAt: serverTimestamp() as unknown as Timestamp,
     periodStartDate: Timestamp.fromDate(periodStartDate),
     periodEndDate: Timestamp.fromDate(periodEndDate),
   };
@@ -1158,7 +1158,7 @@ async function expireOldRankings(): Promise<void> {
   
   const batch = db.batch();
   expiredSnapshot.forEach((doc) => {
-    batch.update(doc.ref, { isActive: false, updatedAt: serverTimestamp() as any });
+    batch.update(doc.ref, { isActive: false, updatedAt: serverTimestamp() });
   });
   
   await batch.commit();
@@ -1181,7 +1181,7 @@ async function deactivateExpiredRewards(): Promise<void> {
   expiredSnapshot.forEach((doc) => {
     batch.update(doc.ref, {
       isActive: false,
-      deactivatedAt: serverTimestamp() as any,
+      deactivatedAt: serverTimestamp(),
     });
   });
   
@@ -1199,7 +1199,7 @@ async function deactivateExpiredRewards(): Promise<void> {
   expiredBadgesSnapshot.forEach((doc) => {
     badgeBatch.update(doc.ref, {
       isActive: false,
-      deactivatedAt: serverTimestamp() as any,
+      deactivatedAt: serverTimestamp(),
     });
   });
   

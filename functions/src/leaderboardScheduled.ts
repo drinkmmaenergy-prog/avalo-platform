@@ -132,7 +132,7 @@ export const hourlyLeaderboardCleanup = onSchedule(
         expiredRewardsSnapshot.forEach((doc) => {
           batch.update(doc.ref, {
             isActive: false,
-            deactivatedAt: serverTimestamp() as any,
+            deactivatedAt: serverTimestamp(),
           });
         });
         await batch.commit();
@@ -152,7 +152,7 @@ export const hourlyLeaderboardCleanup = onSchedule(
         expiredBadgesSnapshot.forEach((doc) => {
           badgeBatch.update(doc.ref, {
             isActive: false,
-            deactivatedAt: serverTimestamp() as any,
+            deactivatedAt: serverTimestamp(),
           });
         });
         await badgeBatch.commit();
@@ -172,7 +172,7 @@ export const hourlyLeaderboardCleanup = onSchedule(
         expiredRankingsSnapshot.forEach((doc) => {
           rankingBatch.update(doc.ref, {
             isActive: false,
-            updatedAt: serverTimestamp() as any,
+            updatedAt: serverTimestamp(),
           });
         });
         await rankingBatch.commit();

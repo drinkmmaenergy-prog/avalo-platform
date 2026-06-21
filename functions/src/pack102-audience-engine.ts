@@ -121,7 +121,7 @@ export async function logExternalVisit(
     id: attributionId,
     earnerId,
     platform,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     completedSignup: false,
     becameFollower: false,
     becamePayer: false,
@@ -404,7 +404,7 @@ export async function getCreatorAudienceGrowth(
     signupToFollowRate,
     followToPayerRate,
     platformBreakdown,
-    updatedAt: serverTimestamp() as any,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
   };
 }
 

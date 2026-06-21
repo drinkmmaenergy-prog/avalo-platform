@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -94,8 +95,8 @@ export const recordContribution = functions.https.onCall(async (request) => {
         relatedContentId,
         impactScore,
         isValidated: true,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('club_contributions').doc(contributionId).set(contribution);
@@ -168,8 +169,8 @@ async function updateContributionScore(
       collaborationScore: contributionType === ContributionType.COLLABORATION ? impactScore : 0,
       leadershipScore: contributionType === ContributionType.LEADERSHIP ? impactScore : 0,
       contributionCount: 1,
-      lastContributionAt: serverTimestamp() as any,
-      lastUpdated: serverTimestamp() as any,
+      lastContributionAt: serverTimestamp() as unknown as Timestamp,
+      lastUpdated: serverTimestamp() as unknown as Timestamp,
     };
     await scoreRef.set(newScore);
   } else {
@@ -290,7 +291,7 @@ export const assignClubRole = functions.https.onCall(async (request) => {
         isFunctional: true,
         isStatusBased: false,
         assignedBy: assignerId,
-        assignedAt: serverTimestamp() as any,
+        assignedAt: serverTimestamp() as unknown as Timestamp,
         isActive: true,
       };
 
@@ -366,8 +367,8 @@ export const createClubChallenge = functions.https.onCall(async (request) => {
         isSafe: true,
         isEducational: true,
         isActive: true,
-        createdAt: serverTimestamp() as any,
-        updatedAt: serverTimestamp() as any,
+        createdAt: serverTimestamp() as unknown as Timestamp,
+        updatedAt: serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('club_challenges').doc(challengeId).set(challenge);
@@ -432,7 +433,7 @@ export const detectCliqueFormation = functions.https.onCall(async (request) => {
             exclusionRate: cliqueAnalysis.exclusionRate,
             subgroupCohesion: cliqueAnalysis.subgroupCohesion,
           },
-          detectedAt: serverTimestamp() as any,
+          detectedAt: serverTimestamp() as unknown as Timestamp,
           isMitigated: false,
         };
 
@@ -567,7 +568,7 @@ async function applyAntiCliqueMitigation(
       boostMultiplier: 2.0,
       isActive: true,
       expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) as any,
-      createdAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await db.collection('club_newcomer_boost').doc(boostId).set(boost);
@@ -607,7 +608,7 @@ export const detectToxicity = onDocumentCreated('club_posts/{postId}', async (ev
         reportedContentType: 'post',
         description: toxicityResult.reason,
         detectedBy: 'ai',
-        detectedAt: serverTimestamp() as any,
+        detectedAt: serverTimestamp() as unknown as Timestamp,
         isResolved: false,
         mitigationActions: [],
       };

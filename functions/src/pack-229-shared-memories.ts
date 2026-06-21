@@ -203,8 +203,8 @@ export async function initializeSharedMemoryTimeline(
     userAddedMoments: 0,
     firstMatchDate: firstMatchDate as any,
     enabled: true,
-    enabledAt: serverTimestamp() as any,
-    lastUpdatedAt: serverTimestamp() as any,
+    enabledAt: serverTimestamp() as unknown as Timestamp,
+    lastUpdatedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await timelineRef.set({

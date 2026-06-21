@@ -6,7 +6,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, generateId, serverTimestamp } from './init';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { WalletData, WalletTransaction } from './types/pack277-wallet.types';
 import { admin, timestamp } from './runtime';
 
@@ -60,8 +60,8 @@ export async function initializeDemoWallet(userId: string): Promise<void> {
       lifetimePurchasedTokens: 0,
       lifetimeSpentTokens: 0,
       lifetimeEarnedTokens: DEMO_INITIAL_BALANCE,
-      lastUpdated: serverTimestamp() as any,
-      createdAt: serverTimestamp() as any,
+      lastUpdated: serverTimestamp() as unknown as Timestamp,
+      createdAt: serverTimestamp() as unknown as Timestamp,
     };
 
     await demoWalletRef.set(demoWallet);

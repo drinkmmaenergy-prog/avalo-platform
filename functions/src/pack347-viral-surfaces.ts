@@ -124,7 +124,7 @@ export async function generateCreatorCardShare(data: {
     format: 'CREATOR_CARD',
     platform,
     status: 'CREATED',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     metadata: {
       assetUrl,
       trackingId,
@@ -187,7 +187,7 @@ export async function generateEventPosterShare(data: {
     format: 'EVENT_POSTER',
     platform,
     status: 'CREATED',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     metadata: {
       eventId,
       assetUrl: posterUrl,
@@ -250,7 +250,7 @@ export async function generateAICompanionShare(data: {
     format: 'AI_COMPANION',
     platform,
     status: 'CREATED',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     metadata: {
       aiCompanionId,
       assetUrl: avatarUrl,
@@ -310,7 +310,7 @@ export async function generateBookingInviteShare(data: {
     format: 'BOOKING_INVITE',
     platform,
     status: 'CREATED',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     metadata: {
       bookingId,
       trackingId,
@@ -439,7 +439,7 @@ async function updateShareStatsAsync(
         totalOpens: 0,
         totalConversions: 0,
         conversionRate: 0,
-        updatedAt: serverTimestamp() as any
+        updatedAt: serverTimestamp() as unknown as Timestamp
       };
       transaction.set(statsRef, initialStats);
     } else {
@@ -543,7 +543,7 @@ export async function getCreatorShares(data: {
     .limit(limit);
   
   if (format) {
-    query = query.where('format', '==', format) as any;
+    query = query.where('format', '==', format);
   }
   
   const snapshot = await query.get();

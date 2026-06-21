@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -69,7 +70,7 @@ export async function submitCopyrightClaim(
     fingerprintMatchScore: autoResolutionResult.matchScore,
     assignedModeratorId: undefined,
     resolution: autoResolutionResult.resolution,
-    resolvedAt: autoResolutionResult.canAutoResolve ? serverTimestamp() as any : undefined,
+    resolvedAt: autoResolutionResult.canAutoResolve ? serverTimestamp() as unknown as Timestamp : undefined,
     resolvedBy: autoResolutionResult.canAutoResolve ? 'SYSTEM' : undefined,
     
     // CRITICAL: No economic/ranking effects
@@ -79,8 +80,8 @@ export async function submitCopyrightClaim(
     isCounterClaim: await checkIfCounterClaim(input),
     relatedClaimIds: [],
     claimantStrikeCount: await getClaimantStrikeCount(input.claimantUserId),
-    createdAt: serverTimestamp() as any,
-    updatedAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
+    updatedAt: serverTimestamp() as unknown as Timestamp,
     notificationsSentTo: ['CLAIMANT'],
   };
   
@@ -453,7 +454,7 @@ async function handleFalseClaim(claim: IPClaim, moderatorId: string): Promise<vo
       ? new Date(Date.now() + impact.restrictionDays * 24 * 60 * 60 * 1000) as any
       : undefined,
     canStillReceiveClaims: true, // Victims can still be protected
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     createdBy: moderatorId,
   };
   
@@ -492,7 +493,7 @@ async function createDisputeCase(claim: IPClaim): Promise<IPDisputeCase> {
     accusedUserId: claim.accusedUserId,
     claimantEvidence: claim.evidencUSDls || [],
     status: 'OPEN',
-    createdAt: serverTimestamp() as any,
+    createdAt: serverTimestamp() as unknown as Timestamp,
     appealable: true,
     appealed: false,
   };

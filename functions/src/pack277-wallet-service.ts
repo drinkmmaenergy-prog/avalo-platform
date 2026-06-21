@@ -7,7 +7,7 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
  */
 
 import { db, generateId, serverTimestamp } from './init';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import {
   WalletData,
   WalletTransaction,
@@ -105,8 +105,8 @@ async function ensureWallet(userId: string): Promise<void> {
       lifetimePurchasedTokens: 0,
       lifetimeSpentTokens: 0,
       lifetimeEarnedTokens: 0,
-      lastUpdated: serverTimestamp() as any,
-      createdAt: serverTimestamp() as any,
+      lastUpdated: serverTimestamp() as unknown as Timestamp,
+      createdAt: serverTimestamp() as unknown as Timestamp,
       reservedTokens: 0, // PACK 452: Premium offer reservation
     };
     await walletRef.set(wallet);
@@ -136,7 +136,7 @@ async function createTransaction(
     beforeBalance,
     afterBalance,
     metadata,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
   };
 
   await db.collection('walletTransactions').doc(txId).set(transaction);

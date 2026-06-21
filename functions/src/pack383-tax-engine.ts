@@ -140,8 +140,8 @@ export const pack383_submitTaxProfile = functions.https.onCall(async (request) =
         withholdingRate,
         reportingThreshold: getReportingThreshold(data.residencyCountry),
         autoWithholding: data.autoWithholding !== false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+        createdAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
       };
 
       await db.collection('taxProfiles').doc(userId).set(taxProfile);
@@ -365,8 +365,8 @@ async function createDefaultTaxProfile(userId: string): Promise<TaxProfile> {
     withholdingRate: getWithholdingRate(country, 'individual'),
     reportingThreshold: getReportingThreshold(country),
     autoWithholding: true,
-    createdAt: admin.firestore.FieldValue.serverTimestamp() as any,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp() as any,
+    createdAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp() as unknown as Timestamp,
   };
 
   await db.collection('taxProfiles').doc(userId).set(defaultProfile);

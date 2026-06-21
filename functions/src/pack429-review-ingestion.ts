@@ -440,7 +440,7 @@ export async function getRecentReviews(
     .limit(limit);
   
   if (platform) {
-    query = query.where('platform', '==', platform) as any;
+    query = query.where('platform', '==', platform);
   }
   
   const snapshot = await query.get();
@@ -464,7 +464,7 @@ export async function getAttackPatternReviews(
     .limit(limit);
   
   if (platform) {
-    query = query.where('platform', '==', platform) as any;
+    query = query.where('platform', '==', platform);
   }
   
   const snapshot = await query.get();

@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -63,7 +64,7 @@ async function createLedgerEntry(
     earnerId,
     tokenAmount,
     vault,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
     metadata,
   };
 
@@ -115,8 +116,8 @@ async function ensureUserWallet(userId: string): Promise<void> {
       availableTokens: 0,
       lifetimePurchased: 0,
       lifetimeSpent: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     await walletRef.set(newWallet);
   }
@@ -136,8 +137,8 @@ async function ensureCreatorVault(userId: string): Promise<void> {
       lockedTokens: 0,
       lifetimeEarned: 0,
       lifetimePaidOut: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     await vaultRef.set(newVault);
   }
@@ -156,8 +157,8 @@ async function ensureAvaloVault(): Promise<void> {
       totalRevenue: 0,
       availableRevenue: 0,
       lifetimeWithdrawn: 0,
-      createdAt: serverTimestamp() as any,
-      updatedAt: serverTimestamp() as any,
+      createdAt: serverTimestamp() as unknown as Timestamp,
+      updatedAt: serverTimestamp() as unknown as Timestamp,
     };
     await vaultRef.set(newVault);
   }
@@ -379,7 +380,7 @@ export const treasury_allocateSpend = https.onCall<AllocateSpendRequest>(
         userBalance: result.userBalance,
         earnerEarnings: result.earnerEarnings,
         platformRevenue: result.platformRevenue,
-        timestamp: serverTimestamp() as any,
+        timestamp: serverTimestamp() as unknown as Timestamp,
       };
 
       logger.info('Token spend allocated', {
@@ -525,7 +526,7 @@ export const treasury_refundTransaction = https.onCall<RefundRequest>(
           graceWindowExpired: false,
           fraudDetected: false,
         },
-        processedAt: serverTimestamp() as any,
+        processedAt: serverTimestamp() as unknown as Timestamp,
         processedBy: adminId,
       };
 

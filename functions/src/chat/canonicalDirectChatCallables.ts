@@ -308,7 +308,7 @@ export const c5_sendFanMessage = onCall(
 
     // ── BUDGET_EXHAUSTED: exactly one continuation request ──────────────────
     if (state === CONTINUATION_REQUEST_STATE) {
-      if ((chat as any).continuationRequestSent) {
+      if ((chat as { continuationRequestSent?: boolean }).continuationRequestSent) {
         throw new HttpsError('failed-precondition',
           'CONTINUATION_LIMIT: Fan may send exactly one continuation request after budget exhaustion. ' +
           'Fund a new session segment to continue.');
@@ -394,7 +394,7 @@ export const c5_deliverCreatorMessage = onCall(
 
     // ── LOCKED_CONTINUATION: exactly one locked reply ──────────────────────
     if (state === LOCKED_REPLY_STATE) {
-      if ((chat as any).lockedContinuationReplyId) {
+      if ((chat as { lockedContinuationReplyId?: string | null }).lockedContinuationReplyId) {
         throw new HttpsError('failed-precondition',
           'LOCKED_REPLY_LIMIT: Creator may send exactly one locked reply after budget exhaustion.');
       }
@@ -517,14 +517,14 @@ export const c5_fundNewSegment = onCall(
     });
 
     // If there's a locked continuation reply, make it visible and bill it
-    const lockedReplyId = (chat as any).lockedContinuationReplyId as string | null;
+    const lockedReplyId = (chat as { lockedContinuationReplyId?: string | null }).lockedContinuationReplyId as string | null;
     if (lockedReplyId) {
       // Deliver locked reply atomically (bill at prior frozen rate)
       const billingKey = `locked_reply:${chatId}:${lockedReplyId}`;
       const msgRef     = db.collection('chats').doc(chatId).collection('messages').doc(lockedReplyId);
       const msgSnap    = await msgRef.get();
       if (msgSnap.exists) {
-        const msg = msgSnap.data() as any;
+        const msg = msgSnap.data() as { content: ChatMessageContent; [key: string]: unknown };
         // Bill at the new (same frozen) rate
         await deliverPaidResponse({
           chatId,

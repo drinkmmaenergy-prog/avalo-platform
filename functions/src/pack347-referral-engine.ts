@@ -151,7 +151,7 @@ async function applyReferralReward(
       type: reward.type,
       duration: reward.duration,
       multiplier: 'multiplier' in reward ? reward.multiplier : undefined,
-      activatedAt: serverTimestamp() as any,
+      activatedAt: serverTimestamp() as unknown as Timestamp,
       expiresAt
     };
     

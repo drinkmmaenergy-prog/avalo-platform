@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -93,7 +94,7 @@ export async function checkMessageSafety(
     detectedConcerns,
     riskLevel,
     action,
-    timestamp: serverTimestamp() as any,
+    timestamp: serverTimestamp() as unknown as Timestamp,
   };
   
   // Log to Firestore
@@ -235,7 +236,7 @@ async function createWellnessEscalation(
     riskLevel,
     suggestedResources: await getWellnessResources(userId),
     requiresModeratorReview: riskLevel === 'CRITICAL' || riskLevel === 'HIGH',
-    escalatedAt: serverTimestamp() as any,
+    escalatedAt: serverTimestamp() as unknown as Timestamp,
   };
   
   await db.collection('ai_companion_wellness_escalations').doc(escalationId).set(escalation);

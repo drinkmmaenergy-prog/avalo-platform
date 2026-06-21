@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase-admin/firestore';
 import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 /**
@@ -53,7 +54,7 @@ export async function addToPiracyWatchlist(
     contentId: violation.contentId,
     originalOwnerId: violation.originalOwnerId,
     copyrightCaseId: violation.copyrightCaseId,
-    detectedAt: serverTimestamp() as any,
+    detectedAt: serverTimestamp() as unknown as Timestamp,
     detectedBy: 'AUTO_SCAN',
     evidence: violation.evidence,
     isNSFWContent: violation.isNSFW,
