@@ -160,5 +160,59 @@ service cloud.firestore {
          resource.data.referredId == request.auth.uid || isAdmin());
       allow write: if false; // Server-only — referral engine processes rewards
     }
+
+    // ── C3: Canonical consumer wallet (wallets/{uid}) ──────────────────────────
+    // The ONLY valid consumer spending wallet. Read own balance; write server-only.
+    match /wallets/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // Only via Cloud Functions (walletService.ts)
+    }
+
+    // ── C4: Creator earning accounts — read own, write server-only ─────────────
+    match /creatorEarningAccounts/{creatorId} {
+      allow read: if isOwner(creatorId) || isAdmin();
+      allow write: if false; // Only via Cloud Functions (canonicalEarningService.ts)
+    }
+
+    // ── C4: Creator earning ledger — read own entries, write server-only ────────
+    match /creatorEarningLedger/{entryId} {
+      allow read: if isAuthenticated() && (
+        resource.data.creatorId == request.auth.uid || isAdmin()
+      );
+      allow write: if false; // Immutable — written only by earning service
+    }
+
+    // ── C4: Creator payout requests — read own, write server-only ───────────────
+    match /creatorPayoutRequests/{payoutId} {
+      allow read: if isAuthenticated() && (
+        resource.data.creatorId == request.auth.uid || isAdmin()
+      );
+      allow write: if false; // Only via Cloud Functions (canonicalPayoutSystemV2.ts)
+    }
+
+    // ── Billing events — read own (as payer or creator), write server-only ──────
+    match /billingEvents/{eventId} {
+      allow read: if isAuthenticated() && (
+        resource.data.payerId == request.auth.uid ||
+        resource.data.creatorId == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false; // Immutable audit records — server-only
+    }
+
+    // ── Age verification — read own only, write server-only ─────────────────────
+    match /age_verification/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if false; // Only via Cloud Functions (kycProviderService.ts)
+    }
+
+    // ── HARD DENY: forbidden legacy wallet paths ─────────────────────────────────
+    // Explicit deny is defense-in-depth (Firestore implicit deny also covers them).
+    match /user_wallets/{docId} {
+      allow read, write: if false; // FORBIDDEN: use wallets/{uid} instead
+    }
+    match /wallet/{docId} {
+      allow read, write: if false; // FORBIDDEN: wallet/main and wallet/current are banned paths
+    }
   }
 }
