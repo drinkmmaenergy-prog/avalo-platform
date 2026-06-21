@@ -28,6 +28,7 @@ import { recordRankingAction } from './rankingEngine';
 import { recordRiskEvent, evaluateUserRisk } from './trustEngine';
 import { timestamp } from './runtime';
 import { getBalance, transactTokens } from './wallet/walletService';
+import { recordCreatorEarning } from './creator/canonicalEarningService'; // G3: drop earnings → creatorEarningAccounts
 
 // ============================================================================
 // CONSTANTS
@@ -745,18 +746,31 @@ export async function purchaseDrop(
   // COOP: ownerCreatorIds[0] receives full earnerPoolShare; per-earner COOP
   // redistribution is tracked in dropPurchases.revenueSplit for payout reconciliation.
   const primaryEarnerId = drop.ownerCreatorIds[0] ?? null;
+  // G3/G1: fan debit only — creator earning goes to creatorEarningAccounts, NOT wallets/{uid}
   await transactTokens({
     type: 'DROP_PURCHASE',
     actorId: userId,
-    counterpartyId: primaryEarnerId,
+    counterpartyId: null,             // [G3/G1]: no creator consumer wallet credit
     amountTokens: drop.priceTokens,
     split: {
-      creatorTokens: earnerPoolShare, // DROP_CONSTANTS.CREATOR_SHARE_PERCENTAGE (70%)
-      avaloTokens: platform,          // DROP_CONSTANTS.AVALO_SHARE_PERCENTAGE (30%)
+      creatorTokens: 0,               // creator share credited below via recordCreatorEarning
+      avaloTokens: drop.priceTokens,  // full amount to platform ledger; creator share at payout
     },
     idempotencyKey: `drop_purchase_${dropId}_${userId}`,
     metadata: { dropId, purchaseId, earnerIds: drop.ownerCreatorIds, revenueSplit },
   });
+
+  // G3: Credit creator drop earnings to canonical earning account (not consumer wallet)
+  if (primaryEarnerId && earnerPoolShare > 0) {
+    await recordCreatorEarning({
+      creatorId: primaryEarnerId,
+      payerId: userId,
+      type: 'ROOM_PRODUCT',   // nearest canonical type for content purchases
+      tokenAmount: earnerPoolShare,
+      idempotencyKey: `DROP:drop_purchase_${dropId}_${userId}`,
+      sourceRef: dropId,
+    });
+  }
 
   // Record ranking actions for each earner (async, non-blocking)
   for (const earnerId of drop.ownerCreatorIds) {

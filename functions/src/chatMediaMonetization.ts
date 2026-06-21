@@ -18,6 +18,7 @@ import { db, serverTimestamp, increment, generateId } from './init';
 import type { Timestamp } from 'firebase-admin/firestore';
 import { admin, storage } from './runtime';
 import { getBalance, transactTokens } from './wallet/walletService';
+import { recordCreatorEarning } from './creator/canonicalEarningService'; // G3: media earning goes to creatorEarningAccounts, not wallets/{uid}
 import { requireVerifiedAdult } from './compliance/ageGuard'; // C2
 
 // Simple error class
@@ -275,14 +276,16 @@ export async function processMediaBilling(
   // Idempotency key prevents double-charge on client retry.
   const idempotencyKey = `media_unlock_${messageId}_${payerId}`;
 
+  // G3/G1: Fan debit only — creator earning MUST NOT go to wallets/{earnerId}.balance.
+  // Creator earning is credited exclusively via recordCreatorEarning → creatorEarningAccounts.
   await transactTokens({
     type: 'MEDIA_UNLOCK',
     actorId: payerId,
-    counterpartyId: earnerId,
+    counterpartyId: null,           // [G3/G1]: no counterparty wallet credit here
     amountTokens: priceTokens,
     split: {
-      creatorTokens: billing.earnerTokens,   // 65% earnOn, 0% earnOff
-      avaloTokens:   billing.platformTokens,  // 35% earnOn, 100% earnOff
+      creatorTokens: 0,             // creator portion credited separately below
+      avaloTokens:   priceTokens,   // full amount to platform ledger; creator share released at payout
     },
     idempotencyKey,
     chatId,
@@ -293,6 +296,19 @@ export async function processMediaBilling(
       earnerId: earnerId ?? 'platform',
     },
   });
+
+  // G3: Credit creator earning to canonical earning account (not consumer wallet)
+  if (earnerId && billing.earnerTokens > 0) {
+    await recordCreatorEarning({
+      creatorId: earnerId,
+      payerId,
+      type: 'MEDIA_PPV',
+      tokenAmount: billing.earnerTokens,
+      idempotencyKey: `MEDIA:${idempotencyKey}`,
+      chatId,
+      messageId,
+    });
+  }
 
   // ── 4. Preserve backward-compat audit records in transactions/ ─────────────
   // walletService already wrote a canonical ledger + idempotency sentinel.
