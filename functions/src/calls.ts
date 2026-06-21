@@ -13,6 +13,7 @@ import { getCallPricing } from './callPricing';
 // billCall import removed [F2]: billCall is HARD_DISABLED; endCall below is HARD_DISABLED.
 // Active call billing: endCallMonetized from callMonetization.ts → canonicalCallBillingV2.billCallWindow
 import { checkCallBalance } from './callBilling';
+import { requireVerifiedAdult } from './compliance/ageGuard'; // G2: both participants must be verified adults
 import { logEvent } from './observability';
 import { checkAndIncrementRateLimit, hashIpAddress, createRateLimitError } from './rateLimit';
 import { admin, functions } from './runtime';
@@ -103,6 +104,10 @@ export async function createCall(params: {
       throw new Error('Cannot call yourself');
     }
 
+    // G2/C2: Both participants must be verified adults before any call may be created
+    await requireVerifiedAdult(callerUserId);
+    await requireVerifiedAdult(calleeUserId);
+
     // Check both users are active (not hard-banned)
     const [callerDoc, calleeDoc] = await Promise.all([
       db.collection('users').doc(callerUserId).get(),
@@ -171,7 +176,7 @@ export async function createCall(params: {
       lastUpdatedAt: Timestamp.now()
     };
 
-    await db.collection('call_sessions').doc(callId).set(callSession);
+    await db.collection('callSessions').doc(callId).set(callSession);
 
     await logEvent({
       level: 'INFO',
@@ -230,7 +235,7 @@ export async function startRinging(params: {
   const { callId, callerUserId } = params;
 
   try {
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
+    const callDoc = await db.collection('callSessions').doc(callId).get();
 
     if (!callDoc.exists) {
       throw new Error('Call not found');
@@ -246,7 +251,7 @@ export async function startRinging(params: {
       throw new Error(`Cannot start ringing from status ${callData.status}`);
     }
 
-    await db.collection('call_sessions').doc(callId).update({
+    await db.collection('callSessions').doc(callId).update({
       status: 'RINGING',
       ringingAt: serverTimestamp(),
       lastUpdatedAt: serverTimestamp()
@@ -300,7 +305,7 @@ export async function acceptCall(params: {
       throw new Error(rateLimitResult.reason || 'Rate limit exceeded');
     }
 
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
+    const callDoc = await db.collection('callSessions').doc(callId).get();
 
     if (!callDoc.exists) {
       throw new Error('Call not found');
@@ -316,7 +321,7 @@ export async function acceptCall(params: {
       throw new Error(`Cannot accept call from status ${callData.status}`);
     }
 
-    await db.collection('call_sessions').doc(callId).update({
+    await db.collection('callSessions').doc(callId).update({
       status: 'ACCEPTED',
       acceptedAt: serverTimestamp(),
       lastUpdatedAt: serverTimestamp()
@@ -358,7 +363,7 @@ export async function rejectCall(params: {
   const { callId, calleeUserId } = params;
 
   try {
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
+    const callDoc = await db.collection('callSessions').doc(callId).get();
 
     if (!callDoc.exists) {
       throw new Error('Call not found');
@@ -377,7 +382,7 @@ export async function rejectCall(params: {
     // Determine if CANCELLED or MISSED based on timing
     const status: CallStatus = callData.ringingAt ? 'MISSED' : 'CANCELLED';
 
-    await db.collection('call_sessions').doc(callId).update({
+    await db.collection('callSessions').doc(callId).update({
       status,
       endedAt: serverTimestamp(),
       disconnectedBy: 'CALLEE',
@@ -417,7 +422,7 @@ export async function markCallActive(params: {
   const { callId, participantUserId } = params;
 
   try {
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
+    const callDoc = await db.collection('callSessions').doc(callId).get();
 
     if (!callDoc.exists) {
       throw new Error('Call not found');
@@ -435,7 +440,7 @@ export async function markCallActive(params: {
 
     // Only set startedAt once (first participant to call this)
     if (!callData.startedAt) {
-      await db.collection('call_sessions').doc(callId).update({
+      await db.collection('callSessions').doc(callId).update({
         status: 'ACTIVE',
         startedAt: serverTimestamp(),
         lastUpdatedAt: serverTimestamp()
@@ -492,7 +497,7 @@ export async function endCall(_params: {
  */
 export async function getCallSession(callId: string): Promise<CallSession | null> {
   try {
-    const callDoc = await db.collection('call_sessions').doc(callId).get();
+    const callDoc = await db.collection('callSessions').doc(callId).get();
     
     if (!callDoc.exists) {
       return null;

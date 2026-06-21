@@ -395,7 +395,7 @@ export async function startCall(params: {
     updatedAt: now
   };
   
-  await db.collection('calls').doc(callId).set(callSession);
+  await db.collection('callSessions').doc(callId).set(callSession);
   
   logger.info(`Call started: ${callId} (${callType}) - Payer: ${roles.payerId}, Earner: ${roles.earnerId}, Rate: ${roles.pricePerMinute}/min`);
   
@@ -410,7 +410,7 @@ export async function startCall(params: {
  * Update call activity timestamp (prevents auto-disconnect)
  */
 export async function updateCallActivity(callId: string): Promise<void> {
-  await db.collection('calls').doc(callId).update({
+  await db.collection('callSessions').doc(callId).update({
     lastActivityAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   });
@@ -439,7 +439,7 @@ export async function endCall(params: {
   
   const { callId, endedBy, deviceId, ipHash } = params;
   
-  const callRef = db.collection('calls').doc(callId);
+  const callRef = db.collection('callSessions').doc(callId);
   const callSnap = await callRef.get();
   
   if (!callSnap.exists) {
@@ -582,7 +582,7 @@ async function trackRoyalSpendAsync(userId: string, amount: number, source: stri
 export async function autoDisconnectIdleCalls(): Promise<number> {
   const cutoffTime = Date.now() - (CALL_CONFIG.AUTO_DISCONNECT_IDLE_MINUTES * 60 * 1000);
   
-  const idleCalls = await db.collection('calls')
+  const idleCalls = await db.collection('callSessions')
     .where('state', '==', 'ACTIVE')
     .where('lastActivityAt', '<', new Date(cutoffTime))
     .limit(50)
@@ -613,7 +613,7 @@ export async function autoDisconnectIdleCalls(): Promise<number> {
  * Get active call for a user (if any)
  */
 export async function getActiveCallForUser(userId: string): Promise<CallSession | null> {
-  const callsSnap = await db.collection('calls')
+  const callsSnap = await db.collection('callSessions')
     .where('state', '==', 'ACTIVE')
     .where('payerId', '==', userId)
     .orderBy('startedAt', 'desc')
@@ -625,7 +625,7 @@ export async function getActiveCallForUser(userId: string): Promise<CallSession 
   }
   
   // Check as earner too
-  const callsSnap2 = await db.collection('calls')
+  const callsSnap2 = await db.collection('callSessions')
     .where('state', '==', 'ACTIVE')
     .where('earnerId', '==', userId)
     .orderBy('startedAt', 'desc')

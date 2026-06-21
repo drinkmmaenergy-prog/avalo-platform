@@ -59,3 +59,34 @@ describe('F6-T10: billCompletedCall ceiling minutes', () => {
     expect(Math.ceil(secs / 60)).toBe(expected);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// G2 unit tests (no emulator required)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('G2-T01: calls.ts endCall HARD_DISABLED', () => {
+  it('throws HARD_DISABLED [F2] before any write', async () => {
+    await expect(endCall({ callId: 'g2-test' })).rejects.toThrow('HARD_DISABLED [F2]');
+  });
+});
+
+describe('G2-T02: callBilling.billCall HARD_DISABLED', () => {
+  it('throws referencing canonicalCallBillingV2', async () => {
+    await expect(billCall('g2-call')).rejects.toThrow(/HARD_DISABLED|canonicalCallBillingV2/);
+  });
+});
+
+describe('G2-T03: callSessions collection name is canonical', () => {
+  it('source code uses callSessions, not call_sessions or calls', async () => {
+    const callsTs = require('fs').readFileSync(
+      require('path').join(__dirname, '../../src/calls.ts'), 'utf8');
+    expect(callsTs).toContain("'callSessions'");
+    expect(callsTs).not.toContain("'call_sessions'");
+
+    const callMonetizationTs = require('fs').readFileSync(
+      require('path').join(__dirname, '../../src/callMonetization.ts'), 'utf8');
+    expect(callMonetizationTs).toContain("'callSessions'");
+    // "collection('calls')" must not appear (excluding 'callSessions' which contains 'calls')
+    expect(callMonetizationTs).not.toMatch(/collection\('calls'\)/);
+  });
+});
