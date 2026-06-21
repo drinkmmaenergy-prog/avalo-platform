@@ -484,9 +484,9 @@ export async function endCall(params: {
     // Canonical billing via transactTokens() is called after this state update.
   });
 
-  // B2: Route through canonical call billing (fan debit + creator earning ledger with hold)
-  // Creator earnings go to creatorEarningAccounts.pendingTokens (NOT wallets/{uid}.balance).
-  // 80% creator / 20% platform split — canonical, not legacy EARNER_CUT_PERCENT.
+  // B2/P1: Route through canonical call billing (fan debit + creator earning ledger with hold)
+  // §1.2: creatorEarningTokens = payerTokensCharged (no split at delivery; commission at payout)
+  // Creator earnings go to creatorEarningAccounts.pendingEarningTokens (NOT wallets/{uid}.balance).
   if (totalTokens > 0 && call.earnerId) {
     const callMode: 'VOICE' | 'VIDEO' = call.callType === 'VOICE' ? 'VOICE' : 'VIDEO';
     const billingResult = await billCallWindow({
@@ -500,9 +500,9 @@ export async function endCall(params: {
       billedMinutes:   durationMinutes,
       allowPartialCharge: true,
     });
-    // Update earnerReceived/platformReceived from canonical result for logging
-    earnerReceived    = billingResult.earnerTokens;
-    platformReceived  = billingResult.platformTokens;
+    // §1.2: creator earns 100% — no platform split at delivery
+    earnerReceived   = billingResult.earnerTokens;
+    platformReceived = 0; // Commission taken at payout time, not here
   } else if (totalTokens > 0 && !call.earnerId) {
     // No earner — debit fan only, all goes to platform
     await transactTokens({

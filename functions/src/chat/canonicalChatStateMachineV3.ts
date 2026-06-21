@@ -14,7 +14,7 @@
  *         4. Credits creator's balance (full finalRateTokens, §0.3)
  *         5. Updates reservation (consumedTokens, remainingTokens, status)
  *         6. Writes billingEvents/{key} (immutable audit)
- *         7. Updates creatorEarningAccounts (pendingTokens +=)
+ *         7. Updates creatorEarningAccounts (pendingEarningTokens +=)
  *         8. Writes creatorEarningLedger entry (immutable)
  *         9. Updates chats/{chatId} state
  *
@@ -441,7 +441,7 @@ export async function deliverPaidResponse(params: {
     if (!earningAccountSnap.exists) {
       txn.set(earningAccountRef, {
         creatorId,
-        pendingTokens:        finalRateTokens,
+        pendingEarningTokens:        finalRateTokens,
         availableTokens:      0,
         inPayoutTokens:       0,
         lifetimeEarnedTokens: finalRateTokens,
@@ -451,7 +451,7 @@ export async function deliverPaidResponse(params: {
       });
     } else {
       txn.update(earningAccountRef, {
-        pendingTokens:        FieldValue.increment(finalRateTokens),
+        pendingEarningTokens:        FieldValue.increment(finalRateTokens),
         lifetimeEarnedTokens: FieldValue.increment(finalRateTokens),
         updatedAt:            FieldValue.serverTimestamp(),
       });

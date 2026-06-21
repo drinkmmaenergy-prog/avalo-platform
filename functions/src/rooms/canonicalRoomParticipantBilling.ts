@@ -368,7 +368,7 @@ export async function chargeRoomPaidInteraction(params: {
     if (!accountSnap.exists) {
       t.set(accountRef, {
         creatorId,
-        pendingTokens:          tokensToCharge,
+        pendingEarningTokens:          tokensToCharge,
         availableEarningTokens: 0,
         reservedEarningTokens:  0,
         paidOutEarningTokens:   0,
@@ -378,7 +378,7 @@ export async function chargeRoomPaidInteraction(params: {
       } as CreatorEarningAccount);
     } else {
       t.update(accountRef, {
-        pendingTokens:        FieldValue.increment(tokensToCharge),
+        pendingEarningTokens:        FieldValue.increment(tokensToCharge),
         lifetimeEarnedTokens: FieldValue.increment(tokensToCharge),
         updatedAt:            FieldValue.serverTimestamp(),
       });
@@ -478,13 +478,13 @@ export async function chargeRoomTip(params: {
     const accountSnap = await t.get(accountRef);
     if (!accountSnap.exists) {
       t.set(accountRef, {
-        creatorId, pendingTokens: tipTokens, availableEarningTokens: 0,
+        creatorId, pendingEarningTokens: tipTokens, availableEarningTokens: 0,
         reservedEarningTokens: 0, paidOutEarningTokens: 0, lifetimeEarnedTokens: tipTokens,
         createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
       });
     } else {
       t.update(accountRef, {
-        pendingTokens:        FieldValue.increment(tipTokens),
+        pendingEarningTokens:        FieldValue.increment(tipTokens),
         lifetimeEarnedTokens: FieldValue.increment(tipTokens),
         updatedAt:            FieldValue.serverTimestamp(),
       });
@@ -626,13 +626,13 @@ export async function deliverReservedRoomInteraction(params: {
     const accountSnap = await t.get(accountRef);
     if (!accountSnap.exists) {
       t.set(accountRef, {
-        creatorId, pendingTokens: tokensEarned, availableEarningTokens: 0,
+        creatorId, pendingEarningTokens: tokensEarned, availableEarningTokens: 0,
         reservedEarningTokens: 0, paidOutEarningTokens: 0, lifetimeEarnedTokens: tokensEarned,
         createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
       });
     } else {
       t.update(accountRef, {
-        pendingTokens:        FieldValue.increment(tokensEarned),
+        pendingEarningTokens:        FieldValue.increment(tokensEarned),
         lifetimeEarnedTokens: FieldValue.increment(tokensEarned),
         updatedAt:            FieldValue.serverTimestamp(),
       });

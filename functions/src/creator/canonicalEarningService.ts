@@ -67,7 +67,7 @@ export async function getCreatorRiskTier(
 ): Promise<CreatorRiskTier> {
   const snap = await db.collection('creatorEarningAccounts').doc(creatorId).get();
   if (!snap.exists) return 'NEW';
-  const tier = (snap.data() as any).riskTier as CreatorRiskTier | undefined;
+  const tier = (snap.data() as Partial<CreatorEarningAccount>).riskTier as CreatorRiskTier | undefined;
   return tier ?? 'NEW';
 }
 
@@ -116,7 +116,7 @@ export type CreatorPayoutStatus =
 export interface CreatorEarningAccount {
   creatorId: string;
   /** Earning tokens in hold period (not yet available for payout). */
-  pendingTokens: number;
+  pendingEarningTokens: number;
   /** Earning tokens released from hold — available for payout. Spec: availableEarningTokens. */
   availableEarningTokens: number;
   /** Earning tokens reserved for an active payout request. Spec: reservedEarningTokens. */
@@ -124,13 +124,20 @@ export interface CreatorEarningAccount {
   /** Total earning tokens paid out lifetime. Spec: paidOutEarningTokens. */
   paidOutEarningTokens: number;
   lifetimeEarnedTokens: number;
-  riskTier?: string;
-  stripeConnectAccountId?: string;
-  stripeOnboardingComplete?: boolean;
-  stripeChargesEnabled?: boolean;
-  stripePayoutsEnabled?: boolean;
-  stripeDetailsSubmitted?: boolean;
-  stripeAccountUpdatedAt?: Timestamp | FieldValue;
+  /** Canonical required fields per hardening spec. */
+  refundDebtEarningTokens:  number;
+  payoutBlocked:            boolean;
+  payoutBlockReason:        string | null;
+  riskTier:                 'NEW' | 'VERIFIED' | 'HIGH_RISK';
+  trustTier:                'NEW' | 'VERIFIED' | 'TRUSTED';
+  kycLevel:                 'NONE' | 'BASIC' | 'ENHANCED_KYC';
+  successfulPayoutCount:    number;
+  stripeConnectAccountId:   string | null;
+  stripeOnboardingComplete: boolean;
+  stripeChargesEnabled?:    boolean;
+  stripePayoutsEnabled?:    boolean;
+  stripeDetailsSubmitted?:  boolean;
+  stripeAccountUpdatedAt?:  Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
   createdAt: Timestamp | FieldValue;
 }
@@ -195,7 +202,7 @@ export function computeNetUsd(tokenAmount: number): number {
  * Called by the C5 chat state machine inside the same Firestore transaction
  * that commits the creator message visible to the payer (§0.2 atomicity).
  *
- * Tokens go to pendingTokens (hold period). releaseHeldEarnings() (C7 scheduler)
+ * Tokens go to pendingEarningTokens (hold period). releaseHeldEarnings() (C7 scheduler)
  * moves them to availableEarningTokens after the risk-tier hold period.
  */
 export async function recordCreatorEarning(params: {
@@ -242,18 +249,27 @@ export async function recordCreatorEarning(params: {
     if (!accountSnap.exists) {
       const newAccount: CreatorEarningAccount = {
         creatorId,
-        pendingTokens:          tokenAmount,
-        availableEarningTokens: 0,
-        reservedEarningTokens:  0,
-        paidOutEarningTokens:   0,
-        lifetimeEarnedTokens:   tokenAmount,
+        pendingEarningTokens:    tokenAmount,
+        availableEarningTokens:  0,
+        reservedEarningTokens:   0,
+        paidOutEarningTokens:    0,
+        refundDebtEarningTokens: 0,
+        lifetimeEarnedTokens:    tokenAmount,
+        payoutBlocked:           false,
+        payoutBlockReason:       null,
+        riskTier:                'NEW',  // default for new accounts
+        trustTier:               'NEW',
+        kycLevel:                'NONE',
+        successfulPayoutCount:   0,
+        stripeConnectAccountId:  null,
+        stripeOnboardingComplete: false,
         createdAt:  FieldValue.serverTimestamp(),
         updatedAt:  FieldValue.serverTimestamp(),
       };
       transaction.set(accountRef, newAccount);
     } else {
       transaction.update(accountRef, {
-        pendingTokens:        FieldValue.increment(tokenAmount),
+        pendingEarningTokens:        FieldValue.increment(tokenAmount),
         lifetimeEarnedTokens: FieldValue.increment(tokenAmount),
         updatedAt:            FieldValue.serverTimestamp(),
       });
@@ -332,7 +348,7 @@ export async function releaseHeldEarnings(
 
     const accountRef = db.collection(CREATOR_EARNING_ACCOUNTS).doc(creatorId);
     transaction.update(accountRef, {
-      pendingTokens:          FieldValue.increment(-tokensToRelease),
+      pendingEarningTokens:          FieldValue.increment(-tokensToRelease),
       availableEarningTokens: FieldValue.increment(tokensToRelease),
       updatedAt:       FieldValue.serverTimestamp(),
     });
@@ -466,13 +482,13 @@ export async function clawbackCreatorEarning(params: {
     if (!snap.exists) return { entryId: idempotencyKey, tokensClawedBack: 0 };
 
     const account = snap.data() as CreatorEarningAccount;
-    const fromPending   = Math.min(tokenAmount, account.pendingTokens);
+    const fromPending   = Math.min(tokenAmount, account.pendingEarningTokens);
     const fromAvailable = Math.min(tokenAmount - fromPending, account.availableEarningTokens ?? 0);
     const total         = fromPending + fromAvailable;
 
     if (total > 0) {
       transaction.update(accountRef, {
-        pendingTokens:          FieldValue.increment(-fromPending),
+        pendingEarningTokens:          FieldValue.increment(-fromPending),
         availableEarningTokens: FieldValue.increment(-fromAvailable),
         updatedAt:       FieldValue.serverTimestamp(),
       });

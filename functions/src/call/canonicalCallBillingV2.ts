@@ -22,7 +22,7 @@
  *
  * Earning flow per call billing window:
  *   Fan wallet       wallets/{fanId}.balance          → debit totalTokens
- *   Platform wallet  wallets/AVALO_PLATFORM.balance   → credit platformTokens (20%)
+ *   Platform wallet  [REMOVED] — §1.2: no platform credit at billing time
  *   Creator ledger   creatorEarningAccounts/{creatorId}.pendingTokens → credit earnerTokens (80%)
  *   Creator ledger entry  creatorEarningLedger/{entryId}               → immutable event
  *   Billing event    billingEvents/{idempotencyKey}                     → immutable payer audit
@@ -35,8 +35,6 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { requireVerifiedAdult }     from '../compliance/ageGuard';
 import {
   BASE_CREATOR_RESPONSE_RATE_TOKENS,
-  AVALO_COMMISSION_RATE,
-  TOKEN_PAYOUT_USD_GROSS,
   CreatorEarningAccount,
   getCreatorRiskTier,
   computeHoldRelease,
@@ -51,10 +49,9 @@ const CREATOR_EARNING_ACCOUNTS = 'creatorEarningAccounts';
 const CREATOR_EARNING_LEDGER   = 'creatorEarningLedger';
 const BILLING_EVENTS           = 'billingEvents';
 const WALLETS                  = 'wallets';
-const AVALO_PLATFORM_UID       = 'AVALO_PLATFORM';
 
-/** Creator receives 80% of call tokens (Avalo 20% at billing time for platform revenue). */
-const CALL_CREATOR_SHARE = 1 - AVALO_COMMISSION_RATE; // 0.80
+/** Creator earns 100% of charged tokens. Avalo 20% commission taken at PAYOUT time only. */
+// No token split at delivery — see §1.2: creatorEarningTokens = payerTokensCharged
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -66,8 +63,7 @@ export interface CallBillingResult {
   billingWindowId:    string;
   idempotencyKey:     string;
   totalTokensCharged: number;
-  earnerTokens:       number;
-  platformTokens:     number;
+  earnerTokens:       number;  // = totalTokensCharged (no split; commission at payout only)
   billingStatus:      CallBillingStatus;
   billingEventId:     string;
   ledgerEntryId:      string;
@@ -116,13 +112,14 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
     throw new Error(`[CallBillingV2] totalTokens must be a non-negative integer, got ${totalTokens}`);
   }
 
-  const idempotencyKey = `call_bill:${callSessionId}:${billingWindowId}`;
+  // §1.2 canonical key format: CALL_BILL:{callSessionId}:{billingWindowId}
+  const idempotencyKey = `CALL_BILL:${callSessionId}:${billingWindowId}`;
 
   // Sub-1-minute or zero-token windows — skip billing, return clean result
   if (totalTokens === 0) {
     return {
       callSessionId, billingWindowId, idempotencyKey,
-      totalTokensCharged: 0, earnerTokens: 0, platformTokens: 0,
+      totalTokensCharged: 0, earnerTokens: 0,
       billingStatus: 'SKIPPED',
       billingEventId: '', ledgerEntryId: '',
     };
@@ -145,7 +142,6 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
         callSessionId, billingWindowId, idempotencyKey,
         totalTokensCharged: ev.payerTokensCharged,
         earnerTokens:       ev.creatorEarningTokens,
-        platformTokens:     ev.platformTokens ?? 0,
         billingStatus:      'CHARGED' as CallBillingStatus,
         billingEventId:     idempotencyKey,
         ledgerEntryId:      ev.ledgerEntryId ?? '',
@@ -176,9 +172,8 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
       throw new Error(`CALL_BILL_INSUFFICIENT: fan=${fanId} has ${fanBalance}, needs ${totalTokens}`);
     }
 
-    // ── 4. Compute split (integer arithmetic only) ─────────────────────────
-    const earnerTokens   = Math.floor(actualCharge * CALL_CREATOR_SHARE); // 80%
-    const platformTokens = actualCharge - earnerTokens;                    // 20% remainder
+    // ── 4. Creator earns full charge (§1.2: no split at delivery; commission at payout only)
+    const earnerTokens = actualCharge; // 100% — Avalo 20% taken at payout via canonicalPayoutSystemV2
 
     // ── 5. Debit fan wallet ────────────────────────────────────────────────
     if (fanWalletSnap.exists) {
@@ -188,34 +183,33 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
       throw new Error(`CALL_BILL_NO_FAN_WALLET: fanId=${fanId}`);
     }
 
-    // ── 6. Credit platform wallet ──────────────────────────────────────────
-    const platformWalletRef = db.collection(WALLETS).doc(AVALO_PLATFORM_UID);
-    const platformSnap      = await t.get(platformWalletRef);
-    if (platformSnap.exists) {
-      t.update(platformWalletRef, { balance: FieldValue.increment(platformTokens) });
-    } else {
-      t.set(platformWalletRef, { balance: platformTokens, uid: AVALO_PLATFORM_UID,
-        createdAt: FieldValue.serverTimestamp() });
-    }
-
-    // ── 7. Credit creator earning account (pendingTokens with hold) ────────
+    // ── 6. Credit creator earning account (pendingEarningTokens with hold) ─────
     const accountRef  = db.collection(CREATOR_EARNING_ACCOUNTS).doc(creatorId);
     const accountSnap = await t.get(accountRef);
     if (!accountSnap.exists) {
       const newAccount: CreatorEarningAccount = {
         creatorId,
-        pendingTokens:          earnerTokens,
-        availableEarningTokens: 0,
-        reservedEarningTokens:  0,
-        paidOutEarningTokens:   0,
-        lifetimeEarnedTokens:   earnerTokens,
+        pendingEarningTokens:    earnerTokens,
+        availableEarningTokens:  0,
+        reservedEarningTokens:   0,
+        paidOutEarningTokens:    0,
+        refundDebtEarningTokens: 0,
+        lifetimeEarnedTokens:    earnerTokens,
+        payoutBlocked:           false,
+        payoutBlockReason:       null,
+        riskTier:                'NEW',
+        trustTier:               'NEW',
+        kycLevel:                'NONE',
+        successfulPayoutCount:   0,
+        stripeConnectAccountId:  null,
+        stripeOnboardingComplete: false,
         createdAt:  FieldValue.serverTimestamp(),
         updatedAt:  FieldValue.serverTimestamp(),
       };
       t.set(accountRef, newAccount);
     } else {
       t.update(accountRef, {
-        pendingTokens:        FieldValue.increment(earnerTokens),
+        pendingEarningTokens: FieldValue.increment(earnerTokens),
         lifetimeEarnedTokens: FieldValue.increment(earnerTokens),
         updatedAt:            FieldValue.serverTimestamp(),
       });
@@ -238,7 +232,7 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
       createdAt:      FieldValue.serverTimestamp(),
       metadata: {
         callSessionId, billingWindowId, callMode, tokensPerMinute, billedMinutes,
-        totalCharged: actualCharge, creatorShare: earnerTokens, platformShare: platformTokens,
+        totalCharged: actualCharge, creatorShare: earnerTokens,
       },
     });
 
@@ -250,7 +244,6 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
       type:                 'CALL_BILLING',
       payerTokensCharged:   actualCharge,
       creatorEarningTokens: earnerTokens,
-      platformTokens,
       sessionId:            callSessionId,
       idempotencyKey,
       ledgerEntryId,
@@ -261,7 +254,7 @@ export async function billCallWindow(params: CallBillingParams): Promise<CallBil
     return {
       callSessionId, billingWindowId, idempotencyKey,
       totalTokensCharged: actualCharge,
-      earnerTokens, platformTokens, billingStatus,
+      earnerTokens, billingStatus,
       billingEventId: idempotencyKey, ledgerEntryId,
     };
   });

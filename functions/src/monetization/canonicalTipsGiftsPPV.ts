@@ -9,17 +9,14 @@
  * All operations are atomic (single Firestore transaction), idempotent,
  * and write immutable billing + creator earning ledger entries.
  *
- * ── Revenue split (tips/gifts/PPV) ──────────────────────────────────────────
- * These surfaces use a 65/35 split at the TOKEN level:
- *   creatorTokens = floor(totalTokens × 0.65)
- *   avaloTokens   = totalTokens − creatorTokens
- *
- * This differs from direct chat (§0.3) which credits the FULL amount to the
- * creator wallet and takes Avalo's 20% commission at payout time.
- * Tips/gifts/PPV use immediate per-event splitting.
+ * ── Revenue model (tips/gifts/PPV) ──────────────────────────────────────────
+ * §1.2 canonical: payerTokensCharged = creatorEarningTokens (NO token split at delivery).
+ * Creator earns 100% of charged tokens into pendingEarningTokens (with hold).
+ * Avalo 20% commission is taken at PAYOUT time only (creatorNetUsdCents = gross × 0.80).
+ * The prior 65/35 split model is REMOVED as of B-series hardening.
  *
  * Creator earnings from tips/gifts/PPV enter the earning hold queue
- * (pendingTokens) for EARNING_HOLD_DAYS before becoming payable.
+ * (pendingEarningTokens) for EARNING_HOLD_DAYS before becoming payable.
  *
  * IMPORTANT: Do NOT read from MONETIZATION_SPLITS (all zeros in production).
  *
@@ -35,10 +32,8 @@
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { requireVerifiedAdult } from '../compliance/ageGuard';
-import { transactTokens } from '../wallet/walletService';
 import {
   EarningEventType,
-  TOKEN_PAYOUT_USD_GROSS,
   EARNING_HOLD_DAYS,
   computeGrossUsd,
 } from '../creator/canonicalEarningService';
@@ -47,10 +42,9 @@ import {
 // Revenue split constants (hardcoded — NOT from MONETIZATION_SPLITS)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Creator's share of tip/gift/PPV revenue (token level). */
-export const TIPS_GIFTS_PPV_CREATOR_SPLIT = 0.65;   // 65%
-/** Avalo's share of tip/gift/PPV revenue (token level). */
-export const TIPS_GIFTS_PPV_AVALO_SPLIT   = 0.35;   // 35%
+/** §1.2: No token split at delivery. Creator earns 100% of charged tokens.
+ * Avalo 20% commission taken at PAYOUT time via creatorNetUsdCents = grossUsdCents × 0.80 */
+// TIPS_GIFTS_PPV_CREATOR_SPLIT removed — was 0.65, replaced by full-amount earning
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Gift catalog
@@ -98,12 +92,7 @@ function holdReleaseDate(): Timestamp {
   return Timestamp.fromMillis(Date.now() + EARNING_HOLD_DAYS * 24 * 60 * 60 * 1000);
 }
 
-/** Compute 65/35 split from a total token amount. */
-function computeCreatorSplit(totalTokens: number): { creatorTokens: number; avaloTokens: number } {
-  const creatorTokens = Math.floor(totalTokens * TIPS_GIFTS_PPV_CREATOR_SPLIT);
-  const avaloTokens   = totalTokens - creatorTokens;
-  return { creatorTokens, avaloTokens };
-}
+// computeCreatorSplit removed — §1.2: no split at delivery
 
 /**
  * Shared inner logic: debit fan wallet, credit creator+platform,
@@ -119,122 +108,62 @@ async function atomicTransferWithEarning(params: {
   messageId?: string;
   metadata?: Record<string, unknown>;
 }): Promise<{ billingEventId: string; creatorTokens: number }> {
+  // §1.2: No token split at delivery. Creator earns 100% of charged tokens.
+  // Avalo 20% commission taken at PAYOUT time via canonicalPayoutSystemV2.
   const { fanId, creatorId, totalTokens, type, idempotencyKey, chatId, messageId, metadata } = params;
-  const { creatorTokens, avaloTokens } = computeCreatorSplit(totalTokens);
-  const grossUsd  = computeGrossUsd(totalTokens);
-  const holdsUntil = holdReleaseDate();
+  // creatorTokens = payerTokensCharged (full amount, no split)
+  const creatorTokens = totalTokens;
+  const holdsUntil    = holdReleaseDate();
 
   return db.runTransaction(async (txn) => {
     // 1. Idempotency guard
-    const billingRef  = db.collection(BILLING_EVENTS).doc(idempotencyKey);
-    const existing    = await txn.get(billingRef);
+    const billingRef = db.collection(BILLING_EVENTS).doc(idempotencyKey);
+    const existing   = await txn.get(billingRef);
     if (existing.exists) {
       return { billingEventId: idempotencyKey, creatorTokens };
     }
 
-    // 2. Debit fan + credit creator + credit platform via walletService
-    // (We inline the transactTokens logic here to share the same transaction)
-    const WALLETS  = 'wallets';
-    const LEDGER   = 'ledger';
-    const IDEMPOT  = 'idempotency_sentinels';
+    // 2. Debit fan wallet (wallets/{fanId}.balance only — never creator wallet)
+    const fanRef  = db.collection('wallets').doc(fanId);
+    const fanSnap = await txn.get(fanRef);
+    const fanData = fanSnap.data() as { balance: number; reservedTokens?: number; updatedAt?: unknown } | undefined;
+    const fanBalance = fanData?.balance ?? 0;
 
-    const fanRef      = db.collection(WALLETS).doc(fanId);
-    const creatorRef  = db.collection(WALLETS).doc(creatorId);
-    const platformRef = db.collection(WALLETS).doc('AVALO_PLATFORM');
-
-    const [fanSnap, creatorSnap, platformSnap] = await Promise.all([
-      txn.get(fanRef), txn.get(creatorRef), txn.get(platformRef),
-    ]);
-
-    const fanBalance      = fanSnap.exists ? (fanSnap.data() as any).balance ?? 0 : 0;
-    const creatorBalance  = creatorSnap.exists ? (creatorSnap.data() as any).balance ?? 0 : 0;
-    const platformBalance = platformSnap.exists ? (platformSnap.data() as any).balance ?? 0 : 0;
-
-    if (fanBalance < totalTokens) {
+    if (!fanSnap.exists || fanBalance < totalTokens) {
       throw new HttpsError('failed-precondition',
         `INSUFFICIENT_BALANCE: fan has ${fanBalance} tokens, needs ${totalTokens}`);
     }
 
-    // Fan wallet
-    if (fanSnap.exists) {
-      txn.update(fanRef, {
-        balance: fanBalance - totalTokens,
-        spent:   FieldValue.increment(totalTokens),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-    } else {
-      throw new HttpsError('not-found', `Fan wallet not found: ${fanId}`);
-    }
-
-    // Creator wallet
-    const newCreatorBalance = creatorBalance + creatorTokens;
-    if (creatorSnap.exists) {
-      txn.update(creatorRef, {
-        balance:   newCreatorBalance,
-        earned:    FieldValue.increment(creatorTokens),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-    } else {
-      txn.set(creatorRef, {
-        userId: creatorId, balance: creatorTokens, pending: 0,
-        earned: creatorTokens, spent: 0, frozen: 0, reservedTokens: 0,
-        createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
-      });
-    }
-
-    // Platform wallet
-    if (platformSnap.exists) {
-      txn.update(platformRef, {
-        balance:   platformBalance + avaloTokens,
-        earned:    FieldValue.increment(avaloTokens),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
-    } else {
-      txn.set(platformRef, {
-        userId: 'AVALO_PLATFORM', balance: avaloTokens, pending: 0,
-        earned: avaloTokens, spent: 0, frozen: 0, reservedTokens: 0,
-        createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
-      });
-    }
-
-    // Wallet ledger entry
-    const walletTxId = db.collection(LEDGER).doc().id;
-    txn.set(db.collection(LEDGER).doc(walletTxId), {
-      txId: walletTxId, type,
-      actorId: fanId, counterpartyId: creatorId,
-      chatId: chatId ?? null, sessionId: null,
-      amountTokens: totalTokens,
-      split: { creatorTokens, avaloTokens },
-      beforeAfter: {
-        actor:        { before: fanBalance,      after: fanBalance - totalTokens },
-        counterparty: { before: creatorBalance,  after: newCreatorBalance },
-        platform:     { before: platformBalance, after: platformBalance + avaloTokens },
-      },
-      timestamp: FieldValue.serverTimestamp(),
-      idempotencyKey,
-      metadata,
+    txn.update(fanRef, {
+      balance:   fanBalance - totalTokens,
+      updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Wallet idempotency sentinel
-    txn.set(db.collection(IDEMPOT).doc(idempotencyKey), {
-      key: idempotencyKey, txId: walletTxId,
-      createdAt: FieldValue.serverTimestamp(),
-      expiresAt:  Timestamp.fromMillis(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    });
-
-    // 3. Creator earning account (pendingTokens)
+    // 3. Creator earning account (pendingEarningTokens — NOT wallets/{creatorId})
     const earningRef  = db.collection(CREATOR_EARNING_ACCOUNTS).doc(creatorId);
     const earningSnap = await txn.get(earningRef);
     if (!earningSnap.exists) {
       txn.set(earningRef, {
-        creatorId, pendingTokens: creatorTokens, availableTokens: 0,
-        inPayoutTokens: 0, lifetimeEarnedTokens: creatorTokens, lifetimePayoutTokens: 0,
-        createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
+        creatorId,
+        pendingEarningTokens:    creatorTokens,
+        availableEarningTokens:  0,
+        reservedEarningTokens:   0,
+        paidOutEarningTokens:    0,
+        refundDebtEarningTokens: 0,
+        payoutBlocked:           false,
+        payoutBlockReason:       null,
+        riskTier:                'NEW',
+        trustTier:               'NEW',
+        kycLevel:                'NONE',
+        successfulPayoutCount:   0,
+        stripeConnectAccountId:  null,
+        stripeOnboardingComplete: false,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
       });
     } else {
       txn.update(earningRef, {
-        pendingTokens:        FieldValue.increment(creatorTokens),
-        lifetimeEarnedTokens: FieldValue.increment(creatorTokens),
+        pendingEarningTokens: FieldValue.increment(creatorTokens),
         updatedAt:            FieldValue.serverTimestamp(),
       });
     }
@@ -242,23 +171,29 @@ async function atomicTransferWithEarning(params: {
     // 4. Creator earning ledger entry
     const ledgerEntryId = db.collection(CREATOR_EARNING_LEDGER).doc().id;
     txn.set(db.collection(CREATOR_EARNING_LEDGER).doc(ledgerEntryId), {
-      entryId: ledgerEntryId, creatorId, payerId: fanId, type,
+      entryId: ledgerEntryId,
+      creatorId,
+      payerId:     fanId,
+      type,
       tokenAmount: creatorTokens,
-      grossUsd: computeGrossUsd(creatorTokens),
-      chatId: chatId ?? null,
-      messageId: messageId ?? null,
-      idempotencyKey, holdsUntil,
+      grossUsd:    computeGrossUsd(creatorTokens),
+      chatId:      chatId ?? null,
+      messageId:   messageId ?? null,
+      idempotencyKey,
+      holdsUntil,
       createdAt: FieldValue.serverTimestamp(),
     });
 
     // 5. Immutable billing event
     txn.set(billingRef, {
-      eventId: idempotencyKey, payerId: fanId, creatorId, type,
-      payerTokensCharged: totalTokens,
-      creatorEarningTokens: creatorTokens,
-      avaloTokens,
-      chatId: chatId ?? null,
-      messageId: messageId ?? null,
+      eventId:              idempotencyKey,
+      payerId:              fanId,
+      creatorId,
+      type,
+      payerTokensCharged:   totalTokens,   // §1.2: equals creatorEarningTokens
+      creatorEarningTokens: creatorTokens,  // 100% of charged tokens
+      chatId:               chatId ?? null,
+      messageId:            messageId ?? null,
       idempotencyKey,
       createdAt: FieldValue.serverTimestamp(),
       ...(metadata && { metadata }),
@@ -277,7 +212,7 @@ async function atomicTransferWithEarning(params: {
  *
  * C2 guard: requireVerifiedAdult for both parties.
  * Split: 65% creator / 35% Avalo (token level).
- * Creator earnings → pendingTokens (7-day hold via C4 earning service).
+ * Creator earnings → pendingEarningTokens (7-day hold via C4 earning service).
  *
  * @param idempotencyKey — unique per tip attempt; caller uses messageId or client-generated UUID
  */
@@ -437,7 +372,7 @@ export async function unlockCanonicalMedia(params: {
     // Already unlocked — idempotent return
     return {
       billingEventId: idempotencyKey,
-      creatorTokens: Math.floor(priceTokens * TIPS_GIFTS_PPV_CREATOR_SPLIT),
+      creatorTokens: priceTokens,  // §1.2: 100% of price goes to creator
       mediaUrl: msg.content?.mediaUrl ?? '',
       nsfwClassification: msg.nsfwClassification ?? 'SAFE',
     };
