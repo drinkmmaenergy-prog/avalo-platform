@@ -26,8 +26,21 @@ function Pass([string]$m) { Write-Host ("GATE PASS: {0}" -f $m) }
 #  * $ExcludeFiles removes the DECLARING module (the seam defines the symbol; defining is not importing).
 # Anything surviving all three filters is a genuine production importer and fails the gate.
 function Get-ProductionImporters([string]$Pattern, [string[]]$Dirs, [string[]]$ExcludeFiles = @()) {
-  $lines = @(& git -C $root grep --untracked -n -e $Pattern -- @Dirs 2>$null)
   $files = @()
+  $lines = @(& git -C $root grep --untracked -n -e $Pattern -- @Dirs 2>$null)
+  # Supplement: NO form of `git grep` (even --untracked) searches .gitignore'd files. This repo has a broad `lib/`
+  # rule that ignores functions/src/lib/ — a PRODUCTION source path — so a rogue importer placed there would be
+  # invisible to the scan above. Enumerate ignored production sources explicitly and grep their content directly.
+  # Build/vendor output is excluded so the scan stays deterministic and fast (measured: 1 file).
+  $ignored = @(@(& git -C $root ls-files --others --ignored --exclude-standard -- @Dirs 2>$null) |
+    Where-Object { $_ -match '\.(ts|tsx|js|mjs|cjs)$' -and $_ -notmatch '(^|/)(node_modules|dist|build|coverage|\.next|\.expo)/' })
+  foreach ($rel in $ignored) {
+    $abs = Join-Path $root ($rel -replace '/', '\')
+    if (-not (Test-Path -LiteralPath $abs)) { continue }
+    foreach ($hit in @(Select-String -LiteralPath $abs -Pattern $Pattern -ErrorAction SilentlyContinue)) {
+      $lines += ("{0}:{1}:{2}" -f $rel, $hit.LineNumber, $hit.Line)
+    }
+  }
   foreach ($ln in $lines) {
     $m = [regex]::Match($ln, '^(?<f>[^:]+):(?<n>\d+):(?<c>.*)$')
     if (-not $m.Success) { continue }
@@ -185,6 +198,29 @@ try {
   $advOk = ($advStale.Count -eq 0) -and ($advLines.Count -eq 2) -and ($advFixed.Count -eq 1) -and ($advFixed[0] -match 'rogueImporter\.ts$')
 } catch { $advOk = $false } finally { Remove-Item -LiteralPath $advRepo -Recurse -Force -ErrorAction SilentlyContinue }
 if ($advOk) { Pass 'adversarial import-scan self-test: untracked rogue production importer DETECTED by --untracked scan; stale tracked-only scan proven BLIND' } else { Fail 'adversarial import-scan self-test (untracked reachability)' }
+# adversarial: a rogue importer hidden in a .gitignore'd PRODUCTION path must still be detected. `git grep` never
+# searches ignored files, so this proves the supplementary ignored-file scan in Get-ProductionImporters is live.
+$advRepo2 = Join-Path $env:TEMP ('iam01b-ignoredscan-selftest-' + [guid]::NewGuid().ToString('N'))
+$advOk2 = $false
+try {
+  New-Item -ItemType Directory -Force -Path (Join-Path $advRepo2 'functions\src\lib') | Out-Null
+  & git -C $advRepo2 init -q *>&1 | Out-Null
+  Set-Content -LiteralPath (Join-Path $advRepo2 '.gitignore') -Encoding UTF8 -Value 'lib/'
+  Set-Content -LiteralPath (Join-Path $advRepo2 'functions\src\lib\hidden.ts') -Encoding UTF8 `
+    -Value "import { signFinancialAuthorityWithDeps } from '../../security/financialAuthority/authorityService';"
+  # even --untracked cannot see it (proves the blind spot is real)
+  $advBlind = @(& git -C $advRepo2 grep --untracked -l -e 'signFinancialAuthorityWithDeps' -- 'functions/src' 2>$null)
+  # the supplementary ignored-file enumeration does see it
+  $advSeen = @(@(& git -C $advRepo2 ls-files --others --ignored --exclude-standard -- 'functions/src' 2>$null) |
+    Where-Object { $_ -match '\.ts$' -and $_ -notmatch '(^|/)node_modules/' })
+  $advHit = $false
+  foreach ($rel in $advSeen) {
+    $abs = Join-Path $advRepo2 ($rel -replace '/', '\')
+    if (Test-Path -LiteralPath $abs) { if (@(Select-String -LiteralPath $abs -Pattern 'signFinancialAuthorityWithDeps' -ErrorAction SilentlyContinue).Count -gt 0) { $advHit = $true } }
+  }
+  $advOk2 = ($advBlind.Count -eq 0) -and $advHit
+} catch { $advOk2 = $false } finally { Remove-Item -LiteralPath $advRepo2 -Recurse -Force -ErrorAction SilentlyContinue }
+if ($advOk2) { Pass 'adversarial ignored-path self-test: rogue importer in a .gitignore''d production path DETECTED (git grep proven blind to it)' } else { Fail 'adversarial ignored-path self-test' }
 
 Write-Host "=== GATE 14. Lifecycle adjudicator: ordered sequence + exit-0 unknown-error + portable harness ==="
 $life = Get-Content (Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1') -Raw
