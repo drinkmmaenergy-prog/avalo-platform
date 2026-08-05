@@ -97,13 +97,13 @@ export {
 
 // CORE PAYMENT SYSTEM
 export {
+  // P0-04: creditTokensCallable UNEXPORTED (client free-mint hard-disabled in payments.ts).
   stripeWebhook,
-  creditTokensCallable,
   requestPayoutCallable,
 } from './payments';
 
 export {
-  createStripeCheckoutSession,
+  // P0-04: createStripeCheckoutSession UNEXPORTED (2nd creator hard-disabled in paymentsComplete.ts).
   stripeWebhookV2,
   validateAppleReceipt,
   initiateChat,
@@ -127,10 +127,11 @@ export {
 
 // PACK 288: WEB STRIPE TOKENS
 export {
+  // P0-04: tokens_createCheckoutSession is the UNIQUE canonical checkout creator (gated OFF).
+  // tokens_fulfillCheckout UNEXPORTED (client completion fallback hard-disabled in pack288-web-stripe.ts).
   tokens_createCheckoutSession,
   tokens_stripeWebhook,
   tokens_getPurchaseBySession,
-  tokens_fulfillCheckout,
   tokens_getPurchaseHistory,
 } from './pack288-web-stripe';
 
@@ -602,7 +603,9 @@ export {
   recordAdView,
   recordAdConversion,
   createAdvertiserAccount,
-  addAdvertiserTokens,
+  // P0-01: addAdvertiserTokens UNEXPORTED (unauthenticated-scope advertiser-credit mint hard-disabled in
+  // pack349-endpoints.ts). P0-01 R3: advertiser-credit creation is UNAVAILABLE (no sanctioned mint path;
+  // all AdBillingEngine credit operations are retired/unavailable and throw before any Firestore access).
   createCreatorSponsorship,
   endCreatorSponsorship,
   getCreatorAnalytics as getCreatorAnalytics_ads,

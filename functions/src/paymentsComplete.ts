@@ -33,6 +33,8 @@ import { logServerEvent } from './lib/stubs';
 import * as crypto from 'crypto';
 import { creditTokens } from './wallet/walletService';
 import { assertPayoutsEnabled } from './wallet/payoutGuard';
+// R3 P0-04 webhook canonicalization: sole canonical completion authority (recovered foundation, frozen).
+import { completeStripeTokenPurchase, NormalizedStripeSession } from './payments/canonicalStripeCompletion';
 
 ;
 ;
@@ -204,6 +206,13 @@ export const createStripeCheckoutSession = onCall(
       throw new HttpsError("unauthenticated", "User must be authenticated");
     }
 
+    // P0-04 CONTAINMENT — HARD_DISABLED + UNEXPORTED (removed from index.ts).
+    // This was a SECOND runtime-reachable token checkout-session creator (independent Stripe session
+    // creation). Exactly one canonical creator is retained: pack288-web-stripe.ts::tokens_createCheckoutSession
+    // (gated by assertTokenCheckoutEnabled). No independent Stripe session creation survives here.
+    throw new HttpsError("failed-precondition", "Legacy checkout creator disabled; use the canonical gated creator");
+
+    // eslint-disable-next-line no-unreachable
     const { tokens, currency = "USD" } = request.data as {
       tokens: number;
       currency?: Currency;
@@ -371,101 +380,36 @@ export const stripeWebhookV2 = onRequest(
 );
 
 async function handleStripeCheckoutCompleted(session: Stripe.Checkout.Session) {
-  const sessionId = session.id;
-
-  try {
-    // ── Read paymentSession (needed for userId + tokens) ─────────────────────
-    const sessionDoc = await db.collection("paymentSessions").doc(sessionId).get();
-    if (!sessionDoc.exists) {
-      logger.error(`Payment session not found: ${sessionId}`);
-      return;
-    }
-
-    const paymentSession = sessionDoc.data() as PaymentSession;
-
-    // ── Idempotency fast-exit ─────────────────────────────────────────────────
-    // paymentSession.status === "completed" means credit already applied.
-    if (paymentSession.status === "completed") {
-      logger.info(`Already processed (idempotent skip): ${sessionId}`);
-      return;
-    }
-
-    const userId = paymentSession.userId;
-    const tokens = paymentSession.tokens!;
-    const idempotencyKey = `stripe_v2_${sessionId}`;
-
-    // ── Canonical credit (atomic, idempotent, writes ledger) ─────────────────
-    // creditTokens() checks idempotency_sentinels INSIDE its own transaction.
-    const { txId, newBalance } = await creditTokens({
-      userId,
-      amountTokens: tokens,
-      type: "PURCHASE",
-      idempotencyKey,
-      metadata: {
-        stripeSessionId: sessionId,
-        paymentSessionId: sessionId,
-        platform: "web",
-        provider: "stripe",
-      },
-    });
-
-    // ── Mark session completed + write transaction audit record ───────────────
-    // This is now state-tracking only; idempotency is guaranteed by creditTokens().
-    await db.runTransaction(async (tx) => {
-      // Re-read inside transaction for safety
-      const freshDoc = await tx.get(db.collection("paymentSessions").doc(sessionId));
-      if (!freshDoc.exists) return;
-      const freshSession = freshDoc.data() as PaymentSession;
-      if (freshSession.status === "completed") return; // already marked by a concurrent call
-
-      // Transaction audit record
-      const txRef = db.collection("transactions").doc(`tx_stripe_${sessionId}`);
-      const txRecord: Transaction = {
-        txId: `tx_stripe_${sessionId}`,
-        userId,
-        type: "deposit",
-        subtype: "token_purchase",
-        tokens,
-        fiatAmount: paymentSession.amount,
-        fiatCurrency: paymentSession.currency,
-        provider: PaymentProvider.STRIPE,
-        providerTxId: session.payment_intent as string,
-        paymentSessionId: sessionId,
-        status: "completed",
-        balanceBefore: newBalance - tokens,
-        balanceAfter: newBalance,
-        description: `Purchased ${tokens} tokens`,
-        metadata: { ledgerTxId: txId },
-        createdAt: Timestamp.now(),
-        completedAt: Timestamp.now(),
-      };
-      tx.set(txRef, txRecord, { merge: true });
-
-      // Mark session completed
-      tx.update(freshDoc.ref, {
-        status: "completed",
-        completedAt: FieldValue.serverTimestamp(),
-        webhookProcessedAt: FieldValue.serverTimestamp(),
-        ledgerTxId: txId,
-      });
-    });
-
-    logger.info(`Tokens credited successfully: ${sessionId}`, { ledgerTxId: txId, newBalance });
-
-    await logServerEvent("tokens_credited", session.metadata?.userId || sessionId, {
-      tokens,
-      provider: "stripe",
-      sessionId,
-    });
-  } catch (error: any) {
-    logger.error(`Transaction failed for ${sessionId}:`, error);
-
-    await db.collection("paymentSessions").doc(sessionId).update({
-      webhookAttempts: FieldValue.increment(1),
-    });
-
-    throw error;
+  // R3 P0-04 WEBHOOK CANONICALIZATION: token-purchase completion routes ONLY through the canonical
+  // authority. NO generic creditTokens, NO independent wallet/ledger mutation, NO paymentSessions doc as
+  // sole provider proof. The VERIFIED Stripe session (post constructEvent) is the provider evidence;
+  // normalize it and delegate to completeStripeTokenPurchase -> creditVerifiedProviderPurchase (one
+  // provider-transaction barrier shared across all retained endpoints -> global exactly-once).
+  const paymentIntentId =
+    typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : (session.payment_intent as any)?.id ?? null;
+  const normalized: NormalizedStripeSession = {
+    checkoutSessionId: session.id,
+    paymentIntentId,
+    mode: session.mode ?? null,
+    paymentStatus: session.payment_status ?? null,
+    currency: session.currency ?? null,
+    amountTotalMinor: typeof session.amount_total === 'number' ? session.amount_total : null,
+    clientReferenceId: session.client_reference_id ?? null,
+    metadataUid: session.metadata?.uid ?? null,
+    metadataUserId: session.metadata?.userId ?? null,
+    metadataPackId: session.metadata?.packId ?? session.metadata?.packageId ?? null,
+    eventId: null,
+    sourceRoute: 'paymentsComplete_stripeWebhook_v2',
+  };
+  const result = await completeStripeTokenPurchase(normalized);
+  if (result.status === 'RECONCILIATION_REQUIRED') {
+    // Transient/internal: canonical service wrote the durable record; surface for idempotent retry.
+    throw new Error(`canonical reconciliation required: ${result.reason}`);
   }
+  // CREDITED_NEW / ALREADY_CREDITED / REJECTED: no further action (authority mismatch never fixes on retry).
+  logger.info(`stripeWebhookV2 canonical completion: ${result.status} (session ${session.id})`);
 }
 
 async function handleStripeSubscriptionUpdate(subscription: Stripe.Subscription) {

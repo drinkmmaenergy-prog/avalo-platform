@@ -23,6 +23,8 @@ import { onCall, onRequest, HttpsError, logger } from './runtime';
 import { FunctionResponse } from './types';
 import { DEFAULT_TOKEN_PACKS } from './pack277-token-packs';
 import { assertPayoutsEnabled } from './wallet/payoutGuard';
+// R3 P0-04 webhook canonicalization: sole canonical completion authority (recovered foundation, frozen).
+import { completeStripeTokenPurchase, NormalizedStripeSession } from './payments/canonicalStripeCompletion';
 
 // ─────────────────────────────────────────────
 // Stripe SDK — initialised lazily from Cloud Run secret
@@ -75,119 +77,43 @@ export const stripeWebhook = onRequest(
       return;
     }
 
+    // R3 P0-04 WEBHOOK CANONICALIZATION: this signature-verified webhook is WEBHOOK_ONLY_RETAINED_CANONICAL.
+    // It NEVER credits via generic creditTokens and NEVER creates a checkout session. The VERIFIED Stripe
+    // session (event.data.object, post constructEvent) is the provider evidence; normalize it and delegate to
+    // the SOLE canonical completion authority completeStripeTokenPurchase -> creditVerifiedProviderPurchase
+    // (one provider-transaction barrier shared across every retained endpoint -> global exactly-once).
     const session = event.data.object as Stripe.Checkout.Session;
-
-    // ── 3. HARD CHECK: payment_status must be "paid" ──────────────
-    if (session.payment_status !== 'paid') {
-      logger.info('[stripeWebhook] payment_status not paid, ignoring:', session.payment_status);
-      res.json({ received: true });
-      return;
-    }
-
-    // ── 4. HARD CHECK: currency must be "usd" ─────────────────────
-    if (session.currency !== 'usd') {
-      logger.error('[stripeWebhook] Non-USD currency rejected:', session.currency);
-      res.json({ received: true, error: 'Non-USD currency' });
-      return;
-    }
-
-    // ── 5. Extract metadata ───────────────────────────────────────
-    const sessionId = session.id;
-    const userId = session.metadata?.userId;
-    const packId = session.metadata?.packId;
-    const tokensFromMeta = parseInt(session.metadata?.tokens || '0', 10);
-
-    if (!userId || !packId || tokensFromMeta <= 0) {
-      logger.error('[stripeWebhook] Invalid metadata:', { userId, packId, tokensFromMeta });
-      res.json({ received: true, error: 'Invalid metadata' });
-      return;
-    }
-
-    // ── 6. Validate pack exists in DEFAULT_TOKEN_PACKS ────────────
-    const pack = PACK_BY_ID.get(packId);
-    if (!pack) {
-      logger.error('[stripeWebhook] Unknown packId:', packId);
-      res.json({ received: true, error: 'Unknown packId' });
-      return;
-    }
-
-    // ── 7. HARD CHECK: priceUSD must be defined on pack ───────────
-    if (pack.priceUSD == null) {
-      logger.error('[stripeWebhook] Pack missing priceUSD:', packId);
-      res.json({ received: true, error: 'Pack missing priceUSD' });
-      return;
-    }
-
-    // ── 8. HARD CHECK: amount_total must match pack priceUSD ──────
-    //    DEFAULT_TOKEN_PACKS.priceUSD is in dollars; Stripe amount_total is in cents.
-    const expectedCents = Math.round(pack.priceUSD * 100);
-    if (session.amount_total !== expectedCents) {
-      logger.error('[stripeWebhook] Amount mismatch:', {
-        expected: expectedCents,
-        got: session.amount_total,
-        packId,
-        sessionId,
-      });
-      res.json({ received: true, error: 'Amount mismatch' });
-      return;
-    }
-
-    // ── 9. Validate token count from metadata matches pack ────────
-    if (tokensFromMeta !== pack.tokens) {
-      logger.error('[stripeWebhook] Token count mismatch:', {
-        expected: pack.tokens,
-        got: tokensFromMeta,
-        packId,
-      });
-      res.json({ received: true, error: 'Token count mismatch' });
-      return;
-    }
-
-    // ── 10. Idempotency check + canonical credit ─────────────────
-    const purchaseRef = db.collection('purchases').doc(sessionId);
-    const existingPurchase = await purchaseRef.get();
-    if (existingPurchase.exists) {
-      logger.info(`[stripeWebhook] Duplicate session ${sessionId} — skipping`);
-      res.json({ received: true });
-      return;
-    }
-
+    const paymentIntentId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : (session.payment_intent as any)?.id ?? null;
+    const normalized: NormalizedStripeSession = {
+      checkoutSessionId: session.id,
+      paymentIntentId,
+      mode: session.mode ?? null,
+      paymentStatus: session.payment_status ?? null,
+      currency: session.currency ?? null,
+      amountTotalMinor: typeof session.amount_total === 'number' ? session.amount_total : null,
+      clientReferenceId: session.client_reference_id ?? null,
+      metadataUid: session.metadata?.uid ?? null,
+      metadataUserId: session.metadata?.userId ?? null,
+      metadataPackId: session.metadata?.packId ?? session.metadata?.packageId ?? null,
+      eventId: event.id ?? null,
+      sourceRoute: 'payments_stripeWebhook_v1',
+    };
     try {
-      // Write purchase record (audit sentinel)
-      await purchaseRef.set({
-        sessionId,
-        userId,
-        packId: pack.id,
-        tokens: pack.tokens,
-        amountTotal: session.amount_total,
-        currency: session.currency,
-        status: 'COMPLETED',
-        stripePaymentIntentId: session.payment_intent,
-        stripeCustomerId: session.customer,
-        createdAt: serverTimestamp(),
-        processedAt: serverTimestamp(),
-      });
-
-      // ── Canonical credit via walletService (idempotent) ──────────
-      // creditTokens() checks idempotency_sentinels inside its own transaction.
-      await creditTokens({
-        userId,
-        amountTokens: pack.tokens,
-        type: 'PURCHASE',
-        idempotencyKey: `stripe_v1_purchase_${sessionId}`,
-        metadata: {
-          stripeSessionId: sessionId,
-          packId: pack.id,
-          platform: 'web',
-          webhookVersion: 'v1',
-        },
-      });
-
-      logger.info(`[stripeWebhook] Credited ${pack.tokens} tokens to ${userId} (session ${sessionId})`);
-      res.json({ received: true, success: true });
+      const result = await completeStripeTokenPurchase(normalized);
+      if (result.status === 'RECONCILIATION_REQUIRED') {
+        // Transient/internal: canonical service wrote the durable record; request idempotent redelivery.
+        logger.error('[stripeWebhook] canonical reconciliation required', { reason: result.reason });
+        res.status(500).send('reconciliation required');
+        return;
+      }
+      // CREDITED_NEW / ALREADY_CREDITED / REJECTED all ACK (authority mismatch never fixes on retry).
+      res.json({ received: true, status: result.status });
     } catch (error: any) {
-      logger.error('[stripeWebhook] Transaction failed:', error);
-      res.status(500).send(`Webhook handler error: ${error.message}`);
+      logger.error('[stripeWebhook] canonical completion error:', error?.message);
+      res.status(500).send('Webhook handler error');
     }
   }
 );
@@ -202,6 +128,14 @@ export const creditTokensCallable = onCall(
       throw new HttpsError('unauthenticated', 'Auth required');
     }
 
+    // P0-04 CONTAINMENT — HARD_DISABLED + UNEXPORTED (removed from index.ts).
+    // This client-authenticated path credited pack.tokens from a CLIENT-supplied packId + arbitrary
+    // sessionId with ZERO verified provider completion — a free-mint. It is now fail-closed: ordinary
+    // authenticated callers receive an error and ZERO credit. Only the signature-verified webhook ->
+    // canonical completeStripeTokenPurchase (provider-verified, dual-barrier) may credit tokens.
+    throw new HttpsError('failed-precondition', 'Direct token crediting is disabled; credit requires verified provider completion');
+
+    // eslint-disable-next-line no-unreachable
     const { packId, sessionId } = request.data;
 
     if (!packId || typeof packId !== 'string') {

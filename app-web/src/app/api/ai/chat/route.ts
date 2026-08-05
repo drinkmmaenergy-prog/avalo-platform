@@ -23,6 +23,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
+// P0-02 R2: canonical server-authoritative AI spend preauthorization (single source of truth; owns price policy,
+// atomic reservation against canonical wallets.balance + reservedTokens, canonical ledger, semantic idempotency,
+// settle/release, and provider-invocation-after-preauth ordering). App-web-owned module (Next standalone-traced);
+// Firestore + FieldValue are injected so it stays framework-agnostic and independently testable.
+import {
+  runBillableAiOperation,
+  payloadDigest,
+  AiInsufficientFundsError,
+  AiBillingUnavailableError,
+  AiBillingConflictError,
+  AiOperationIdRequiredError,
+  AiSettlementReconciliationError,
+  AiProviderKnownFailure,
+  AiProviderUncertainError,
+} from '@/lib/ai-billing/aiSpendAuthorization';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,7 +110,8 @@ export async function POST(request: NextRequest) {
 
     console.log('[AI chat] imageFile:', imageFile?.name, imageFile?.size, imageFile?.type);
 
-    const { systemPrompt, messages, avatarId, userMessage, chatId } = body;
+    const { systemPrompt, messages, avatarId, userMessage } = body;
+    // Retained only for backward-compatible request shape; DELIBERATELY NOT used for pricing (server owns price).
     const tokensToDeduct = Math.max(1, Math.min(100, body.tokensToDeduct ?? 1));
 
     if (!systemPrompt || !avatarId || (!userMessage && !imageFile)) {
@@ -146,97 +162,112 @@ export async function POST(request: NextRequest) {
       { role: 'user' as const, content: userContent },
     ];
 
-    // ── Call Anthropic API ────────────────────────────────────────────
-    const anthropicResponse = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: MAX_TOKENS,
-        system: systemPrompt,
-        messages: anthropicMessages,
-      }),
-    });
-
-    if (!anthropicResponse.ok) {
-      const errorData = await anthropicResponse.text();
-      console.error('[/api/ai/chat] Anthropic API error:', anthropicResponse.status, errorData);
-      return NextResponse.json(
-        { success: false, error: 'AI service temporarily unavailable.' },
-        { status: 502 }
-      );
-    }
-
-    const anthropicData = await anthropicResponse.json();
-    const aiReply =
-      anthropicData.content?.[0]?.text ?? 'I apologize, I could not generate a response.';
-
-    // ── Store messages in Firestore ───────────────────────────────────
-    // Collection: ai_chats/{chatId}/messages/{messageId}
-    // chatId is deterministic: `${userId}_${avatarId}`
-    const storageChatId = `${userId}_${avatarId}`;
+    // ── P0-02: SERVER-AUTHORITATIVE PREAUTHORIZATION BEFORE ANY PROVIDER CALL ──────────
+    // The billable product and its price are SERVER-OWNED (never a client field). The canonical orchestrator
+    // atomically reserves value first, invokes the provider ONLY after a successful preauthorization, then
+    // settles the exact eligible amount or releases the reservation on failure. The client-supplied
+    // `tokensToDeduct` is DELIBERATELY IGNORED for pricing (retained only for backward-compatible request shape).
+    void tokensToDeduct;
     const db = getAdminFirestore();
-    const messagesRef = db.collection('ai_chats').doc(storageChatId).collection('messages');
-
-    // Ensure parent chat document exists
-    const chatDocRef = db.collection('ai_chats').doc(storageChatId);
-    await chatDocRef.set(
-      {
-        userId,
-        avatarId,
-        updatedAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-
-    // Store user message
-    await messagesRef.add({
-      role: 'user',
-      content: userMessage,
-      timestamp: FieldValue.serverTimestamp(),
-    });
-
-    // Store AI response
-    await messagesRef.add({
-      role: 'assistant',
-      content: aiReply,
-      timestamp: FieldValue.serverTimestamp(),
-    });
-
-    // Deduct tokensToDeduct from escrow if chatId provided
-    let remainingTokens: number | undefined;
-    if (chatId) {
-      try {
-        await db.runTransaction(async (tx) => {
-          const escrowRef = db.collection('chat_escrows').doc(chatId);
-          const escrowSnap = await tx.get(escrowRef);
-          if (escrowSnap.exists) {
-            const current = escrowSnap.data()!.remainingTokens ?? 0;
-            if (current < tokensToDeduct) {
-              throw new Error('Insufficient escrow tokens');
-            }
-            remainingTokens = current - tokensToDeduct;
-            tx.update(escrowRef, {
-              remainingTokens: remainingTokens,
-              spentTokens: (escrowSnap.data()!.spentTokens ?? 0) + tokensToDeduct,
-            });
-          }
-        });
-      } catch (escrowErr) {
-        console.warn('[/api/ai/chat] Escrow deduction failed:', escrowErr);
-        // Non-fatal — do not block the response
-      }
+    const AI_PRODUCT = 'ai_companion'; // canonical server-owned product for this route (3 tokens/message)
+    // Idempotency identity: the caller MUST supply a stable per-logical-send `requestId` (generated once at send
+    // time and REUSED across transport retries). A missing/blank id FAILS CLOSED before any provider call — there is
+    // NO random fallback (which would defeat retry idempotency). The server fingerprint additionally binds product +
+    // avatar + canonical price + a payload DIGEST, so reusing a requestId with any changed material dimension
+    // (avatar/message/product) is a CONFLICT before any provider call.
+    const clientRequestId = (body as { requestId?: unknown }).requestId;
+    if (typeof clientRequestId !== 'string' || clientRequestId.trim().length === 0) {
+      return NextResponse.json({ success: false, error: 'BILLABLE_OPERATION_ID_REQUIRED' }, { status: 400 });
     }
+    const digest = payloadDigest({ userMessage, history: messages, hasImage: !!imageFile });
+
+    // Provider invocation is wrapped so it can ONLY be reached from inside the orchestrator, strictly AFTER a
+    // successful preauthorization. Provider errors are classified: a clean HTTP rejection is a KNOWN failure
+    // (release, no charge); a network/timeout is UNCERTAIN (reconciliation, never blind release/re-invoke).
+    const providerFn = async (): Promise<{ result: string; outcome: { eligible: boolean } }> => {
+      let anthropicResponse: Response;
+      try {
+        anthropicResponse = await fetch(ANTHROPIC_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': anthropicApiKey,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: MAX_TOKENS, system: systemPrompt, messages: anthropicMessages }),
+        });
+      } catch (networkErr) {
+        throw new AiProviderUncertainError('network_' + (networkErr instanceof Error ? networkErr.message : 'error'));
+      }
+      if (!anthropicResponse.ok) {
+        const errorData = await anthropicResponse.text();
+        console.error('[/api/ai/chat] Anthropic API error:', anthropicResponse.status, errorData);
+        // 5xx may mean the request was accepted-but-failed (uncertain); 4xx is a known no-work rejection.
+        if (anthropicResponse.status >= 500) { throw new AiProviderUncertainError('http_' + anthropicResponse.status); }
+        throw new AiProviderKnownFailure('http_' + anthropicResponse.status);
+      }
+      const anthropicData = await anthropicResponse.json();
+      const reply = anthropicData.content?.[0]?.text;
+      const eligible = typeof reply === 'string' && reply.trim().length > 0;
+      return { result: eligible ? reply : 'I apologize, I could not generate a response.', outcome: { eligible } };
+    };
+
+    let opResult;
+    try {
+      opResult = await runBillableAiOperation(
+        db,
+        FieldValue,
+        { userId, product: AI_PRODUCT, avatarId, clientRequestId, payloadDigest: digest },
+        providerFn,
+      );
+    } catch (billingErr) {
+      if (billingErr instanceof AiInsufficientFundsError) {
+        return NextResponse.json({ success: false, error: 'Insufficient tokens for AI companion.' }, { status: 402 });
+      }
+      if (billingErr instanceof AiOperationIdRequiredError) {
+        return NextResponse.json({ success: false, error: 'BILLABLE_OPERATION_ID_REQUIRED' }, { status: 400 });
+      }
+      if (billingErr instanceof AiBillingConflictError) {
+        return NextResponse.json({ success: false, error: 'Conflicting AI request for this idempotency key.' }, { status: 409 });
+      }
+      if (billingErr instanceof AiBillingUnavailableError) {
+        return NextResponse.json({ success: false, error: 'AI companion billing is unavailable.' }, { status: 403 });
+      }
+      if (billingErr instanceof AiSettlementReconciliationError || billingErr instanceof AiProviderUncertainError) {
+        // Provider outcome uncertain OR settlement failed: the paid result is NOT released as free and NOT
+        // returned; the operation is held for deterministic retry/reconciliation. No double provider spend.
+        console.error('[/api/ai/chat] AI operation requires reconciliation:', billingErr);
+        return NextResponse.json({ success: false, error: 'AI response is being reconciled; please retry.' }, { status: 409 });
+      }
+      if (billingErr instanceof AiProviderKnownFailure) {
+        return NextResponse.json({ success: false, error: 'AI service temporarily unavailable.' }, { status: 502 });
+      }
+      console.error('[/api/ai/chat] AI operation failed:', billingErr);
+      return NextResponse.json({ success: false, error: 'AI service temporarily unavailable.' }, { status: 502 });
+    }
+
+    // Idempotent replay of an already-finalized operation returns the durably captured result with no new charge.
+    if (opResult.replay) {
+      return NextResponse.json({ success: true, reply: opResult.result ?? '', duplicate: true, settledTokens: opResult.settledTokens });
+    }
+    if (opResult.result === null) {
+      return NextResponse.json({ success: true, reply: '', settledTokens: opResult.settledTokens });
+    }
+    const aiReply = opResult.result;
+
+    // ── Store messages in Firestore (after settlement) ────────────────
+    const storageChatId = `${userId}_${avatarId}`;
+    const messagesRef = db.collection('ai_chats').doc(storageChatId).collection('messages');
+    const chatDocRef = db.collection('ai_chats').doc(storageChatId);
+    await chatDocRef.set({ userId, avatarId, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    await messagesRef.add({ role: 'user', content: userMessage, timestamp: FieldValue.serverTimestamp() });
+    await messagesRef.add({ role: 'assistant', content: aiReply, timestamp: FieldValue.serverTimestamp() });
 
     return NextResponse.json({
       success: true,
       reply: aiReply,
-      ...(remainingTokens !== undefined && { remainingTokens }),
-      tokensToDeduct,
+      settledTokens: opResult.settledTokens,
+      operationId: opResult.operationId,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal server error';

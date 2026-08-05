@@ -14,6 +14,7 @@ import type { CallableRequest } from "firebase-functions/v2/https";
 ;
 import { FunctionResponse, AICompanion, AISubscription, AIChat } from "./types";
 import { auth, db, functions, increment, onCall, serverTimestamp, z } from './runtime';
+import { LEGACY_AI_COMPANION_UNAVAILABLE } from './ai-billing/legacyAiCompanionContainment';
 ;
 
 // Rate limiting constants
@@ -478,114 +479,13 @@ export const startAIChatCallable = onCall(
 export const sendAIMessageCallable = onCall(
     { region: "europe-west1", memory: "512MiB" },
     async (request): Promise<FunctionResponse> => {
-      try {
-        if (!request.auth) {
-          return { ok: false, error: "Not authenticated" };
-        }
-
-        const userId = request.auth.uid;
-        const data = request.data;
-
-        const schema = z.object({
-          chatId: z.string().min(1),
-          text: z.string().min(1).max(1000),
-        });
-        schema.parse(data);
-
-        // Get chat
-        const chatRef = db.collection("aiChats").doc(data.chatId);
-        const chatSnap = await chatRef.get();
-
-        if (!chatSnap.exists) {
-          return { ok: false, error: "Chat not found" };
-        }
-
-        const chat = chatSnap.data() as AIChat;
-
-        if (chat.userId !== userId) {
-          return { ok: false, error: "Unauthorized" };
-        }
-
-        if (chat.status !== "active") {
-          return { ok: false, error: "Chat is not active" };
-        }
-
-        // Get subscription and check limits
-        const subscription = await getOrCreateSubscription(userId);
-        const limitCheck = await checkDailyMessageLimit(userId, subscription);
-
-        if (!limitCheck.ok) {
-          return { ok: false, error: limitCheck.error };
-        }
-
-        // Get companion for system prompt
-        const companionDoc = await db.collection("aiCompanions").doc(chat.companionId).get();
-        const companion = companionDoc.data() as AICompanion;
-
-        // Create user message
-        const userMessageRef = db.collection("aiChats").doc(data.chatId).collection("messages").doc();
-        const now = serverTimestamp();
-
-        await userMessageRef.set({
-          messageId: userMessageRef.id,
-          role: "user",
-          text: data.text,
-          createdAt: now,
-        });
-
-        // Generate AI response (placeholder - integrate with OpenAI/Claude in production)
-        const aiResponse = await generateAIResponse(
-          companion.systemPrompt || companion.description,
-          chat.conversationHistory,
-          data.text
-        );
-
-        // Create AI message
-        const aiMessageRef = db.collection("aiChats").doc(data.chatId).collection("messages").doc();
-
-        await aiMessageRef.set({
-          messageId: aiMessageRef.id,
-          role: "assistant",
-          text: aiResponse,
-          createdAt: now,
-        });
-
-        // Update chat and conversation history
-        await chatRef.update({
-          messagesCount: increment(2),
-          lastMessage: data.text,
-          lastActivityAt: now,
-          conversationHistory: [
-            ...(chat.conversationHistory || []).slice(-20), // Keep last 20 messages
-            { role: "user", content: data.text },
-            { role: "assistant", content: aiResponse },
-          ],
-        });
-
-        // Increment daily message count for Free tier
-        if (subscription.tier === "Free") {
-          const subRef = db.collection("users").doc(userId).collection("aiSubscription").doc("current");
-          await subRef.update({
-            dailyMessageCount: increment(1),
-          });
-        }
-
-        return {
-          ok: true,
-          data: {
-            userMessageId: userMessageRef.id,
-            aiMessageId: aiMessageRef.id,
-            aiResponse,
-            messagesRemaining:
-              subscription.tier === "Free"
-                ? SUBSCRIPTION_TIERS.Free.dailyMessageLimit - (subscription.dailyMessageCount || 0) - 1
-                : -1,
-          },
-        };
-      } catch (error: any) {
-        console.error("Send AI message error:", error);
-        return { ok: false, error: error.message };
+      // P0-02 R3 — SAFE UNAVAILABLE CONTAINMENT (legacyAiCompanionContainment). Legacy provider-before-billing path
+      // on a non-canonical wallet (a non-canonical per-user nested wallet document); superseded by the canonical app-web AI route.
+      // Fail-closed: NO provider, wallet, ledger or earner mutation.
+      if (!request.auth) {
+        return { ok: false, error: "Not authenticated" };
       }
+      return { ok: false, error: LEGACY_AI_COMPANION_UNAVAILABLE };
     }
   );
 
@@ -652,7 +552,7 @@ export const unlockAIGalleryCallable = onCall(
         }
 
         // Check wallet balance
-  // HARD_DISABLED [G5]: billing used phantom users/{uid}/wallet/current (always 0).
+  // HARD_DISABLED [G5]: billing used phantom a non-canonical per-user nested wallet document (always 0).
   // Canonical replacement: wallets/{uid} debit + recordCreatorEarning hold.
   throw new Error('HARD_DISABLED [G5]: AI companion billing used phantom wallet/current. Canonical migration required.');
 

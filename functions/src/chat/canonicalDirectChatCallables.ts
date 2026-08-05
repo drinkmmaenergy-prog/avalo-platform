@@ -36,6 +36,10 @@
 
 import { onCall, HttpsError }      from 'firebase-functions/v2/https';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+// P0-05 R1A-1 — SAFE UNAVAILABLE containment for the exported c5 direct-chat callable entrypoints. The retained
+// c5 logic modules below (canonicalChatStateMachineV3, canonicalMultiplierTiers) are the future canonical basis;
+// only these callable entrypoints are fail-closed until the canonical server-owned paid-chat aggregate exists.
+import { assertC5DirectChatUnavailable } from './c5DirectChatContainment';
 import { requireVerifiedAdult }     from '../compliance/ageGuard';
 import {
   deliverPaidResponse,
@@ -90,6 +94,7 @@ export const c5_startMatchedChat = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, fanId, creatorId, idempotencyKey } = req.data;
     const iKey = validateIdempotencyKey(idempotencyKey);
 
@@ -144,6 +149,7 @@ export const c5_requestPaidChat = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, creatorId, idempotencyKey } = req.data;
     const fanId = req.auth.uid;
     const iKey  = validateIdempotencyKey(idempotencyKey);
@@ -189,6 +195,7 @@ export const c5_creatorAcceptPaidChat = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId } = req.data;
     const creatorId  = req.auth.uid;
 
@@ -212,6 +219,7 @@ export const c5_creatorDeclinePaidChat = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId } = req.data;
     const creatorId  = req.auth.uid;
 
@@ -241,6 +249,7 @@ export const c5_openPaidSessionCall = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, multiplier, idempotencyKey } = req.data;
     const fanId = req.auth.uid;
     validateIdempotencyKey(idempotencyKey);
@@ -296,6 +305,7 @@ export const c5_sendFanMessage = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, content, messageId, idempotencyKey } = req.data;
     const fanId = req.auth.uid;
     validateIdempotencyKey(idempotencyKey);
@@ -382,6 +392,7 @@ export const c5_deliverCreatorMessage = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, content, messageId, idempotencyKey } = req.data;
     const creatorId = req.auth.uid;
     validateIdempotencyKey(idempotencyKey);
@@ -491,6 +502,7 @@ export const c5_fundNewSegment = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, idempotencyKey } = req.data;
     const fanId = req.auth.uid;
     validateIdempotencyKey(idempotencyKey);
@@ -559,6 +571,7 @@ export const c5_closePaidSessionCall = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     const { chatId, idempotencyKey } = req.data;
     const uid = req.auth.uid;
     validateIdempotencyKey(idempotencyKey);
@@ -595,6 +608,7 @@ export const c5_proposeRateChange = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     return proposeRateChange({
       chatId:           req.data.chatId,
@@ -611,6 +625,7 @@ export const c5_resolveRateProposal = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     return resolveRateProposal({
       chatId:     req.data.chatId,
@@ -625,6 +640,7 @@ export const c5_submitFanCounteroffer = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     return submitFanCounteroffer({
       chatId:           req.data.chatId,
@@ -639,6 +655,7 @@ export const c5_resolveCounteroffer = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     return resolveCounteroffer({
       chatId:     req.data.chatId,
@@ -653,6 +670,7 @@ export const c5_proposeSessionEnd = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     const chat = await loadChat(req.data.chatId);
     const role: 'FAN' | 'CREATOR' = req.auth.uid === chat.fanId ? 'FAN' : 'CREATOR';
@@ -664,6 +682,7 @@ export const c5_resolveSessionEnd = onCall(
   { enforceAppCheck: false },
   async (req) => {
     if (!req.auth?.uid) throw new HttpsError('unauthenticated', 'Must be signed in');
+    assertC5DirectChatUnavailable(); // P0-05 R1A-1 SAFE_UNAVAILABLE — before any /chats/wallet/ledger/state-machine work
     await requireVerifiedAdult(req.auth.uid);
     const result = await resolveEndProposal({
       chatId:     req.data.chatId,

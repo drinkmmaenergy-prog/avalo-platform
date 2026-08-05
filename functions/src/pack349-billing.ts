@@ -17,6 +17,36 @@ import {
 } from './pack349-types';
 import { admin, timestamp } from './runtime';
 
+// ── P0-01 ADVERTISER-CREDIT — SAFE UNAVAILABLE CONTAINMENT (R3) ──────────────────────────────────────
+// Advertiser credit is FINANCIAL VALUE, a SEPARATE accounting domain from user tokens and creator earnings.
+// R2 added a module-private Symbol "capability" gate, but the functions that MINTED that capability
+// (verifyAdminFromClaims, buildVerifiedProviderFundingProof) were EXPORTED and derived authority from an
+// arbitrary plain object / a Boolean "verified" flag. Any importing server module could therefore FORGE
+// admin or provider authority and mint credit when the feature flag was ON — the private Symbol was NOT a
+// real authority boundary. No repository-native, cryptographically/runtime-verified admin-request adapter or
+// provider-verification adapter is authorized or available in this task, and inventing one is forbidden.
+// RESOLUTION (Option B — SAFE UNAVAILABLE CONTAINMENT): the weak factories, the capability Symbol, and the
+// private mutation core are REMOVED. Every advertiser-credit CREATION operation is UNAVAILABLE and throws a
+// deterministic *_UNAVAILABLE / retired error BEFORE any Firestore access. No public function returns a
+// finance capability; no plain object or Boolean can create one; no importable path reaches credit mutation.
+// Advertiser credit stays OFF (kill switch, default OFF) but the flag is NOT the only control — credit cannot
+// be minted even when ADVERTISER_CREDIT_ENABLED=true. The R2 numeric/identifier/idempotency/ledger logic was
+// removed together with the core it served; those controls are now unreachable-by-absence and would be
+// reintroduced only alongside a genuine verified authority adapter in a future authorized decomposition.
+
+export const ADVERTISER_CREDIT_ENABLED_ENV = 'ADVERTISER_CREDIT_ENABLED';
+export function isAdvertiserCreditEnabled(): boolean { return process.env[ADVERTISER_CREDIT_ENABLED_ENV] === 'true'; }
+
+// Collection names retained ONLY for zero-write assertions / future decomposition. NOTHING writes them.
+export const ADVERTISER_CREDIT_LEDGER_COLLECTION = 'advertiserCreditLedger';
+export const ADVERTISER_CREDIT_BARRIER_COLLECTION = 'advertiserCreditBarriers';
+
+// Retained error taxonomy.
+export class AdvertiserCreditDisabledError extends Error { constructor() { super('ADVERTISER_CREDIT_DISABLED'); this.name = 'AdvertiserCreditDisabledError'; } }
+export class AdvertiserCreditAuthorityError extends Error { constructor(reason: string) { super(reason); this.name = 'AdvertiserCreditAuthorityError'; } }
+// Thrown by every contained advertiser-credit CREATION operation, BEFORE any Firestore access, in ALL flag states.
+export class AdvertiserCreditUnavailableError extends Error { constructor(operation: string) { super(operation + '_UNAVAILABLE'); this.name = 'AdvertiserCreditUnavailableError'; } }
+
 export class AdBillingEngine {
   /**
    * Spend tokens for ad interaction
@@ -335,38 +365,54 @@ export class AdBillingEngine {
     return campaigns.docs[0].id;
   }
 
+  /** P0-01 R3 — RETIRED. No public generic advertiser-credit primitive exists (throws before any DB access). */
+  static async creditAdvertiserAccount(): Promise<never> {
+    throw new AdvertiserCreditAuthorityError('generic_credit_primitive_retired_use_reason_specific');
+  }
+
   /**
-   * Add tokens to advertiser account (admin function)
+   * P0-01 R3 — UNAVAILABLE (SAFE CONTAINMENT). Admin advertiser-credit adjustment has NO repository-native,
+   * runtime-verified admin-request adapter; the R2 exported capability factory was forgeable from a plain
+   * object and has been removed. This operation is unavailable in ALL feature-flag states and throws BEFORE
+   * any Firestore access. No capability can be produced, so no importer can mint admin credit.
+   */
+  static async applyVerifiedAdvertiserAdminAdjustment(): Promise<never> {
+    throw new AdvertiserCreditUnavailableError('ADVERTISER_ADMIN_ADJUSTMENT');
+  }
+
+  /**
+   * P0-01 R3 — UNAVAILABLE (SAFE CONTAINMENT). Provider funding has NO repository-native trusted provider-
+   * verification adapter or server-owned advertiser product authority; the R2 exported proof factory accepted
+   * a Boolean "verified" flag and has been removed. Unavailable in ALL feature-flag states; throws BEFORE any
+   * Firestore access. No caller-supplied paid amount / currency / granted tokens / product is retained.
+   */
+  static async completeVerifiedAdvertiserFunding(): Promise<never> {
+    throw new AdvertiserCreditUnavailableError('ADVERTISER_PROVIDER_FUNDING');
+  }
+
+  /**
+   * P0-01 R3 — UNAVAILABLE (SAFE CONTAINMENT). Spend-reversal credit depended on the removed forgeable admin
+   * capability; it is unavailable in ALL feature-flag states and throws BEFORE any Firestore access. A
+   * canonical, linked, bounded reversal belongs to a future authorized decomposition with a verified adapter.
+   * Legacy refundTokens remains retired.
+   */
+  static async applyVerifiedAdvertiserSpendReversal(): Promise<never> {
+    throw new AdvertiserCreditUnavailableError('ADVERTISER_SPEND_REVERSAL');
+  }
+
+  /**
+   * P0-01 CONTAINMENT — RETIRED. The client-reachable, unauthenticated-scope advertiser-credit mint
+   * (client-controlled advertiserId/amount, commented-out admin check, non-transactional, no idempotency,
+   * no ledger) is HARD-DISABLED. Its exported callable (addAdvertiserTokens) is removed from index.ts.
+   * Sanctioned crediting is server-only via creditAdvertiserAccount(authority, params) (kill switch OFF).
    */
   static async addTokens(
-    advertiserId: string,
-    amount: number,
-    reason: string,
-    adminId?: string
+    _advertiserId: string,
+    _amount: number,
+    _reason: string,
+    _adminId?: string
   ): Promise<void> {
-    const advertiserRef = db.collection('advertisers').doc(advertiserId);
-    const advertiser = await advertiserRef.get();
-
-    if (!advertiser.exists) {
-      throw new Error('Advertiser account not found');
-    }
-
-    const currentBalance = advertiser.data()?.tokenBalance || 0;
-
-    await advertiserRef.update({
-      tokenBalance: currentBalance + amount,
-      updatedAt: serverTimestamp(),
-      'billingHistory': [
-        ...(advertiser.data()?.billingHistory || []),
-        {
-          amount,
-          tokens: amount,
-          reason,
-          adminId,
-          timestamp: Timestamp.now(),
-        },
-      ],
-    });
+    throw new AdvertiserCreditAuthorityError('addTokens_retired_use_creditAdvertiserAccount');
   }
 
   /**
@@ -397,33 +443,16 @@ export class AdBillingEngine {
    * Refund tokens (in case of error or violation)
    */
   static async refundTokens(
-    advertiserId: string,
-    amount: number,
-    reason: string,
-    originalTransactionId?: string
+    _advertiserId: string,
+    _amount: number,
+    _reason: string,
+    _originalTransactionId?: string
   ): Promise<void> {
-    const advertiserRef = db.collection('advertisers').doc(advertiserId);
-    const advertiser = await advertiserRef.get();
-
-    if (!advertiser.exists) {
-      throw new Error('Advertiser account not found');
-    }
-
-    const currentBalance = advertiser.data()?.tokenBalance || 0;
-
-    await advertiserRef.update({
-      tokenBalance: currentBalance + amount,
-      updatedAt: serverTimestamp(),
-    });
-
-    // Record refund
-    await db.collection('adRefunds').add({
-      advertiserId,
-      amount,
-      reason,
-      originalTransactionId,
-      timestamp: serverTimestamp(),
-    });
+    // P0-01 CONTAINMENT — RETIRED. This legacy balance-add "refund" path was non-transactional, unbounded,
+    // non-idempotent and never linked to an original funding/spend (it minted advertiser credit). It has NO
+    // runtime caller. It is HARD-DISABLED; a canonical, linked, bounded, idempotent reversal belongs to the
+    // future advertiser-credit reversal decomposition and must route through creditAdvertiserAccount authority.
+    throw new AdvertiserCreditAuthorityError('refundTokens_retired');
   }
 }
 

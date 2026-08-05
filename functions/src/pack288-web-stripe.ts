@@ -27,6 +27,33 @@ import {
 import { getCanonicalTokenPackById, normalizeTokenPackId } from './pack277-token-packs';
 import { creditTokens, debitForRefund } from './wallet/walletService';
 import { admin, functions, increment, onCall, onRequest, timestamp } from './runtime';
+// R3 Phase D — canonical payment-foundation authority (recovered A-C modules, byte-frozen; imported only).
+import { recordStripeCheckoutIntent } from './payments/stripeCheckoutIntent';
+import {
+  completeStripeTokenPurchase,
+  NormalizedStripeSession,
+} from './payments/canonicalStripeCompletion';
+
+// ── P0-04 CANONICAL CHECKOUT ENABLEMENT GATE (server-authoritative, fail-closed default OFF) ──────────
+// The token-checkout provider-session creator is DISABLED unless TOKEN_CHECKOUT_ENABLED === 'true'.
+// Unset / anything-else => OFF (fail-closed). This task NEVER sets it to 'true'. It is the single gate
+// every checkout creator MUST consult before any provider SDK call. Tests inject an explicit state via
+// process.env; production config is never read here. Lives with the canonical creator (pack288) so all
+// five recovered Payment-Foundation modules stay byte-frozen for the transition contract.
+export const TOKEN_CHECKOUT_ENABLED_ENV = 'TOKEN_CHECKOUT_ENABLED' as const;
+export function isTokenCheckoutEnabled(): boolean {
+  return process.env[TOKEN_CHECKOUT_ENABLED_ENV] === 'true';
+}
+export class CheckoutDisabledError extends HttpsError {
+  constructor(route: string) {
+    super('failed-precondition', `Token checkout is disabled (route=${route})`);
+    this.name = 'CheckoutDisabledError';
+  }
+}
+/** Throws a fail-closed HttpsError BEFORE any provider SDK call unless checkout is explicitly enabled. */
+export function assertTokenCheckoutEnabled(route: string): void {
+  if (!isTokenCheckoutEnabled()) throw new CheckoutDisabledError(route);
+}
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -47,6 +74,10 @@ export const tokens_createCheckoutSession = https.onCall(
     if (!auth) {
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
+
+    // P0-04 FLAG-OFF GATE: fail closed BEFORE any Stripe SDK call, pack lookup or DB read while checkout
+    // is OFF. This is the UNIQUE canonical creator; every other legacy creator is hard-disabled/unexported.
+    assertTokenCheckoutEnabled('tokens_createCheckoutSession');
 
     const {
       packageId,
@@ -133,6 +164,27 @@ export const tokens_createCheckoutSession = https.onCall(
         },
         expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour
       });
+
+      // R3 Phase D — IMMUTABLE CHECKOUT INTENT. Record the server-authorized snapshot (pack/tokens/
+      // amount/currency) keyed by the checkout session id BEFORE returning the URL. Canonical completion
+      // prefers this snapshot (authority B) so a paid historical session is never re-priced. Fail closed
+      // (never expose the URL) on CONFLICT or a non-USD snapshot.
+      const intent = await recordStripeCheckoutIntent({
+        checkoutSessionId: session.id,
+        userId: auth.uid,
+        packId: pack.id,
+        tokens: pack.tokens,
+        expectedAmountMinor: amount,
+        currency,
+        priceUSD: pack.priceUSD,
+      });
+      if (intent.status === 'CONFLICT' || intent.status === 'REJECTED_NON_USD') {
+        logger.error('Checkout intent snapshot rejected; not exposing checkout URL', {
+          sessionId: session.id,
+          status: intent.status,
+        });
+        throw new HttpsError('failed-precondition', 'Checkout intent could not be recorded');
+      }
 
       logger.info('Stripe checkout session created', {
         userId: auth.uid,
@@ -227,155 +279,40 @@ export const tokens_stripeWebhook = https.onRequest({ region: 'europe-west1', me
  * Handle successful checkout completion
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  const userId =
-    session.metadata?.uid ||
-    session.metadata?.userId ||
-    session.client_reference_id ||
-    undefined;
-  const rawPackId = session.metadata?.packId || session.metadata?.packageId;
-  const packageId = normalizeTokenPackId(rawPackId || '');
-
-  if (!userId || !packageId) {
-    logger.error('Invalid session metadata', { sessionId: session.id });
-    throw new Error(`Invalid session metadata: missing userId or packageId for session ${session.id}`);
+  // R3 Phase D  WEBHOOK COMPLETION ROUTES TO CANONICAL PROVIDER-VERIFIED COMPLETION.
+  // Runs ONLY after stripe.webhooks.constructEvent verified the signature (tokens_stripeWebhook).
+  // NEVER creates a checkout session and NEVER uses generic creditTokens; it normalizes the verified
+  // session and delegates to completeStripeTokenPurchase (dual-barrier exactly-once, immutable audit,
+  // PENDING outbox, deterministic reconciliation). Idempotent by construction (provider tx barrier).
+  const paymentIntentId =
+    typeof session.payment_intent === 'string'
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+  const normalized: NormalizedStripeSession = {
+    checkoutSessionId: session.id,
+    paymentIntentId,
+    mode: session.mode ?? null,
+    paymentStatus: session.payment_status ?? null,
+    currency: session.currency ?? null,
+    amountTotalMinor: typeof session.amount_total === 'number' ? session.amount_total : null,
+    clientReferenceId: session.client_reference_id ?? null,
+    metadataUid: session.metadata?.uid ?? null,
+    metadataUserId: session.metadata?.userId ?? null,
+    metadataPackId: session.metadata?.packId ?? session.metadata?.packageId ?? null,
+    eventId: null,
+    sourceRoute: 'pack288_webhook',
+  };
+  const result = await completeStripeTokenPurchase(normalized);
+  if (result.status === 'REJECTED') {
+    // Authority mismatch (mode/paid/currency/pack/amount/owner) never fixes on retry -> ACK.
+    logger.error('Canonical completion rejected webhook session', { sessionId: session.id, reason: result.reason });
+    return;
   }
-
-  const pack = getCanonicalTokenPackById(packageId);
-  if (!pack) {
-    logger.error('Unknown package ID in metadata', { sessionId: session.id, packageId });
-    throw new Error(`Unknown package ID "${packageId}" in metadata for session ${session.id}`);
+  if (result.status === 'RECONCILIATION_REQUIRED') {
+    // Transient/internal: canonical service wrote the durable record; request idempotent redelivery.
+    throw new Error(`canonical completion reconciliation required: ${result.reason}`);
   }
-
-  const tokens = pack.tokens;
-  const priceUSD = pack.priceUSD;
-  const expectedAmountCents = Math.round(priceUSD * 100);
-
-  if ((session.amount_total || 0) !== expectedAmountCents) {
-    logger.error('Amount mismatch for canonical package', {
-      sessionId: session.id,
-      packageId,
-      expectedAmountCents,
-      gotAmountCents: session.amount_total || 0,
-    });
-    throw new Error(`Amount mismatch for session ${session.id}: expected ${expectedAmountCents} cents, got ${session.amount_total || 0} cents`);
-  }
-
-  try {
-    // ── Idempotency fast-exit ────────────────────────────────────────────────
-    // processedStripeEvents is our secondary sentinel written after the credit.
-    // If it already exists the credit was already applied; skip everything.
-    const sentinelSnap = await db
-      .collection('processedStripeEvents')
-      .doc(`pack288_${session.id}`)
-      .get();
-    if (sentinelSnap.exists) {
-      logger.info('Purchase already processed (idempotent skip)', { sessionId: session.id });
-      return;
-    }
-
-    const purchaseId = `stripe_${session.id}`; // deterministic — safe to re-derive on retry
-
-    // ── Canonical credit (atomic, idempotent, writes ledger) ─────────────────
-    // creditTokens() checks idempotency_sentinels INSIDE its own transaction.
-    // If a duplicate call races in, one wins atomically; the other is a no-op.
-    const idempotencyKey = `pack288_purchase_${session.id}`;
-    const { txId, newBalance } = await creditTokens({
-      userId,
-      amountTokens: tokens,
-      type: 'PURCHASE',
-      idempotencyKey,
-      metadata: {
-        stripeSessionId: session.id,
-        packageId,
-        purchaseId,
-        platform: 'web',
-        priceUSD,
-      },
-    });
-
-    // ── Audit records (batch — idempotent by deterministic doc IDs) ──────────
-    const auditBatch = db.batch();
-
-    // Secondary sentinel: marks this session done for legacy code
-    auditBatch.set(
-      db.collection('processedStripeEvents').doc(`pack288_${session.id}`),
-      {
-        sessionId: session.id,
-        userId,
-        tokens,
-        processedAt: serverTimestamp(),
-        ledgerTxId: txId,
-      }
-    );
-
-    // Purchase record
-    const purchase: TokenPurchase = {
-      purchaseId,
-      userId,
-      packageId: packageId as 'mini' | 'basic' | 'standard' | 'premium' | 'pro' | 'elite' | 'royal', // F5: narrow cast; validated upstream
-      tokens,
-      priceUSD,
-      paidCurrency: session.currency?.toUpperCase() || 'USD',
-      paidAmount: (session.amount_total || 0) / 100,
-      platform: 'web',
-      provider: 'stripe',
-      providerOrderId: session.id,
-      status: 'COMPLETED',
-      createdAt: serverTimestamp() as unknown as Timestamp,
-      updatedAt: serverTimestamp() as unknown as Timestamp,
-    };
-    auditBatch.set(db.collection('tokenPurchases').doc(purchaseId), purchase, { merge: true });
-
-    // Wallet transaction audit record (keyed by ledger txId)
-    auditBatch.set(
-      db.collection('walletTransactions').doc(txId),
-      {
-        txId,
-        userId,
-        type: 'PURCHASE',
-        source: 'STORE',
-        amountTokens: tokens,
-        beforeBalance: newBalance - tokens,
-        afterBalance: newBalance,
-        ledgerTxId: txId,
-        metadata: {
-          purchaseId,
-          platform: 'web',
-          stripeSessionId: session.id,
-        },
-        timestamp: serverTimestamp(),
-      },
-      { merge: true }
-    );
-
-    await auditBatch.commit();
-
-    // Update monthly limit tracking
-    const currentMonth = new Date().toISOString().substring(0, 7);
-    await db
-      .collection('purchaseLimits')
-      .doc(`${userId}_${currentMonth}`)
-      .set(
-        {
-          userId,
-          month: currentMonth,
-          totalUSD: FieldValue.increment(priceUSD),
-          purchaseCount: FieldValue.increment(1),
-          lastPurchaseAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-    logger.info('Checkout completed successfully', {
-      userId,
-      purchaseId,
-      tokens,
-      sessionId: session.id,
-    });
-  } catch (error: any) {
-    logger.error('Handle checkout completed error:', error);
-    throw error;
-  }
+  logger.info('Canonical completion applied via webhook', { sessionId: session.id, status: result.status });
 }
 
 /**
@@ -554,6 +491,14 @@ export const tokens_fulfillCheckout = https.onCall(
       throw new HttpsError('unauthenticated', 'User must be authenticated');
     }
 
+    // P0-04 CONTAINMENT — HARD_DISABLED + UNEXPORTED (removed from index.ts).
+    // This was a CLIENT-AUTHORITATIVE completion fallback: a client could trigger crediting from a
+    // client-supplied sessionId, bypassing signed-webhook verification and canonical completion.
+    // Token crediting is now EXCLUSIVELY driven by the signature-verified webhook -> canonical
+    // completeStripeTokenPurchase (dual-barrier exactly-once). No client fallback may complete/credit.
+    throw new HttpsError('failed-precondition', 'Client-side fulfillment is disabled; completion is webhook + canonical only');
+
+    // eslint-disable-next-line no-unreachable
     const { sessionId } = request.data as { sessionId?: string };
 
     if (!sessionId || typeof sessionId !== 'string') {

@@ -9,6 +9,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { db, serverTimestamp, increment, generateId } from './init';
 import { getUserContext } from './chat/userContext'; // G6a: extracted from ARCHIVED chatMonetization
 import { generateAIResponse, validateAvatarConfig } from './aiGenerationService';
+import { LEGACY_AI_COMPANION_UNAVAILABLE } from './ai-billing/legacyAiCompanionContainment';
 import type {
   AIAvatar,
   AISession,
@@ -330,196 +331,16 @@ export const sendAIMessage = onCall<{
   message: string;
   language?: string;
 }>(async (request) => {
+  // P0-02 R3 — SAFE UNAVAILABLE CONTAINMENT (legacyAiCompanionContainment). This legacy callable invoked the AI
+  // provider (generateAIResponse) BEFORE billing and mutated a NON-canonical wallet (a non-canonical per-user nested wallet document)
+  // with direct earner credit — a reachable billable provider-before-billing path outside the canonical
+  // wallet/ledger contract. It is superseded by the canonical app-web AI route and is fail-closed: NO provider,
+  // wallet, ledger, or earner mutation. Re-enable only via canonical preauthorization.
   const userId = request.auth?.uid;
   if (!userId) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
-
-  const { sessionId, message, language = 'en' } = request.data;
-
-  // Get session
-  const sessionSnap = await db.collection('aiSessions').doc(sessionId).get();
-  
-  if (!sessionSnap.exists) {
-    throw new HttpsError('not-found', 'Session not found');
-  }
-
-  const session = sessionSnap.data() as AISession;
-
-  // Check ownership
-  if (session.payerId !== userId) {
-    throw new HttpsError('permission-denied', 'Not your session');
-  }
-
-  // Check active
-  if (!session.active) {
-    throw new HttpsError('failed-precondition', 'Session is closed');
-  }
-
-  // Get avatar
-  const avatarSnap = await db.collection('aiAvatars').doc(session.avatarId).get();
-  const avatar = avatarSnap.data() as AIAvatar;
-
-  // Get chat history (last 10 messages)
-  const historySnap = await db.collection('chats')
-    .doc(sessionId)
-    .collection('messages')
-    .orderBy('createdAt', 'desc')
-    .limit(10)
-    .get();
-
-  const chatHistory = historySnap.docs.reverse().map(doc => {
-    const msg = doc.data() as AIChatMessage;
-    return {
-      role: msg.isAI ? 'assistant' : 'user',
-      content: msg.text
-    };
-  }) as Array<{ role: 'user' | 'assistant'; content: string }>;
-
-  // Generate AI response
-  const aiRequest: AIGenerationRequest = {
-    sessionId,
-    avatarId: session.avatarId,
-    userMessage: message,
-    chatHistory,
-    userLanguage: language
-  };
-
-  const aiResponse = await generateAIResponse(avatar, aiRequest);
-
-  // Check if moderation failed
-  if (!aiResponse.moderationPassed) {
-    // Log to moderation queue
-    await db.collection('aiModerationQueue').add({
-      sessionId,
-      avatarId: session.avatarId,
-      ownerId: avatar.ownerId,
-      payerId: userId,
-      userMessage: message,
-      aiResponse: aiResponse.response,
-      flags: aiResponse.moderationFlags,
-      createdAt: serverTimestamp()
-    });
-  }
-
-  // Calculate billing
-  const tokensCharged = aiResponse.tokensCharged;
-  const earner = Math.floor(tokensCharged * MONETIZATION_SPLITS.CHAT.earner); // 65%
-  const platform = tokensCharged - earner; // 35%
-
-  // Check if user has enough tokens
-  const userContext = await getUserContext(userId);
-  const walletSnap = await db.collection('users')
-    .doc(userId)
-    .collection('wallet')
-    .doc('current')
-    .get();
-  
-  const balance = walletSnap.data()?.balance || 0;
-
-  if (balance < tokensCharged) {
-    throw new HttpsError(
-      'failed-precondition',
-      `Insufficient tokens. Need ${tokensCharged}, have ${balance}`
-    );
-  }
-
-  // Process transaction
-  await db.runTransaction(async (transaction) => {
-    // Deduct from payer
-    const payerWalletRef = db.collection('users').doc(userId).collection('wallet').doc('current');
-    transaction.update(payerWalletRef, {
-      balance: increment(-tokensCharged),
-      spent: increment(tokensCharged)
-    });
-
-    // Credit earner
-    const earnerWalletRef = db.collection('users').doc(avatar.ownerId).collection('wallet').doc('current');
-    transaction.update(earnerWalletRef, {
-      balance: increment(earner),
-      earned: increment(earner)
-    });
-
-    // Save user message
-    const userMsgRef = db.collection('chats').doc(sessionId).collection('messages').doc();
-    transaction.set(userMsgRef, {
-      messageId: userMsgRef.id,
-      chatId: sessionId,
-      sessionId,
-      senderId: userId,
-      text: message,
-      isAI: false,
-      avatarId: null,
-      numWords: 0,
-      tokensCharged: 0,
-      createdAt: new Date().toISOString()
-    });
-
-    // Save AI message
-    const aiMsgRef = db.collection('chats').doc(sessionId).collection('messages').doc();
-    transaction.set(aiMsgRef, {
-      messageId: aiMsgRef.id,
-      chatId: sessionId,
-      sessionId,
-      senderId: avatar.avatarId,
-      text: aiResponse.response,
-      isAI: true,
-      avatarId: session.avatarId,
-      numWords: aiResponse.numWords,
-      tokensCharged,
-      createdAt: new Date().toISOString(),
-      moderationFlags: aiResponse.moderationFlags
-    });
-
-    // Update session
-    const sessionRef = db.collection('aiSessions').doc(sessionId);
-    transaction.update(sessionRef, {
-      lastMessageAt: new Date().toISOString(),
-      tokensCharged: increment(tokensCharged),
-      tokensCreatorShare: increment(earner),
-      tokensAvaloShare: increment(platform)
-    });
-
-    // Update analytics
-    const analyticsRef = db.collection('aiAvatarAnalytics').doc(session.avatarId);
-    transaction.update(analyticsRef, {
-      totalMessages: increment(2), // user + AI
-      totalEarnings: increment(earner),
-      lastSessionAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-
-    // Record transaction
-    const txRef = db.collection('transactions').doc();
-    transaction.set(txRef, {
-      userId,
-      type: 'ai_chat',
-      amount: -tokensCharged,
-      metadata: {
-        sessionId,
-        avatarId: session.avatarId,
-        earner,
-        platform
-      },
-      createdAt: serverTimestamp()
-    });
-  });
-
-  // Log earning event
-  await logAvatarEvent({
-    eventType: 'AI_AVATAR_EARNED_TOKENS',
-    userId: avatar.ownerId,
-    avatarId: session.avatarId,
-    ownerId: avatar.ownerId,
-    metadata: { tokensEarned: earner, sessionId },
-    timestamp: new Date().toISOString()
-  });
-
-  return {
-    success: true,
-    aiResponse: aiResponse.response,
-    tokensCharged
-  };
+  throw new HttpsError('failed-precondition', LEGACY_AI_COMPANION_UNAVAILABLE);
 });
 
 /**

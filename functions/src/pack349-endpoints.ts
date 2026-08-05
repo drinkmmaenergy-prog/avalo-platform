@@ -402,28 +402,23 @@ export const createAdvertiserAccount = functions.https.onCall(async (request) =>
 });
 
 /**
- * Add Tokens to Advertiser (Admin only)
+ * P0-01 CONTAINMENT — RETIRED.
+ * This callable was an unauthenticated-scope advertiser-credit mint: any authenticated user could submit an
+ * arbitrary advertiserId + amount (the admin check was commented out) and inflate advertiser credit for itself
+ * or another advertiser via a non-transactional, non-idempotent, un-ledgered balance write.
+ * It is HARD-DISABLED and UNEXPORTED (removed from index.ts). P0-01 R3 (SAFE UNAVAILABLE CONTAINMENT):
+ * there is NO sanctioned advertiser-credit mint path — all creation operations on AdBillingEngine are
+ * retired/unavailable and throw before any Firestore access (no verified authority adapter is authorized).
+ * No client-reachable and no server-importable path may mint advertiser credit; the feature flag stays OFF.
  */
 export const addAdvertiserTokens = functions.https.onCall(async (request) => {
-  const data = request.data;
   if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
-
-  // TODO: Check if user is admin
-  // For now, commented out the admin check
-
-  try {
-    await AdBillingEngine.addTokens(
-      data.advertiserId,
-      data.amount,
-      data.reason || 'Admin credit',
-      request.auth.uid
-    );
-    return { success: true };
-  } catch (error: any) {
-    throw new functions.https.HttpsError('internal', error.message);
-  }
+  throw new functions.https.HttpsError(
+    'failed-precondition',
+    'Advertiser credit minting is disabled; server-only authorized funding is required',
+  );
 });
 
 /**

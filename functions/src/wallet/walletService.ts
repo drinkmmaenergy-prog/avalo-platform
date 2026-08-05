@@ -31,6 +31,8 @@ import {
   IDEMPOTENCY_COLLECTION,
   PLATFORM_WALLET_ID,
 } from './types';
+import { logger } from 'firebase-functions/v2';
+import { sanitizeMoneyLogFields } from '../lib/moneyLog';
 
 // ============================================================================
 // FIRESTORE REFERENCE
@@ -1079,4 +1081,509 @@ export async function getPlatformBalance(): Promise<number> {
   const db = getFirestore();
   const snap = await db.collection("wallets").doc("AVALO_PLATFORM").get();
   return snap.exists ? (snap.data() as { balance: number; reservedTokens: number; updatedAt: unknown }).balance ?? 0 : 0;
+}
+
+// ============================================================================
+// R3 PAYMENT-FOUNDATION BOUNDED RECOVERY (Phase C)  provider-verified purchase
+// primitive + its direct dependency sanitizeOptionalMetadata/stripUndefinedDeep.
+// Recovered verbatim from forensic walletService.ts (read-only source). No unrelated
+// neighboring wallet behavior imported. All other clean-HEAD behavior is preserved.
+// ============================================================================
+
+export function sanitizeOptionalMetadata(
+  meta: Record<string, unknown> | undefined | null,
+): Record<string, unknown> | undefined {
+  if (meta === undefined || meta === null) return undefined;
+  return stripUndefinedDeep(meta) as Record<string, unknown>;
+}
+
+function stripUndefinedDeep(v: unknown): unknown {
+  if (Array.isArray(v)) {
+    return v
+      .filter((x) => x !== undefined && typeof x !== 'function' && typeof x !== 'symbol')
+      .map(stripUndefinedDeep);
+  }
+  if (v !== null && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype) {
+    const out: Record<string, unknown> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      if (val === undefined || typeof val === 'function' || typeof val === 'symbol') continue;
+      out[k] = stripUndefinedDeep(val);
+    }
+    return out;
+  }
+  return v; // primitives, Timestamps, FieldValues, Dates, etc. pass through untouched
+}
+
+// ============================================================================
+// DURABLE PROVIDER PURCHASE BARRIER (server-only, exactly-once-forever)
+// ============================================================================
+//
+// Permanent source of truth that a verified provider purchase was credited:
+//     providerPurchases/{provider}:{providerSessionId}   (NON-EXPIRING)
+//
+// This is the durability guarantee that creditTokens' 7-day idempotency sentinel
+// cannot provide. The barrier is created with transaction.create() in the SAME
+// transaction as the wallet credit + ledger write, so a concurrent duplicate
+// aborts the losing transaction (create precondition), which then retries and
+// observes CREDITED -> ALREADY_CREDITED. Exactly-once holds permanently.
+//
+// ACCOUNTING SEPARATION: a provider purchase is a CONSUMER top-up. It increases
+// spendable wallets/{uid}.balance ONLY. It never increments wallets/{uid}.earned
+// (a lifetime EARNINGS stat, per WalletDocument) and never touches creator earnings,
+// which live exclusively in creatorEarningAccounts / creatorEarningLedger.
+//
+// Callable ONLY by trusted server-side completion code (never client-reachable).
+
+export const PROVIDER_PURCHASES_COLLECTION = 'providerPurchases';
+export const PROVIDER_PURCHASE_TX_COLLECTION = 'providerPurchaseTransactions';
+/** Durable reconciliation queue for internal barrier inconsistencies (server-only, ops-facing). */
+export const PAYMENT_RECONCILIATION_COLLECTION = 'paymentReconciliation';
+/**
+ * Durable server-only completion outbox. When a caller supplies a `completion` payload, a PENDING
+ * record is created ATOMICALLY with the wallet credit + ledger + barriers + sentinel, guaranteeing a
+ * durable post-credit audit-repair signal exists even if later audit writes fail. Keyed by
+ * {provider}:{providerTransactionId}.
+ */
+export const PAYMENT_COMPLETION_OUTBOX_COLLECTION = 'paymentCompletionOutbox';
+export type ProviderId = 'stripe' | 'apple' | 'google';
+
+/** Optional canonical completion payload; when present the primitive writes a PENDING outbox atomically. */
+export interface ProviderPurchaseCompletion {
+  packId: string;
+  amountTotalMinor: number;
+  currency: string;
+  eventId?: string | null;
+  sourceRoute: string;
+}
+
+/** Defensive upper bound so a corrupted upstream amount cannot mint absurd balances. */
+export const MAX_PROVIDER_PURCHASE_TOKENS = 100_000_000;
+
+export interface ProviderPurchaseBarrier {
+  barrierId: string;
+  provider: ProviderId;
+  providerSessionId: string;
+  providerTransactionId: string;
+  userId: string;
+  amountTokens: number;
+  ledgerTxId: string;
+  status: 'CREDITED';
+  createdAt: FirebaseFirestore.FieldValue;
+}
+
+export type CreditVerifiedProviderPurchaseResult =
+  | { status: 'CREDITED_NEW'; txId: string; newBalance: number; barrierId: string }
+  | { status: 'ALREADY_CREDITED'; txId: string; newBalance: number; barrierId: string }
+  | { status: 'RECONCILIATION_REQUIRED'; reason: string; reconciliationKey: string }
+  | { status: 'REJECTED'; reason: string };
+
+const PROVIDER_IDS: readonly ProviderId[] = ['stripe', 'apple', 'google'];
+
+function isProviderId(v: unknown): v is ProviderId {
+  return typeof v === 'string' && (PROVIDER_IDS as readonly string[]).includes(v);
+}
+
+function isSafeIdPart(v: unknown): v is string {
+  return typeof v === 'string' && v.length > 0 && v.length <= 1500 && !v.includes('/');
+}
+
+export type ValidatedProviderPurchase = {
+  provider: ProviderId;
+  providerSessionId: string;
+  providerTransactionId: string;
+  userId: string;
+  amountTokens: number;
+};
+
+/**
+ * Pure, side-effect-free validation of TRUSTED provider-purchase inputs.
+ * Accepts unknown-typed fields so malformed runtime input can be covered by REAL
+ * tests without any TypeScript suppression. Returns a typed ok/reason result.
+ */
+export function validateProviderPurchaseInput(input: {
+  provider: unknown;
+  providerSessionId: unknown;
+  providerTransactionId: unknown;
+  userId: unknown;
+  amountTokens: unknown;
+}): { ok: true; value: ValidatedProviderPurchase } | { ok: false; reason: string } {
+  if (!isProviderId(input.provider)) return { ok: false, reason: 'invalid_provider' };
+  if (!isSafeIdPart(input.providerSessionId)) return { ok: false, reason: 'invalid_provider_session_id' };
+  if (!isSafeIdPart(input.providerTransactionId)) return { ok: false, reason: 'invalid_provider_transaction_id' };
+  if (!isSafeIdPart(input.userId)) return { ok: false, reason: 'invalid_user_id' };
+  if (
+    typeof input.amountTokens !== 'number' ||
+    !Number.isInteger(input.amountTokens) ||
+    input.amountTokens <= 0 ||
+    input.amountTokens > MAX_PROVIDER_PURCHASE_TOKENS
+  ) {
+    return { ok: false, reason: 'invalid_amount' };
+  }
+  return {
+    ok: true,
+    value: {
+      provider: input.provider,
+      providerSessionId: input.providerSessionId,
+      providerTransactionId: input.providerTransactionId,
+      userId: input.userId,
+      amountTokens: input.amountTokens,
+    },
+  };
+}
+
+/** Compare an existing CREDITED barrier's immutable fields against the incoming request. */
+function providerPurchaseConflicts(
+  stored: ProviderPurchaseBarrier,
+  v: ValidatedProviderPurchase,
+  compareSession: boolean,
+): string[] {
+  const c: string[] = [];
+  if (stored.provider !== v.provider) c.push('provider');
+  if (stored.providerTransactionId !== v.providerTransactionId) c.push('providerTransactionId');
+  if (stored.userId !== v.userId) c.push('userId');
+  if (stored.amountTokens !== v.amountTokens) c.push('amountTokens');
+  // Session is immutable only when matched via the session barrier. When matched via the
+  // transaction registry (session barrier absent), a differing session is an expected replay.
+  if (compareSession && stored.providerSessionId !== v.providerSessionId) c.push('providerSessionId');
+  return c;
+}
+
+/** A stored barrier is usable only if it is a fully-formed CREDITED record. */
+function isWellFormedCreditedBarrier(b: ProviderPurchaseBarrier): boolean {
+  return (
+    b.status === 'CREDITED' &&
+    typeof b.ledgerTxId === 'string' && b.ledgerTxId.length > 0 &&
+    typeof b.userId === 'string' && b.userId.length > 0 &&
+    typeof b.providerSessionId === 'string' && b.providerSessionId.length > 0 &&
+    typeof b.providerTransactionId === 'string' && b.providerTransactionId.length > 0 &&
+    typeof b.amountTokens === 'number' && Number.isInteger(b.amountTokens) && b.amountTokens > 0
+  );
+}
+
+/** The session and transaction barriers for one purchase must describe the SAME immutable purchase. */
+function sameImmutablePurchase(a: ProviderPurchaseBarrier, b: ProviderPurchaseBarrier): boolean {
+  return (
+    a.provider === b.provider &&
+    a.providerSessionId === b.providerSessionId &&
+    a.providerTransactionId === b.providerTransactionId &&
+    a.userId === b.userId &&
+    a.amountTokens === b.amountTokens &&
+    a.ledgerTxId === b.ledgerTxId &&
+    a.status === b.status
+  );
+}
+
+export type ProviderPurchaseAnomalyEvent =
+  | 'provider_purchase_conflict'
+  | 'provider_purchase_state_invalid'
+  | 'provider_purchase_barrier_inconsistency';
+
+/**
+ * Build the structured anomaly-log payload. PURE and exported so a real invariant test can prove
+ * the payload never contains a user id OR any UID-derived value.
+ *
+ * S6 MONEY-LOG HYGIENE: anomaly RUNTIME logs carry FIXED CLASSIFICATIONS ONLY — event, severity,
+ * provider, barrier status classification, and mismatching FIELD NAMES. They NEVER carry barrier
+ * IDs, provider session/transaction ids, ledger tx ids, reconciliation keys, user ids (or any
+ * derivative), amounts, receipts, secrets, caught errors, or payloads. Operational repair uses
+ * the raw identifiers stored ONLY in the server-only paymentReconciliation record (never logged);
+ * the final whitelist pass through sanitizeMoneyLogFields makes identifier leakage structural,
+ * not conventional. The signature keeps the full anomaly context so the durable-record writer and
+ * this builder receive identical inputs, but only classifications reach the log.
+ */
+export function buildAnomalyLogPayload(args: {
+  event: ProviderPurchaseAnomalyEvent;
+  provider: ProviderId;
+  sessionBarrierId: string;
+  txnBarrierId: string;
+  providerSessionId: string;
+  providerTransactionId: string;
+  stored: ProviderPurchaseBarrier | null;
+  conflictingFields: string[];
+  reconciliationKey?: string;
+}): Record<string, unknown> {
+  return sanitizeMoneyLogFields({
+    severity: 'CRITICAL',
+    event: args.event,
+    provider: args.provider,
+    storedStatus: args.stored?.status,
+    conflictType: args.conflictingFields,
+  });
+}
+
+/**
+ * Credit a server-VERIFIED provider purchase exactly once, permanently.
+ *
+ * Trusted inputs only (resolved server-side by the canonical completion service).
+ *
+ * Permanent identity is enforced by TWO barriers created atomically in one transaction:
+ *   providerPurchases/{provider}:{providerSessionId}
+ *   providerPurchaseTransactions/{provider}:{providerTransactionId}
+ * so the paid transaction cannot be replayed under a different session, and the session
+ * cannot be replayed under a different transaction.
+ *
+ * Firestore transaction (ALL reads strictly before ALL writes):
+ *   reads : session barrier, transaction barrier, then (existing-branch) the wallet, or
+ *           (credit-branch) user wallet + platform wallet;
+ *   branch: both barriers, same immutable purchase, request matches -> ALREADY_CREDITED;
+ *           both barriers, same purchase, request conflicts          -> REJECTED provider_purchase_conflict;
+ *           partial / inconsistent / malformed barrier state         -> RECONCILIATION_REQUIRED (+ durable reconciliation record, no money mutation);
+ *   writes: wallet (balance ONLY, never .earned), ledger (PURCHASE), BOTH barriers (create), secondary sentinel.
+ *
+ * ACCOUNTING: consumer top-up. Never touches .earned or creator earnings
+ * (creatorEarningAccounts / creatorEarningLedger). replayLedger credits a PURCHASE actor by
+ * amountTokens and ignores split for PURCHASE; verifyPlatformWalletSum sums avaloTokens — so
+ * split is {creatorTokens:0, avaloTokens:0} (no creator recipient, no platform cut).
+ *
+ * No nested transaction. No refund ever deletes a barrier. Not client-reachable.
+ */
+export async function creditVerifiedProviderPurchase(params: {
+  provider: ProviderId;
+  providerSessionId: string;
+  providerTransactionId: string;
+  userId: string;
+  amountTokens: number;
+  metadata?: Record<string, unknown>;
+  completion?: ProviderPurchaseCompletion;
+}): Promise<CreditVerifiedProviderPurchaseResult> {
+  const validated = validateProviderPurchaseInput(params);
+  if (validated.ok === false) {
+    return { status: 'REJECTED', reason: validated.reason };
+  }
+  const v = validated.value;
+
+  const sessionBarrierId = `${v.provider}:${v.providerSessionId}`;
+  const txnBarrierId = `${v.provider}:${v.providerTransactionId}`;
+  const sessionRef = db.collection(PROVIDER_PURCHASES_COLLECTION).doc(sessionBarrierId);
+  const txnRef = db.collection(PROVIDER_PURCHASE_TX_COLLECTION).doc(txnBarrierId);
+  const secondaryKey = `${v.provider}_purchase_${v.providerSessionId}`;
+
+  return db.runTransaction(async (transaction): Promise<CreditVerifiedProviderPurchaseResult> => {
+    // ===== READ PHASE (all reads strictly before any write) =====
+    const sessionSnap = await transaction.get(sessionRef);
+    const txnSnap = await transaction.get(txnRef);
+    const sessionData = sessionSnap.exists ? (sessionSnap.data() as ProviderPurchaseBarrier) : null;
+    const txnData = txnSnap.exists ? (txnSnap.data() as ProviderPurchaseBarrier) : null;
+
+    // Structured, PII-safe anomaly logging (no raw user id; correlation hash only).
+    const anomaly = (
+      event: ProviderPurchaseAnomalyEvent,
+      stored: ProviderPurchaseBarrier | null,
+      conflictingFields: string[],
+      reconKey?: string,
+    ): void => {
+      logger.error(`[SECURITY] ${event}`, buildAnomalyLogPayload({
+        event,
+        provider: v.provider,
+        sessionBarrierId,
+        txnBarrierId,
+        providerSessionId: v.providerSessionId,
+        providerTransactionId: v.providerTransactionId,
+        stored,
+        conflictingFields,
+        reconciliationKey: reconKey,
+      }));
+    };
+
+    // Durable, idempotent reconciliation record keyed on {provider}:{providerTransactionId}.
+    // Reads its own doc first (still before any money write), then set/merge. NEVER mutates
+    // wallet / ledger / barriers / sentinel.
+    const reconciliationKey = `${v.provider}:${v.providerTransactionId}`;
+    const openReconciliation = async (reason: string, stored: ProviderPurchaseBarrier | null): Promise<void> => {
+      const reconRef = db.collection(PAYMENT_RECONCILIATION_COLLECTION).doc(reconciliationKey);
+      const reconSnap = await transaction.get(reconRef);
+      const now = FieldValue.serverTimestamp();
+      const record = {
+        reconciliationKey,
+        provider: v.provider,
+        providerSessionId: v.providerSessionId,
+        providerTransactionId: v.providerTransactionId,
+        sessionBarrierId,
+        txnBarrierId,
+        ledgerTxId: stored?.ledgerTxId ?? null,
+        // Raw internal userId is retained ONLY here (server-only paymentReconciliation collection)
+        // for deterministic operational repair. It is NEVER emitted to logs. Phase F rules lock this
+        // collection to server-only access.
+        userId: v.userId,
+        reason,
+        status: 'OPEN' as const,
+        updatedAt: now,
+      };
+      if (reconSnap.exists) {
+        transaction.set(reconRef, record, { merge: true });
+      } else {
+        transaction.set(reconRef, { ...record, createdAt: now });
+      }
+    };
+
+    if (sessionData || txnData) {
+      // E. Any existing barrier that is not a well-formed CREDITED record = internal data
+      //    inconsistency (not an invalid request) -> RECONCILIATION_REQUIRED, no money mutation.
+      if ((sessionData && !isWellFormedCreditedBarrier(sessionData)) || (txnData && !isWellFormedCreditedBarrier(txnData))) {
+        const stored = sessionData ?? txnData;
+        anomaly('provider_purchase_state_invalid', stored, ['status'], reconciliationKey);
+        await openReconciliation('provider_purchase_state_invalid', stored);
+        return { status: 'RECONCILIATION_REQUIRED', reason: 'provider_purchase_barrier_inconsistency', reconciliationKey };
+      }
+
+      // B. Both barriers exist -> they MUST describe the same immutable purchase.
+      if (sessionData && txnData) {
+        if (!sameImmutablePurchase(sessionData, txnData)) {
+          anomaly('provider_purchase_barrier_inconsistency', sessionData, ['barrierPair'], reconciliationKey);
+          await openReconciliation('provider_purchase_barrier_inconsistency', sessionData);
+          return { status: 'RECONCILIATION_REQUIRED', reason: 'provider_purchase_barrier_inconsistency', reconciliationKey };
+        }
+        const conflicts = providerPurchaseConflicts(sessionData, v, true);
+        if (conflicts.length > 0) {
+          anomaly('provider_purchase_conflict', sessionData, conflicts);
+          return { status: 'REJECTED', reason: 'provider_purchase_conflict' };
+        }
+        const wSnap = await transaction.get(walletRef(v.userId));
+        const wData = wSnap.data() as WalletDocument | undefined;
+        return { status: 'ALREADY_CREDITED', txId: sessionData.ledgerTxId, newBalance: wData?.balance ?? 0, barrierId: sessionBarrierId };
+      }
+
+      // C. Session barrier present, transaction barrier missing.
+      if (sessionData && !txnData) {
+        // Incoming conflicting with the existing session barrier (e.g. same session, different
+        // transaction id / user / amount) -> REJECTED conflict, no mutation.
+        const conflicts = providerPurchaseConflicts(sessionData, v, true);
+        if (conflicts.length > 0) {
+          anomaly('provider_purchase_conflict', sessionData, conflicts);
+          return { status: 'REJECTED', reason: 'provider_purchase_conflict' };
+        }
+        // Incoming matches the session barrier but its paired transaction barrier is missing:
+        // partial/inconsistent internal state -> RECONCILIATION_REQUIRED, no credit.
+        anomaly('provider_purchase_barrier_inconsistency', sessionData, ['missingTransactionBarrier'], reconciliationKey);
+        await openReconciliation('provider_purchase_barrier_inconsistency', sessionData);
+        return { status: 'RECONCILIATION_REQUIRED', reason: 'provider_purchase_barrier_inconsistency', reconciliationKey };
+      }
+
+      // D. Transaction barrier present, session barrier missing (same PaymentIntent under a different
+      //    session). Stripe PI<->Session is 1:1, so this is an internal inconsistency, NOT a normal replay.
+      if (!sessionData && txnData) {
+        // Incoming conflicting with the stored transaction barrier (different user / amount; session
+        // is not compared here) -> REJECTED conflict, no mutation.
+        const conflicts = providerPurchaseConflicts(txnData, v, false);
+        if (conflicts.length > 0) {
+          anomaly('provider_purchase_conflict', txnData, conflicts);
+          return { status: 'REJECTED', reason: 'provider_purchase_conflict' };
+        }
+        // Same paid transaction, session barrier missing -> provider semantics do not repair internal
+        // state -> RECONCILIATION_REQUIRED, no credit.
+        anomaly('provider_purchase_barrier_inconsistency', txnData, ['missingSessionBarrier'], reconciliationKey);
+        await openReconciliation('provider_purchase_barrier_inconsistency', txnData);
+        return { status: 'RECONCILIATION_REQUIRED', reason: 'provider_purchase_barrier_inconsistency', reconciliationKey };
+      }
+    }
+    // A. Neither barrier exists -> proceed to the atomic credit transaction below.
+
+    // ===== credit-path reads (still before any write) =====
+    // NOTE: we do NOT use readWalletInTransaction here — it can transaction.set() an absent wallet,
+    // which after the platform get() would violate Firestore's reads-before-writes rule.
+    const userRef = walletRef(v.userId);
+    const platformRef = platformWalletRef();
+    const userSnap = await transaction.get(userRef);
+    const platformSnap = await transaction.get(platformRef);
+    const currentBalance = userSnap.exists ? (userSnap.data() as WalletDocument).balance : 0;
+    const platformBalance = platformSnap.exists ? (platformSnap.data() as WalletDocument).balance : 0;
+    const newBalance = currentBalance + v.amountTokens;
+
+    // ===== WRITE PHASE =====
+    // Single write per wallet doc. Consumer top-up increases spendable balance ONLY (never .earned).
+    if (userSnap.exists) {
+      transaction.update(userRef, {
+        balance: newBalance,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } else {
+      transaction.set(userRef, {
+        userId: v.userId,
+        balance: newBalance,
+        pending: 0,
+        earned: 0,
+        spent: 0,
+        frozen: 0,
+        reservedTokens: 0,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Canonical ledger entry. split is {0,0}: replayLedger credits a PURCHASE actor by amountTokens
+    // and ignores split for PURCHASE; a consumer top-up has no creator recipient and no platform cut.
+    const txId = db.collection(LEDGER_COLLECTION).doc().id;
+    const ledgerEntry: LedgerEntry = {
+      txId,
+      type: 'PURCHASE',
+      actorId: v.userId,
+      counterpartyId: null,
+      chatId: null,
+      sessionId: v.providerSessionId,
+      amountTokens: v.amountTokens,
+      split: { creatorTokens: 0, avaloTokens: 0 },
+      beforeAfter: {
+        actor: { before: currentBalance, after: newBalance },
+        counterparty: null,
+        platform: { before: platformBalance, after: platformBalance },
+      },
+      timestamp: FieldValue.serverTimestamp(),
+      idempotencyKey: secondaryKey,
+      metadata: sanitizeOptionalMetadata({
+        ...params.metadata,
+        provider: v.provider,
+        providerSessionId: v.providerSessionId,
+        providerTransactionId: v.providerTransactionId,
+        sessionBarrierId,
+        txnBarrierId,
+        source: 'creditVerifiedProviderPurchase',
+      }) ?? {},
+    };
+    transaction.set(db.collection(LEDGER_COLLECTION).doc(txId), ledgerEntry);
+
+    // Two permanent barriers, created atomically. A concurrent duplicate loses at create()
+    // (real Firestore ABORT), rolls back, retries, and observes CREDITED -> ALREADY_CREDITED.
+    const barrierBase = {
+      provider: v.provider,
+      providerSessionId: v.providerSessionId,
+      providerTransactionId: v.providerTransactionId,
+      userId: v.userId,
+      amountTokens: v.amountTokens,
+      ledgerTxId: txId,
+      status: 'CREDITED' as const,
+      createdAt: FieldValue.serverTimestamp(),
+    };
+    const sessionBarrier: ProviderPurchaseBarrier = { barrierId: sessionBarrierId, ...barrierBase };
+    const txnBarrier: ProviderPurchaseBarrier = { barrierId: txnBarrierId, ...barrierBase };
+    transaction.create(sessionRef, sessionBarrier);
+    transaction.create(txnRef, txnBarrier);
+
+    // Optional durable completion outbox — created ATOMICALLY with the credit so a PENDING
+    // audit-repair signal always exists after a successful credit. Immutable money fields only.
+    if (params.completion) {
+      const outboxRef = db.collection(PAYMENT_COMPLETION_OUTBOX_COLLECTION).doc(txnBarrierId);
+      transaction.create(outboxRef, {
+        completionKey: txnBarrierId,
+        provider: v.provider,
+        providerSessionId: v.providerSessionId,
+        providerTransactionId: v.providerTransactionId,
+        userId: v.userId,
+        ledgerTxId: txId,
+        status: 'PENDING' as const,
+        packId: params.completion.packId,
+        amountTokens: v.amountTokens,
+        amountTotalMinor: params.completion.amountTotalMinor,
+        currency: params.completion.currency,
+        stripeEventId: params.completion.eventId ?? null,
+        sourceRoute: params.completion.sourceRoute,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+
+    // Secondary (7-day) idempotency sentinel — local dedupe only, NOT the durable guarantee.
+    writeIdempotencySentinel(transaction, secondaryKey, txId);
+
+    return { status: 'CREDITED_NEW', txId, newBalance, barrierId: sessionBarrierId };
+  });
 }

@@ -22,6 +22,8 @@ import { MONETIZATION_SPLITS, SPLITS } from "./config/monetizationSplits";
 
 import { db, serverTimestamp, increment, generateId } from './init';
 import { transactTokens } from './wallet/walletService';
+// P0-05 R1B-1 — trusted paid-chat authority (source-level neutralization of the latent ENGINE_A financial vector).
+import { TrustedPaidChatAuthority, requirePaidChatAuthority } from './chat/paidChatAuthority';
 import { Timestamp } from 'firebase-admin/firestore';
 import type {
   CanonicalChatDocument,
@@ -560,14 +562,22 @@ export async function processMessage(
   chatId: string,
   senderId: string,
   messageText: string,
-  messageId?: string
+  messageId?: string,
+  authority?: TrustedPaidChatAuthority
 ): Promise<BillingResult> {
+  // P0-05 R1B-1 — SOURCE-LEVEL NEUTRALIZATION. Legacy `/chats` is NEVER trusted financial authority. This engine may
+  // not debit/reserve/credit/earn/ledger/apply-multiplier unless a non-forgeable, server-owned
+  // TrustedPaidChatAuthority is supplied. Payer/earner/rate are taken from that authority — NEVER from
+  // chat.roles/paidSession (which are client-forgeable). Nothing in production constructs a TrustedPaidChatAuthority
+  // yet (R1B-2), so this path is fail-closed at the source even if accidentally re-wired.
+  const auth = requirePaidChatAuthority(authority);
   const chatRef = db.collection('chats').doc(chatId);
 
   // Capture roles + sessionId from inside the transaction so we can call
   // transactTokens (which runs its own transaction) AFTER the outer transaction.
-  let capturedPayerId = '';
-  let capturedEarnerId: string | null = null;
+  // Roles come from the TRUSTED AUTHORITY, not from the client-writable chat document.
+  let capturedPayerId = auth.payerId;
+  let capturedEarnerId: string | null = auth.earnerId;
   let capturedSessionId = '';
 
   const result = await db.runTransaction(async (transaction) => {
@@ -576,8 +586,8 @@ export async function processMessage(
       throw new ChatEngineError('not-found', `Chat ${chatId} not found`);
     }
     const chat = chatSnap.data() as CanonicalChatDocument;
-    capturedPayerId = chat.roles.payerId;
-    capturedEarnerId = chat.roles.earnerId ?? null;
+    capturedPayerId = auth.payerId;
+    capturedEarnerId = auth.earnerId;
 
     // LOCKED — payer must reopen
     if (chat.state === 'LOCKED') {
@@ -594,8 +604,8 @@ export async function processMessage(
       };
     }
 
-    // Payer messages are ALWAYS free (in any active state)
-    if (senderId === chat.roles.payerId) {
+    // Payer messages are ALWAYS free (in any active state). Payer identity from TRUSTED AUTHORITY.
+    if (senderId === auth.payerId) {
       transaction.update(chatRef, {
         lastMessageAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -642,11 +652,11 @@ export async function processMessage(
         paidSession: newSession,
         updatedAt: serverTimestamp(),
       });
-      // Fall through to billing below using newSession
-      const payerWalletRef = db.collection('wallets').doc(chat.roles.payerId);
+      // Fall through to billing below using newSession. Payer/earner from TRUSTED AUTHORITY only.
+      const payerWalletRef = db.collection('wallets').doc(auth.payerId);
       const payerSnap = await transaction.get(payerWalletRef);
       const payerBalance = payerSnap.data()?.balance ?? 0;
-      const result = calculateBilling(newSession.billingState, newSession.configSnapshot, chat.roles.earnerId, payerBalance);
+      const result = calculateBilling(newSession.billingState, newSession.configSnapshot, auth.earnerId, payerBalance);
 
       if (result.locked) {
         transaction.update(chatRef, { state: 'LOCKED' as CanonicalChatState });
@@ -666,14 +676,16 @@ export async function processMessage(
       throw new ChatEngineError('internal', `Chat ${chatId} in PAID_ACTIVE but no paidSession`);
     }
 
-    const payerWalletRef = db.collection('wallets').doc(chat.roles.payerId);
+    const payerWalletRef = db.collection('wallets').doc(auth.payerId);
     const payerSnap = await transaction.get(payerWalletRef);
     const payerBalance = payerSnap.data()?.balance ?? 0;
 
+    // Payer/earner from TRUSTED AUTHORITY. (Multiplier canonicalization vs client config is R1C; this whole path is
+    // fail-closed without a TrustedPaidChatAuthority, so a forged chat.paidSession/multiplier is inert.)
     const result = calculateBilling(
       chat.paidSession.billingState,
       chat.paidSession.configSnapshot,
-      chat.roles.earnerId,
+      auth.earnerId,
       payerBalance
     );
 
