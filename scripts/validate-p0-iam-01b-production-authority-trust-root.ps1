@@ -145,19 +145,40 @@ if (-not (Test-Path (Join-Path $fnroot 'node_modules'))) { Fail 'dependencies ab
 else {
   $jsonOut = Join-Path $env:TEMP ("iam01b-jest-" + [guid]::NewGuid().ToString('N') + ".json")
   if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force }
+  $runStartedUtc = (Get-Date).ToUniversalTime()          # freshness floor for the report (anti-stale)
   Push-Location $fnroot
   & npx jest --config jest.config.js --selectProjects main --runInBand --forceExit --json --outputFile="$jsonOut" ("src/__tests__/" + $TEST_FILE) *>&1 | Out-Null
   $jexit = $LASTEXITCODE
   Pop-Location
-  $j = $null
-  if (Test-Path $jsonOut) { try { $j = Get-Content -LiteralPath $jsonOut -Raw | ConvertFrom-Json -ErrorAction Stop } catch { $j = $null } }
+  # STRICT adjudication (R5). $jexit -eq 0 is MANDATORY here (this suite is pure unit; there is no emulator exit to
+  # normalize). Aggregate 54/54 alone is NOT sufficient: each critical security assertion must be present exactly once,
+  # by exact fullName, from the exact expected source file.
+  if (-not (Get-Command Get-SjpStrictReport -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\StrictJestParser.ps1') }
+  $IAM01B_CRITICAL = @(
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies production entrypoint signPaidChatAuthority does NOT accept a deps parameter (arity = request, ctx, correlationId)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies production entrypoint fails closed (SAFE_UNAVAILABLE), signing nothing, when the composition root is empty',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies JavaScript extra-argument injection of a full fake deps has NO effect (ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake signer through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake callerPolicy through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake serviceAuth through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake registry through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake sourceReader through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake idempotency through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies importer cannot substitute a fake audit through the production entrypoint (extra-arg ignored -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies production module exposes NO caller-selectable business signing API and NO mutable override seam',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies the dependency-injected core is reachable ONLY through the test seam; production entrypoint stays unavailable',
+    'P0-IAM-01B — production trust boundary: no caller-selectable dependencies generic shared-Admin request via the production entrypoint cannot sign (no bindings -> SAFE_UNAVAILABLE)',
+    'P0-IAM-01B — shared-Admin write != signing authority; production gated; no unsafe exports a generic Admin-written schema-valid record CANNOT mint authority without the service (no signature obtainable)',
+    'P0-IAM-01B — shared-Admin write != signing authority; production gated; no unsafe exports production KMS signer + authority service + service-auth are all SAFE_UNAVAILABLE (unwired)',
+    'P0-IAM-01B — shared-Admin write != signing authority; production gated; no unsafe exports no raw-bytes / arbitrary-digest signing function is exported; no caller-selectable signer/verifier',
+    'P0-IAM-01B — key lifecycle (single active; revoked/verify-only/unknown fail closed) zero ACTIVE key -> SAFE_UNAVAILABLE (no_active_signing_key)'
+  )
+  $rep = Get-SjpStrictReport -JsonPath $jsonOut -NativeExit $jexit -RunStartedUtc $runStartedUtc `
+           -ExpectedTestFile $TEST_FILE -MinPassed 50 -ExpectedPassed 54 -RequiredAssertions $IAM01B_CRITICAL
+  Write-Host ("  strict jest -> passed={0} failed={1} pending={2} todo={3} total={4} jexit={5} ok={6}" -f $rep.passed, $rep.failed, $rep.pending, $rep.todo, $rep.total, $jexit, $rep.ok)
   Remove-Item $jsonOut -Force -ErrorAction SilentlyContinue
-  if ($null -eq $j) { Fail ("IAM-01B suite produced no JSON (jexit={0})" -f $jexit) }
-  else {
-    $passed = [int]$j.numPassedTests; $failed = [int]$j.numFailedTests; $pending = [int]$j.numPendingTests; $todo = [int]$j.numTodoTests
-    Write-Host ("  jest --json -> passed={0} failed={1} pending={2} todo={3} success={4}" -f $passed, $failed, $pending, $todo, $j.success)
-    if (($j.success -eq $true) -and ($failed -eq 0) -and ($pending -eq 0) -and ($todo -eq 0) -and ($passed -ge 50)) { Pass ("IAM-01B suite: {0} passed / 0 failed / 0 skipped" -f $passed) } else { Fail ("IAM-01B suite (success={0} failed={1})" -f $j.success, $failed) }
-  }
+  if ($rep.ok) { Pass ("IAM-01B suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact critical assertions + jexit=0" -f $rep.passed, $IAM01B_CRITICAL.Count) }
+  else { $rep.errors | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01B suite (strictErrors={0} jexit={1})" -f @($rep.errors).Count, $jexit) }
 }
 
 Write-Host "=== GATE 13. Production trust boundary: NO caller-selectable dependency injection ==="
@@ -227,7 +248,7 @@ $life = Get-Content (Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1') -Raw
 $harn = Get-Content (Join-Path $root 'scripts\tests\emulator-lifecycle-adjudication.tests.ps1') -Raw
 $lcOrdering = ($life -match 'orderCore') -and ($life -match '\$iScript -gt \$iStartup') -and ($life -match '\$iShutdown -gt \$iScript') -and ($life -match '\$iStop -gt \$iShutdown')
 $lcExit0Unknown = ($life -match 'unknownError') -and ($life -match '\(-not \$unknownError\)') -and ($life -notmatch 'if \(\$CliExit -eq 0\) \{ return \$true')
-$lcTimeoutOrder = ($life -match 'midRunTimeout') -and ($life -match '\$iTimeout -gt \$iShutdown')
+$lcTimeoutOrder = ($life -match 'midRunTimeout') -and ($life -match '\$iExactTimeout -gt \$iShutdown')   # R5: renamed to exact-timeout index
 $lcMultiTimeout = ($life -match 'multiTimeout')
 $lcNoBroadExit2 = ($life -notmatch 'if \(\$CliExit -eq 2\) \{ return \$true') -and ($life -notmatch 'exitCode -eq 2[^`n]*PASS')
 $lcPortable = ($harn -match 'Resolve-LifecycleHelper') -and ($harn -match '\.\.\\lib\\EmulatorLifecycle\.ps1') -and ($harn -match "'EmulatorLifecycle\.ps1'") -and ($harn -match 'LIFECYCLE_HELPER_NOT_FOUND') -and ($harn -match 'LIFECYCLE_HELPER_AMBIGUOUS')
@@ -236,7 +257,46 @@ $lcbad = @($lc.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object
 if ($lcbad.Count -eq 0) { Pass 'lifecycle: ordered event sequence; exit-0 unknown-error rejected; timeout-after-shutdown; multi-timeout rejected; no broad exit2=>PASS; deterministic portable helper resolution' } else { $lcbad | ForEach-Object { Write-Host "  MISSING: $_" }; Fail 'lifecycle hardening' }
 $stOut = & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\emulator-lifecycle-adjudication.tests.ps1') *>&1
 $stExit = $LASTEXITCODE
-if (($stExit -eq 0) -and (@($stOut | Select-String -SimpleMatch 'EMULATOR_LIFECYCLE_ADJUDICATION_SELFTEST_PASS').Count -gt 0)) { Pass 'lifecycle self-test harness executed: all checks PASS (ordered + portable)' } else { Fail ("lifecycle self-test harness (exit={0})" -f $stExit) }
+if (($stExit -eq 0) -and (@($stOut | Select-String -SimpleMatch 'EMULATOR_LIFECYCLE_ADJUDICATION_SELFTEST_PASS').Count -gt 0)) { Pass 'lifecycle self-test harness executed: all checks PASS (whole-log + exact cleanup + portable)' } else { Fail ("lifecycle self-test harness (exit={0})" -f $stExit) }
+
+Write-Host "=== GATE 15. R5: whole-log error policy + exact cleanup proof + strict Jest parser ==="
+# (a) the helper source must implement the repaired policy, and must NOT contain the two defective constructs.
+$r5WholeLog   = ($life -match 'Test-EmuLineIsTestOutput') -and ($life -match 'Test-EmuLineHasErrorSignal') -and ($life -match 'Test-EmuLineIsExactBenign')
+$r5NoRegion   = ($life -notmatch '\$scanRegion\s*=') -and ($life -notmatch '\$log\.Substring\(\$iScript\)')   # post-success-only scan removed
+$r5ExactTmo   = ($life -match 'Get-EmuExactCleanupTimeoutIndex') -and ($life -match 'firebase-tools') -and ($life -match 'withTimeout|EmulatorRegistry|commandUtils|cleanShutdown')
+$r5NoGeneric  = ($life -notmatch '\(\(\$iFinalErr -ge 0\) -and \(\$iFinalErr -gt \$iShutdown\)\)')            # generic wrapper can no longer satisfy cleanup
+$r5CaseSense  = ($life -match '-cmatch')                                                                       # case-sensitive severity token
+# (b) both validators must use the shared strict parser rather than coercing casts / substring name matching.
+$iam01aSrc = Get-Content (Join-Path $root 'scripts\validate-p0-iam-01a-financial-authority-trust-boundary-foundation.ps1') -Raw
+$selfSrc   = Get-Content (Join-Path $root 'scripts\validate-p0-iam-01b-production-authority-trust-root.ps1') -Raw
+$r5ParserA = ($iam01aSrc -match 'Get-SjpStrictReport') -and ($iam01aSrc -notmatch '\$passed = \[int\]\$j\.numPassedTests') -and ($iam01aSrc -notmatch "fullName -like")
+$r5ParserB = ($selfSrc -match 'Get-SjpStrictReport') -and ($selfSrc -match 'IAM01B_CRITICAL') -and ($selfSrc -notmatch '\$passed = \[int\]\$j\.numPassedTests')
+$r5Jexit   = ($selfSrc -match '-NativeExit \$jexit')
+$parserSrc = Get-Content (Join-Path $root 'scripts\lib\StrictJestParser.ps1') -Raw
+$r5Types   = ($parserSrc -match 'Test-SjpIsStrictBool') -and ($parserSrc -match 'Test-SjpIsStrictInt') -and ($parserSrc -match 'required_assertion_not_unique') -and ($parserSrc -match 'duplicate_assertion_name')
+$r5 = @{ whole_log_classifier=$r5WholeLog; post_success_only_scan_removed=$r5NoRegion; exact_cleanup_timeout=$r5ExactTmo;
+         generic_wrapper_cannot_normalize=$r5NoGeneric; case_sensitive_severity=$r5CaseSense;
+         iam01a_strict_parser=$r5ParserA; iam01b_strict_parser=$r5ParserB; iam01b_requires_jexit0=$r5Jexit; parser_type_discipline=$r5Types }
+$r5bad = @($r5.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object { $_.Key })
+if ($r5bad.Count -eq 0) { Pass 'R5: whole-log unknown-error policy; exact cleanup-timeout proof; generic wrapper cannot normalize; strict typed Jest parser with exact unique named assertions in BOTH validators' }
+else { $r5bad | ForEach-Object { Write-Host "  MISSING: $_" }; Fail 'R5 lifecycle/parser hardening' }
+
+# adversarial: prove the two repaired false-negatives are actually detected by the CURRENT helper, and that the
+# strict parser rejects the coercion bypasses. Runs the real code against in-memory fixtures.
+$advOkR5 = $false
+try {
+  if (-not (Get-Command Get-EmuLifecycleVerdict -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1') }
+  $OKF = "i  emulators: Starting emulators: firestore`ni  firestore: Firestore Emulator UI websocket is running on 9150.`ni  Running script: node jest`nTests:       53 passed, 53 total`n+  Script exited successfully (code 0)`ni  emulators: Shutting down emulators.`ni  firestore: Stopping Firestore Emulator`n!  Firestore Emulator has exited upon receiving signal: SIGINT"
+  $preErr = Get-EmuLifecycleVerdict -CliExit 0 -Log ($OKF -replace 'i  Running script:', "[firestore] ERROR: unclassified protocol state corruption`ni  Running script:")
+  $wrapOnly = Get-EmuLifecycleVerdict -CliExit 2 -Log ($OKF + "`nError: An unexpected error has occurred.")
+  $cleanOk  = Get-EmuLifecycleVerdict -CliExit 0 -Log $OKF
+  $advOkR5 = (-not $preErr.lifecycleOk) -and (-not $wrapOnly.lifecycleOk) -and ($cleanOk.lifecycleOk)
+} catch { $advOkR5 = $false }
+$advParser = & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\strict-jest-parser.tests.ps1') *>&1
+$advParserExit = $LASTEXITCODE
+$advParserOk = ($advParserExit -eq 0) -and (@($advParser | Select-String -SimpleMatch 'STRICT_JEST_PARSER_SELFTEST_PASS').Count -gt 0)
+if ($advOkR5 -and $advParserOk) { Pass 'adversarial R5 self-test: pre-success unknown error DETECTED; generic-wrapper-only exit-2 REJECTED; clean run still PASSES; strict-parser coercion/duplicate fixtures all rejected' }
+else { Fail ("adversarial R5 self-test (lifecycle={0} parser={1} parserExit={2})" -f $advOkR5, $advParserOk, $advParserExit) }
 
 Write-Host ""
 if ($exit -eq 0) {

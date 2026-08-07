@@ -160,6 +160,7 @@ if (-not (Test-Path (Join-Path $fnroot 'node_modules'))) { Fail 'dependencies ab
 else {
   $jsonOut = Join-Path $env:TEMP ("iam01a-jest-" + [guid]::NewGuid().ToString('N') + ".json")
   if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force }
+  $runStartedUtc = (Get-Date).ToUniversalTime()          # freshness floor for the report (anti-stale)
   Push-Location $fnroot
   $cmd = "npx jest --config jest.config.js --selectProjects main --runInBand --forceExit --json --outputFile=`"$jsonOut`" src/__tests__/$MAIN_FILE"
   $emuLog = Join-Path $env:TEMP ("iam01a-emu-" + [guid]::NewGuid().ToString('N') + ".log")
@@ -169,38 +170,40 @@ else {
   if (-not (Get-Command Test-EmulatorLifecycleHealthy -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1') }
   $lifeReason = ''; $lifeOk = Test-EmulatorLifecycleHealthy -CliExit $emuExit -LogPath $emuLog -Reason ([ref]$lifeReason)
   Remove-Item $emuLog -Force -ErrorAction SilentlyContinue
-  $j = $null
-  if (Test-Path $jsonOut) { try { $j = Get-Content -LiteralPath $jsonOut -Raw | ConvertFrom-Json -ErrorAction Stop } catch { $j = $null } }
-  if ($null -eq $j) { Fail ("IAM-01A jest suite produced no parseable JSON (emuExit={0})" -f $emuExit) }
-  else {
-    $passed = [int]$j.numPassedTests; $failed = [int]$j.numFailedTests; $pending = [int]$j.numPendingTests; $todo = [int]$j.numTodoTests
-    Write-Host ("  jest --json -> passed={0} failed={1} pending={2} todo={3} success={4} emuExit={5}" -f $passed, $failed, $pending, $todo, $j.success, $emuExit)
-    Write-Host ("  emulator-lifecycle: {0}" -f $lifeReason)
-    $suiteOk = ($j.success -eq $true) -and ($failed -eq 0) -and ($pending -eq 0) -and ($todo -eq 0) -and ($passed -ge 45)
-    # required named coverage (the security-critical assertions)
-    $records = @(); foreach ($tr in @($j.testResults)) { foreach ($a in @($tr.assertionResults)) { $records += $a } }
-    $need = @(
-      'DIRECT ADMIN WRITE ATTACK: schema-valid but UNSIGNED record is REJECTED (Codex defect closed)',
-      'DIRECT ADMIN WRITE ATTACK: schema-valid record with a FORGED (self-made) envelope is REJECTED',
-      'CODEX R2: loader has NO caller-supplied verifier',
-      'production verifier refuses even a validly signed record',
-      'production signer is SAFE_UNAVAILABLE (fail-closed, no private key in repo)',
-      'copy attack A->B (envelope from A presented for resource B) is rejected',
-      'stale record-version replay (old envelope after version bump) is rejected',
-      'unknown signing key version is rejected',
-      'unsupported signature algorithm is rejected',
-      'sendChatMessage remains HARD_FAIL_CLOSED and forged /chats still mints no authority',
-      'general /chats DM and group shell still work',
-      'rotation: retired-but-trusted key still verifies old records',
-      'REVOKED key fails closed even with an otherwise valid signature',
-      'unknown keyVersion is rejected',
-      'authorityDomain mismatch is rejected',
-      'validated registry is immutable'
-    )
-    $missing = @(); foreach ($n in $need) { if (-not (@($records | Where-Object { $_.status -eq 'passed' -and $_.fullName -like ("*" + $n + "*") }).Count -gt 0)) { $missing += $n } }
-    if ($suiteOk -and $lifeOk -and $missing.Count -eq 0) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; all required security assertions present" -f $passed) }
-    else { $missing | ForEach-Object { Write-Host "  MISSING NAMED: $_" }; Fail ("IAM-01A suite (success={0} failed={1} pending={2} todo={3} emuExit={4} lifeHealthy={5} missing={6})" -f $j.success, $failed, $pending, $todo, $emuExit, $lifeOk, $missing.Count) }
-  }
+  # STRICT adjudication (R5). Replaces coercing numeric casts + substring name matching, both of which independent
+  # review found to be bypassable. The shared parser enforces schema+type, count arithmetic, source-file binding,
+  # exact fullName equality, and one-unique-record-per-requirement. See scripts/lib/StrictJestParser.ps1.
+  if (-not (Get-Command Get-SjpStrictReport -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\StrictJestParser.ps1') }
+  # Canonical required-assertion table: EXACT jest fullName (ancestor describe titles + test title).
+  $IAM01A_REQUIRED = @(
+    'P0-IAM-01A — loader verifies provenance INTERNALLY before minting; no caller seam (emulator) DIRECT ADMIN WRITE ATTACK: schema-valid but UNSIGNED record is REJECTED (Codex defect closed)',
+    'P0-IAM-01A — loader verifies provenance INTERNALLY before minting; no caller seam (emulator) DIRECT ADMIN WRITE ATTACK: schema-valid record with a FORGED (self-made) envelope is REJECTED',
+    'P0-IAM-01A — loader verifies provenance INTERNALLY before minting; no caller seam (emulator) CODEX R2: loader has NO caller-supplied verifier — a no-op verifier arg cannot force a mint',
+    'P0-IAM-01A — loader verifies provenance INTERNALLY before minting; no caller seam (emulator) default (unconfigured) production verifier refuses even a validly signed record — no shipped mint path',
+    'P0-IAM-01A — positive verification (test trust root) and production fail-closed production signer is SAFE_UNAVAILABLE (fail-closed, no private key in repo)',
+    'P0-IAM-01A — provenance negative matrix (fail-closed) copy attack A->B (envelope from A presented for resource B) is rejected',
+    'P0-IAM-01A — provenance negative matrix (fail-closed) stale record-version replay (old envelope after version bump) is rejected',
+    'P0-IAM-01A — provenance negative matrix (fail-closed) unknown signing key version is rejected',
+    'P0-IAM-01A — provenance negative matrix (fail-closed) unsupported signature algorithm is rejected',
+    'P0-IAM-01A — authenticity-only, no billing, no side effects, messaging intact sendChatMessage remains HARD_FAIL_CLOSED and forged /chats still mints no authority',
+    'P0-IAM-01A — authenticity-only, no billing, no side effects, messaging intact general /chats DM and group shell still work',
+    'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) rotation: retired-but-trusted key still verifies old records while the new active key verifies new ones',
+    'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) REVOKED key fails closed even with an otherwise valid signature',
+    'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) unknown keyVersion is rejected — NO fallback to the active key',
+    'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) authorityDomain mismatch is rejected (a WALLET-domain registry does not verify PAID_CHAT)',
+    'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) validated registry is immutable (frozen; no mutation/registration API)'
+  )
+  $rep = Get-SjpStrictReport -JsonPath $jsonOut -NativeExit $emuExit -RunStartedUtc $runStartedUtc `
+           -ExpectedTestFile $MAIN_FILE -MinPassed 45 -ExpectedPassed 53 -RequiredAssertions $IAM01A_REQUIRED
+  Write-Host ("  strict jest -> passed={0} failed={1} pending={2} todo={3} total={4} emuExit={5} ok={6}" -f $rep.passed, $rep.failed, $rep.pending, $rep.todo, $rep.total, $emuExit, $rep.ok)
+  Write-Host ("  emulator-lifecycle: {0}" -f $lifeReason)
+  # NOTE: the emulator CLI exit is adjudicated by the lifecycle helper, so a normalized non-zero exit is legitimate.
+  # The strict parser is therefore given $emuExit only for reporting; the binding gate is $lifeOk below.
+  $nativeOk = ($emuExit -eq 0) -or $lifeOk
+  $strictErrs = @($rep.errors | Where-Object { $_ -notmatch '^native_jest_exit_nonzero' })
+  if ($rep.ok -and $lifeOk -and $nativeOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions" -f $rep.passed, $IAM01A_REQUIRED.Count) }
+  elseif ($strictErrs.Count -eq 0 -and $lifeOk -and $nativeOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions (emu exit normalized)" -f $rep.passed, $IAM01A_REQUIRED.Count) }
+  else { $strictErrs | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01A suite (strictErrors={0} lifeHealthy={1} emuExit={2})" -f $strictErrs.Count, $lifeOk, $emuExit) }
   if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force -ErrorAction SilentlyContinue }
 }
 
