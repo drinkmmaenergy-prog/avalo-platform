@@ -165,7 +165,8 @@ $p0_iam01bAllow = @(
 # self-test harness. Exact literal paths ONLY — no scripts/lib or scripts/tests directory/prefix acceptance.
 $p0_iam01b1EmuLifecycleAllow = @(
   'scripts/lib/EmulatorLifecycle.ps1',                              # shared: emulator-suite lifecycle adjudicator (fail-closed)
-  'scripts/tests/emulator-lifecycle-adjudication.tests.ps1'         # test: 30-scenario adversarial self-test harness
+  'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',        # test: adversarial lifecycle self-test harness
+  'scripts/tests/strict-jest-parser.tests.ps1'                      # test: adversarial strict Jest parser self-tests (R5)
 )
 # EXACT approved Layer-1 five-file foundation set + authoritative SHA-256 (byte-exact R3 recovery;
 # source: evidence avalo-r3-payment-foundation-p0-04-r1\02-transfers-and-inventory.md). No wildcard.

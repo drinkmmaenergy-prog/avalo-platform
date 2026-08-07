@@ -253,7 +253,8 @@ $allowIam01b = @(
 # defect). Two NEW infra files: shared adjudicator + its adversarial self-test harness. Exact literal paths only.
 $allowIam01b1EmuLifecycle = @(
   'scripts/lib/EmulatorLifecycle.ps1',
-  'scripts/tests/emulator-lifecycle-adjudication.tests.ps1')
+  'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',
+  'scripts/tests/strict-jest-parser.tests.ps1')                     # R5: adversarial strict Jest parser self-tests
 $allow = @($allowLayer0 + $allowR3ac + $allowTransition + $allowR3resume + $allowP0_01 + $allowP0_02 + $allowIam01a + $allowIam01b + $allowIam01b1EmuLifecycle)
 
 # ---- Checkout path classification (machine-readable, embedded) ----
