@@ -173,8 +173,12 @@ else {
     'P0-IAM-01B — shared-Admin write != signing authority; production gated; no unsafe exports no raw-bytes / arbitrary-digest signing function is exported; no caller-selectable signer/verifier',
     'P0-IAM-01B — key lifecycle (single active; revoked/verify-only/unknown fail closed) zero ACTIVE key -> SAFE_UNAVAILABLE (no_active_signing_key)'
   )
+  # R6: strict mode stated explicitly (see the identical note in the IAM-01A validator). ExpectedTotalTests binds
+  # the 54 to physical assertion records; previously only the 17 critical names were constrained.
   $rep = Get-SjpStrictReport -JsonPath $jsonOut -NativeExit $jexit -RunStartedUtc $runStartedUtc `
-           -ExpectedTestFile $TEST_FILE -MinPassed 50 -ExpectedPassed 54 -RequiredAssertions $IAM01B_CRITICAL
+           -ExpectedTestFile $TEST_FILE -MinPassed 50 -ExpectedPassed 54 -ExpectedTotalTests 54 `
+           -RequiredAssertions $IAM01B_CRITICAL `
+           -RequireSingleTestResult $true -RequireExactAssertionRecordCount $true -RequireExpectedFileUnique $true
   Write-Host ("  strict jest -> passed={0} failed={1} pending={2} todo={3} total={4} jexit={5} ok={6}" -f $rep.passed, $rep.failed, $rep.pending, $rep.todo, $rep.total, $jexit, $rep.ok)
   Remove-Item $jsonOut -Force -ErrorAction SilentlyContinue
   if ($rep.ok) { Pass ("IAM-01B suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact critical assertions + jexit=0" -f $rep.passed, $IAM01B_CRITICAL.Count) }
@@ -274,12 +278,31 @@ $r5ParserB = ($selfSrc -match 'Get-SjpStrictReport') -and ($selfSrc -match 'IAM0
 $r5Jexit   = ($selfSrc -match '-NativeExit \$jexit')
 $parserSrc = Get-Content (Join-Path $root 'scripts\lib\StrictJestParser.ps1') -Raw
 $r5Types   = ($parserSrc -match 'Test-SjpIsStrictBool') -and ($parserSrc -match 'Test-SjpIsStrictInt') -and ($parserSrc -match 'required_assertion_not_unique') -and ($parserSrc -match 'duplicate_assertion_name')
+# R6: the second independent review (Codex, vs the R5 bundle) reproduced three bypasses whose shared root cause was
+# that declared counters were never reconciled against physical assertion records, and file identity was a filter
+# rather than a cardinality assertion. These patterns prove the repair is still present — a silent revert of any of
+# them re-opens a security gate, so it must fail this validator rather than pass quietly.
+$r6RecordRecon = ($parserSrc -match 'record_total_mismatch')  -and ($parserSrc -match 'record_passed_mismatch') -and
+                 ($parserSrc -match 'record_failed_mismatch') -and ($parserSrc -match 'record_pending_mismatch') -and
+                 ($parserSrc -match 'record_todo_mismatch')
+$r6Cardinality = ($parserSrc -match 'expected_test_file_result_objects_not_unique') -and
+                 ($parserSrc -match 'unexpected_test_file') -and ($parserSrc -match 'test_result_object_count_not_one')
+$r6StatusVocab = ($parserSrc -match 'assertion_status_unsupported') -and ($parserSrc -match 'STATUS_BUCKET')
+$r6SuiteRecon  = ($parserSrc -match 'numTotalTestSuites')
+# both security callers must request the strict mode EXPLICITLY and must never opt out
+$r6CallersStrict = ($iam01aSrc -match '-RequireExactAssertionRecordCount \$true') -and ($iam01aSrc -match '-RequireSingleTestResult \$true') -and
+                   ($selfSrc   -match '-RequireExactAssertionRecordCount \$true') -and ($selfSrc   -match '-RequireSingleTestResult \$true')
+$r6NoOptOut      = ($iam01aSrc -notmatch '-Require\w+ \$false') -and ($selfSrc -notmatch '-Require\w+ \$false')
+$r6TotalsBound   = ($iam01aSrc -match '-ExpectedTotalTests 53') -and ($selfSrc -match '-ExpectedTotalTests 54')
 $r5 = @{ whole_log_classifier=$r5WholeLog; post_success_only_scan_removed=$r5NoRegion; exact_cleanup_timeout=$r5ExactTmo;
          generic_wrapper_cannot_normalize=$r5NoGeneric; case_sensitive_severity=$r5CaseSense;
-         iam01a_strict_parser=$r5ParserA; iam01b_strict_parser=$r5ParserB; iam01b_requires_jexit0=$r5Jexit; parser_type_discipline=$r5Types }
+         iam01a_strict_parser=$r5ParserA; iam01b_strict_parser=$r5ParserB; iam01b_requires_jexit0=$r5Jexit; parser_type_discipline=$r5Types;
+         r6_record_reconciliation=$r6RecordRecon; r6_result_object_cardinality=$r6Cardinality;
+         r6_status_vocabulary=$r6StatusVocab; r6_suite_reconciliation=$r6SuiteRecon;
+         r6_callers_request_strict=$r6CallersStrict; r6_callers_no_optout=$r6NoOptOut; r6_totals_bound_to_records=$r6TotalsBound }
 $r5bad = @($r5.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object { $_.Key })
-if ($r5bad.Count -eq 0) { Pass 'R5: whole-log unknown-error policy; exact cleanup-timeout proof; generic wrapper cannot normalize; strict typed Jest parser with exact unique named assertions in BOTH validators' }
-else { $r5bad | ForEach-Object { Write-Host "  MISSING: $_" }; Fail 'R5 lifecycle/parser hardening' }
+if ($r5bad.Count -eq 0) { Pass 'R5+R6: whole-log unknown-error policy; exact cleanup-timeout proof; generic wrapper cannot normalize; strict typed Jest parser with exact unique named assertions in BOTH validators; R6 record/counter reconciliation, result-object cardinality, status vocabulary and explicit strict caller contracts' }
+else { $r5bad | ForEach-Object { Write-Host "  MISSING: $_" }; Fail 'R5/R6 lifecycle/parser hardening' }
 
 # adversarial: prove the two repaired false-negatives are actually detected by the CURRENT helper, and that the
 # strict parser rejects the coercion bypasses. Runs the real code against in-memory fixtures.

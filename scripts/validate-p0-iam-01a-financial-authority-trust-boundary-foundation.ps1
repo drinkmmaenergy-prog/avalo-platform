@@ -193,8 +193,14 @@ else {
     'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) authorityDomain mismatch is rejected (a WALLET-domain registry does not verify PAID_CHAT)',
     'P0-IAM-01A — production key registry (rotation / status / domain / no-fallback) validated registry is immutable (frozen; no mutation/registration API)'
   )
+  # R6: strict mode is stated EXPLICITLY at the security call site rather than inherited from parser defaults, so
+  # that anyone auditing this validator can see the contract without reading the parser. ExpectedTotalTests binds
+  # the 53 to physical assertion records: previously only 16 of the 53 were constrained, and the rest could be
+  # fabricated by counters alone. Never pass $false for any of the three Require* switches here.
   $rep = Get-SjpStrictReport -JsonPath $jsonOut -NativeExit $emuExit -RunStartedUtc $runStartedUtc `
-           -ExpectedTestFile $MAIN_FILE -MinPassed 45 -ExpectedPassed 53 -RequiredAssertions $IAM01A_REQUIRED
+           -ExpectedTestFile $MAIN_FILE -MinPassed 45 -ExpectedPassed 53 -ExpectedTotalTests 53 `
+           -RequiredAssertions $IAM01A_REQUIRED `
+           -RequireSingleTestResult $true -RequireExactAssertionRecordCount $true -RequireExpectedFileUnique $true
   Write-Host ("  strict jest -> passed={0} failed={1} pending={2} todo={3} total={4} emuExit={5} ok={6}" -f $rep.passed, $rep.failed, $rep.pending, $rep.todo, $rep.total, $emuExit, $rep.ok)
   Write-Host ("  emulator-lifecycle: {0}" -f $lifeReason)
   # NOTE: the emulator CLI exit is adjudicated by the lifecycle helper, so a normalized non-zero exit is legitimate.
