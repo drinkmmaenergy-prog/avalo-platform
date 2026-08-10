@@ -119,11 +119,105 @@ Check '36 report file missing' (& {
     [bool]$res.ok }) $false
 Check '37 fabricated marker without valid JSON (empty file)' (Adj '') $false
 
+# ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+#  R6 — regressions for the three bypasses reproduced by the second independent review (Codex, vs the R5 bundle).
+#
+#  Shared root cause: the declared global counters were validated for TYPE and ARITHMETIC but never reconciled
+#  against the assertion records that physically exist, and file identity was used as a FILTER rather than as a
+#  cardinality assertion. The security callers require a large total (53 / 54) but only a smaller named set
+#  (16 / 17), so everything outside the named set was unconstrained.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+function Obj([string]$file, [string[]]$names, [string]$status = 'passed') {
+  $ar = ($names | ForEach-Object { '{"fullName":"' + $_ + '","status":"' + $status + '"}' }) -join ','
+  return '{"name":"C:\\repo\\src\\__tests__\\' + $file + '","assertionResults":[' + $ar + ']}'
+}
+function Rep([string[]]$objs, [string]$total = '4', [string]$passed = '4', [string]$failed = '0',
+             [string]$pending = '0', [string]$todo = '0', [string]$extra = '') {
+  return '{"success":true,"numTotalTests":' + $total + ',"numPassedTests":' + $passed +
+         ',"numFailedTests":' + $failed + ',"numPendingTests":' + $pending + ',"numTodoTests":' + $todo +
+         $extra + ',"testResults":[' + ($objs -join ',') + ']}'
+}
+
+Write-Host ''
+Write-Host '--- R6: Codex-reproduced bypasses (must all REJECT) ---'
+
+# C38 — global counters claim 4 passed; only 2 assertion records physically exist.
+$script:codexCases = 0; $script:codexPass = 0
+function CodexCheck([string]$name, [bool]$accepted) {
+  $script:codexCases++
+  if (-not $accepted) { $script:codexPass++ }
+  Check $name $accepted $false
+}
+CodexCheck 'C38 COUNTERS_CLAIM_4_BUT_ONLY_2_ASSERTION_RECORDS' (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1])))))
+
+# C39 — expected file supplies the required names; an UNRELATED file supplies the rest of the declared total.
+CodexCheck 'C39 EXPECTED_FILE_PLUS_UNRELATED_SECOND_TEST_FILE' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1])), (Obj 'unrelated.test.ts' @('unrelated one', 'unrelated two')))))
+
+# C40 — the expected file appears in TWO result objects with the required evidence split across them.
+CodexCheck 'C40 DUPLICATE_EXPECTED_FILE_RESULT_OBJECTS_SPLIT_ASSERTIONS' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], 'filler one')), (Obj $FILE @($REQ[1], 'filler two')))))
+
+Write-Host ''
+Write-Host '--- R6: adjacent bypasses found while modelling the invariants (must all REJECT) ---'
+
+# Declared failed count inconsistent with the physical failed record.
+Check '41 declared failed=0 but a failed record exists' `
+  (Adj ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '","status":"passed"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},{"fullName":"b","status":"failed"}]}]}')) $false
+
+# Declared pending/todo inconsistent with physical records.
+Check '42 declared pending=0 but a pending record exists' `
+  (Adj ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '","status":"passed"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},{"fullName":"b","status":"pending"}]}]}')) $false
+Check '43 declared todo=0 but a todo record exists' `
+  (Adj ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '","status":"passed"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},{"fullName":"b","status":"todo"}]}]}')) $false
+
+# Empty evidence with confident counters.
+Check '44 zero testResults with nonzero global counters' (Adj (Rep @())) $false
+
+# Several unrelated suites whose aggregate happens to equal the expected total; expected file absent.
+Check '45 unrelated suites aggregate to the expected total' `
+  (Adj (Rep @((Obj 'a.test.ts' @('x', 'y')), (Obj 'b.test.ts' @('z', 'w'))))) $false
+
+# Required names present only in a foreign file: a foreign record must never satisfy a requirement.
+Check '46 required names live ONLY in an unexpected file' `
+  (Adj (Rep @((Obj $FILE @('filler one', 'filler two')), (Obj 'other.test.ts' $REQ)))) $false
+
+# Status vocabulary: an unclassifiable status must reject, never be silently skipped.
+Check '47 unsupported assertion status' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b') 'bogus')))) $false
+Check '48 assertion record missing status' `
+  (Adj ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},{"fullName":"b","status":"passed"}]}]}')) $false
+
+# Windows case-insensitivity must not create two "different" expected files.
+Check '49 expected file duplicated under a different letter case' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], 'filler one')), (Obj $FILE.ToUpperInvariant() @($REQ[1], 'filler two'))))) $false
+
+# Suite counters must reconcile with physical result objects.
+Check '50 numTotalTestSuites lies about physical result objects' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":5,"numPassedTestSuites":5')) $false
+
+# Extra records beyond the declared total.
+Check '51 more assertion records than the declared total' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b', 'c'))))) $false
+
+Write-Host ''
+Write-Host '--- R6: positive controls (the repair must not reject VALID evidence) ---'
+
+# A fix that rejects everything is not a fix. These prove the strict path still accepts a well-formed report.
+Check '52 valid report carrying suite counters is ACCEPTED' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":1,"numPassedTestSuites":1')) $true
+Check '53 valid report, records reconcile exactly, is ACCEPTED' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))))) $true
+
 try { if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force } } catch {}
 
 Write-Host ''
+# Every total below is COUNTED from the checks that actually executed. Nothing here is a literal: an earlier
+# revision published a fixed "37", which would have silently gone stale the moment a case was added.
 Write-Host ("STRICT_PARSER_ASSERTIONS_EXECUTED={0}" -f $script:asserts)
 Write-Host ("STRICT_PARSER_ASSERTIONS_FAILED={0}" -f $script:fails)
+Write-Host ("CODEX_REGRESSION_CASES={0}" -f $script:codexCases)
+Write-Host ("CODEX_REGRESSION_CASES_PASS={0}" -f $script:codexPass)
 if ($script:fails -eq 0) {
   Write-Host ("RESULT: STRICT_JEST_PARSER_SELFTEST_PASS ({0} assertions)" -f $script:asserts)
   exit 0
