@@ -167,13 +167,33 @@ else {
   & firebase emulators:exec --only firestore --project demo-avalo $cmd *> $emuLog
   $emuExit = $LASTEXITCODE
   Pop-Location
-  if (-not (Get-Command Test-EmulatorLifecycleHealthy -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1') }
+  # Same class of defect as the strict-parser loader below: ambient command existence must never decide
+  # whether a security helper is loaded. Codex reported this for the parser; it applied identically here.
+  $lifecyclePath = Join-Path $root 'scripts\lib\EmulatorLifecycle.ps1'
+  foreach ($lcFn in @('Test-EmulatorLifecycleHealthy','Get-EmuExactCleanupTimeoutIndex')) {
+    if (Test-Path -LiteralPath ("Function:\" + $lcFn)) { Remove-Item -LiteralPath ("Function:\" + $lcFn) -Force -ErrorAction SilentlyContinue }
+  }
+  if (-not (Test-Path -LiteralPath $lifecyclePath -PathType Leaf)) { Fail "trusted lifecycle helper missing: $lifecyclePath" }
+  . $lifecyclePath
+  $lcCmd = Get-Command Test-EmulatorLifecycleHealthy -CommandType Function -ErrorAction SilentlyContinue
+  $lcFile = if ($lcCmd -and $lcCmd.ScriptBlock -and $lcCmd.ScriptBlock.File) { (Resolve-Path -LiteralPath $lcCmd.ScriptBlock.File).Path } else { '' }
+  if ($lcFile -ne (Resolve-Path -LiteralPath $lifecyclePath).Path) { Fail 'trusted lifecycle helper identity could not be established' }
   $lifeReason = ''; $lifeOk = Test-EmulatorLifecycleHealthy -CliExit $emuExit -LogPath $emuLog -Reason ([ref]$lifeReason)
   Remove-Item $emuLog -Force -ErrorAction SilentlyContinue
   # STRICT adjudication (R5). Replaces coercing numeric casts + substring name matching, both of which independent
   # review found to be bypassable. The shared parser enforces schema+type, count arithmetic, source-file binding,
   # exact fullName equality, and one-unique-record-per-requirement. See scripts/lib/StrictJestParser.ps1.
-  if (-not (Get-Command Get-SjpStrictReport -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\StrictJestParser.ps1') }
+  # R7 (Codex finding 7): the previous form asked whether a command of this NAME existed and skipped the load
+  # if so. Command existence is not identity — a forged ambient Get-SjpStrictReport returning ok=$true then
+  # adjudicated this gate and the trusted parser never ran. Loading is now unconditional, ambient definitions
+  # are evicted first, and the loaded command's origin is proven before it is trusted.
+  $sjpParserPath = Join-Path $root 'scripts\lib\StrictJestParser.ps1'
+  foreach ($sjpFn in @('Get-SjpStrictReport','Test-SjpTrustedParserIdentity','Test-SjpHasProperty','Test-SjpIsStrictBool','Test-SjpIsStrictInt')) {
+    if (Test-Path -LiteralPath ("Function:\" + $sjpFn)) { Remove-Item -LiteralPath ("Function:\" + $sjpFn) -Force -ErrorAction SilentlyContinue }
+  }
+  if (-not (Test-Path -LiteralPath $sjpParserPath -PathType Leaf)) { Fail "trusted strict parser missing: $sjpParserPath" }
+  . $sjpParserPath
+  if (-not (Test-SjpTrustedParserIdentity -ParserPath $sjpParserPath)) { Fail 'trusted strict parser identity could not be established' }
   # Canonical required-assertion table: EXACT jest fullName (ancestor describe titles + test title).
   $IAM01A_REQUIRED = @(
     'P0-IAM-01A — loader verifies provenance INTERNALLY before minting; no caller seam (emulator) DIRECT ADMIN WRITE ATTACK: schema-valid but UNSIGNED record is REJECTED (Codex defect closed)',

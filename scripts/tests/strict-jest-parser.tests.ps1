@@ -209,6 +209,77 @@ Check '52 valid report carrying suite counters is ACCEPTED' `
 Check '53 valid report, records reconcile exactly, is ACCEPTED' `
   (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))))) $true
 
+# ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+#  R7 — regressions for the SECOND round of independent-review findings (Codex, vs the R6 bundle).
+#
+#  R6 closed the three R5 bypasses but introduced/left a family of defects rooted in PowerShell defaults:
+#  hashtables and the -eq operator are CASE-INSENSITIVE, so "exact" identity comparisons were not exact.
+#  Codex proved a required assertion could be satisfied by a case-mutated name, and that a status of
+#  "PASSED" resolved to "passed". Adjacent defects: empty fullName ignored on unrequired records, duplicate
+#  caller-supplied required names, and suite counters that were read but only partly reconciled.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+Write-Host ''
+Write-Host '--- R7: Codex R6 case-sensitivity and schema findings (must all REJECT) ---'
+
+$script:r7Cases = 0; $script:r7Pass = 0
+function R7Check([string]$name, [bool]$accepted) {
+  $script:r7Cases++
+  if (-not $accepted) { $script:r7Pass++ }
+  Check $name $accepted $false
+}
+
+# R54 — the required name appears ONLY in a case-mutated form. PowerShell hashtable lookup accepted it.
+R7Check 'R54 required fullName wrong case' `
+  (Adj (Rep @((Obj $FILE @($REQ[0].ToUpperInvariant(), $REQ[1], 'a', 'b')))))
+
+# R55 — an UNREQUIRED record carries status "PASSED"; the status vocabulary was case-insensitive.
+R7Check 'R55 unsupported status casing PASSED on an unrequired record' `
+  (Adj ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '","status":"passed"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},{"fullName":"b","status":"PASSED"}]}]}'))
+
+# R56 / R57 — a malformed record must fail the report even when nobody requires it.
+R7Check 'R56 empty fullName on an unrequired record' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', '')))))
+R7Check 'R57 whitespace-only fullName on an unrequired record' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', '   ')))))
+
+# R58 — the CALLER supplies a duplicate required name; one record must not satisfy two contract slots.
+R7Check 'R58 duplicate RequiredAssertions supplied by caller' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b')))) 0 $FILE @($REQ[0], $REQ[0], $REQ[1]))
+
+# R59 — suite counters claim a failed suite while every physical record passed.
+R7Check 'R59 numFailedTestSuites inconsistent with physical records' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":1,"numPassedTestSuites":1,"numFailedTestSuites":1'))
+R7Check 'R59b numPendingTestSuites inconsistent with physical records' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":1,"numPassedTestSuites":1,"numPendingTestSuites":1'))
+R7Check 'R59c numRuntimeErrorTestSuites nonzero' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":1,"numPassedTestSuites":1,"numRuntimeErrorTestSuites":1'))
+
+# R60 — a null assertion record must be rejected STRUCTURALLY, not by a parameter-binding accident.
+$r60Struct = $false
+try {
+  $p60 = Write-Report ('{"success":true,"numTotalTests":4,"numPassedTests":4,"numFailedTests":0,"numPendingTests":0,"numTodoTests":0,"testResults":[{"name":"x\\' + $FILE + '","assertionResults":[{"fullName":"' + $REQ[0] + '","status":"passed"},{"fullName":"' + $REQ[1] + '","status":"passed"},{"fullName":"a","status":"passed"},null]}]}')
+  $r60 = Get-SjpStrictReport -JsonPath $p60 -NativeExit 0 -RunStartedUtc ((Get-Date).ToUniversalTime().AddMinutes(-1)) `
+          -ExpectedTestFile $FILE -MinPassed 1 -ExpectedPassed 4 -RequiredAssertions $REQ
+  $r60Struct = ((-not $r60.ok) -and @($r60.errors | Where-Object { $_ -match 'assertion_record_null' }).Count -ge 1)
+} catch { $r60Struct = $false }   # a thrown binding error is NOT a structural rejection
+R7Check 'R60 null assertion record rejected structurally' (-not $r60Struct)
+
+# R61 — required-name input schema: non-string / empty entries in the caller contract.
+R7Check 'R61 empty string in RequiredAssertions input' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b')))) 0 $FILE @($REQ[0], '', $REQ[1]))
+R7Check 'R61b whitespace entry in RequiredAssertions input' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b')))) 0 $FILE @($REQ[0], '   ', $REQ[1]))
+
+Write-Host ''
+Write-Host '--- R7: positive controls (case-exact, well-formed evidence must still be ACCEPTED) ---'
+Check 'R62 exact-case required names still accepted' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))))) $true
+Check 'R63 consistent full suite counters accepted' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], 'a', 'b'))) -extra ',"numTotalTestSuites":1,"numPassedTestSuites":1,"numFailedTestSuites":0,"numPendingTestSuites":0,"numRuntimeErrorTestSuites":0')) $true
+# A name differing from a required one ONLY by case must be treated as a DIFFERENT name, not a duplicate.
+Check 'R64 case-variant of a required name is a distinct assertion, not a duplicate' `
+  (Adj (Rep @((Obj $FILE @($REQ[0], $REQ[1], $REQ[0].ToUpperInvariant(), 'b'))))) $true
+
 try { if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force } } catch {}
 
 Write-Host ''
@@ -218,6 +289,8 @@ Write-Host ("STRICT_PARSER_ASSERTIONS_EXECUTED={0}" -f $script:asserts)
 Write-Host ("STRICT_PARSER_ASSERTIONS_FAILED={0}" -f $script:fails)
 Write-Host ("CODEX_REGRESSION_CASES={0}" -f $script:codexCases)
 Write-Host ("CODEX_REGRESSION_CASES_PASS={0}" -f $script:codexPass)
+Write-Host ("CODEX_R7_REGRESSION_CASES={0}" -f $script:r7Cases)
+Write-Host ("CODEX_R7_REGRESSION_CASES_PASS={0}" -f $script:r7Pass)
 if ($script:fails -eq 0) {
   Write-Host ("RESULT: STRICT_JEST_PARSER_SELFTEST_PASS ({0} assertions)" -f $script:asserts)
   exit 0

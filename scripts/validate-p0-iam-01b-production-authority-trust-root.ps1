@@ -153,7 +153,16 @@ else {
   # STRICT adjudication (R5). $jexit -eq 0 is MANDATORY here (this suite is pure unit; there is no emulator exit to
   # normalize). Aggregate 54/54 alone is NOT sufficient: each critical security assertion must be present exactly once,
   # by exact fullName, from the exact expected source file.
-  if (-not (Get-Command Get-SjpStrictReport -ErrorAction SilentlyContinue)) { . (Join-Path $root 'scripts\lib\StrictJestParser.ps1') }
+  # R7 (Codex finding 7). See the identical note in the IAM-01A validator. This validator invokes IAM-01A in
+  # the SAME PowerShell process, so ambient command state propagates across that nested call — which is
+  # precisely how a forged parser could reach this gate.
+  $sjpParserPath = Join-Path $root 'scripts\lib\StrictJestParser.ps1'
+  foreach ($sjpFn in @('Get-SjpStrictReport','Test-SjpTrustedParserIdentity','Test-SjpHasProperty','Test-SjpIsStrictBool','Test-SjpIsStrictInt')) {
+    if (Test-Path -LiteralPath ("Function:\" + $sjpFn)) { Remove-Item -LiteralPath ("Function:\" + $sjpFn) -Force -ErrorAction SilentlyContinue }
+  }
+  if (-not (Test-Path -LiteralPath $sjpParserPath -PathType Leaf)) { Fail "trusted strict parser missing: $sjpParserPath" }
+  . $sjpParserPath
+  if (-not (Test-SjpTrustedParserIdentity -ParserPath $sjpParserPath)) { Fail 'trusted strict parser identity could not be established' }
   $IAM01B_CRITICAL = @(
     'P0-IAM-01B — production trust boundary: no caller-selectable dependencies production entrypoint signPaidChatAuthority does NOT accept a deps parameter (arity = request, ctx, correlationId)',
     'P0-IAM-01B — production trust boundary: no caller-selectable dependencies production entrypoint fails closed (SAFE_UNAVAILABLE), signing nothing, when the composition root is empty',

@@ -40,6 +40,54 @@
   as evidence in themselves.
 #>
 
+function Test-SjpTrustedParserIdentity {
+  <#
+    R7 (Codex finding 7). Both security validators used to decide whether to load this file by asking whether
+    a command of that NAME already existed:
+
+        if (-not (Get-Command Get-SjpStrictReport -ErrorAction SilentlyContinue)) { . <parser> }
+
+    Command existence is not identity. Any pre-existing function of that name — including a forged one that
+    returns ok = $true for a report file that does not even exist — suppressed the load and adjudicated the
+    security gate instead. IAM-01B1 invokes IAM-01A in the SAME process, so ambient state propagates across
+    the nested call.
+
+    The load itself MUST happen in the caller's own scope (dot-sourcing inside a function would define the
+    parser in that function's scope and lose it on return), so callers follow this exact sequence:
+
+        1. resolve the trusted parser PATH explicitly — never ambient availability;
+        2. evict any existing Get-SjpStrictReport / Test-Sjp* definitions;
+        3. dot-source the trusted path unconditionally;
+        4. call this function and FAIL CLOSED if it returns $false.
+
+    This function proves the loaded command actually originates from the trusted file on disk.
+  #>
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory)][string]$ParserPath,
+    [string]$ExpectedSha256 = ''
+  )
+  if (-not (Test-Path -LiteralPath $ParserPath -PathType Leaf)) {
+    Write-Host "  TRUSTED_PARSER_IDENTITY_FAIL: file not found: $ParserPath"; return $false
+  }
+  if ($ExpectedSha256) {
+    $actual = (Get-FileHash -LiteralPath $ParserPath -Algorithm SHA256).Hash.ToUpperInvariant()
+    if ($actual -ne $ExpectedSha256.ToUpperInvariant()) {
+      Write-Host "  TRUSTED_PARSER_IDENTITY_FAIL: hash mismatch ($actual)"; return $false
+    }
+  }
+  $cmd = Get-Command Get-SjpStrictReport -CommandType Function -ErrorAction SilentlyContinue
+  if (-not $cmd) { Write-Host '  TRUSTED_PARSER_IDENTITY_FAIL: function absent after load'; return $false }
+  $file = if ($cmd.ScriptBlock -and $cmd.ScriptBlock.File) { $cmd.ScriptBlock.File } else { '' }
+  if (-not $file) { Write-Host '  TRUSTED_PARSER_IDENTITY_FAIL: command has no source file (defined in-session)'; return $false }
+  $resolvedLoaded  = (Resolve-Path -LiteralPath $file).Path
+  $resolvedTrusted = (Resolve-Path -LiteralPath $ParserPath).Path
+  if ($resolvedLoaded -ne $resolvedTrusted) {
+    Write-Host "  TRUSTED_PARSER_IDENTITY_FAIL: loaded from '$resolvedLoaded', expected '$resolvedTrusted'"; return $false
+  }
+  return $true
+}
+
 function Test-SjpHasProperty {
   param([Parameter(Mandatory)]$Object, [Parameter(Mandatory)][string]$Name)
   if ($null -eq $Object) { return $false }
@@ -99,6 +147,20 @@ function Get-SjpStrictReport {
   )
   $errors = New-Object System.Collections.Generic.List[string]
 
+  # ── CALLER INPUT CONTRACT, validated BEFORE any report evidence is consumed ────────────────────────────────────
+  # R7 (Codex finding 4): the caller's required-name list was trusted implicitly. If a caller supplied the same
+  # name twice, ONE physical assertion satisfied BOTH slots — a 17-entry table could be silently backed by 16
+  # records. The requirement list is an input to a security decision, so it is validated like any other input,
+  # and it is validated first: evidence must never be consulted to excuse a malformed contract.
+  $seenReq = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+  for ($i = 0; $i -lt $RequiredAssertions.Count; $i++) {
+    $rq = $RequiredAssertions[$i]
+    if ($null -eq $rq)                                  { $errors.Add("required_assertions_input_null:index$i"); continue }
+    if ($rq -isnot [string])                            { $errors.Add("required_assertions_input_not_string:index$i"); continue }
+    if ([string]::IsNullOrWhiteSpace([string]$rq))      { $errors.Add("required_assertions_input_empty:index$i"); continue }
+    if (-not $seenReq.Add([string]$rq))                 { $errors.Add("required_assertions_input_duplicate:$rq") }
+  }
+
   # ── native process exit is mandatory ───────────────────────────────────────────────────────────────────────────
   if ($NativeExit -ne 0) { $errors.Add("native_jest_exit_nonzero:$NativeExit") }
 
@@ -154,12 +216,23 @@ function Get-SjpStrictReport {
   $expectedObjects = 0
   $foreignLeaves   = New-Object System.Collections.Generic.List[string]
   $physicalObjects = 0
+  $suiteStates     = New-Object System.Collections.Generic.List[psobject]
   # Physical tallies across the WHOLE report, used to reconcile every declared counter.
   $recTotal = 0; $recPassed = 0; $recFailed = 0; $recPending = 0; $recTodo = 0
   # Jest assertion statuses. Anything outside this set is unknown semantics and therefore a rejection: a status
   # this parser cannot classify must never be silently ignored, because ignoring it is what "counts as passed".
-  $STATUS_BUCKET = @{ 'passed' = 'passed'; 'failed' = 'failed'; 'pending' = 'pending'
-                      'skipped' = 'pending'; 'disabled' = 'pending'; 'todo' = 'todo' }
+  #
+  # R7 (Codex finding 2): this MUST be an ordinal dictionary. A PowerShell hashtable literal is
+  # case-INSENSITIVE, so `$STATUS_BUCKET.ContainsKey('PASSED')` returned $true and "PASSED" was silently
+  # treated as "passed". Jest emits lower-case status values; any other casing is not a Jest status and must
+  # fail closed rather than be normalised into one.
+  $STATUS_BUCKET = New-Object 'System.Collections.Generic.Dictionary[string,string]' ([System.StringComparer]::Ordinal)
+  $STATUS_BUCKET.Add('passed',   'passed')
+  $STATUS_BUCKET.Add('failed',   'failed')
+  $STATUS_BUCKET.Add('pending',  'pending')
+  $STATUS_BUCKET.Add('skipped',  'pending')
+  $STATUS_BUCKET.Add('disabled', 'pending')
+  $STATUS_BUCKET.Add('todo',     'todo')
 
   if ((Test-SjpHasProperty $j 'testResults') -and ($j.testResults -is [array])) {
     foreach ($tr in $j.testResults) {
@@ -178,23 +251,35 @@ function Get-SjpStrictReport {
       if (-not (Test-SjpHasProperty $tr 'assertionResults')) { $errors.Add('testResult_missing_assertionResults'); continue }
       if ($tr.assertionResults -isnot [array]) { $errors.Add('assertionResults_not_array'); continue }
 
+      # Per-suite tallies, so the suite-level counters below reconcile against physical records too.
+      $sTotal = 0; $sPassed = 0; $sFailed = 0; $sPending = 0; $sTodo = 0
       foreach ($ar in $tr.assertionResults) {
-        $recTotal++
+        $recTotal++; $sTotal++
+        # R7 (Codex finding 6): a null record must be identified STRUCTURALLY. Previously it reached
+        # Test-SjpHasProperty, whose mandatory parameter threw a binding exception — the rejection was a
+        # PowerShell accident rather than a schema decision, and an accident is not a security control.
+        if ($null -eq $ar)          { $errors.Add('assertion_record_null'); continue }
+        if ($ar -isnot [psobject])  { $errors.Add('assertion_record_not_object'); continue }
         if (-not (Test-SjpHasProperty $ar 'fullName')) { $errors.Add('assertion_missing_fullName'); continue }
         if (-not (Test-SjpHasProperty $ar 'status'))   { $errors.Add('assertion_missing_status');   continue }
         if ($ar.fullName -isnot [string]) { $errors.Add('assertion_fullName_not_string'); continue }
         if ($ar.status   -isnot [string]) { $errors.Add('assertion_status_not_string');   continue }
+        # R7 (Codex finding 3): an empty or whitespace fullName is not an identity. Every record is schema
+        # checked, including records nobody requires — "not required" is not a reason to ignore malformed
+        # evidence, because the malformed record still counts toward the totals that gate the decision.
+        if ([string]::IsNullOrWhiteSpace([string]$ar.fullName)) { $errors.Add('assertion_fullName_empty'); continue }
         $st = [string]$ar.status
         if (-not $STATUS_BUCKET.ContainsKey($st)) { $errors.Add("assertion_status_unsupported:$st"); continue }
         switch ($STATUS_BUCKET[$st]) {
-          'passed'  { $recPassed++ }
-          'failed'  { $recFailed++ }
-          'pending' { $recPending++ }
-          'todo'    { $recTodo++ }
+          'passed'  { $recPassed++;  $sPassed++ }
+          'failed'  { $recFailed++;  $sFailed++ }
+          'pending' { $recPending++; $sPending++ }
+          'todo'    { $recTodo++;    $sTodo++ }
         }
         # Only the expected file may contribute evidence toward the required-assertion set.
         if ($isExpected -and $st -ceq 'passed') { $passedNames.Add([string]$ar.fullName) }
       }
+      $suiteStates.Add([pscustomobject]@{ Total = $sTotal; Passed = $sPassed; Failed = $sFailed; Pending = $sPending; Todo = $sTodo })
     }
   }
 
@@ -224,25 +309,53 @@ function Get-SjpStrictReport {
     $errors.Add("record_total_not_exact:$recTotal!=$ExpectedTotalTests")
   }
 
-  # ── INVARIANT: suite counters, when the report declares them, must match physical result objects ───────────────
-  foreach ($sf in @('numTotalTestSuites', 'numPassedTestSuites')) {
+  # ── INVARIANT: ALL declared suite counters must reconcile with the physical result objects ─────────────────────
+  # R7 (Codex finding 5): R6 reconciled only numTotalTestSuites and numPassedTestSuites, so a report could
+  # declare numFailedTestSuites = 1 while every physical record passed, and still be accepted. A counter that
+  # is read but never checked is worse than one that is absent, because it looks like coverage.
+  #
+  # Each Jest suite counter is bound to a physical quantity derived from the records themselves:
+  #   numTotalTestSuites        = number of testResults objects
+  #   numPassedTestSuites       = suites whose records all passed
+  #   numFailedTestSuites       = suites containing at least one failed record
+  #   numPendingTestSuites      = suites whose records are all pending/skipped/disabled/todo
+  #   numRuntimeErrorTestSuites = suites that failed to execute; never present in accepted evidence
+  $suitesPassed = 0; $suitesFailed = 0; $suitesPending = 0
+  foreach ($st in $suiteStates) {
+    if ($st.Failed -gt 0) { $suitesFailed++ }
+    elseif ($st.Total -gt 0 -and $st.Passed -eq $st.Total) { $suitesPassed++ }
+    elseif ($st.Total -gt 0 -and ($st.Pending + $st.Todo) -eq $st.Total) { $suitesPending++ }
+  }
+  $suiteExpect = @{
+    'numTotalTestSuites'        = $physicalObjects
+    'numPassedTestSuites'       = $suitesPassed
+    'numFailedTestSuites'       = $suitesFailed
+    'numPendingTestSuites'      = $suitesPending
+    'numRuntimeErrorTestSuites' = 0
+  }
+  foreach ($sf in @('numTotalTestSuites','numPassedTestSuites','numFailedTestSuites','numPendingTestSuites','numRuntimeErrorTestSuites')) {
     if (Test-SjpHasProperty $j $sf) {
       if (-not (Test-SjpIsStrictInt $j.$sf)) { $errors.Add("${sf}_not_integer"); continue }
-      if ([int64]$j.$sf -ne $physicalObjects) { $errors.Add("${sf}_mismatch:$($j.$sf)!=$physicalObjects") }
+      if ([int64]$j.$sf -lt 0) { $errors.Add("${sf}_negative:$($j.$sf)"); continue }
+      if ([int64]$j.$sf -ne $suiteExpect[$sf]) { $errors.Add("${sf}_mismatch:$($j.$sf)!=$($suiteExpect[$sf])") }
     }
   }
 
-  # ── required assertions: EXACT fullName equality, EXACTLY ONE record each, injective ───────────────────────────
-  # Duplicate detection now runs UNCONDITIONALLY. Previously it was inside the RequiredAssertions branch, so a
-  # caller passing no required names got no ambiguity check at all.
-  $byName = @{}
-  foreach ($n in $passedNames) { if ($byName.ContainsKey($n)) { $byName[$n] = [int]$byName[$n] + 1 } else { $byName[$n] = 1 } }
+  # ── required assertions: EXACT ORDINAL fullName equality, EXACTLY ONE record each, injective ───────────────────
+  # R7 (Codex finding 1): $byName was a PowerShell hashtable, which compares keys CASE-INSENSITIVELY. A
+  # required assertion whose name differed only in case therefore satisfied the contract, so "exact fullName
+  # matching" was never exact. Security identities are compared ordinally here and nowhere else.
+  # Duplicate detection runs UNCONDITIONALLY: a caller passing no required names still gets the ambiguity check.
+  $byName = New-Object 'System.Collections.Generic.Dictionary[string,int]' ([System.StringComparer]::Ordinal)
+  foreach ($n in $passedNames) {
+    if ($byName.ContainsKey($n)) { $byName[$n] = $byName[$n] + 1 } else { $byName[$n] = 1 }
+  }
   foreach ($req in $RequiredAssertions) {
     if (-not $byName.ContainsKey($req)) { $errors.Add("required_assertion_missing:$req"); continue }
-    if ([int]$byName[$req] -ne 1) { $errors.Add("required_assertion_not_unique:$req x$($byName[$req])") }
+    if ($byName[$req] -ne 1) { $errors.Add("required_assertion_not_unique:$req x$($byName[$req])") }
   }
   # a duplicated name anywhere in the expected file is fail-closed: it can mask a missing requirement
-  foreach ($k in $byName.Keys) { if ([int]$byName[$k] -gt 1) { $errors.Add("duplicate_assertion_name:$k x$($byName[$k])") } }
+  foreach ($k in $byName.Keys) { if ($byName[$k] -gt 1) { $errors.Add("duplicate_assertion_name:$k x$($byName[$k])") } }
 
   return [pscustomobject]@{
     ok             = ($errors.Count -eq 0)
