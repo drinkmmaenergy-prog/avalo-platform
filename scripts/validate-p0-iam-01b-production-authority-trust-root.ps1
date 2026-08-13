@@ -82,14 +82,36 @@ if ($idOk -and $outside.Count -eq 0 -and $runtimeChanged.Count -le 8) { Pass ("i
 if ($runtimeChanged.Count -gt 8) { Write-Host 'STOP — P0-IAM-01B REQUIRES SCOPE REVIEW' }
 
 Write-Host "=== GATE 2. Prior markers green incl. P0-IAM-01A (via IAM-01A validator; FILE-redirected) ==="
-$iam01aOut = Join-Path $env:TEMP ("iam01b-prior-" + [guid]::NewGuid().ToString('N') + ".out")
+# R8: the nested transcript is EVIDENCE and is kept.
+# It used to be written to a random temp name and deleted immediately after the two markers were read. That
+# is fine while the gate passes and useless the moment it does not: an R8 battery run had this gate fail with
+# `iam01aExit=1` while the standalone IAM-01A in the same battery passed 53/53, and the only record of why the
+# nested run failed had already been erased. A validator that destroys the evidence for its own failure cannot
+# be independently reviewed, which is the same defect as a battery that prints its verdict only to a console.
+# The directory is overridable so an orchestrator can collect it; it defaults OUTSIDE the repository, because
+# writing evidence into the worktree would change the very git state GATE 1 asserts.
+$nestedDir = if ($env:AVALO_IAM01B1_NESTED_EVIDENCE_DIR) { $env:AVALO_IAM01B1_NESTED_EVIDENCE_DIR } else { Join-Path $env:TEMP 'avalo-iam01b1-nested-evidence' }
+New-Item -ItemType Directory -Force -Path $nestedDir | Out-Null
+$iam01aOut = Join-Path $nestedDir ("NESTED_IAM01A_" + (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss') + "-" + [guid]::NewGuid().ToString('N').Substring(0, 8) + ".out")
 & (Join-Path $root 'scripts\validate-p0-iam-01a-financial-authority-trust-boundary-foundation.ps1') *> $iam01aOut
 $iam01aExit = $LASTEXITCODE
 $iam01aTxt = if (Test-Path $iam01aOut) { Get-Content -LiteralPath $iam01aOut -Raw } else { '' }
-Remove-Item $iam01aOut -Force -ErrorAction SilentlyContinue
+Set-Content -LiteralPath (Join-Path $nestedDir 'NESTED_IAM01A_LAST_EXIT.txt') -Value ([string]$iam01aExit) -NoNewline
 function HasMark([string]$t, [string]$m) { return ($null -ne $t) -and ($t -match [regex]::Escape($m)) }
 $priorOk = ($iam01aExit -eq 0) -and (HasMark $iam01aTxt 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_PASS') -and (HasMark $iam01aTxt 'prior validators green')
-if ($priorOk) { Pass 'prior markers green: P0-IAM-01A PASS (which transitively confirms layer0/layer1/p0-01/p0-02/c5/r1b1)' } else { Fail ("prior markers (iam01aExit={0})" -f $iam01aExit) }
+# Machine-readable so a parent harness can gate on the NESTED exit specifically, rather than inferring it from
+# this validator's overall exit.
+Write-Host ("IAM01B1_NESTED_IAM01A_EXIT=" + $iam01aExit)
+Write-Host ("IAM01B1_NESTED_IAM01A_TRANSCRIPT=" + $iam01aOut)
+Write-Host ("IAM01B1_NESTED_IAM01A_BYTES=" + $iam01aTxt.Length)
+if (-not $priorOk) {
+  # Surface the nested run's OWN first failures inline. "exit 1" is an outcome, not a diagnosis.
+  foreach ($ln in @($iam01aTxt -split "`r?`n" | Where-Object { $_ -match 'GATE FAIL' } | Select-Object -First 5)) {
+    Write-Host ("  NESTED IAM-01A: " + $ln.Trim())
+  }
+  if ([string]::IsNullOrWhiteSpace($iam01aTxt)) { Write-Host '  NESTED IAM-01A: (no output captured)' }
+}
+if ($priorOk) { Pass 'prior markers green: P0-IAM-01A PASS (which transitively confirms layer0/layer1/p0-01/p0-02/c5/r1b1)' } else { Fail ("prior markers (iam01aExit={0}; transcript retained at {1})" -f $iam01aExit, $iam01aOut) }
 
 Write-Host "=== GATE 3-9. Source-level trust-root invariants ==="
 foreach ($f in @($KMS, $SAUTH, $SVC, $HARNESS)) { if (-not (Test-Path $f)) { Fail ("missing file: $f") } }

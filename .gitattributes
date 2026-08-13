@@ -1,0 +1,27 @@
+# R8: deterministic checkout bytes for security-pinned PowerShell evidence.
+#
+# WHY. These files are covered by SHA-256 identity claims: the trusted-parser identity pin
+# (Test-SjpTrustedParserIdentity), the lifecycle helper resolver, the layer-0 validator's pin over
+# scripts/lib/RuntimeLogScan.ps1, the checkpoint byte binding, and the validated source bytes shipped for
+# independent review.
+#
+# The repository previously declared no attributes at all, so end-of-line handling was decided entirely by
+# each user's core.autocrlf. Measured against the R7 commit, all nine of the files below hashed differently
+# depending on that setting: with core.autocrlf=false the checkout equalled the blob (LF), while with
+# core.autocrlf=true - the default on a Windows install - the checkout was CRLF and matched nothing that had
+# been pinned. Concretely, the layer-0 validator pins RuntimeLogScan.ps1 to E686C072..., and a default-Windows
+# checkout of that same commit produced F3C1B7E9..., so the pin failed on bytes Git itself reported as
+# unmodified. An identity control whose outcome depends on a personal Git setting is not authenticating the
+# artifact.
+#
+# eol=lf rather than -text: -text would also give byte stability, but it marks the files binary and Git would
+# stop producing readable diffs for exactly the sources an independent reviewer needs to read. eol=lf keeps
+# them diffable while making the checked-out bytes byte-for-byte equal to the canonical blob under any
+# core.autocrlf value.
+#
+# Scope is deliberately narrow. A repository-wide rule would renormalise unrelated application files and drag
+# them into this security checkpoint's delta. Only the security-pinned population is covered here; every blob
+# below is already LF, so this rule introduces no renormalisation churn.
+scripts/lib/*.ps1       text eol=lf
+scripts/tests/*.ps1     text eol=lf
+scripts/validate-*.ps1  text eol=lf
