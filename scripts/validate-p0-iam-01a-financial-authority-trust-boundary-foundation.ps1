@@ -29,6 +29,85 @@ $LOADER = Join-Path $fnroot 'src\chat\paidChatAuthority.ts'
 $TESTSIGNER = Join-Path $fnroot 'src\__tests__\helpers\iam01aTestSigner.ts'
 $MAIN_FILE = 'p0-iam-01a-financial-authority-trust-boundary-foundation.test.ts'
 
+# ── R8 trusted child-evidence contract ───────────────────────────────────────────────────────────────────────────
+# This validator trusted three children and destroyed the evidence for all three: the R1B-1 prior-validator cascade
+# transcript (GATE 2), the emulators:exec log and the Jest report (GATE 10-14/20). A GATE 2 failure on 2026-08-17
+# was therefore unattributable - the same defect class already repaired in IAM-01B1's nested-IAM-01A gate.
+#
+# Loading mirrors the lifecycle and strict-parser helpers below, and for the same reason: command existence is not
+# identity. Exact repository-relative path, no PATH search, no module-name resolution, ambient definitions evicted
+# first, origin proven against the resolved repository file, fail closed on absence or mismatch.
+$tcePath = Join-Path $root 'scripts\lib\TrustedChildEvidence.ps1'
+# CANONICAL PIN. Held identically by IAM-01A and IAM-01B1 and asserted equal by a permanent regression. It is
+# NOT read from the file being authenticated - that would be self-assertion.
+$TCE_EXPECTED_SHA256 = '3A59252B60E30FF8268A87455BDD2A157241BD294DE896510D4BF68D02C11B59'
+if (-not (Test-Path -LiteralPath $tcePath -PathType Leaf)) {
+  Write-Host ("GATE FAIL: trusted child-evidence helper missing: " + $tcePath)
+  Write-Host 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_FAIL'
+  exit 1
+}
+# BYTE identity BEFORE the file is executed. Path identity alone authenticates a location, not content, and it
+# could only ever be checked after dot-sourcing - i.e. after the code had already run. BCL SHA-256, never
+# Get-FileHash: 5.1 launched from a 7.x parent inherits 7's PSModulePath and loses that cmdlet entirely.
+$tceSha = ''
+try {
+  $tceHasher = [System.Security.Cryptography.SHA256]::Create()
+  try { $tceSha = ([BitConverter]::ToString($tceHasher.ComputeHash([System.IO.File]::ReadAllBytes($tcePath))) -replace '-', '') }
+  finally { $tceHasher.Dispose() }
+} catch { $tceSha = '' }
+if ($tceSha -ne $TCE_EXPECTED_SHA256) {
+  Write-Host ("GATE FAIL: trusted child-evidence helper byte identity mismatch (expected " + $TCE_EXPECTED_SHA256 + " actual " + $(if ($tceSha) { $tceSha } else { 'UNREADABLE' }) + ")")
+  Write-Host 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_FAIL'
+  exit 1
+}
+$tceResolved = (Resolve-Path -LiteralPath $tcePath).Path
+# ORIGIN-CONDITIONAL eviction. An unconditional `Remove-Item Function:\...` was wrong here in a way that only
+# showed up under nesting: IAM-01B1 loads this helper once, then invokes THIS validator in-process with `&`,
+# and Function: drive removals act on the session table - so the nested eviction deleted the PARENT's copy,
+# while the re-load landed in this script's scope and vanished on return. IAM-01B1 then hit
+# "New-TceArtifactPath is not recognized" in GATE 12.
+#
+# The purpose of eviction is to remove UNTRUSTED ambient definitions, so evict exactly those: a definition
+# already originating from the byte-verified file is not the threat and must survive for the caller.
+foreach ($tceFn in @('Get-TceEvidenceDir', 'New-TceArtifactPath', 'Get-TceSha256', 'Register-TceChildEvidence')) {
+  $existing = Get-Command $tceFn -CommandType Function -ErrorAction SilentlyContinue
+  if ($null -eq $existing) { continue }
+  $existingFile = if ($existing.ScriptBlock -and $existing.ScriptBlock.File) { (Resolve-Path -LiteralPath $existing.ScriptBlock.File -ErrorAction SilentlyContinue).Path } else { '' }
+  if ($existingFile -ne $tceResolved) { Remove-Item -LiteralPath ("Function:\" + $tceFn) -Force -ErrorAction SilentlyContinue }
+}
+. $tcePath
+$tceCmd = Get-Command Register-TceChildEvidence -CommandType Function -ErrorAction SilentlyContinue
+$tceFile = if ($tceCmd -and $tceCmd.ScriptBlock -and $tceCmd.ScriptBlock.File) { (Resolve-Path -LiteralPath $tceCmd.ScriptBlock.File).Path } else { '' }
+if ($tceFile -ne $tceResolved) {
+  Write-Host 'GATE FAIL: trusted child-evidence helper identity could not be established'
+  Write-Host 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_FAIL'
+  exit 1
+}
+# Recompute after loading: the bytes that were authenticated must still be the bytes on disk.
+$tceShaAfter = ''
+try {
+  $tceHasher2 = [System.Security.Cryptography.SHA256]::Create()
+  try { $tceShaAfter = ([BitConverter]::ToString($tceHasher2.ComputeHash([System.IO.File]::ReadAllBytes($tcePath))) -replace '-', '') }
+  finally { $tceHasher2.Dispose() }
+} catch { $tceShaAfter = '' }
+if ($tceShaAfter -ne $TCE_EXPECTED_SHA256) {
+  Write-Host 'GATE FAIL: trusted child-evidence helper bytes changed during load'
+  Write-Host 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_FAIL'
+  exit 1
+}
+Write-Host ("IAM01A_TCE_HELPER_SHA256=" + $tceSha)
+# Run-scoped: every run keeps its own evidence, so RUN #1, RUN #2 and the clean-checkpoint run stay distinguishable
+# without relying on timestamps. Fail closed if the directory cannot be created - an observability repair that
+# silently degrades to "no evidence" would be worse than the defect it replaces.
+$IAM01A_EVIDENCE = ''
+try { $IAM01A_EVIDENCE = Get-TceEvidenceDir -Validator 'IAM01A' } catch { $IAM01A_EVIDENCE = '' }
+if ([string]::IsNullOrWhiteSpace($IAM01A_EVIDENCE) -or -not (Test-Path -LiteralPath $IAM01A_EVIDENCE -PathType Container)) {
+  Write-Host 'GATE FAIL: child-evidence directory could not be created'
+  Write-Host 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_FAIL'
+  exit 1
+}
+Write-Host ("IAM01A_CHILD_EVIDENCE_DIR=" + $IAM01A_EVIDENCE)
+
 $IAM_ALLOW = @(
   'functions/src/security/financialAuthority/canonicalFingerprint.ts',
   'functions/src/security/financialAuthority/authorityEnvelope.ts',
@@ -71,12 +150,15 @@ Write-Host "=== GATE 2. Prior required validators green (cascade via R1B-1; FILE
 # suites silently fail and their markers never appear. Redirecting to a FILE (`*> file`) avoids this: the R1B-1
 # validator then runs its full prior cascade (layer0, layer1, p0-01, p0-02, c5) + its own suite exactly as at top
 # level and emits every marker. GATE 2 therefore file-redirects R1B-1 and reads all six markers from its output.
-$r1b1Out = Join-Path $env:TEMP ("iam01a-prior-r1b1-" + [guid]::NewGuid().ToString('N') + ".out")
-if (Test-Path $r1b1Out) { Remove-Item $r1b1Out -Force }
+# A1. The transcript is written into the run-scoped evidence directory and is NEVER deleted - not on the pass path,
+# not on the fail path. Previously this lived in $env:TEMP and was removed immediately after two markers were read,
+# so when the gate failed the record of WHY five validators did not report green went with it.
+$r1b1Out = New-TceArtifactPath -EvidenceDir $IAM01A_EVIDENCE -Name 'A1_GATE2_R1B1_CASCADE.transcript.txt'
 & (Join-Path $root 'scripts\validate-p0-05-r1b1-engine-a-latent-vector-neutralization.ps1') *> $r1b1Out
 $r1b1Exit = $LASTEXITCODE
 $r1b1Txt = if (Test-Path $r1b1Out) { Get-Content -LiteralPath $r1b1Out -Raw } else { '' }
-Remove-Item $r1b1Out -Force -ErrorAction SilentlyContinue
+$a1Evidence = Register-TceChildEvidence -EvidenceDir $IAM01A_EVIDENCE -Name 'A1_GATE2_R1B1_CASCADE' `
+                -TranscriptPath $r1b1Out -ExitCode $r1b1Exit -RequireNonEmpty
 function HasMark([string]$t, [string]$m) { return ($null -ne $t) -and ($t -match [regex]::Escape($m)) }
 # R1B-1 verifies layer0/layer1/p0-01/p0-02/c5 into internal vars and echoes only the AGGREGATE line
 # "prior validators green (tv=0 l1=0 p01=0 p02=0 c5=0)" (each 0 = that leaf exited 0). R1B-1 also runs layer0's own
@@ -87,6 +169,9 @@ $leafAggGreen = HasMark $r1b1Txt 'prior validators green (tv=0 l1=0 p01=0 p02=0 
 $prior = @{
   five_leaves_green_via_r1b1_cascade = $leafAggGreen
   r1b1 = ($r1b1Exit -eq 0) -and (HasMark $r1b1Txt 'RESULT: P0_05_R1B1_ENGINE_A_LATENT_VECTOR_NEUTRALIZATION_PASS')
+  # The gate now also requires that the child's evidence was actually retained and re-readable. A cascade that
+  # "passed" but left no transcript is not something this gate is entitled to certify.
+  r1b1_evidence_retained = [bool]$a1Evidence.EvidenceOk
 }
 $priorBad = @($prior.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object { $_.Key })
 if ($priorBad.Count -eq 0) { Pass 'prior validators green: R1B-1 PASS (exit 0 + marker) transitively confirms layer0/layer1/p0-01/p0-02/c5 (aggregate tv=0 l1=0 p01=0 p02=0 c5=0)' } else { Fail ("prior validators: [{0}]" -f ($priorBad -join ', ')) }
@@ -158,12 +243,15 @@ if ($g17 -and $g18 -and $g19) { Pass ("billing disabled (loader no wallet/reserv
 Write-Host "=== GATE 10-14,20. Emulator suite: positive verify, direct-admin-write reject, tamper/copy/replay/algo, regression ==="
 if (-not (Test-Path (Join-Path $fnroot 'node_modules'))) { Fail 'dependencies absent' }
 else {
-  $jsonOut = Join-Path $env:TEMP ("iam01a-jest-" + [guid]::NewGuid().ToString('N') + ".json")
-  if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force }
+  # A3 / A2. Both artefacts are written directly into the run-scoped evidence directory rather than $env:TEMP.
+  # Previously the emulator log was deleted at the moment the lifecycle helper had consumed it - BEFORE this gate
+  # decided - so an "unhealthy emulator" verdict arrived with its own explanation already removed; and the Jest
+  # report was deleted on both the pass and the fail path, so a strict-parser rejection could not be re-derived.
+  $jsonOut = New-TceArtifactPath -EvidenceDir $IAM01A_EVIDENCE -Name 'A3_EMULATOR_SUITE_JEST_REPORT.json'
   $runStartedUtc = (Get-Date).ToUniversalTime()          # freshness floor for the report (anti-stale)
   Push-Location $fnroot
   $cmd = "npx jest --config jest.config.js --selectProjects main --runInBand --forceExit --json --outputFile=`"$jsonOut`" src/__tests__/$MAIN_FILE"
-  $emuLog = Join-Path $env:TEMP ("iam01a-emu-" + [guid]::NewGuid().ToString('N') + ".log")
+  $emuLog = New-TceArtifactPath -EvidenceDir $IAM01A_EVIDENCE -Name 'A2_EMULATOR_EXEC.log'
   & firebase emulators:exec --only firestore --project demo-avalo $cmd *> $emuLog
   $emuExit = $LASTEXITCODE
   Pop-Location
@@ -179,7 +267,9 @@ else {
   $lcFile = if ($lcCmd -and $lcCmd.ScriptBlock -and $lcCmd.ScriptBlock.File) { (Resolve-Path -LiteralPath $lcCmd.ScriptBlock.File).Path } else { '' }
   if ($lcFile -ne (Resolve-Path -LiteralPath $lifecyclePath).Path) { Fail 'trusted lifecycle helper identity could not be established' }
   $lifeReason = ''; $lifeOk = Test-EmulatorLifecycleHealthy -CliExit $emuExit -LogPath $emuLog -Reason ([ref]$lifeReason)
-  Remove-Item $emuLog -Force -ErrorAction SilentlyContinue
+  # Registered, not removed. The log is the only account of what the emulator actually did.
+  $a2Evidence = Register-TceChildEvidence -EvidenceDir $IAM01A_EVIDENCE -Name 'A2_EMULATOR_EXEC' `
+                  -TranscriptPath $emuLog -ExitCode $emuExit -RequireNonEmpty
   # STRICT adjudication (R5). Replaces coercing numeric casts + substring name matching, both of which independent
   # review found to be bypassable. The shared parser enforces schema+type, count arithmetic, source-file binding,
   # exact fullName equality, and one-unique-record-per-requirement. See scripts/lib/StrictJestParser.ps1.
@@ -227,10 +317,13 @@ else {
   # The strict parser is therefore given $emuExit only for reporting; the binding gate is $lifeOk below.
   $nativeOk = ($emuExit -eq 0) -or $lifeOk
   $strictErrs = @($rep.errors | Where-Object { $_ -notmatch '^native_jest_exit_nonzero' })
-  if ($rep.ok -and $lifeOk -and $nativeOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions" -f $rep.passed, $IAM01A_REQUIRED.Count) }
-  elseif ($strictErrs.Count -eq 0 -and $lifeOk -and $nativeOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions (emu exit normalized)" -f $rep.passed, $IAM01A_REQUIRED.Count) }
-  else { $strictErrs | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01A suite (strictErrors={0} lifeHealthy={1} emuExit={2})" -f $strictErrs.Count, $lifeOk, $emuExit) }
-  if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force -ErrorAction SilentlyContinue }
+  # Registered BEFORE the verdict, so a rejection leaves the rejected report on disk for review.
+  $a3Evidence = Register-TceChildEvidence -EvidenceDir $IAM01A_EVIDENCE -Name 'A3_EMULATOR_SUITE_JEST_REPORT' `
+                  -TranscriptPath $jsonOut -ExitCode $emuExit -RequireNonEmpty
+  $evidenceOk = ([bool]$a2Evidence.EvidenceOk) -and ([bool]$a3Evidence.EvidenceOk)
+  if ($rep.ok -and $lifeOk -and $nativeOk -and $evidenceOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions" -f $rep.passed, $IAM01A_REQUIRED.Count) }
+  elseif ($strictErrs.Count -eq 0 -and $lifeOk -and $nativeOk -and $evidenceOk) { Pass ("IAM-01A suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact named security assertions (emu exit normalized)" -f $rep.passed, $IAM01A_REQUIRED.Count) }
+  else { $strictErrs | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01A suite (strictErrors={0} lifeHealthy={1} emuExit={2} evidenceOk={3})" -f $strictErrs.Count, $lifeOk, $emuExit, $evidenceOk) }
 }
 
 Write-Host ""

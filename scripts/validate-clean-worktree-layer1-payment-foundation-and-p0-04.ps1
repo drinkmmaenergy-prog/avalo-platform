@@ -255,7 +255,23 @@ $allowIam01b1EmuLifecycle = @(
   'scripts/lib/EmulatorLifecycle.ps1',
   'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',
   'scripts/tests/strict-jest-parser.tests.ps1')                     # R5: adversarial strict Jest parser self-tests
-$allow = @($allowLayer0 + $allowR3ac + $allowTransition + $allowR3resume + $allowP0_01 + $allowP0_02 + $allowIam01a + $allowIam01b + $allowIam01b1EmuLifecycle)
+# Authorized P0-IAM-01B1 R8 EOL determinism repair. ONE new repository-root file, exact literal path only.
+# The repository declared no text attributes, so a checkout's bytes were decided by the reader's core.autocrlf:
+# all nine security-pinned PowerShell files hashed differently between autocrlf=true and false, and the SHA-256
+# pin over scripts/lib/RuntimeLogScan.ps1 in the layer-0 validator failed on a default-Windows checkout of an
+# unmodified commit. .gitattributes marks exactly that population `text eol=lf` so checked-out bytes equal the
+# canonical blob under any configuration. It is listed here because this gate enumerates untracked files and
+# must not accept an unauthorized new root file silently - the change is declared, not exempted.
+$allowIam01b1R8Eol = @('.gitattributes')
+# Authorized P0-IAM-01B1 R8 TRUST-CHILD EVIDENCE repair: a shared child evidence retention/adjudication contract
+# and its adversarial self-test harness, added after an audit found seven trust-critical relationships in which a
+# parent validator destroyed the evidence for its own failing child. Exact literal paths only; declared here
+# because this gate enumerates untracked files and must not silently accept a new one.
+$allowIam01b1R8TrustEvidence = @(
+  'scripts/lib/TrustedChildEvidence.ps1',
+  'scripts/tests/trusted-child-evidence.tests.ps1',
+  'scripts/tests/tce-loader-trust.tests.ps1')
+$allow = @($allowLayer0 + $allowR3ac + $allowTransition + $allowR3resume + $allowP0_01 + $allowP0_02 + $allowIam01a + $allowIam01b + $allowIam01b1EmuLifecycle + $allowIam01b1R8Eol + $allowIam01b1R8TrustEvidence)
 
 # ---- Checkout path classification (machine-readable, embedded) ----
 # path::symbol|classification

@@ -168,6 +168,28 @@ $p0_iam01b1EmuLifecycleAllow = @(
   'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',        # test: adversarial lifecycle self-test harness
   'scripts/tests/strict-jest-parser.tests.ps1'                      # test: adversarial strict Jest parser self-tests (R5)
 )
+# Authorized P0-IAM-01B1 R8 TRUST-CHILD EVIDENCE repair. Two parent validators in this chain were found deleting
+# the evidence for their own failing children (the R1B-1 cascade transcript, the emulators:exec log, the Jest
+# reports, and two self-test harness transcripts). The repair adds a shared retention/adjudication contract and
+# its adversarial self-test harness. Exact literal paths ONLY - no scripts/lib or scripts/tests prefix acceptance.
+#
+# scripts/lib/TrustedChildEvidence.ps1 is listed for completeness even though `.gitignore:12 (lib/)` keeps it out
+# of `git status -uall` today: if that ignore rule is ever narrowed, the file must already be authorized rather
+# than suddenly failing this gate.
+$p0_iam01b1R8TrustEvidenceAllow = @(
+  'scripts/lib/TrustedChildEvidence.ps1',                 # shared: child evidence retention + adjudication contract
+  'scripts/tests/trusted-child-evidence.tests.ps1',       # test: adversarial self-tests for that contract
+  'scripts/tests/tce-loader-trust.tests.ps1'              # test: helper byte-pin, ambient forgery and nested-eviction regressions
+)
+# Authorized P0-IAM-01B1 R8 EOL determinism repair. ONE new repository-root file, exact literal path only.
+# The repository declared no text attributes at all, so the bytes a checkout produced were decided by the
+# reader's core.autocrlf. Measured against R7, all nine security-pinned PowerShell files hashed differently
+# between autocrlf=true and false - including scripts/lib/RuntimeLogScan.ps1, whose SHA-256 is pinned by THIS
+# validator at gate 7: a default-Windows checkout of an unmodified commit produced F3C1B7E9... against the
+# pinned E686C072..., so the pin failed on bytes Git reported as clean. .gitattributes marks exactly that
+# population `text eol=lf`, making checked-out bytes equal the canonical blob under any configuration.
+# Declared here because gate 11 enumerates untracked files: a new root file must be authorized, not exempted.
+$p0_iam01b1R8EolAllow = @('.gitattributes')
 # EXACT approved Layer-1 five-file foundation set + authoritative SHA-256 (byte-exact R3 recovery;
 # source: evidence avalo-r3-payment-foundation-p0-04-r1\02-transfers-and-inventory.md). No wildcard.
 $approvedFoundation = [ordered]@{
@@ -299,7 +321,7 @@ else { Fail 'app-mobile/lib/firebase introduced' }
 Write-Host "=== 11. Git diff limited to Layer-0 + Layer-1 transition + R3 Phase D-H allowlist ==="
 $status = Invoke-GitLines @('status','--short','-uall')
 $changed = @(); foreach ($l in $status) { if ($l.Length -gt 3) { $changed += ($l.Substring(3).Trim() -replace '\\','/') } }
-$combinedAllow = @($allow + $layer1Allow + $r3PhaseDtoH + $p0_01Allow + $p0_02Allow + $p0_iam01aAllow + $p0_iam01bAllow + $p0_iam01b1EmuLifecycleAllow)
+$combinedAllow = @($allow + $layer1Allow + $r3PhaseDtoH + $p0_01Allow + $p0_02Allow + $p0_iam01aAllow + $p0_iam01bAllow + $p0_iam01b1EmuLifecycleAllow + $p0_iam01b1R8EolAllow + $p0_iam01b1R8TrustEvidenceAllow)
 $outside = @($changed | Where-Object { $_ -notin $combinedAllow })
 if ($script:gitFailed) { Fail 'allowlist enforcement — git status failed (fail-closed)' }
 elseif ($outside.Count -eq 0) { Pass ('git diff within Layer-0 + Layer-1 transition + R3 D-H allowlist ({0} changed files)' -f $changed.Count) }
