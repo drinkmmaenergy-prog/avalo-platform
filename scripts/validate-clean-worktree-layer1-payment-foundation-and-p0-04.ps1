@@ -15,12 +15,49 @@
   On FULL PASS emits (exit 0): CLEAN_WORKTREE_LAYER1_PAYMENT_FOUNDATION_AND_P0_04_PASS. Else ..._FAIL (1).
 #>
 [CmdletBinding()]
-param()
+param(
+  [string]$Repo = '',
+  [string]$ExpectedHead = '',
+  [string]$ForensicRepo = ''
+)
 $ErrorActionPreference = 'Continue'
 
-$root = 'C:\a\avalo-controlled-enablement-clean'
-$forensic = 'C:\a\avalo'
-$expectHead = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+# ── REPOSITORY IDENTITY ────────────────────────────────────────────────────────────────────────────────────
+# Identity used to be three hardcoded literals: the authoring worktree path, its previous HEAD, and a second
+# "forensic" repository. That made this validator unable to certify anything except the machine it was written
+# on - a clean checkout of the very checkpoint it is supposed to bless would fail its own identity gate, or
+# silently read the authoring worktree instead. A validator that cannot run against the artifact under review
+# is not producing closure evidence.
+#
+# Identity is now EXPLICIT INPUT with a fail-closed contract, and the mode actually used is printed so nobody
+# has to infer which repository was read. The checks are not weakened: an explicit run must still name the
+# exact commit it expects, and HEAD must equal it.
+$AUTHORING_ROOT     = 'C:\a\avalo-controlled-enablement-clean'
+$AUTHORING_FORENSIC = 'C:\a\avalo'
+$AUTHORING_HEAD     = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+if ($Repo) {
+  $IDENTITY_MODE = 'EXPLICIT'
+  $rp = (Resolve-Path -LiteralPath $Repo -ErrorAction SilentlyContinue)
+  if (-not $rp) { Write-Host ("GATE FAIL: -Repo does not resolve: " + $Repo); exit 1 }
+  $root = $rp.Path.TrimEnd('\')
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { Write-Host ("GATE FAIL: -Repo is not a Git repository: " + $root); exit 1 }
+  # In explicit mode the expected commit is mandatory. Without it the gate would accept whatever happened to
+  # be checked out, which is the opposite of an identity control.
+  if (-not ($ExpectedHead -match '^[0-9a-fA-F]{40}$')) { Write-Host 'GATE FAIL: -ExpectedHead must be a 40-hex commit id in explicit mode'; exit 1 }
+  $expectHead = $ExpectedHead.ToLowerInvariant()
+  # The forensic cross-check is an authoring-worktree control: a second copy whose HEAD must match. It has no
+  # meaning against an immutable checkpoint, so it applies only when a forensic root is supplied.
+  $forensic = $ForensicRepo
+} else {
+  $IDENTITY_MODE = 'AUTHORING_DEFAULT'
+  $root       = $AUTHORING_ROOT
+  $forensic   = $AUTHORING_FORENSIC
+  $expectHead = $AUTHORING_HEAD
+}
+Write-Host ("IDENTITY_MODE=" + $IDENTITY_MODE)
+Write-Host ("IDENTITY_ROOT=" + $root)
+Write-Host ("IDENTITY_EXPECTED_HEAD=" + $expectHead)
+Write-Host ("IDENTITY_FORENSIC=" + $(if ($forensic) { $forensic } else { 'NOT_SUPPLIED' }))
 $fnroot = Join-Path $root 'functions'
 $exit = 0
 function Fail([string]$m) { Write-Host ("GATE FAIL: {0}" -f $m); $script:exit = 1 }
@@ -255,7 +292,23 @@ $allowIam01b1EmuLifecycle = @(
   'scripts/lib/EmulatorLifecycle.ps1',
   'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',
   'scripts/tests/strict-jest-parser.tests.ps1')                     # R5: adversarial strict Jest parser self-tests
-$allow = @($allowLayer0 + $allowR3ac + $allowTransition + $allowR3resume + $allowP0_01 + $allowP0_02 + $allowIam01a + $allowIam01b + $allowIam01b1EmuLifecycle)
+# Authorized P0-IAM-01B1 R8 EOL determinism repair. ONE new repository-root file, exact literal path only.
+# The repository declared no text attributes, so a checkout's bytes were decided by the reader's core.autocrlf:
+# all nine security-pinned PowerShell files hashed differently between autocrlf=true and false, and the SHA-256
+# pin over scripts/lib/RuntimeLogScan.ps1 in the layer-0 validator failed on a default-Windows checkout of an
+# unmodified commit. .gitattributes marks exactly that population `text eol=lf` so checked-out bytes equal the
+# canonical blob under any configuration. It is listed here because this gate enumerates untracked files and
+# must not accept an unauthorized new root file silently - the change is declared, not exempted.
+$allowIam01b1R8Eol = @('.gitattributes')
+# Authorized P0-IAM-01B1 R8 TRUST-CHILD EVIDENCE repair: a shared child evidence retention/adjudication contract
+# and its adversarial self-test harness, added after an audit found seven trust-critical relationships in which a
+# parent validator destroyed the evidence for its own failing child. Exact literal paths only; declared here
+# because this gate enumerates untracked files and must not silently accept a new one.
+$allowIam01b1R8TrustEvidence = @(
+  'scripts/lib/TrustedChildEvidence.ps1',
+  'scripts/tests/trusted-child-evidence.tests.ps1',
+  'scripts/tests/tce-loader-trust.tests.ps1')
+$allow = @($allowLayer0 + $allowR3ac + $allowTransition + $allowR3resume + $allowP0_01 + $allowP0_02 + $allowIam01a + $allowIam01b + $allowIam01b1EmuLifecycle + $allowIam01b1R8Eol + $allowIam01b1R8TrustEvidence)
 
 # ---- Checkout path classification (machine-readable, embedded) ----
 # path::symbol|classification
@@ -277,16 +330,48 @@ $head = (& git -C $root rev-parse HEAD) 2>$null
 $sym = (& git -C $root symbolic-ref -q HEAD) 2>$null
 $fhead = (& git -C $forensic rev-parse HEAD) 2>$null
 $staged = @(& git -C $root diff --cached --name-only | Where-Object { $_.Trim() -ne '' }).Count
-$idOk = ($top -replace '\\','/') -eq 'C:/a/avalo-controlled-enablement-clean' -and $head -eq $expectHead -and -not $sym -and $fhead -eq $expectHead
+$idOk = ($top -replace '\\','/') -eq ($root -replace '\\','/') -and $head -eq $expectHead -and -not $sym -and ($(if ($forensic) { $fhead -eq $expectHead } else { $true }))
 if ($idOk -and $staged -eq 0) { Pass ("identity + detached HEAD + forensic untouched + staged={0}" -f $staged) } else { Fail ("identity/staged (top={0} head={1} sym={2} fhead={3} staged={4})" -f $top,$head,$sym,$fhead,$staged) }
+
+# ---- child validator invocation (file-redirected, persisted) ---------------------------------------------
+# NEVER `*>&1` into a variable: that tangles the stdio of the `firebase emulators:exec` processes the child
+# spawns, so its nested suites can silently fail and its markers never appear - the failure mode
+# validate-p0-iam-01a documents and avoids by redirecting to a file. The transcript is also EVIDENCE: it is
+# written to a run-scoped directory, hashed, and never deleted, so a failing child can be diagnosed instead
+# of being reported as a bare non-zero exit.
+$CHILD_EVIDENCE_DIR = Join-Path $env:TEMP ('avalo-iam-child-evidence\' + 'clean-worktree-layer1-payment-foundation-and-p0-04' + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $PID)
+[void][System.IO.Directory]::CreateDirectory($CHILD_EVIDENCE_DIR)
+function Invoke-ChildValidator {
+  param([Parameter(Mandatory)][string]$ScriptPath, [Parameter(Mandatory)][string]$Name)
+  $t = Join-Path $CHILD_EVIDENCE_DIR ($Name + '.transcript.txt')
+  & $ScriptPath -Repo $root -ExpectedHead $expectHead *> $t
+  $ex = $LASTEXITCODE
+  $bytes = 0; $sha = ''; $text = ''
+  if (Test-Path -LiteralPath $t -PathType Leaf) {
+    $raw = [System.IO.File]::ReadAllBytes($t)
+    $bytes = $raw.Length
+    $h = [System.Security.Cryptography.SHA256]::Create()
+    try { $sha = ([BitConverter]::ToString($h.ComputeHash($raw)) -replace '-', '') } finally { $h.Dispose() }
+    $text = [System.IO.File]::ReadAllText($t)
+  }
+  Write-Host ("  CHILD {0}: exit={1} bytes={2} sha256={3} transcript={4}" -f $Name, $ex, $bytes, $sha, $t)
+  # A failing child says why, in the parent's own output, at the point of failure.
+  if ($ex -ne 0) {
+    foreach ($ln in @($text -split "`r?`n" | Where-Object { $_ -match 'GATE FAIL|RESULT:' } | Select-Object -First 6)) {
+      Write-Host ("    CHILD {0} >> {1}" -f $Name, $ln)
+    }
+  }
+  return [pscustomobject]@{ Exit = $ex; Text = $text; Transcript = $t; Sha256 = $sha; Bytes = $bytes }
+}
 
 Write-Host "=== 2. Transition closure (STRICT: transition validator must genuinely exit 0 + state + marker) ==="
 # RECONCILIATION (task ...-TRANSITION-ALLOWLIST-RECONCILIATION-R1-FINAL): the prior 'allowlist superseded'
 # exception is REMOVED. The subordinate transition validator's allowlist was reconciled to include the
 # authorized R3 Phase D-H files, so it now genuinely exits 0. This gate requires a real exit 0 + state +
 # marker; a failed subordinate validator is NEVER accepted by parsing partial output.
-$tOut = & (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') *>&1
-$tExit = $LASTEXITCODE
+$tOutChild = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') -Name 'CHILD_CLEAN_WORKTREE_LAYER0_SUPPORT'
+$tExit = $tOutChild.Exit
+$tOut = $tOutChild.Text
 $tState = ($tOut | Select-String -SimpleMatch 'FINAL TRANSITION STATE: AUTHORIZED_LAYER1_TRANSITION').Count -gt 0
 $tMarker = ($tOut | Select-String -SimpleMatch 'RESULT: CLEAN_WORKTREE_LAYER0_TO_LAYER1_TRANSITION_CONTRACT_PASS').Count -gt 0
 if ($tExit -eq 0 -and $tState -and $tMarker) {

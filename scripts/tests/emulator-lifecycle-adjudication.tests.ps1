@@ -21,6 +21,19 @@ param()
 $ErrorActionPreference = 'Stop'
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+function Get-LifecycleFileSha256 {
+  # R8: Get-FileHash is NOT dependable under Windows PowerShell 5.1. When 5.1 is launched from a PowerShell 7
+  # process it inherits $env:PSModulePath with 7's module directory first, so `Microsoft.PowerShell.Utility`
+  # resolves to the 7.0.0.0 Core module and Get-FileHash disappears from the session entirely. With
+  # $ErrorActionPreference='Stop' the resulting CommandNotFoundException is terminating, which turned the
+  # ambiguity check below into a check that threw for a reason unrelated to ambiguity. The BCL hash primitive
+  # is present on both runtimes and cannot be shadowed by module path order.
+  param([Parameter(Mandatory)][string]$Path)
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try { return ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($Path))) -replace '-', '') }
+  finally { $sha.Dispose() }
+}
+
 function Resolve-LifecycleHelper {
   # Deterministic, CWD-independent discovery of EmulatorLifecycle.ps1 relative to $FromDir. Exactly one match required;
   # zero -> throw; multiple non-identical -> throw; multiple byte-identical -> documented precedence (repository-native).
@@ -32,7 +45,7 @@ function Resolve-LifecycleHelper {
   $existing = @($candidates | Where-Object { Test-Path -LiteralPath $_ })
   if ($existing.Count -eq 0) { throw "LIFECYCLE_HELPER_NOT_FOUND: [$($candidates -join '; ')]" }
   if ($existing.Count -gt 1) {
-    $distinct = @($existing | ForEach-Object { (Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash } | Sort-Object -Unique)
+    $distinct = @($existing | ForEach-Object { Get-LifecycleFileSha256 -Path $_ } | Sort-Object -Unique)
     if ($distinct.Count -gt 1) { throw 'LIFECYCLE_HELPER_AMBIGUOUS: non-identical candidates' }
   }
   return (Resolve-Path -LiteralPath $existing[0]).Path
@@ -214,8 +227,13 @@ New-Item -ItemType Directory -Force -Path (Join-Path $ambBase 'lib') | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $ambBase 'tests') | Out-Null
 Copy-Item -LiteralPath $realHelper -Destination (Join-Path $ambBase 'lib\EmulatorLifecycle.ps1')
 Set-Content -LiteralPath (Join-Path $ambBase 'tests\EmulatorLifecycle.ps1') -Value '# different content'
-$ambThrew = $false; try { Resolve-LifecycleHelper -FromDir (Join-Path $ambBase 'tests') | Out-Null } catch { $ambThrew = $true }
+$ambThrew = $false; $ambMsg = ''
+try { Resolve-LifecycleHelper -FromDir (Join-Path $ambBase 'tests') | Out-Null } catch { $ambThrew = $true; $ambMsg = [string]$_.Exception.Message }
 Check '80 ambiguous non-identical candidates fail closed' $ambThrew $true
+# R8: "it threw" is not the assertion - WHY it threw is. Under Windows PowerShell 5.1 with a PowerShell 7
+# $env:PSModulePath, the old Get-FileHash-based implementation threw CommandNotFoundException here and this
+# check passed for a reason that had nothing to do with ambiguity. Bind it to the ambiguity verdict itself.
+Check '80b ambiguity rejection cites the ambiguity, not an incidental error' ($ambMsg -like '*LIFECYCLE_HELPER_AMBIGUOUS*') $true
 $idBase = Join-Path $tmp ('ident-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path (Join-Path $idBase 'lib') | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $idBase 'tests') | Out-Null
@@ -226,6 +244,23 @@ Check '81 byte-identical candidates resolve by precedence' ((-not $idThrew) -and
 $invThrew = $false; $invResult = $null
 try { . (Resolve-LifecycleHelper -FromDir $flatBase); $invResult = Test-EmulatorLifecycleHealthy -CliExit 0 -LogText $OK -Ports $fp -PersistDir $persist } catch { $invThrew = $true }
 Check '82 clean flat helper dot-sources and executes' ((-not $invThrew) -and ($invResult -eq $true)) $true
+
+# R8 PERMANENT REGRESSION - Microsoft.PowerShell.Utility shadowing.
+# Windows PowerShell 5.1 started from a PowerShell 7 process inherits 7's $env:PSModulePath, resolves
+# Microsoft.PowerShell.Utility to the 7.0.0.0 Core module and loses Get-FileHash. Helper discovery must not
+# depend on a cmdlet that a parent process can remove. Simulate the removal by hiding the command name and
+# proving the resolver still distinguishes identical from non-identical candidates for the right reason.
+$shadowOk = $false; $shadowAmbOk = $false
+function Get-FileHash { throw 'SHADOWED: Get-FileHash unavailable (simulates 5.1 under a PS7 PSModulePath)' }
+try {
+  $rs = Resolve-LifecycleHelper -FromDir (Join-Path $idBase 'tests')
+  $shadowOk = ((Split-Path (Split-Path $rs -Parent) -Leaf) -eq 'lib')
+  $sMsg = ''
+  try { Resolve-LifecycleHelper -FromDir (Join-Path $ambBase 'tests') | Out-Null } catch { $sMsg = [string]$_.Exception.Message }
+  $shadowAmbOk = ($sMsg -like '*LIFECYCLE_HELPER_AMBIGUOUS*')
+} catch { $shadowOk = $false } finally { Remove-Item -LiteralPath Function:\Get-FileHash -Force -ErrorAction SilentlyContinue }
+Check '83 helper resolution survives Get-FileHash being unavailable' $shadowOk $true
+Check '84 ambiguity still rejected for the right reason without Get-FileHash' $shadowAmbOk $true
 
 try { if (Test-Path -LiteralPath $tmp) { Remove-Item -LiteralPath $tmp -Recurse -Force } } catch {}
 try { if (Test-Path -LiteralPath $persist) { Remove-Item -LiteralPath $persist -Recurse -Force } } catch {}

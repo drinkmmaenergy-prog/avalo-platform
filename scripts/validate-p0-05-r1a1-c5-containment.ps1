@@ -10,11 +10,48 @@
   P0_05_R1A1_C5_CONTAINMENT_PASS ; else ..._FAIL (1). P0-05 remains OPEN (ENGINE_A active risk not closed here).
 #>
 [CmdletBinding()]
-param()
+param(
+  [string]$Repo = '',
+  [string]$ExpectedHead = '',
+  [string]$ForensicRepo = ''
+)
 $ErrorActionPreference = 'Continue'
-$root = 'C:\a\avalo-controlled-enablement-clean'
-$forensic = 'C:\a\avalo'
-$expectHead = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+# ── REPOSITORY IDENTITY ────────────────────────────────────────────────────────────────────────────────────
+# Identity used to be three hardcoded literals: the authoring worktree path, its previous HEAD, and a second
+# "forensic" repository. That made this validator unable to certify anything except the machine it was written
+# on - a clean checkout of the very checkpoint it is supposed to bless would fail its own identity gate, or
+# silently read the authoring worktree instead. A validator that cannot run against the artifact under review
+# is not producing closure evidence.
+#
+# Identity is now EXPLICIT INPUT with a fail-closed contract, and the mode actually used is printed so nobody
+# has to infer which repository was read. The checks are not weakened: an explicit run must still name the
+# exact commit it expects, and HEAD must equal it.
+$AUTHORING_ROOT     = 'C:\a\avalo-controlled-enablement-clean'
+$AUTHORING_FORENSIC = 'C:\a\avalo'
+$AUTHORING_HEAD     = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+if ($Repo) {
+  $IDENTITY_MODE = 'EXPLICIT'
+  $rp = (Resolve-Path -LiteralPath $Repo -ErrorAction SilentlyContinue)
+  if (-not $rp) { Write-Host ("GATE FAIL: -Repo does not resolve: " + $Repo); exit 1 }
+  $root = $rp.Path.TrimEnd('\')
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { Write-Host ("GATE FAIL: -Repo is not a Git repository: " + $root); exit 1 }
+  # In explicit mode the expected commit is mandatory. Without it the gate would accept whatever happened to
+  # be checked out, which is the opposite of an identity control.
+  if (-not ($ExpectedHead -match '^[0-9a-fA-F]{40}$')) { Write-Host 'GATE FAIL: -ExpectedHead must be a 40-hex commit id in explicit mode'; exit 1 }
+  $expectHead = $ExpectedHead.ToLowerInvariant()
+  # The forensic cross-check is an authoring-worktree control: a second copy whose HEAD must match. It has no
+  # meaning against an immutable checkpoint, so it applies only when a forensic root is supplied.
+  $forensic = $ForensicRepo
+} else {
+  $IDENTITY_MODE = 'AUTHORING_DEFAULT'
+  $root       = $AUTHORING_ROOT
+  $forensic   = $AUTHORING_FORENSIC
+  $expectHead = $AUTHORING_HEAD
+}
+Write-Host ("IDENTITY_MODE=" + $IDENTITY_MODE)
+Write-Host ("IDENTITY_ROOT=" + $root)
+Write-Host ("IDENTITY_EXPECTED_HEAD=" + $expectHead)
+Write-Host ("IDENTITY_FORENSIC=" + $(if ($forensic) { $forensic } else { 'NOT_SUPPLIED' }))
 $fnroot = Join-Path $root 'functions'
 $exit = 0
 function Fail([string]$m) { Write-Host ("GATE FAIL: {0}" -f $m); $script:exit = 1 }
@@ -130,13 +167,39 @@ $R1A1_ALLOW = @(
   'scripts/validate-p0-05-r1a1-c5-containment.ps1'
 )
 # UNCHANGED pins (ENGINE_A + retained c5 logic + general messaging + rules).
+# CANONICAL (LF-NORMALIZED) CONTENT HASHES, not raw disk bytes.
+#
+# These six paths are not part of the R8 change set; the pins assert that the retained c5 logic, ENGINE_A,
+# general messaging and the rules file were NOT touched. They used to pin the RAW bytes on disk, which are
+# not a property of the file - they are a property of the checkout. The values were taken on a working clone
+# with core.autocrlf=true, so they encoded CRLF; a clean checkout of the R8 checkpoint materialises the very
+# same commits as LF and all six pins failed, reporting six unchanged files as CHANGED. That is what the
+# first real clean-checkpoint IAM run reported after the missing-source defect was fixed.
+#
+# The R8 .gitattributes repair fixes this for the security population by making its checkout bytes
+# deterministic. It deliberately does not cover application sources: a repository-wide eol rule would
+# renormalise unrelated files and drag them into this security checkpoint's delta. So for these six the pin
+# is taken over the CANONICAL content instead - CRLF collapsed to LF, exactly the normalisation Git itself
+# applies through the clean filter - and the comparison below hashes the same way. The claim "this file is
+# unchanged" is then true under any core.autocrlf, on any platform, which is what the claim always meant.
 $UNCHANGED = @{
-  'functions/src/chatSystemNextGen.ts'                 = '26cc93437dd52e44c948c288ae1b79093471d21bd5229d135b894aa6b836bdcf'
-  'functions/src/canonical-chat-engine.ts'             = '637285afadf22667d8c4e0bd7c3f462e858e70903b7dd44bbb1f66c4b87c37db'
-  'functions/src/chat/canonicalChatStateMachineV3.ts'  = '4a3cfd5688deab0de4ca0cec35df7fe395eda7d223330d5730b6919b08735488'
-  'functions/src/chat/canonicalMultiplierTiers.ts'     = 'f6c2b264985a29531d704fc74470369b56a0541705d06eee3dd17f1b653cdf4f'
-  'infrastructure/firebase/firestore.rules'            = '77f47600e58253518be66964738591b9fed78b46e13f377bd43d1f5a6e2f4e33'
-  'app-web/src/app/messages/page.tsx'                  = 'c2b7eaee58134f5afa73b12682b66971babed49d625ff68c2e85b6a395305e8d'
+  'functions/src/chatSystemNextGen.ts'                 = '09d1a946ea1d236f6d5f80d0a67c7c10580154ac8e9bf8c3ba68991b45271597'
+  'functions/src/canonical-chat-engine.ts'             = '9c6eed6cb0a4053c5fdb72c9f157fe5f1c78224b9eafea7a6e33f9aa3edd3dff'
+  'functions/src/chat/canonicalChatStateMachineV3.ts'  = 'efe5843c2979b0f2f5db5d5ca08b082a515e6691bba865a9ebfb11f8d13ede94'
+  'functions/src/chat/canonicalMultiplierTiers.ts'     = '58ba437e5ebe869a2f5858533bd216709d3182961f602d8bccfd29b20c210b18'
+  'infrastructure/firebase/firestore.rules'            = 'e19fa771653d0f2d00b5a8884866098f58ef7733c394b1f06d198f7f6f4ae08c'
+  'app-web/src/app/messages/page.tsx'                  = '779d0f5d860a0d08349864e47f1dc148e9e9856e281c41ec914c0d09405a7826'
+}
+# CRLF -> LF only (a lone CR is left alone, as Git leaves it), then SHA-256 over the result.
+function Get-CanonicalContentSha256([string]$Path) {
+  $b = [System.IO.File]::ReadAllBytes($Path)
+  $out = New-Object System.Collections.Generic.List[byte]
+  for ($i = 0; $i -lt $b.Length; $i++) {
+    if ($b[$i] -eq 13 -and ($i + 1) -lt $b.Length -and $b[$i + 1] -eq 10) { continue }
+    $out.Add($b[$i])
+  }
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try { return ([BitConverter]::ToString($sha.ComputeHash($out.ToArray())) -replace '-', '').ToLower() } finally { $sha.Dispose() }
 }
 
 Write-Host "=== GATE 1. Identity + zero staged + bounded diff ==="
@@ -146,7 +209,7 @@ $changed = @(); foreach ($l in @(& git -C $root status --short -uall)) { if ($l.
 $r1a1Changed = @($changed | Where-Object { $_ -match 'c5DirectChat|canonicalDirectChatCallables|p0-05-r1a1|validate-p0-05-r1a1' })
 $outside = @($r1a1Changed | Where-Object { $_ -notin $R1A1_ALLOW })
 $runtimeChanged = @($r1a1Changed | Where-Object { $_ -match '^functions/src/' -and $_ -notmatch '__tests__' })
-$idOk = ((($top -replace '\\', '/') -eq 'C:/a/avalo-controlled-enablement-clean') -and $head -eq $expectHead -and -not $sym -and $fhead -eq $expectHead -and $staged -eq 0)
+$idOk = ((($top -replace '\\','/') -eq ($root -replace '\\','/')) -and $head -eq $expectHead -and -not $sym -and ($(if ($forensic) { $fhead -eq $expectHead } else { $true })) -and $staged -eq 0)
 if ($idOk -and $outside.Count -eq 0 -and $runtimeChanged.Count -le 3) { Pass ("identity + detached + forensic + staged=0 + R1A-1 diff within allowlist (runtime files={0}: {1})" -f $runtimeChanged.Count, ($r1a1Changed -join ', ')) }
 else { $outside | ForEach-Object { Write-Host "  OUTSIDE: $_" }; Fail ("identity/diff (staged={0} runtimeChanged={1})" -f $staged, $runtimeChanged.Count) }
 
@@ -154,14 +217,45 @@ Write-Host "=== GATE 1b. No package/lock drift INTRODUCED by R1A-1 (pre-existing
 $pkgHit = @($r1a1Changed | Where-Object { $_ -match 'package\.json$|package-lock\.json$|pnpm-lock|yarn\.lock' })
 if ($pkgHit.Count -eq 0) { Pass 'R1A-1 introduced no package/lock changes' } else { $pkgHit | ForEach-Object { Write-Host "  PKG: $_" }; Fail 'package/lock drift' }
 
+# ---- child validator invocation (file-redirected, persisted) ---------------------------------------------
+# NEVER `*>&1` into a variable: that tangles the stdio of the `firebase emulators:exec` processes the child
+# spawns, so its nested suites can silently fail and its markers never appear - the failure mode
+# validate-p0-iam-01a documents and avoids by redirecting to a file. The transcript is also EVIDENCE: it is
+# written to a run-scoped directory, hashed, and never deleted, so a failing child can be diagnosed instead
+# of being reported as a bare non-zero exit.
+$CHILD_EVIDENCE_DIR = Join-Path $env:TEMP ('avalo-iam-child-evidence\' + 'p0-05-r1a1-c5-containment' + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $PID)
+[void][System.IO.Directory]::CreateDirectory($CHILD_EVIDENCE_DIR)
+function Invoke-ChildValidator {
+  param([Parameter(Mandatory)][string]$ScriptPath, [Parameter(Mandatory)][string]$Name)
+  $t = Join-Path $CHILD_EVIDENCE_DIR ($Name + '.transcript.txt')
+  & $ScriptPath -Repo $root -ExpectedHead $expectHead *> $t
+  $ex = $LASTEXITCODE
+  $bytes = 0; $sha = ''; $text = ''
+  if (Test-Path -LiteralPath $t -PathType Leaf) {
+    $raw = [System.IO.File]::ReadAllBytes($t)
+    $bytes = $raw.Length
+    $h = [System.Security.Cryptography.SHA256]::Create()
+    try { $sha = ([BitConverter]::ToString($h.ComputeHash($raw)) -replace '-', '') } finally { $h.Dispose() }
+    $text = [System.IO.File]::ReadAllText($t)
+  }
+  Write-Host ("  CHILD {0}: exit={1} bytes={2} sha256={3} transcript={4}" -f $Name, $ex, $bytes, $sha, $t)
+  # A failing child says why, in the parent's own output, at the point of failure.
+  if ($ex -ne 0) {
+    foreach ($ln in @($text -split "`r?`n" | Where-Object { $_ -match 'GATE FAIL|RESULT:' } | Select-Object -First 6)) {
+      Write-Host ("    CHILD {0} >> {1}" -f $Name, $ln)
+    }
+  }
+  return [pscustomobject]@{ Exit = $ex; Text = $text; Transcript = $t; Sha256 = $sha; Bytes = $bytes }
+}
+
 Write-Host "=== GATE 2. Prior closed validators still green ==="
-$tv = & (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') *>&1; $tvExit = $LASTEXITCODE
+$tvChild = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') -Name 'CHILD_CLEAN_WORKTREE_LAYER0_SUPPORT'; $tvExit = $tvChild.Exit; $tv = $tvChild.Text
 $tvOk = ($tvExit -eq 0) -and (($tv | Select-String -SimpleMatch 'RESULT: CLEAN_WORKTREE_LAYER0_TO_LAYER1_TRANSITION_CONTRACT_PASS').Count -gt 0)
-$l1 = & (Join-Path $root 'scripts\validate-clean-worktree-layer1-payment-foundation-and-p0-04.ps1') *>&1; $l1Exit = $LASTEXITCODE
+$l1Child = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-clean-worktree-layer1-payment-foundation-and-p0-04.ps1') -Name 'CHILD_CLEAN_WORKTREE_LAYER1_PAYMENT_FOUNDATION_AND_P0_04'; $l1Exit = $l1Child.Exit; $l1 = $l1Child.Text
 $l1Ok = ($l1Exit -eq 0) -and (($l1 | Select-String -SimpleMatch 'RESULT: CLEAN_WORKTREE_LAYER1_PAYMENT_FOUNDATION_AND_P0_04_PASS').Count -gt 0)
-$p01 = & (Join-Path $root 'scripts\validate-p0-01-advertiser-credit-authorization.ps1') *>&1; $p01Exit = $LASTEXITCODE
+$p01Child = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-p0-01-advertiser-credit-authorization.ps1') -Name 'CHILD_P0_01_ADVERTISER_CREDIT_AUTHORIZATION'; $p01Exit = $p01Child.Exit; $p01 = $p01Child.Text
 $p01Ok = ($p01Exit -eq 0) -and (($p01 | Select-String -SimpleMatch 'RESULT: P0_01_ADVERTISER_CREDIT_AUTHORIZATION_PASS').Count -gt 0)
-$p02 = & (Join-Path $root 'scripts\validate-p0-02-ai-billing-preauthorization.ps1') *>&1; $p02Exit = $LASTEXITCODE
+$p02Child = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-p0-02-ai-billing-preauthorization.ps1') -Name 'CHILD_P0_02_AI_BILLING_PREAUTHORIZATION'; $p02Exit = $p02Child.Exit; $p02 = $p02Child.Text
 $p02Ok = ($p02Exit -eq 0) -and (($p02 | Select-String -SimpleMatch 'RESULT: P0_02_AI_BILLING_PREAUTHORIZATION_PASS').Count -gt 0)
 if ($tvOk -and $l1Ok -and $p01Ok -and $p02Ok) { Pass ("prior validators green (tv={0} l1={1} p01={2} p02={3})" -f $tvExit, $l1Exit, $p01Exit, $p02Exit) } else { Fail ("prior validators (tv={0} l1={1} p01={2} p02={3})" -f $tvExit, $l1Exit, $p01Exit, $p02Exit) }
 
@@ -186,7 +280,7 @@ if ($g4bad.Count -eq 0) { Pass 'c5 guard: deterministic unavailable, not env-tog
 
 Write-Host "=== GATE 11a. Retained c5 logic + ENGINE_A + general messaging + rules UNCHANGED ==="
 $unchangedBad = @()
-foreach ($k in $UNCHANGED.Keys) { $p = Join-Path $root ($k -replace '/', '\'); $h = (Get-FileHash -Algorithm SHA256 $p).Hash.ToLower(); if ($h -ne $UNCHANGED[$k]) { $unchangedBad += $k } }
+foreach ($k in $UNCHANGED.Keys) { $p = Join-Path $root ($k -replace '/', '\'); $h = Get-CanonicalContentSha256 $p; if ($h -ne $UNCHANGED[$k]) { $unchangedBad += $k } }
 if ($unchangedBad.Count -eq 0) { Pass 'retained c5 logic (stateMachineV3, multiplierTiers) + ENGINE_A (chatSystemNextGen, canonical-chat-engine) + messages/page.tsx + firestore.rules BYTE-IDENTICAL' } else { $unchangedBad | ForEach-Object { Write-Host "  CHANGED: $_" }; Fail 'unchanged-file pins' }
 
 Write-Host "=== GATE parser self-tests ==="

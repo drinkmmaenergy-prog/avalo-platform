@@ -22,12 +22,49 @@
   HISTORICAL baseline evidence, never as sole proof of the transition state. Else ..._FAIL (exit 1).
 #>
 [CmdletBinding()]
-param()
+param(
+  [string]$Repo = '',
+  [string]$ExpectedHead = '',
+  [string]$ForensicRepo = ''
+)
 $ErrorActionPreference = 'Continue'
 
-$root      = 'C:\a\avalo-controlled-enablement-clean'
-$forensic  = 'C:\a\avalo'
-$expectHead = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+# ── REPOSITORY IDENTITY ────────────────────────────────────────────────────────────────────────────────────
+# Identity used to be three hardcoded literals: the authoring worktree path, its previous HEAD, and a second
+# "forensic" repository. That made this validator unable to certify anything except the machine it was written
+# on - a clean checkout of the very checkpoint it is supposed to bless would fail its own identity gate, or
+# silently read the authoring worktree instead. A validator that cannot run against the artifact under review
+# is not producing closure evidence.
+#
+# Identity is now EXPLICIT INPUT with a fail-closed contract, and the mode actually used is printed so nobody
+# has to infer which repository was read. The checks are not weakened: an explicit run must still name the
+# exact commit it expects, and HEAD must equal it.
+$AUTHORING_ROOT     = 'C:\a\avalo-controlled-enablement-clean'
+$AUTHORING_FORENSIC = 'C:\a\avalo'
+$AUTHORING_HEAD     = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+if ($Repo) {
+  $IDENTITY_MODE = 'EXPLICIT'
+  $rp = (Resolve-Path -LiteralPath $Repo -ErrorAction SilentlyContinue)
+  if (-not $rp) { Write-Host ("GATE FAIL: -Repo does not resolve: " + $Repo); exit 1 }
+  $root = $rp.Path.TrimEnd('\')
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { Write-Host ("GATE FAIL: -Repo is not a Git repository: " + $root); exit 1 }
+  # In explicit mode the expected commit is mandatory. Without it the gate would accept whatever happened to
+  # be checked out, which is the opposite of an identity control.
+  if (-not ($ExpectedHead -match '^[0-9a-fA-F]{40}$')) { Write-Host 'GATE FAIL: -ExpectedHead must be a 40-hex commit id in explicit mode'; exit 1 }
+  $expectHead = $ExpectedHead.ToLowerInvariant()
+  # The forensic cross-check is an authoring-worktree control: a second copy whose HEAD must match. It has no
+  # meaning against an immutable checkpoint, so it applies only when a forensic root is supplied.
+  $forensic = $ForensicRepo
+} else {
+  $IDENTITY_MODE = 'AUTHORING_DEFAULT'
+  $root       = $AUTHORING_ROOT
+  $forensic   = $AUTHORING_FORENSIC
+  $expectHead = $AUTHORING_HEAD
+}
+Write-Host ("IDENTITY_MODE=" + $IDENTITY_MODE)
+Write-Host ("IDENTITY_ROOT=" + $root)
+Write-Host ("IDENTITY_EXPECTED_HEAD=" + $expectHead)
+Write-Host ("IDENTITY_FORENSIC=" + $(if ($forensic) { $forensic } else { 'NOT_SUPPLIED' }))
 $expectBranch = 'stabilization/build-green-2026-04-15'
 $runtimeLogScanSha = 'E686C07275027E75ACAC6DAEADFB2C72B640C15DC2B1CCE1FD875E663B503B71'
 $exit = 0
@@ -168,6 +205,28 @@ $p0_iam01b1EmuLifecycleAllow = @(
   'scripts/tests/emulator-lifecycle-adjudication.tests.ps1',        # test: adversarial lifecycle self-test harness
   'scripts/tests/strict-jest-parser.tests.ps1'                      # test: adversarial strict Jest parser self-tests (R5)
 )
+# Authorized P0-IAM-01B1 R8 TRUST-CHILD EVIDENCE repair. Two parent validators in this chain were found deleting
+# the evidence for their own failing children (the R1B-1 cascade transcript, the emulators:exec log, the Jest
+# reports, and two self-test harness transcripts). The repair adds a shared retention/adjudication contract and
+# its adversarial self-test harness. Exact literal paths ONLY - no scripts/lib or scripts/tests prefix acceptance.
+#
+# scripts/lib/TrustedChildEvidence.ps1 is listed for completeness even though `.gitignore:12 (lib/)` keeps it out
+# of `git status -uall` today: if that ignore rule is ever narrowed, the file must already be authorized rather
+# than suddenly failing this gate.
+$p0_iam01b1R8TrustEvidenceAllow = @(
+  'scripts/lib/TrustedChildEvidence.ps1',                 # shared: child evidence retention + adjudication contract
+  'scripts/tests/trusted-child-evidence.tests.ps1',       # test: adversarial self-tests for that contract
+  'scripts/tests/tce-loader-trust.tests.ps1'              # test: helper byte-pin, ambient forgery and nested-eviction regressions
+)
+# Authorized P0-IAM-01B1 R8 EOL determinism repair. ONE new repository-root file, exact literal path only.
+# The repository declared no text attributes at all, so the bytes a checkout produced were decided by the
+# reader's core.autocrlf. Measured against R7, all nine security-pinned PowerShell files hashed differently
+# between autocrlf=true and false - including scripts/lib/RuntimeLogScan.ps1, whose SHA-256 is pinned by THIS
+# validator at gate 7: a default-Windows checkout of an unmodified commit produced F3C1B7E9... against the
+# pinned E686C072..., so the pin failed on bytes Git reported as clean. .gitattributes marks exactly that
+# population `text eol=lf`, making checked-out bytes equal the canonical blob under any configuration.
+# Declared here because gate 11 enumerates untracked files: a new root file must be authorized, not exempted.
+$p0_iam01b1R8EolAllow = @('.gitattributes')
 # EXACT approved Layer-1 five-file foundation set + authoritative SHA-256 (byte-exact R3 recovery;
 # source: evidence avalo-r3-payment-foundation-p0-04-r1\02-transfers-and-inventory.md). No wildcard.
 $approvedFoundation = [ordered]@{
@@ -190,7 +249,7 @@ $forbiddenPresent = @(
 
 Write-Host "=== 0. Repository identity (clean worktree) ==="
 $top = (& git -C $root rev-parse --show-toplevel) 2>$null
-if ($top -and ($top -replace '\\','/') -eq 'C:/a/avalo-controlled-enablement-clean') { Pass 'repository identity (clean worktree)' } else { Fail ("repository identity (got {0})" -f $top) }
+if ($top -and ($top -replace '\\','/') -eq ($root -replace '\\','/')) { Pass 'repository identity (clean worktree)' } else { Fail ("repository identity (got {0})" -f $top) }
 
 Write-Host "=== 1. Detached exact HEAD ==="
 $head = (& git -C $root rev-parse HEAD) 2>$null
@@ -200,7 +259,14 @@ if ($head -eq $expectHead -and -not $sym) { Pass 'detached exact HEAD' } else { 
 Write-Host "=== 2. Forensic source untouched ==="
 $fhead = (& git -C $forensic rev-parse HEAD) 2>$null
 $fbranch = (& git -C $forensic rev-parse --abbrev-ref HEAD) 2>$null
-if ($fhead -eq $expectHead -and $fbranch -eq $expectBranch) { Pass 'forensic source identity untouched' } else { Fail 'forensic source identity' }
+# HALF-GUARDED, AND THAT HALF WAS THE WHOLE GATE. The portable-identity repair wrapped the forensic HEAD
+# comparison in "only when a forensic root is supplied" but left the forensic BRANCH comparison outside the
+# guard. With no forensic root, `git -C '' rev-parse --abbrev-ref HEAD` returns nothing, $fbranch is empty,
+# and the gate failed - so every run that supplied -Repo/-ExpectedHead without a forensic repository failed
+# here. That is what took down all five prior validators in the R1B-1 cascade, and with them IAM-01A.
+# Both halves are now inside the same guard: the cross-check applies when there is a second repository to
+# cross-check against, and is silent when there is not.
+if ($(if ($forensic) { ($fhead -eq $expectHead) -and ($fbranch -eq $expectBranch) } else { $true })) { Pass 'forensic source identity untouched (or no forensic root supplied)' } else { Fail 'forensic source identity' }
 
 Write-Host "=== 3. functions/package.json valid JSON + no trailing NUL ==="
 $pj = Join-Path $root 'functions\package.json'
@@ -213,13 +279,28 @@ Write-Host "=== 4. package-lock consistency ==="
 $lk = Join-Path $root 'functions\package-lock.json'
 $lkOk = $true
 try {
-  $lkObj = (Get-Content $lk -Raw | ConvertFrom-Json -AsHashtable)
-  $rootRec = $lkObj.packages['']
+  # CROSS-RUNTIME JSON. Two constraints collide here:
+  #   * `-AsHashtable` DOES NOT EXIST in Windows PowerShell 5.1 (added in PowerShell 6). This file declares
+  #     `#Requires -Version 5.1`, so under 5.1 the old line threw "A parameter cannot be found that matches
+  #     parameter name 'AsHashtable'", the catch turned it into `lock parse error`, and the gate failed on a
+  #     lockfile that was perfectly consistent. Invisible while every run happened to use PowerShell 7.
+  #   * an npm lockfile names its ROOT package with the EMPTY STRING, and PowerShell 7's ConvertFrom-Json
+  #     refuses an empty property name unless -AsHashtable is used. So neither form works on both runtimes.
+  # The root key is therefore renamed to a sentinel in the TEXT before parsing - one occurrence, anchored on
+  # the exact `"": {` token - after which ordinary property access works identically on 5.1 and 7.
+  $lkText = Get-Content $lk -Raw
+  $rootKeyIdx = $lkText.IndexOf('"": {')
+  # Exactly the two quote characters of the empty key are replaced; the colon, the space and the brace that
+  # follow are part of the JSON structure and must survive untouched.
+  if ($rootKeyIdx -ge 0) { $lkText = $lkText.Remove($rootKeyIdx, 2).Insert($rootKeyIdx, '"__ROOT_PACKAGE__"') }
+  $lkObj = ($lkText | ConvertFrom-Json)
+  $rootRec = $lkObj.packages.'__ROOT_PACKAGE__'
   $pjDev = @($pjObj.devDependencies.PSObject.Properties.Name) | Sort-Object
-  $lkDev = @($rootRec.devDependencies.Keys) | Sort-Object
+  $lkDev = @($rootRec.devDependencies.PSObject.Properties.Name) | Sort-Object
   $mismatch = (@($pjDev | Where-Object { $_ -notin $lkDev }).Count) + (@($lkDev | Where-Object { $_ -notin $pjDev }).Count)
-  $hasRut = $lkObj.packages.ContainsKey('node_modules/@firebase/rules-unit-testing')
-  $hasFb = $lkObj.packages.ContainsKey('node_modules/firebase')
+  $lkPkgNames = @($lkObj.packages.PSObject.Properties.Name)
+  $hasRut = ($lkPkgNames -contains 'node_modules/@firebase/rules-unit-testing')
+  $hasFb = ($lkPkgNames -contains 'node_modules/firebase')
   $nameOk = ($lkObj.name -eq $pjObj.name) -and ($lkObj.version -eq $pjObj.version)
   if (-not ($mismatch -eq 0 -and $hasRut -and $hasFb -and $nameOk -and $lkObj.lockfileVersion)) { $lkOk = $false; Write-Host ("  lock detail: mismatch={0} rut={1} fb={2} nameOk={3} lfv={4}" -f $mismatch,$hasRut,$hasFb,$nameOk,$lkObj.lockfileVersion) }
 } catch { $lkOk = $false; Write-Host ("  lock parse error: " + $_.Exception.Message) }
@@ -299,7 +380,7 @@ else { Fail 'app-mobile/lib/firebase introduced' }
 Write-Host "=== 11. Git diff limited to Layer-0 + Layer-1 transition + R3 Phase D-H allowlist ==="
 $status = Invoke-GitLines @('status','--short','-uall')
 $changed = @(); foreach ($l in $status) { if ($l.Length -gt 3) { $changed += ($l.Substring(3).Trim() -replace '\\','/') } }
-$combinedAllow = @($allow + $layer1Allow + $r3PhaseDtoH + $p0_01Allow + $p0_02Allow + $p0_iam01aAllow + $p0_iam01bAllow + $p0_iam01b1EmuLifecycleAllow)
+$combinedAllow = @($allow + $layer1Allow + $r3PhaseDtoH + $p0_01Allow + $p0_02Allow + $p0_iam01aAllow + $p0_iam01bAllow + $p0_iam01b1EmuLifecycleAllow + $p0_iam01b1R8EolAllow + $p0_iam01b1R8TrustEvidenceAllow)
 $outside = @($changed | Where-Object { $_ -notin $combinedAllow })
 if ($script:gitFailed) { Fail 'allowlist enforcement — git status failed (fail-closed)' }
 elseif ($outside.Count -eq 0) { Pass ('git diff within Layer-0 + Layer-1 transition + R3 D-H allowlist ({0} changed files)' -f $changed.Count) }

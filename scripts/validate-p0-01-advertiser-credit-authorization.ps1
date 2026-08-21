@@ -11,11 +11,48 @@
   parser self-tests). On FULL PASS emits (exit 0): P0_01_ADVERTISER_CREDIT_AUTHORIZATION_PASS ; else ..._FAIL (1).
 #>
 [CmdletBinding()]
-param()
+param(
+  [string]$Repo = '',
+  [string]$ExpectedHead = '',
+  [string]$ForensicRepo = ''
+)
 $ErrorActionPreference = 'Continue'
-$root = 'C:\a\avalo-controlled-enablement-clean'
-$forensic = 'C:\a\avalo'
-$expectHead = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+# ── REPOSITORY IDENTITY ────────────────────────────────────────────────────────────────────────────────────
+# Identity used to be three hardcoded literals: the authoring worktree path, its previous HEAD, and a second
+# "forensic" repository. That made this validator unable to certify anything except the machine it was written
+# on - a clean checkout of the very checkpoint it is supposed to bless would fail its own identity gate, or
+# silently read the authoring worktree instead. A validator that cannot run against the artifact under review
+# is not producing closure evidence.
+#
+# Identity is now EXPLICIT INPUT with a fail-closed contract, and the mode actually used is printed so nobody
+# has to infer which repository was read. The checks are not weakened: an explicit run must still name the
+# exact commit it expects, and HEAD must equal it.
+$AUTHORING_ROOT     = 'C:\a\avalo-controlled-enablement-clean'
+$AUTHORING_FORENSIC = 'C:\a\avalo'
+$AUTHORING_HEAD     = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+if ($Repo) {
+  $IDENTITY_MODE = 'EXPLICIT'
+  $rp = (Resolve-Path -LiteralPath $Repo -ErrorAction SilentlyContinue)
+  if (-not $rp) { Write-Host ("GATE FAIL: -Repo does not resolve: " + $Repo); exit 1 }
+  $root = $rp.Path.TrimEnd('\')
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { Write-Host ("GATE FAIL: -Repo is not a Git repository: " + $root); exit 1 }
+  # In explicit mode the expected commit is mandatory. Without it the gate would accept whatever happened to
+  # be checked out, which is the opposite of an identity control.
+  if (-not ($ExpectedHead -match '^[0-9a-fA-F]{40}$')) { Write-Host 'GATE FAIL: -ExpectedHead must be a 40-hex commit id in explicit mode'; exit 1 }
+  $expectHead = $ExpectedHead.ToLowerInvariant()
+  # The forensic cross-check is an authoring-worktree control: a second copy whose HEAD must match. It has no
+  # meaning against an immutable checkpoint, so it applies only when a forensic root is supplied.
+  $forensic = $ForensicRepo
+} else {
+  $IDENTITY_MODE = 'AUTHORING_DEFAULT'
+  $root       = $AUTHORING_ROOT
+  $forensic   = $AUTHORING_FORENSIC
+  $expectHead = $AUTHORING_HEAD
+}
+Write-Host ("IDENTITY_MODE=" + $IDENTITY_MODE)
+Write-Host ("IDENTITY_ROOT=" + $root)
+Write-Host ("IDENTITY_EXPECTED_HEAD=" + $expectHead)
+Write-Host ("IDENTITY_FORENSIC=" + $(if ($forensic) { $forensic } else { 'NOT_SUPPLIED' }))
 $fnroot = Join-Path $root 'functions'
 $exit = 0
 function Fail([string]$m) { Write-Host ("GATE FAIL: {0}" -f $m); $script:exit = 1 }
@@ -149,12 +186,43 @@ $P01_ALLOW = @(
 Write-Host "=== 1. Identity + zero staged ==="
 $top = (& git -C $root rev-parse --show-toplevel) 2>$null; $head = (& git -C $root rev-parse HEAD) 2>$null; $sym = (& git -C $root symbolic-ref -q HEAD) 2>$null; $fhead = (& git -C $forensic rev-parse HEAD) 2>$null
 $staged = @(& git -C $root diff --cached --name-only | Where-Object { $_.Trim() -ne '' }).Count
-if ((($top -replace '\\', '/') -eq 'C:/a/avalo-controlled-enablement-clean') -and $head -eq $expectHead -and -not $sym -and $fhead -eq $expectHead -and $staged -eq 0) { Pass "identity + detached HEAD + forensic untouched + staged=0" } else { Fail ("identity/staged (staged={0})" -f $staged) }
+if ((($top -replace '\\','/') -eq ($root -replace '\\','/')) -and $head -eq $expectHead -and -not $sym -and ($(if ($forensic) { $fhead -eq $expectHead } else { $true })) -and $staged -eq 0) { Pass "identity + detached HEAD + forensic untouched + staged=0" } else { Fail ("identity/staged (staged={0})" -f $staged) }
+
+# ---- child validator invocation (file-redirected, persisted) ---------------------------------------------
+# NEVER `*>&1` into a variable: that tangles the stdio of the `firebase emulators:exec` processes the child
+# spawns, so its nested suites can silently fail and its markers never appear - the failure mode
+# validate-p0-iam-01a documents and avoids by redirecting to a file. The transcript is also EVIDENCE: it is
+# written to a run-scoped directory, hashed, and never deleted, so a failing child can be diagnosed instead
+# of being reported as a bare non-zero exit.
+$CHILD_EVIDENCE_DIR = Join-Path $env:TEMP ('avalo-iam-child-evidence\' + 'p0-01-advertiser-credit-authorization' + '-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $PID)
+[void][System.IO.Directory]::CreateDirectory($CHILD_EVIDENCE_DIR)
+function Invoke-ChildValidator {
+  param([Parameter(Mandatory)][string]$ScriptPath, [Parameter(Mandatory)][string]$Name)
+  $t = Join-Path $CHILD_EVIDENCE_DIR ($Name + '.transcript.txt')
+  & $ScriptPath -Repo $root -ExpectedHead $expectHead *> $t
+  $ex = $LASTEXITCODE
+  $bytes = 0; $sha = ''; $text = ''
+  if (Test-Path -LiteralPath $t -PathType Leaf) {
+    $raw = [System.IO.File]::ReadAllBytes($t)
+    $bytes = $raw.Length
+    $h = [System.Security.Cryptography.SHA256]::Create()
+    try { $sha = ([BitConverter]::ToString($h.ComputeHash($raw)) -replace '-', '') } finally { $h.Dispose() }
+    $text = [System.IO.File]::ReadAllText($t)
+  }
+  Write-Host ("  CHILD {0}: exit={1} bytes={2} sha256={3} transcript={4}" -f $Name, $ex, $bytes, $sha, $t)
+  # A failing child says why, in the parent's own output, at the point of failure.
+  if ($ex -ne 0) {
+    foreach ($ln in @($text -split "`r?`n" | Where-Object { $_ -match 'GATE FAIL|RESULT:' } | Select-Object -First 6)) {
+      Write-Host ("    CHILD {0} >> {1}" -f $Name, $ln)
+    }
+  }
+  return [pscustomobject]@{ Exit = $ex; Text = $text; Transcript = $t; Sha256 = $sha; Bytes = $bytes }
+}
 
 Write-Host "=== 2. Prior accepted validators still green (transition + Layer 1) ==="
-$tv = & (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') *>&1; $tvExit = $LASTEXITCODE
+$tvChild = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-clean-worktree-layer0-support.ps1') -Name 'CHILD_CLEAN_WORKTREE_LAYER0_SUPPORT'; $tvExit = $tvChild.Exit; $tv = $tvChild.Text
 $tvOk = ($tvExit -eq 0) -and (($tv | Select-String -SimpleMatch 'RESULT: CLEAN_WORKTREE_LAYER0_TO_LAYER1_TRANSITION_CONTRACT_PASS').Count -gt 0)
-$l1 = & (Join-Path $root 'scripts\validate-clean-worktree-layer1-payment-foundation-and-p0-04.ps1') *>&1; $l1Exit = $LASTEXITCODE
+$l1Child = Invoke-ChildValidator -ScriptPath (Join-Path $root 'scripts\validate-clean-worktree-layer1-payment-foundation-and-p0-04.ps1') -Name 'CHILD_CLEAN_WORKTREE_LAYER1_PAYMENT_FOUNDATION_AND_P0_04'; $l1Exit = $l1Child.Exit; $l1 = $l1Child.Text
 $l1Ok = ($l1Exit -eq 0) -and (($l1 | Select-String -SimpleMatch 'RESULT: CLEAN_WORKTREE_LAYER1_PAYMENT_FOUNDATION_AND_P0_04_PASS').Count -gt 0)
 if ($tvOk -and $l1Ok) { Pass ("transition exit {0} + Layer 1 exit {1}, both markers" -f $tvExit, $l1Exit) } else { Fail ("prior validators (tvExit={0} l1Exit={1})" -f $tvExit, $l1Exit) }
 

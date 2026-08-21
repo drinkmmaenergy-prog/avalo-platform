@@ -7,15 +7,121 @@
   provisions real KMS/IAM/Cloud Run. On FULL PASS (exit 0): P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_PASS ; else _FAIL.
 #>
 [CmdletBinding()]
-param()
+param(
+  [string]$Repo = '',
+  [string]$ExpectedHead = '',
+  [string]$ForensicRepo = ''
+)
 $ErrorActionPreference = 'Continue'
-$root = 'C:\a\avalo-controlled-enablement-clean'
-$forensic = 'C:\a\avalo'
-$expectHead = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+# ── REPOSITORY IDENTITY ────────────────────────────────────────────────────────────────────────────────────
+# Identity used to be three hardcoded literals: the authoring worktree path, its previous HEAD, and a second
+# "forensic" repository. That made this validator unable to certify anything except the machine it was written
+# on - a clean checkout of the very checkpoint it is supposed to bless would fail its own identity gate, or
+# silently read the authoring worktree instead. A validator that cannot run against the artifact under review
+# is not producing closure evidence.
+#
+# Identity is now EXPLICIT INPUT with a fail-closed contract, and the mode actually used is printed so nobody
+# has to infer which repository was read. The checks are not weakened: an explicit run must still name the
+# exact commit it expects, and HEAD must equal it.
+$AUTHORING_ROOT     = 'C:\a\avalo-controlled-enablement-clean'
+$AUTHORING_FORENSIC = 'C:\a\avalo'
+$AUTHORING_HEAD     = '4224fd324ee24e387b189fb9307caa05c9ca1ef0'
+if ($Repo) {
+  $IDENTITY_MODE = 'EXPLICIT'
+  $rp = (Resolve-Path -LiteralPath $Repo -ErrorAction SilentlyContinue)
+  if (-not $rp) { Write-Host ("GATE FAIL: -Repo does not resolve: " + $Repo); exit 1 }
+  $root = $rp.Path.TrimEnd('\')
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { Write-Host ("GATE FAIL: -Repo is not a Git repository: " + $root); exit 1 }
+  # In explicit mode the expected commit is mandatory. Without it the gate would accept whatever happened to
+  # be checked out, which is the opposite of an identity control.
+  if (-not ($ExpectedHead -match '^[0-9a-fA-F]{40}$')) { Write-Host 'GATE FAIL: -ExpectedHead must be a 40-hex commit id in explicit mode'; exit 1 }
+  $expectHead = $ExpectedHead.ToLowerInvariant()
+  # The forensic cross-check is an authoring-worktree control: a second copy whose HEAD must match. It has no
+  # meaning against an immutable checkpoint, so it applies only when a forensic root is supplied.
+  $forensic = $ForensicRepo
+} else {
+  $IDENTITY_MODE = 'AUTHORING_DEFAULT'
+  $root       = $AUTHORING_ROOT
+  $forensic   = $AUTHORING_FORENSIC
+  $expectHead = $AUTHORING_HEAD
+}
+Write-Host ("IDENTITY_MODE=" + $IDENTITY_MODE)
+Write-Host ("IDENTITY_ROOT=" + $root)
+Write-Host ("IDENTITY_EXPECTED_HEAD=" + $expectHead)
+Write-Host ("IDENTITY_FORENSIC=" + $(if ($forensic) { $forensic } else { 'NOT_SUPPLIED' }))
 $fnroot = Join-Path $root 'functions'
 $exit = 0
 function Fail([string]$m) { Write-Host ("GATE FAIL: {0}" -f $m); $script:exit = 1 }
 function Pass([string]$m) { Write-Host ("GATE PASS: {0}" -f $m) }
+
+# ── R8 trusted child-evidence contract ───────────────────────────────────────────────────────────────────────────
+# The nested IAM-01A relationship in GATE 2 was repaired earlier in R8. A later cross-cutting audit found four more
+# children in this validator whose failure evidence does not survive: the Jest console (piped to Out-Null), the Jest
+# report (deleted before the verdict), and the lifecycle and strict-parser self-test harnesses (captured into a
+# variable and never written anywhere, so a failure exposes only an exit code).
+#
+# Same loading model as the lifecycle and strict-parser helpers: exact repository-relative path, no PATH search, no
+# module-name resolution, ambient definitions evicted first, origin proven, fail closed.
+$tcePath = Join-Path $root 'scripts\lib\TrustedChildEvidence.ps1'
+# CANONICAL PIN - must be byte-identical to the constant in the IAM-01A validator. A permanent regression
+# asserts the two literals are equal, so they cannot drift silently.
+$TCE_EXPECTED_SHA256 = '3A59252B60E30FF8268A87455BDD2A157241BD294DE896510D4BF68D02C11B59'
+if (-not (Test-Path -LiteralPath $tcePath -PathType Leaf)) {
+  Write-Host ("GATE FAIL: trusted child-evidence helper missing: " + $tcePath)
+  Write-Host 'RESULT: P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_FAIL'
+  exit 1
+}
+# BYTE identity before execution (BCL SHA-256, never Get-FileHash - see the IAM-01A note).
+$tceSha = ''
+try {
+  $tceHasher = [System.Security.Cryptography.SHA256]::Create()
+  try { $tceSha = ([BitConverter]::ToString($tceHasher.ComputeHash([System.IO.File]::ReadAllBytes($tcePath))) -replace '-', '') }
+  finally { $tceHasher.Dispose() }
+} catch { $tceSha = '' }
+if ($tceSha -ne $TCE_EXPECTED_SHA256) {
+  Write-Host ("GATE FAIL: trusted child-evidence helper byte identity mismatch (expected " + $TCE_EXPECTED_SHA256 + " actual " + $(if ($tceSha) { $tceSha } else { 'UNREADABLE' }) + ")")
+  Write-Host 'RESULT: P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_FAIL'
+  exit 1
+}
+$tceResolved = (Resolve-Path -LiteralPath $tcePath).Path
+# Origin-conditional eviction: remove only definitions that did NOT come from the byte-verified file. GATE 2
+# runs the IAM-01A validator in-process, and an unconditional Function: removal there would delete this
+# validator's own loaded helper (Function: drive removals act on the session table), leaving GATE 12 onwards
+# with "New-TceArtifactPath is not recognized". That is exactly what happened in FINAL_REPAIRED_RUN_1.
+foreach ($tceFn in @('Get-TceEvidenceDir', 'New-TceArtifactPath', 'Get-TceSha256', 'Register-TceChildEvidence')) {
+  $existing = Get-Command $tceFn -CommandType Function -ErrorAction SilentlyContinue
+  if ($null -eq $existing) { continue }
+  $existingFile = if ($existing.ScriptBlock -and $existing.ScriptBlock.File) { (Resolve-Path -LiteralPath $existing.ScriptBlock.File -ErrorAction SilentlyContinue).Path } else { '' }
+  if ($existingFile -ne $tceResolved) { Remove-Item -LiteralPath ("Function:\" + $tceFn) -Force -ErrorAction SilentlyContinue }
+}
+. $tcePath
+$tceCmd = Get-Command Register-TceChildEvidence -CommandType Function -ErrorAction SilentlyContinue
+$tceFile = if ($tceCmd -and $tceCmd.ScriptBlock -and $tceCmd.ScriptBlock.File) { (Resolve-Path -LiteralPath $tceCmd.ScriptBlock.File).Path } else { '' }
+if ($tceFile -ne $tceResolved) {
+  Write-Host 'GATE FAIL: trusted child-evidence helper identity could not be established'
+  Write-Host 'RESULT: P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_FAIL'
+  exit 1
+}
+$tceShaAfter = ''
+try {
+  $tceHasher2 = [System.Security.Cryptography.SHA256]::Create()
+  try { $tceShaAfter = ([BitConverter]::ToString($tceHasher2.ComputeHash([System.IO.File]::ReadAllBytes($tcePath))) -replace '-', '') }
+  finally { $tceHasher2.Dispose() }
+} catch { $tceShaAfter = '' }
+if ($tceShaAfter -ne $TCE_EXPECTED_SHA256) {
+  Write-Host 'GATE FAIL: trusted child-evidence helper bytes changed during load'
+  Write-Host 'RESULT: P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_FAIL'
+  exit 1
+}
+Write-Host ("IAM01B1_TCE_HELPER_SHA256=" + $tceSha)
+$IAM01B1_EVIDENCE = ''
+try { $IAM01B1_EVIDENCE = Get-TceEvidenceDir -Validator 'IAM01B1' } catch { $IAM01B1_EVIDENCE = '' }
+if ([string]::IsNullOrWhiteSpace($IAM01B1_EVIDENCE) -or -not (Test-Path -LiteralPath $IAM01B1_EVIDENCE -PathType Container)) {
+  Write-Host 'GATE FAIL: child-evidence directory could not be created'
+  Write-Host 'RESULT: P0_IAM_01B1_PRODUCTION_AUTHORITY_TRUST_ROOT_FAIL'
+  exit 1
+}
+Write-Host ("IAM01B1_CHILD_EVIDENCE_DIR=" + $IAM01B1_EVIDENCE)
 
 # Import-graph reachability scan: which PRODUCTION modules reference $Pattern.
 #  * --untracked is MANDATORY: the P0-IAM-01B runtime and test sources are UNTRACKED in this detached-HEAD validation
@@ -77,19 +183,41 @@ $changed = @(); foreach ($l in @(& git -C $root status --short -uall)) { if ($l.
 $iamChanged = @($changed | Where-Object { $_ -match 'security/financialAuthority/(kmsSigner|serviceAuth|authorityService)|iam01bTestHarness|p0-iam-01b-production-authority-trust-root' })
 $outside = @($iamChanged | Where-Object { $_ -notin $IAM_01B_ALLOW })
 $runtimeChanged = @($iamChanged | Where-Object { $_ -match '^functions/src/' -and $_ -notmatch '__tests__' })
-$idOk = ((($top -replace '\\', '/') -eq 'C:/a/avalo-controlled-enablement-clean') -and $head -eq $expectHead -and -not $sym -and $fhead -eq $expectHead -and $staged -eq 0)
+$idOk = ((($top -replace '\\','/') -eq ($root -replace '\\','/')) -and $head -eq $expectHead -and -not $sym -and ($(if ($forensic) { $fhead -eq $expectHead } else { $true })) -and $staged -eq 0)
 if ($idOk -and $outside.Count -eq 0 -and $runtimeChanged.Count -le 8) { Pass ("identity + staged=0 + IAM-01B diff within allowlist (runtime files={0})" -f $runtimeChanged.Count) } else { $outside | ForEach-Object { Write-Host "  OUTSIDE: $_" }; Fail ("identity/diff (staged={0} runtime={1} outside={2})" -f $staged, $runtimeChanged.Count, $outside.Count) }
 if ($runtimeChanged.Count -gt 8) { Write-Host 'STOP — P0-IAM-01B REQUIRES SCOPE REVIEW' }
 
 Write-Host "=== GATE 2. Prior markers green incl. P0-IAM-01A (via IAM-01A validator; FILE-redirected) ==="
-$iam01aOut = Join-Path $env:TEMP ("iam01b-prior-" + [guid]::NewGuid().ToString('N') + ".out")
-& (Join-Path $root 'scripts\validate-p0-iam-01a-financial-authority-trust-boundary-foundation.ps1') *> $iam01aOut
+# R8: the nested transcript is EVIDENCE and is kept.
+# It used to be written to a random temp name and deleted immediately after the two markers were read. That
+# is fine while the gate passes and useless the moment it does not: an R8 battery run had this gate fail with
+# `iam01aExit=1` while the standalone IAM-01A in the same battery passed 53/53, and the only record of why the
+# nested run failed had already been erased. A validator that destroys the evidence for its own failure cannot
+# be independently reviewed, which is the same defect as a battery that prints its verdict only to a console.
+# The directory is overridable so an orchestrator can collect it; it defaults OUTSIDE the repository, because
+# writing evidence into the worktree would change the very git state GATE 1 asserts.
+$nestedDir = if ($env:AVALO_IAM01B1_NESTED_EVIDENCE_DIR) { $env:AVALO_IAM01B1_NESTED_EVIDENCE_DIR } else { Join-Path $env:TEMP 'avalo-iam01b1-nested-evidence' }
+New-Item -ItemType Directory -Force -Path $nestedDir | Out-Null
+$iam01aOut = Join-Path $nestedDir ("NESTED_IAM01A_" + (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss') + "-" + [guid]::NewGuid().ToString('N').Substring(0, 8) + ".out")
+& (Join-Path $root 'scripts\validate-p0-iam-01a-financial-authority-trust-boundary-foundation.ps1') -Repo $root -ExpectedHead $expectHead *> $iam01aOut
 $iam01aExit = $LASTEXITCODE
 $iam01aTxt = if (Test-Path $iam01aOut) { Get-Content -LiteralPath $iam01aOut -Raw } else { '' }
-Remove-Item $iam01aOut -Force -ErrorAction SilentlyContinue
+Set-Content -LiteralPath (Join-Path $nestedDir 'NESTED_IAM01A_LAST_EXIT.txt') -Value ([string]$iam01aExit) -NoNewline
 function HasMark([string]$t, [string]$m) { return ($null -ne $t) -and ($t -match [regex]::Escape($m)) }
 $priorOk = ($iam01aExit -eq 0) -and (HasMark $iam01aTxt 'RESULT: P0_IAM_01A_FINANCIAL_AUTHORITY_TRUST_BOUNDARY_FOUNDATION_PASS') -and (HasMark $iam01aTxt 'prior validators green')
-if ($priorOk) { Pass 'prior markers green: P0-IAM-01A PASS (which transitively confirms layer0/layer1/p0-01/p0-02/c5/r1b1)' } else { Fail ("prior markers (iam01aExit={0})" -f $iam01aExit) }
+# Machine-readable so a parent harness can gate on the NESTED exit specifically, rather than inferring it from
+# this validator's overall exit.
+Write-Host ("IAM01B1_NESTED_IAM01A_EXIT=" + $iam01aExit)
+Write-Host ("IAM01B1_NESTED_IAM01A_TRANSCRIPT=" + $iam01aOut)
+Write-Host ("IAM01B1_NESTED_IAM01A_BYTES=" + $iam01aTxt.Length)
+if (-not $priorOk) {
+  # Surface the nested run's OWN first failures inline. "exit 1" is an outcome, not a diagnosis.
+  foreach ($ln in @($iam01aTxt -split "`r?`n" | Where-Object { $_ -match 'GATE FAIL' } | Select-Object -First 5)) {
+    Write-Host ("  NESTED IAM-01A: " + $ln.Trim())
+  }
+  if ([string]::IsNullOrWhiteSpace($iam01aTxt)) { Write-Host '  NESTED IAM-01A: (no output captured)' }
+}
+if ($priorOk) { Pass 'prior markers green: P0-IAM-01A PASS (which transitively confirms layer0/layer1/p0-01/p0-02/c5/r1b1)' } else { Fail ("prior markers (iam01aExit={0}; transcript retained at {1})" -f $iam01aExit, $iam01aOut) }
 
 Write-Host "=== GATE 3-9. Source-level trust-root invariants ==="
 foreach ($f in @($KMS, $SAUTH, $SVC, $HARNESS)) { if (-not (Test-Path $f)) { Fail ("missing file: $f") } }
@@ -143,13 +271,20 @@ if ($g11) { Pass 'billing containment unchanged: sendChatMessage HARD_FAIL_CLOSE
 Write-Host "=== GATE 12. IAM-01B unit suite (pure unit; no emulator) ==="
 if (-not (Test-Path (Join-Path $fnroot 'node_modules'))) { Fail 'dependencies absent' }
 else {
-  $jsonOut = Join-Path $env:TEMP ("iam01b-jest-" + [guid]::NewGuid().ToString('N') + ".json")
-  if (Test-Path $jsonOut) { Remove-Item $jsonOut -Force }
+  # B3 / B2. The report lands in the run-scoped evidence directory instead of $env:TEMP, and the console stream is
+  # REDIRECTED TO A FILE rather than into Out-Null. Previously a GATE 12 failure retained neither: the only console
+  # observation of the run was discarded as it was produced, and the report was deleted before the verdict below.
+  $jsonOut = New-TceArtifactPath -EvidenceDir $IAM01B1_EVIDENCE -Name 'B3_UNIT_SUITE_JEST_REPORT.json'
+  $jestConsole = New-TceArtifactPath -EvidenceDir $IAM01B1_EVIDENCE -Name 'B2_UNIT_SUITE_JEST_CONSOLE.log'
   $runStartedUtc = (Get-Date).ToUniversalTime()          # freshness floor for the report (anti-stale)
   Push-Location $fnroot
-  & npx jest --config jest.config.js --selectProjects main --runInBand --forceExit --json --outputFile="$jsonOut" ("src/__tests__/" + $TEST_FILE) *>&1 | Out-Null
+  # File redirection, not a pipeline: capturing a child's streams into a PowerShell pipeline is what tangles native
+  # stdio elsewhere in this chain, and `| Out-Null` is what destroyed this observation entirely.
+  & npx jest --config jest.config.js --selectProjects main --runInBand --forceExit --json --outputFile="$jsonOut" ("src/__tests__/" + $TEST_FILE) *> $jestConsole
   $jexit = $LASTEXITCODE
   Pop-Location
+  $b2Evidence = Register-TceChildEvidence -EvidenceDir $IAM01B1_EVIDENCE -Name 'B2_UNIT_SUITE_JEST_CONSOLE' `
+                  -TranscriptPath $jestConsole -ExitCode $jexit
   # STRICT adjudication (R5). $jexit -eq 0 is MANDATORY here (this suite is pure unit; there is no emulator exit to
   # normalize). Aggregate 54/54 alone is NOT sufficient: each critical security assertion must be present exactly once,
   # by exact fullName, from the exact expected source file.
@@ -189,9 +324,12 @@ else {
            -RequiredAssertions $IAM01B_CRITICAL `
            -RequireSingleTestResult $true -RequireExactAssertionRecordCount $true -RequireExpectedFileUnique $true
   Write-Host ("  strict jest -> passed={0} failed={1} pending={2} todo={3} total={4} jexit={5} ok={6}" -f $rep.passed, $rep.failed, $rep.pending, $rep.todo, $rep.total, $jexit, $rep.ok)
-  Remove-Item $jsonOut -Force -ErrorAction SilentlyContinue
-  if ($rep.ok) { Pass ("IAM-01B suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact critical assertions + jexit=0" -f $rep.passed, $IAM01B_CRITICAL.Count) }
-  else { $rep.errors | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01B suite (strictErrors={0} jexit={1})" -f @($rep.errors).Count, $jexit) }
+  # Registered, not deleted, and registered BEFORE the verdict so a rejected report survives for review.
+  $b3Evidence = Register-TceChildEvidence -EvidenceDir $IAM01B1_EVIDENCE -Name 'B3_UNIT_SUITE_JEST_REPORT' `
+                  -TranscriptPath $jsonOut -ExitCode $jexit -RequireNonEmpty
+  $gate12Evidence = ([bool]$b2Evidence.EvidenceOk) -and ([bool]$b3Evidence.EvidenceOk)
+  if ($rep.ok -and $gate12Evidence) { Pass ("IAM-01B suite: {0} passed / 0 failed / 0 skipped; strict schema + {1} exact critical assertions + jexit=0" -f $rep.passed, $IAM01B_CRITICAL.Count) }
+  else { $rep.errors | ForEach-Object { Write-Host "  STRICT REJECT: $_" }; Fail ("IAM-01B suite (strictErrors={0} jexit={1} evidenceOk={2})" -f @($rep.errors).Count, $jexit, $gate12Evidence) }
 }
 
 Write-Host "=== GATE 13. Production trust boundary: NO caller-selectable dependency injection ==="
@@ -268,9 +406,17 @@ $lcPortable = ($harn -match 'Resolve-LifecycleHelper') -and ($harn -match '\.\.\
 $lc = @{ ordered_sequence=$lcOrdering; exit0_unknown_error_rejected=$lcExit0Unknown; timeout_after_shutdown=$lcTimeoutOrder; multi_timeout_rejected=$lcMultiTimeout; no_broad_exit2_pass=$lcNoBroadExit2; portable_helper_resolution=$lcPortable }
 $lcbad = @($lc.GetEnumerator() | Where-Object { -not $_.Value } | ForEach-Object { $_.Key })
 if ($lcbad.Count -eq 0) { Pass 'lifecycle: ordered event sequence; exit-0 unknown-error rejected; timeout-after-shutdown; multi-timeout rejected; no broad exit2=>PASS; deterministic portable helper resolution' } else { $lcbad | ForEach-Object { Write-Host "  MISSING: $_" }; Fail 'lifecycle hardening' }
-$stOut = & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\emulator-lifecycle-adjudication.tests.ps1') *>&1
+# B4. The harness output is written to the evidence directory as well as captured, so a failure is diagnosable.
+# Previously it lived only in $stOut and the failure message carried nothing but the exit code, which is exactly
+# the "trust the child, discard its reasons" shape this round is closing out.
+$b4Transcript = New-TceArtifactPath -EvidenceDir $IAM01B1_EVIDENCE -Name 'B4_LIFECYCLE_SELFTEST.transcript.txt'
+& pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\emulator-lifecycle-adjudication.tests.ps1') *> $b4Transcript
 $stExit = $LASTEXITCODE
-if (($stExit -eq 0) -and (@($stOut | Select-String -SimpleMatch 'EMULATOR_LIFECYCLE_ADJUDICATION_SELFTEST_PASS').Count -gt 0)) { Pass 'lifecycle self-test harness executed: all checks PASS (whole-log + exact cleanup + portable)' } else { Fail ("lifecycle self-test harness (exit={0})" -f $stExit) }
+$stOut = if (Test-Path -LiteralPath $b4Transcript) { Get-Content -LiteralPath $b4Transcript } else { @() }
+$b4Evidence = Register-TceChildEvidence -EvidenceDir $IAM01B1_EVIDENCE -Name 'B4_LIFECYCLE_SELFTEST' `
+                -TranscriptPath $b4Transcript -ExitCode $stExit -RequireNonEmpty `
+                -ResultMarker 'RESULT' -ExpectedResultValue 'EMULATOR_LIFECYCLE_ADJUDICATION_SELFTEST_PASS'
+if (($stExit -eq 0) -and ([bool]$b4Evidence.EvidenceOk) -and (@($stOut | Select-String -SimpleMatch 'EMULATOR_LIFECYCLE_ADJUDICATION_SELFTEST_PASS').Count -gt 0)) { Pass 'lifecycle self-test harness executed: all checks PASS (whole-log + exact cleanup + portable)' } else { Fail ("lifecycle self-test harness (exit={0} evidenceOk={1} transcript={2})" -f $stExit, $b4Evidence.EvidenceOk, $b4Transcript) }
 
 Write-Host "=== GATE 15. R5: whole-log error policy + exact cleanup proof + strict Jest parser ==="
 # (a) the helper source must implement the repaired policy, and must NOT contain the two defective constructs.
@@ -324,11 +470,18 @@ try {
   $cleanOk  = Get-EmuLifecycleVerdict -CliExit 0 -Log $OKF
   $advOkR5 = (-not $preErr.lifecycleOk) -and (-not $wrapOnly.lifecycleOk) -and ($cleanOk.lifecycleOk)
 } catch { $advOkR5 = $false }
-$advParser = & pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\strict-jest-parser.tests.ps1') *>&1
+# B5. Same repair as B4: the strict-parser harness transcript is persisted before it is judged, so a parser
+# self-test failure is diagnosable from evidence rather than from an exit code alone.
+$b5Transcript = New-TceArtifactPath -EvidenceDir $IAM01B1_EVIDENCE -Name 'B5_STRICT_PARSER_SELFTEST.transcript.txt'
+& pwsh -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'scripts\tests\strict-jest-parser.tests.ps1') *> $b5Transcript
 $advParserExit = $LASTEXITCODE
-$advParserOk = ($advParserExit -eq 0) -and (@($advParser | Select-String -SimpleMatch 'STRICT_JEST_PARSER_SELFTEST_PASS').Count -gt 0)
+$advParser = if (Test-Path -LiteralPath $b5Transcript) { Get-Content -LiteralPath $b5Transcript } else { @() }
+$b5Evidence = Register-TceChildEvidence -EvidenceDir $IAM01B1_EVIDENCE -Name 'B5_STRICT_PARSER_SELFTEST' `
+                -TranscriptPath $b5Transcript -ExitCode $advParserExit -RequireNonEmpty `
+                -ResultMarker 'RESULT' -ExpectedResultValue 'STRICT_JEST_PARSER_SELFTEST_PASS'
+$advParserOk = ($advParserExit -eq 0) -and ([bool]$b5Evidence.EvidenceOk) -and (@($advParser | Select-String -SimpleMatch 'STRICT_JEST_PARSER_SELFTEST_PASS').Count -gt 0)
 if ($advOkR5 -and $advParserOk) { Pass 'adversarial R5 self-test: pre-success unknown error DETECTED; generic-wrapper-only exit-2 REJECTED; clean run still PASSES; strict-parser coercion/duplicate fixtures all rejected' }
-else { Fail ("adversarial R5 self-test (lifecycle={0} parser={1} parserExit={2})" -f $advOkR5, $advParserOk, $advParserExit) }
+else { Fail ("adversarial R5 self-test (lifecycle={0} parser={1} parserExit={2} evidence={3})" -f $advOkR5, $advParserOk, $advParserExit, $b5Transcript) }
 
 Write-Host ""
 if ($exit -eq 0) {

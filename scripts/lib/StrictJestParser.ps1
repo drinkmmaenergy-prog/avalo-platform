@@ -40,6 +40,24 @@
   as evidence in themselves.
 #>
 
+function Get-SjpFileSha256 {
+  <#
+    .SYNOPSIS
+    SHA-256 of a file's exact bytes, with no dependency on Microsoft.PowerShell.Utility.
+
+    R8: Get-FileHash cannot be relied on. Windows PowerShell 5.1 started from a PowerShell 7 process inherits
+    7's $env:PSModulePath, so Microsoft.PowerShell.Utility binds to the 7.0.0.0 Core module and Get-FileHash is
+    simply not in the session. Every consumer here is a security control; a control whose primitive the calling
+    process can delete is not one. ReadAllBytes + the BCL hash are identical on 5.1 and 7.x and unshadowable,
+    and reading raw bytes also avoids any text-mode line-ending re-encoding.
+  #>
+  [CmdletBinding()]
+  param([Parameter(Mandatory)][string]$Path)
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try { return ([BitConverter]::ToString($sha.ComputeHash([System.IO.File]::ReadAllBytes($Path))) -replace '-', '') }
+  finally { $sha.Dispose() }
+}
+
 function Test-SjpTrustedParserIdentity {
   <#
     R7 (Codex finding 7). Both security validators used to decide whether to load this file by asking whether
@@ -71,7 +89,12 @@ function Test-SjpTrustedParserIdentity {
     Write-Host "  TRUSTED_PARSER_IDENTITY_FAIL: file not found: $ParserPath"; return $false
   }
   if ($ExpectedSha256) {
-    $actual = (Get-FileHash -LiteralPath $ParserPath -Algorithm SHA256).Hash.ToUpperInvariant()
+    # R8: NOT Get-FileHash. Windows PowerShell 5.1 launched from a PowerShell 7 process inherits 7's
+    # $env:PSModulePath, resolves Microsoft.PowerShell.Utility to the 7.0.0.0 Core module, and the cmdlet is
+    # then absent from the session. A trusted-parser identity pin whose hashing step a parent process can
+    # delete is not an identity pin - it fails closed, but it fails for an unrelated reason and stops proving
+    # anything about identity. The BCL primitive is present on both runtimes and cannot be shadowed.
+    $actual = (Get-SjpFileSha256 -Path $ParserPath).ToUpperInvariant()
     if ($actual -ne $ExpectedSha256.ToUpperInvariant()) {
       Write-Host "  TRUSTED_PARSER_IDENTITY_FAIL: hash mismatch ($actual)"; return $false
     }
@@ -138,7 +161,12 @@ function Get-SjpStrictReport {
     [int]$MinPassed = 1,
     [int]$ExpectedPassed = 0,
     [int]$ExpectedTotalTests = 0,
-    [string[]]$RequiredAssertions = @(),
+    # R8 (independent review of R7, blocker 01): this was [string[]], which made the input contract a
+    # fiction. PowerShell COERCES parameter values before the body runs, so `[string[]]` turned an integer
+    # 123 into the string "123" and the later `-isnot [string]` check could never fire — a required
+    # assertion supplied as 123 was satisfied by a physical assertion literally named "123". The raw
+    # collection is now received untyped and every element is validated as it actually arrived.
+    [object[]]$RequiredAssertions = @(),
     [bool]$AllowPending = $false,
     [bool]$AllowTodo = $false,
     [bool]$RequireSingleTestResult = $true,
@@ -152,14 +180,25 @@ function Get-SjpStrictReport {
   # name twice, ONE physical assertion satisfied BOTH slots — a 17-entry table could be silently backed by 16
   # records. The requirement list is an input to a security decision, so it is validated like any other input,
   # and it is validated first: evidence must never be consulted to excuse a malformed contract.
+  # Validate every element AS IT ARRIVED, then build a trusted ordinal set from the survivors. Only the
+  # validated set is used for lookup below — the raw parameter is never consulted again. `.ToString()` is
+  # never used as validation: an object that merely renders as a string is rejected, not converted.
   $seenReq = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+  $validatedRequired = New-Object System.Collections.Generic.List[string]
   for ($i = 0; $i -lt $RequiredAssertions.Count; $i++) {
     $rq = $RequiredAssertions[$i]
-    if ($null -eq $rq)                                  { $errors.Add("required_assertions_input_null:index$i"); continue }
-    if ($rq -isnot [string])                            { $errors.Add("required_assertions_input_not_string:index$i"); continue }
-    if ([string]::IsNullOrWhiteSpace([string]$rq))      { $errors.Add("required_assertions_input_empty:index$i"); continue }
-    if (-not $seenReq.Add([string]$rq))                 { $errors.Add("required_assertions_input_duplicate:$rq") }
+    if ($null -eq $rq) { $errors.Add("required_assertions_input_null:index$i"); continue }
+    # Exact type gate. [string] only — not "stringifiable", not a single-element array of a string.
+    if ($rq.GetType() -ne [string]) {
+      $errors.Add("required_assertions_input_not_string:index$i:type=$($rq.GetType().Name)"); continue
+    }
+    $rqs = [string]$rq
+    if ([string]::IsNullOrWhiteSpace($rqs)) { $errors.Add("required_assertions_input_empty:index$i"); continue }
+    if (-not $seenReq.Add($rqs)) { $errors.Add("required_assertions_input_duplicate:$rqs"); continue }
+    $validatedRequired.Add($rqs)
   }
+  # A malformed contract must never be partially honoured: if any element failed, no element is trusted.
+  if ($errors.Count -gt 0) { $validatedRequired.Clear() }
 
   # ── native process exit is mandatory ───────────────────────────────────────────────────────────────────────────
   if ($NativeExit -ne 0) { $errors.Add("native_jest_exit_nonzero:$NativeExit") }
@@ -217,6 +256,12 @@ function Get-SjpStrictReport {
   $foreignLeaves   = New-Object System.Collections.Generic.List[string]
   $physicalObjects = 0
   $suiteStates     = New-Object System.Collections.Generic.List[psobject]
+  # R8 (blocker 02): physical suite-level evidence, collected alongside the assertion records so the two
+  # can be reconciled against each other rather than the assertions being the only source of truth.
+  $runtimeErrorSuites   = 0
+  $suiteStatusProblems  = New-Object System.Collections.Generic.List[string]
+  $SUITE_STATUS_OK      = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
+  foreach ($s in @('passed','failed','pending','todo')) { $null = $SUITE_STATUS_OK.Add($s) }
   # Physical tallies across the WHOLE report, used to reconcile every declared counter.
   $recTotal = 0; $recPassed = 0; $recFailed = 0; $recPending = 0; $recTodo = 0
   # Jest assertion statuses. Anything outside this set is unknown semantics and therefore a rejection: a status
@@ -251,6 +296,17 @@ function Get-SjpStrictReport {
       if (-not (Test-SjpHasProperty $tr 'assertionResults')) { $errors.Add('testResult_missing_assertionResults'); continue }
       if ($tr.assertionResults -isnot [array]) { $errors.Add('assertionResults_not_array'); continue }
 
+      # ── physical suite-level evidence (R8 blocker 02) ──────────────────────────────────────────────
+      # An explicit execution error means the suite did not run to completion. Jest omits this property
+      # entirely on a healthy suite, so its mere presence is disqualifying.
+      if (Test-SjpHasProperty $tr 'testExecError') { $runtimeErrorSuites++ }
+      # The suite's own status must exist, be a known value, and later agree with its assertion tallies.
+      $suiteDeclaredStatus = $null
+      if (-not (Test-SjpHasProperty $tr 'status')) { $suiteStatusProblems.Add("suite_missing_status:$leaf") }
+      elseif ($tr.status -isnot [string]) { $suiteStatusProblems.Add("suite_status_not_string:$leaf") }
+      elseif (-not $SUITE_STATUS_OK.Contains([string]$tr.status)) { $suiteStatusProblems.Add("suite_status_unsupported:$([string]$tr.status)") }
+      else { $suiteDeclaredStatus = [string]$tr.status }
+
       # Per-suite tallies, so the suite-level counters below reconcile against physical records too.
       $sTotal = 0; $sPassed = 0; $sFailed = 0; $sPending = 0; $sTodo = 0
       foreach ($ar in $tr.assertionResults) {
@@ -278,6 +334,13 @@ function Get-SjpStrictReport {
         }
         # Only the expected file may contribute evidence toward the required-assertion set.
         if ($isExpected -and $st -ceq 'passed') { $passedNames.Add([string]$ar.fullName) }
+      }
+      # The suite's declared status must agree with what its own records physically show. A suite that
+      # says "failed" is failed even if every assertion was forged as passing, and a suite that says
+      # "passed" while carrying a failed record is a contradiction rather than a pass.
+      if ($null -ne $suiteDeclaredStatus) {
+        if ($suiteDeclaredStatus -ceq 'failed') { $suiteStatusProblems.Add("suite_declared_failed:$leaf") }
+        elseif ($suiteDeclaredStatus -ceq 'passed' -and $sFailed -gt 0) { $suiteStatusProblems.Add("suite_declared_passed_with_failed_records:$leaf") }
       }
       $suiteStates.Add([pscustomobject]@{ Total = $sTotal; Passed = $sPassed; Failed = $sFailed; Pending = $sPending; Todo = $sTodo })
     }
@@ -333,12 +396,40 @@ function Get-SjpStrictReport {
     'numPendingTestSuites'      = $suitesPending
     'numRuntimeErrorTestSuites' = 0
   }
+  # R8 (blocker 02): these were checked only `if` present, so deleting them deleted the check. Verified
+  # against a real Jest 29.7.0 report from this repository's own suite: all five ARE emitted, so requiring
+  # them cannot reject genuine evidence. Absent evidence is now absent evidence, not a silent pass.
   foreach ($sf in @('numTotalTestSuites','numPassedTestSuites','numFailedTestSuites','numPendingTestSuites','numRuntimeErrorTestSuites')) {
-    if (Test-SjpHasProperty $j $sf) {
-      if (-not (Test-SjpIsStrictInt $j.$sf)) { $errors.Add("${sf}_not_integer"); continue }
-      if ([int64]$j.$sf -lt 0) { $errors.Add("${sf}_negative:$($j.$sf)"); continue }
-      if ([int64]$j.$sf -ne $suiteExpect[$sf]) { $errors.Add("${sf}_mismatch:$($j.$sf)!=$($suiteExpect[$sf])") }
+    if (-not (Test-SjpHasProperty $j $sf)) { $errors.Add("missing:$sf"); continue }
+    if (-not (Test-SjpIsStrictInt $j.$sf)) { $errors.Add("${sf}_not_integer"); continue }
+    if ([int64]$j.$sf -lt 0) { $errors.Add("${sf}_negative:$($j.$sf)"); continue }
+    if ([int64]$j.$sf -ne $suiteExpect[$sf]) { $errors.Add("${sf}_mismatch:$($j.$sf)!=$($suiteExpect[$sf])") }
+  }
+  # Suite counters must also be internally consistent with the declared suite total.
+  if ((Test-SjpHasProperty $j 'numTotalTestSuites') -and (Test-SjpIsStrictInt $j.numTotalTestSuites)) {
+    $declaredParts = 0
+    foreach ($sf in @('numPassedTestSuites','numFailedTestSuites','numPendingTestSuites')) {
+      if ((Test-SjpHasProperty $j $sf) -and (Test-SjpIsStrictInt $j.$sf)) { $declaredParts += [int64]$j.$sf }
     }
+    if ($declaredParts -gt [int64]$j.numTotalTestSuites) {
+      $errors.Add("suite_counter_parts_exceed_total:$declaredParts>$($j.numTotalTestSuites)")
+    }
+  }
+  # Physical suite state. Jest 29 emits testResults[].status and, on a suite that failed to execute,
+  # testExecError. R7 derived suite state ONLY from assertionResults, so a suite could declare itself
+  # failed — or carry an explicit execution error — while forged assertion counters claimed success.
+  if ($runtimeErrorSuites -gt 0) { $errors.Add("suite_runtime_error_present:$runtimeErrorSuites") }
+  foreach ($bad in $suiteStatusProblems) { $errors.Add($bad) }
+  # An interrupted run is not a completed run.
+  if (Test-SjpHasProperty $j 'wasInterrupted') {
+    if (-not (Test-SjpIsStrictBool $j.wasInterrupted)) { $errors.Add('wasInterrupted_not_boolean') }
+    elseif ($j.wasInterrupted) { $errors.Add('run_was_interrupted') }
+  }
+  # success must agree with every failure channel, not just the assertion counters.
+  if ((Test-SjpHasProperty $j 'success') -and (Test-SjpIsStrictBool $j.success) -and $j.success) {
+    if ($recFailed -gt 0)          { $errors.Add('success_true_with_failed_records') }
+    if ($suitesFailed -gt 0)       { $errors.Add('success_true_with_failed_suites') }
+    if ($runtimeErrorSuites -gt 0) { $errors.Add('success_true_with_runtime_error_suites') }
   }
 
   # ── required assertions: EXACT ORDINAL fullName equality, EXACTLY ONE record each, injective ───────────────────
@@ -350,7 +441,8 @@ function Get-SjpStrictReport {
   foreach ($n in $passedNames) {
     if ($byName.ContainsKey($n)) { $byName[$n] = $byName[$n] + 1 } else { $byName[$n] = 1 }
   }
-  foreach ($req in $RequiredAssertions) {
+  # Only the VALIDATED list is consulted — never the raw parameter (R8 blocker 01).
+  foreach ($req in $validatedRequired) {
     if (-not $byName.ContainsKey($req)) { $errors.Add("required_assertion_missing:$req"); continue }
     if ($byName[$req] -ne 1) { $errors.Add("required_assertion_not_unique:$req x$($byName[$req])") }
   }
